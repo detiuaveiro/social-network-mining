@@ -20,9 +20,9 @@ Créditos da template: https://www.creative-tim.com/product/paper-dashboard-reac
 
 ### Installation
 
-' pip3 install -r requirements.txt '
+`pip3 install -r requirements.txt `
 
 
 ### Usage
 
-' python3 insta.py '
+` python3 insta.py `
