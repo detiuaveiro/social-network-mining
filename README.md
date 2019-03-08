@@ -9,3 +9,20 @@ Hoje em dia as redes sociais possuem um papel muito relevante da difusão da inf
 Dashboard desenvolvida em React.
 
 Créditos da template: https://www.creative-tim.com/product/paper-dashboard-react
+
+
+# Instagram's Bot
+
+###Requirements:
+
+1. instaloader
+    
+
+###Installation
+
+'pip3 install -r requirements.txt'
+
+
+###Usage
+
+'python3 insta.py'
