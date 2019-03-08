@@ -13,16 +13,16 @@ Créditos da template: https://www.creative-tim.com/product/paper-dashboard-reac
 
 # Instagram's Bot
 
-###Requirements:
+### Requirements:
 
 1. instaloader
     
 
-###Installation
+### Installation
 
-'pip3 install -r requirements.txt'
+' pip3 install -r requirements.txt '
 
 
-###Usage
+### Usage
 
-'python3 insta.py'
+' python3 insta.py '
