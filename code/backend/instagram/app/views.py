@@ -1,14 +1,30 @@
+from django.http import HttpResponseBadRequest
 from django.shortcuts import render, redirect, get_object_or_404
 from app.models import Image
+from django.shortcuts import HttpResponse
 import random
+from django.views.decorators.csrf import csrf_exempt
 
 
 # Create your views here.
+@csrf_exempt
+def images(request):
+    if request.method == "GET":
+        random_image_id = random.randint(1, Image.objects.count())
+        return redirect('image_by_id', image_id=random_image_id)
+    elif request.method == "POST":
+        return add_image(request)
 
-def home(request):
-    random_image_id = random.randint(1, Image.objects.count())
 
-    return redirect('image_by_id', image_id=random_image_id)
+def add_image(request):
+    if request.method == 'POST':
+        if request.FILES["file"]:
+            image = Image.objects.create(file=request.FILES["file"])
+            image.save()
+            return HttpResponse(status=204)
+        return HttpResponseBadRequest()
+    else:
+        return HttpResponseBadRequest()
 
 
 def get_image_by_id(request, image_id: int):
@@ -32,7 +48,8 @@ def rate_image(request, image_id: int):
             # if it was yes
             if value == "1":
                 image.total_score += 1
+            image.save()
             # otherwise ignore
-        return redirect('home')
+        return redirect('images')
     else:
-        return redirect('home')
+        return redirect('images')
