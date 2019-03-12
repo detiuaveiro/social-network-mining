@@ -1,10 +1,12 @@
 import instaloader
 
+
+
 # Get instance
-L = instaloader.Instaloader()
+loader = instaloader.Instaloader()
 
 # login
-L.login("jorge.costa1@protonmail.com", "jorgecosta")
+loader.login("jorge.costa1@protonmail.com", "jorgecosta")
 
 # Search and Downloads public pictures with the hashtag="comidaportuguesa"
-L.download_hashtag('comidaportuguesa', max_count=30,post_filter = lambda post: post.is_video == False, fast_update=False)
+loader.download_hashtag(, max_count=30,post_filter = lambda post: post.is_video == False, fast_update=True)
