@@ -22,7 +22,7 @@ from app import views
 
 urlpatterns = [
                   path('admin/', admin.site.urls),
-                  path('images/', views.home, name="home"),
+                  path('images/', views.images, name="images"),
                   path('images/<int:image_id>/', views.get_image_by_id, name="image_by_id"),
                   path('images/<int:image_id>/rate', views.rate_image, name="rate_image"),
 
