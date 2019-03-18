@@ -1,0 +1,4 @@
+# in seconds
+MIN_WAIT_TIME_PER_TASK = 60
+# in seconds
+MAX_WAIT_TIME_PER_TASK = MIN_WAIT_TIME_PER_TASK * 10 

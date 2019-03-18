@@ -1,13 +1,18 @@
 from typing import List
-
+import time
 import tweepy
+import random
+import settings
 
 from interfaces import Bot
 from interfaces import Storage
 from storage import Neo4JWrapper
+from utils import random_delay
+
 
 
 class TwitterBot(Bot):
+
     def __init__(self, **options):
         self._closed = False
         self._user_agent = options.pop("user_agent")
@@ -30,11 +35,22 @@ class TwitterBot(Bot):
         api_settings = kwargs.pop("api")
         self.connect_to_api(**api_settings)
 
+    def get_tasks(self, state=None):
+        """
+        """
+
+        return [self.get_timeline]
+
+
     def run(self):
         while not self._closed:
-            for i in self.get_timeline():
-                print(i)
+            print("TODO")
             self.close()
+            exit(0)
+            tasks = self.get_tasks()
+            for task in tasks:
+                ret = task()
+                time.sleep(random_delay(settings.MIN_WAIT_TIME_PER_TASK, settings.MAX_WAIT_TIME_PER_TASK))
 
     def _request(self, fun, *args, **kwargs):
         """ Wrapper method so we don't have to write the kwargs on every api call"""
