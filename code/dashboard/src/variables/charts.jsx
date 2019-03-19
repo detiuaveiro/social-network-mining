@@ -1,5 +1,243 @@
-const dashboard24HoursPerformanceChart = {
+// ##############################
+// // // Function that converts a hex color number to a RGB color number
+// #############################
+function hexToRGB(hex, alpha) {
+  var r = parseInt(hex.slice(1, 3), 16),
+    g = parseInt(hex.slice(3, 5), 16),
+    b = parseInt(hex.slice(5, 7), 16);
+
+  if (alpha) {
+    return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
+  } else {
+    return "rgb(" + r + ", " + g + ", " + b + ")";
+  }
+}
+
+// ##############################
+// // // general variables for charts
+// #############################
+
+const chartColor = "#FFFFFF";
+
+// General configuration for the charts with Line gradientStroke
+const gradientChartOptionsConfiguration = {
+  maintainAspectRatio: false,
+  legend: {
+    display: false
+  },
+  tooltips: {
+    bodySpacing: 4,
+    mode: "nearest",
+    intersect: 0,
+    position: "nearest",
+    xPadding: 10,
+    yPadding: 10,
+    caretPadding: 10
+  },
+  responsive: 1,
+  scales: {
+    yAxes: [
+      {
+        display: 0,
+        ticks: {
+          display: false
+        },
+        gridLines: {
+          zeroLineColor: "transparent",
+          drawTicks: false,
+          display: false,
+          drawBorder: false
+        }
+      }
+    ],
+    xAxes: [
+      {
+        display: 0,
+        ticks: {
+          display: false
+        },
+        gridLines: {
+          zeroLineColor: "transparent",
+          drawTicks: false,
+          display: false,
+          drawBorder: false
+        }
+      }
+    ]
+  },
+  layout: {
+    padding: { left: 0, right: 0, top: 15, bottom: 15 }
+  }
+};
+
+var gradientChartOptionsConfigurationWithNumbersAndGrid = {
+  maintainAspectRatio: false,
+  legend: {
+    display: false
+  },
+  tooltips: {
+    bodySpacing: 4,
+    mode: "nearest",
+    intersect: 0,
+    position: "nearest",
+    xPadding: 10,
+    yPadding: 10,
+    caretPadding: 10
+  },
+  responsive: 1,
+  scales: {
+    yAxes: [
+      {
+        gridLines: {
+          zeroLineColor: "transparent",
+          drawBorder: false
+        }
+      }
+    ],
+    xAxes: [
+      {
+        display: 0,
+        ticks: {
+          display: false
+        },
+        gridLines: {
+          zeroLineColor: "transparent",
+          drawTicks: false,
+          display: false,
+          drawBorder: false
+        }
+      }
+    ]
+  },
+  layout: {
+    padding: { left: 0, right: 0, top: 15, bottom: 15 }
+  }
+};
+
+// ##############################
+// // // Dashboard view - Panel chart
+// #############################
+
+const dashboardPanelChart = {
   data: canvas => {
+    const ctx = canvas.getContext("2d");
+    var chartColor = "#FFFFFF";
+    var gradientStroke = ctx.createLinearGradient(500, 0, 100, 0);
+    gradientStroke.addColorStop(0, "#80b6f4");
+    gradientStroke.addColorStop(1, chartColor);
+    var gradientFill = ctx.createLinearGradient(0, 200, 0, 50);
+    gradientFill.addColorStop(0, "rgba(128, 182, 244, 0)");
+    gradientFill.addColorStop(1, "rgba(255, 255, 255, 0.14)");
+
+    return {
+      labels: [
+        "JAN",
+        "FEB",
+        "MAR",
+        "APR",
+        "MAY",
+        "JUN",
+        "JUL",
+        "AUG",
+        "SEP",
+        "OCT",
+        "NOV",
+        "DEC"
+      ],
+      datasets: [
+        {
+          label: "Data",
+          borderColor: chartColor,
+          pointBorderColor: chartColor,
+          pointBackgroundColor: "#2c2c2c",
+          pointHoverBackgroundColor: "#2c2c2c",
+          pointHoverBorderColor: chartColor,
+          pointBorderWidth: 1,
+          pointHoverRadius: 7,
+          pointHoverBorderWidth: 2,
+          pointRadius: 5,
+          fill: true,
+          backgroundColor: gradientFill,
+          borderWidth: 2,
+          data: [50, 150, 100, 190, 130, 90, 150, 160, 120, 140, 190, 95]
+        }
+      ]
+    };
+  },
+  options: {
+    layout: {
+      padding: {
+        left: 20,
+        right: 20,
+        top: 0,
+        bottom: 0
+      }
+    },
+    maintainAspectRatio: false,
+    tooltips: {
+      backgroundColor: "#fff",
+      titleFontColor: "#333",
+      bodyFontColor: "#666",
+      bodySpacing: 4,
+      xPadding: 12,
+      mode: "nearest",
+      intersect: 0,
+      position: "nearest"
+    },
+    legend: {
+      position: "bottom",
+      fillStyle: "#FFF",
+      display: false
+    },
+    scales: {
+      yAxes: [
+        {
+          ticks: {
+            fontColor: "rgba(255,255,255,0.4)",
+            fontStyle: "bold",
+            beginAtZero: true,
+            maxTicksLimit: 5,
+            padding: 10
+          },
+          gridLines: {
+            drawTicks: true,
+            drawBorder: false,
+            display: true,
+            color: "rgba(255,255,255,0.1)",
+            zeroLineColor: "transparent"
+          }
+        }
+      ],
+      xAxes: [
+        {
+          gridLines: {
+            display: false,
+            color: "rgba(255,255,255,0.1)"
+          },
+          ticks: {
+            padding: 10,
+            fontColor: "rgba(255,255,255,0.4)",
+            fontStyle: "bold"
+          }
+        }
+      ]
+    }
+  }
+};
+
+// ##############################
+// // // Dashboard view - Shipped Products - Card
+// #############################
+
+const dashboardShippedProductsChart = {
+  data: canvas => {
+    var ctx = canvas.getContext("2d");
+    var gradientStroke = ctx.createLinearGradient(500, 0, 100, 0);
+    gradientStroke.addColorStop(0, "#80b6f4");
+    gradientStroke.addColorStop(1, chartColor);
+    var gradientFill = ctx.createLinearGradient(0, 170, 0, 50);
+    gradientFill.addColorStop(0, "rgba(128, 182, 244, 0)");
+    gradientFill.addColorStop(1, "rgba(249, 99, 59, 0.40)");
     return {
       labels: [
         "Jan",
@@ -11,192 +249,158 @@ const dashboard24HoursPerformanceChart = {
         "Jul",
         "Aug",
         "Sep",
-        "Oct"
+        "Oct",
+        "Nov",
+        "Dec"
       ],
       datasets: [
         {
-          borderColor: "#6bd098",
-          backgroundColor: "#6bd098",
-          pointRadius: 0,
-          pointHoverRadius: 0,
-          borderWidth: 3,
-          data: [300, 310, 316, 322, 330, 326, 333, 345, 338, 354]
-        },
-        {
-          borderColor: "#f17e5d",
-          backgroundColor: "#f17e5d",
-          pointRadius: 0,
-          pointHoverRadius: 0,
-          borderWidth: 3,
-          data: [320, 340, 365, 360, 370, 385, 390, 384, 408, 420]
-        },
-        {
-          borderColor: "#fcc468",
-          backgroundColor: "#fcc468",
-          pointRadius: 0,
-          pointHoverRadius: 0,
-          borderWidth: 3,
-          data: [370, 394, 415, 409, 425, 445, 460, 450, 478, 484]
+          label: "Active Users",
+          borderColor: "#f96332",
+          pointBorderColor: "#FFF",
+          pointBackgroundColor: "#f96332",
+          pointBorderWidth: 2,
+          pointHoverRadius: 4,
+          pointHoverBorderWidth: 1,
+          pointRadius: 4,
+          fill: true,
+          backgroundColor: gradientFill,
+          borderWidth: 2,
+          data: [542, 480, 430, 550, 530, 453, 380, 434, 568, 610, 700, 630]
         }
       ]
     };
   },
-  options: {
-    legend: {
-      display: false
-    },
-
-    tooltips: {
-      enabled: false
-    },
-
-    scales: {
-      yAxes: [
-        {
-          ticks: {
-            fontColor: "#9f9f9f",
-            beginAtZero: false,
-            maxTicksLimit: 5
-            //padding: 20
-          },
-          gridLines: {
-            drawBorder: false,
-            zeroLineColor: "#ccc",
-            color: "rgba(255,255,255,0.05)"
-          }
-        }
-      ],
-
-      xAxes: [
-        {
-          barPercentage: 1.6,
-          gridLines: {
-            drawBorder: false,
-            color: "rgba(255,255,255,0.1)",
-            zeroLineColor: "transparent",
-            display: false
-          },
-          ticks: {
-            padding: 20,
-            fontColor: "#9f9f9f"
-          }
-        }
-      ]
-    }
-  }
+  options: gradientChartOptionsConfiguration
 };
 
-const dashboardEmailStatisticsChart = {
+// ##############################
+// // // Dashboard view - All Products - Card
+// #############################
+
+const dashboardAllProductsChart = {
   data: canvas => {
+    var ctx = canvas.getContext("2d");
+    var gradientStroke = ctx.createLinearGradient(500, 0, 100, 0);
+    gradientStroke.addColorStop(0, "#18ce0f");
+    gradientStroke.addColorStop(1, chartColor);
+    var gradientFill = ctx.createLinearGradient(0, 170, 0, 50);
+    gradientFill.addColorStop(0, "rgba(128, 182, 244, 0)");
+    gradientFill.addColorStop(1, hexToRGB("#18ce0f", 0.4));
     return {
-      labels: [1, 2, 3],
+      labels: ["12pm,", "3pm", "6pm", "9pm", "12am", "3am", "6am", "9am"],
       datasets: [
         {
-          label: "Emails",
-          pointRadius: 0,
-          pointHoverRadius: 0,
-          backgroundColor: ["#e3e3e3", "#4acccd", "#fcc468", "#ef8157"],
-          borderWidth: 0,
-          data: [342, 480, 530, 120]
+          label: "Email Stats",
+          borderColor: "#18ce0f",
+          pointBorderColor: "#FFF",
+          pointBackgroundColor: "#18ce0f",
+          pointBorderWidth: 2,
+          pointHoverRadius: 4,
+          pointHoverBorderWidth: 1,
+          pointRadius: 4,
+          fill: true,
+          backgroundColor: gradientFill,
+          borderWidth: 2,
+          data: [40, 500, 650, 700, 1200, 1250, 1300, 1900]
+        }
+      ]
+    };
+  },
+  options: gradientChartOptionsConfigurationWithNumbersAndGrid
+};
+
+// ##############################
+// // // Dashboard view - Bar Chart - Card
+// #############################
+
+const dashboard24HoursPerformanceChart = {
+  data: canvas => {
+    var ctx = canvas.getContext("2d");
+    var gradientFill = ctx.createLinearGradient(0, 170, 0, 50);
+    gradientFill.addColorStop(0, "rgba(128, 182, 244, 0)");
+    gradientFill.addColorStop(1, hexToRGB("#2CA8FF", 0.6));
+    return {
+      labels: [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+      ],
+      datasets: [
+        {
+          label: "Active Countries",
+          backgroundColor: gradientFill,
+          borderColor: "#2CA8FF",
+          pointBorderColor: "#FFF",
+          pointBackgroundColor: "#2CA8FF",
+          pointBorderWidth: 2,
+          pointHoverRadius: 4,
+          pointHoverBorderWidth: 1,
+          pointRadius: 4,
+          fill: true,
+          borderWidth: 1,
+          data: [80, 99, 86, 96, 123, 85, 100, 75, 88, 90, 123, 155]
         }
       ]
     };
   },
   options: {
+    maintainAspectRatio: false,
     legend: {
       display: false
     },
-
-    pieceLabel: {
-      render: "percentage",
-      fontColor: ["white"],
-      precision: 2
-    },
-
     tooltips: {
-      enabled: false
+      bodySpacing: 4,
+      mode: "nearest",
+      intersect: 0,
+      position: "nearest",
+      xPadding: 10,
+      yPadding: 10,
+      caretPadding: 10
     },
-
+    responsive: 1,
     scales: {
       yAxes: [
         {
-          ticks: {
-            display: false
-          },
           gridLines: {
-            drawBorder: false,
             zeroLineColor: "transparent",
-            color: "rgba(255,255,255,0.05)"
+            drawBorder: false
           }
         }
       ],
-
       xAxes: [
         {
-          barPercentage: 1.6,
-          gridLines: {
-            drawBorder: false,
-            color: "rgba(255,255,255,0.1)",
-            zeroLineColor: "transparent"
-          },
+          display: 0,
           ticks: {
             display: false
+          },
+          gridLines: {
+            zeroLineColor: "transparent",
+            drawTicks: false,
+            display: false,
+            drawBorder: false
           }
         }
       ]
-    }
-  }
-};
-
-const dashboardNASDAQChart = {
-  data: {
-    labels: [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec"
-    ],
-    datasets: [
-      {
-        data: [0, 19, 15, 20, 30, 40, 40, 50, 25, 30, 50, 70],
-        fill: false,
-        borderColor: "#fbc658",
-        backgroundColor: "transparent",
-        pointBorderColor: "#fbc658",
-        pointRadius: 4,
-        pointHoverRadius: 4,
-        pointBorderWidth: 8
-      },
-      {
-        data: [0, 5, 10, 12, 20, 27, 30, 34, 42, 45, 55, 63],
-        fill: false,
-        borderColor: "#51CACF",
-        backgroundColor: "transparent",
-        pointBorderColor: "#51CACF",
-        pointRadius: 4,
-        pointHoverRadius: 4,
-        pointBorderWidth: 8
-      }
-    ]
-  },
-  options: {
-    legend: {
-      display: false,
-      position: "top"
+    },
+    layout: {
+      padding: { left: 0, right: 0, top: 15, bottom: 15 }
     }
   }
 };
 
 module.exports = {
-  dashboard24HoursPerformanceChart,
-  dashboardEmailStatisticsChart,
-  dashboardNASDAQChart
+  dashboardPanelChart, // Chart for Dashboard view - Will be rendered in panel
+  dashboardShippedProductsChart, // Chart for Dashboard view - Shipped Products Card
+  dashboardAllProductsChart, // Chart for Dashboard view - All products Card
+  dashboard24HoursPerformanceChart // Chart for Dashboard view - 24 Hours Performance Card
 };

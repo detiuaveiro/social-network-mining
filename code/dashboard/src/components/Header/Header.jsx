@@ -38,7 +38,7 @@ class Header extends React.Component {
       });
     } else {
       this.setState({
-        color: "dark"
+        color: "white"
       });
     }
     this.setState({
@@ -79,11 +79,11 @@ class Header extends React.Component {
     document.documentElement.classList.toggle("nav-open");
     this.refs.sidebarToggle.classList.toggle("toggled");
   }
-  // function that adds color dark/transparent to the navbar on resize (this is for the collapse)
+  // function that adds color white/transparent to the navbar on resize (this is for the collapse)
   updateColor() {
     if (window.innerWidth < 993 && this.state.isOpen) {
       this.setState({
-        color: "dark"
+        color: "white"
       });
     } else {
       this.setState({
@@ -110,7 +110,7 @@ class Header extends React.Component {
       <Navbar
         color={
           this.props.location.pathname.indexOf("full-screen-maps") !== -1
-            ? "dark"
+            ? "white"
             : this.state.color
         }
         expand="lg"
@@ -152,15 +152,15 @@ class Header extends React.Component {
                 <Input placeholder="Search..." />
                 <InputGroupAddon addonType="append">
                   <InputGroupText>
-                    <i className="nc-icon nc-zoom-split" />
+                    <i className="now-ui-icons ui-1_zoom-bold" />
                   </InputGroupText>
                 </InputGroupAddon>
               </InputGroup>
             </form>
             <Nav navbar>
               <NavItem>
-                <Link to="#pablo" className="nav-link btn-magnify">
-                  <i className="nc-icon nc-layout-11" />
+                <Link to="#pablo" className="nav-link">
+                  <i className="now-ui-icons media-2_sound-wave" />
                   <p>
                     <span className="d-lg-none d-md-block">Stats</span>
                   </p>
@@ -172,7 +172,7 @@ class Header extends React.Component {
                 toggle={e => this.dropdownToggle(e)}
               >
                 <DropdownToggle caret nav>
-                  <i className="nc-icon nc-bell-55" />
+                  <i className="now-ui-icons location_world" />
                   <p>
                     <span className="d-lg-none d-md-block">Some Actions</span>
                   </p>
@@ -184,8 +184,8 @@ class Header extends React.Component {
                 </DropdownMenu>
               </Dropdown>
               <NavItem>
-                <Link to="#pablo" className="nav-link btn-rotate">
-                  <i className="nc-icon nc-settings-gear-65" />
+                <Link to="#pablo" className="nav-link">
+                  <i className="now-ui-icons users_single-02" />
                   <p>
                     <span className="d-lg-none d-md-block">Account</span>
                   </p>

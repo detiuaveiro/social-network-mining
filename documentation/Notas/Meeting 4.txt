@@ -1,0 +1,45 @@
+====MQQT====
+
+- Canal para cada bot identificado de forma unica
+
+====Front End====
+- side bar
+|Rede       |
+|Estatistica|
+|Bots       |
+|Policies   |
+|Instragam  |
+====Back End====
+
+====PDP====
+- Java
+- XACML v. open source Java / pagas C#
+- usar Framework
+- modelar o problema
+- xml para policies
+- xml para requests (mensagens dos bots)
+- xml para responses (respostas para os bots)
+
+(faltam links)
+
+====PEP (estrutura)====
+
+(a discutir com o DG)
+
+====API para a dashboard (para o PEP)====
+host:port/
+
+- /stats : estatisticas gerais
+- /bots : listar bots
+- /bots/{id} : informações de um bot com um certo id
+- /bots/{id}/logs : logs de um bot com um certo id
+- /policies : politicas
+- /network?target=[users/bots] : tipo de rede a mostrar [users/bots]
+
+===Regras para codigo style===
+
+(a saber esta semana)
+
+===Site para a Documentação===
+
+- API/[PDP/PEP/...]

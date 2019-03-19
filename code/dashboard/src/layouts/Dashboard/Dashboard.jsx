@@ -3,22 +3,13 @@ import React from "react";
 import PerfectScrollbar from "perfect-scrollbar";
 import { Route, Switch, Redirect } from "react-router-dom";
 
-import Header from "components/Header/Header.jsx";
-import Footer from "components/Footer/Footer.jsx";
-import Sidebar from "components/Sidebar/Sidebar.jsx";
+import { Header, Footer, Sidebar } from "components";
 
 import dashboardRoutes from "routes/dashboard.jsx";
 
 var ps;
 
 class Dashboard extends React.Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      backgroundColor: "black",
-      activeColor: "info",
-    }
-  }
   componentDidMount() {
     if (navigator.platform.indexOf("Win") > -1) {
       ps = new PerfectScrollbar(this.refs.mainPanel);
@@ -37,26 +28,27 @@ class Dashboard extends React.Component {
       document.scrollingElement.scrollTop = 0;
     }
   }
-
   render() {
     return (
       <div className="wrapper">
-        <Sidebar
-          {...this.props}
-          routes={dashboardRoutes}
-          bgColor={this.state.backgroundColor}
-          activeColor={this.state.activeColor}
-        />
+        <Sidebar {...this.props} routes={dashboardRoutes} />
         <div className="main-panel" ref="mainPanel">
           <Header {...this.props} />
           <Switch>
             {dashboardRoutes.map((prop, key) => {
-              if (prop.pro) {
-                return null;
+              if (prop.collapse) {
+                return prop.views.map((prop2, key2) => {
+                  return (
+                    <Route
+                      path={prop2.path}
+                      component={prop2.component}
+                      key={key2}
+                    />
+                  );
+                });
               }
-              if (prop.redirect) {
+              if (prop.redirect)
                 return <Redirect from={prop.path} to={prop.pathTo} key={key} />;
-              }
               return (
                 <Route path={prop.path} component={prop.component} key={key} />
               );
