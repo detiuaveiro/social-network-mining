@@ -12,12 +12,23 @@ class CustomButton extends Component {
       round,
       icon,
       neutral,
+      iconMini,
       leftLabel,
       rightLabel,
       wd,
-      link,
-      fab,
       className,
+      twitter,
+      facebook,
+      google,
+      linkedin,
+      pinterest,
+      youtube,
+      tumblr,
+      github,
+      behance,
+      dribbble,
+      reddit,
+      stumbleupon,
       ...rest
     } = this.props;
 
@@ -26,9 +37,8 @@ class CustomButton extends Component {
       "btn-round": round,
       "btn-icon": icon,
       "btn-neutral": neutral,
-      "btn-wd": wd,
-      "btn-link": link,
-      "btn-fab": fab
+      "btn-icon btn-icon-mini": iconMini,
+      "btn-wd": wd
     });
 
     if (className !== undefined) {
@@ -58,13 +68,8 @@ CustomButton.propTypes = {
   round: PropTypes.bool,
   icon: PropTypes.bool,
   neutral: PropTypes.bool,
-  wd: PropTypes.bool,
-  link: PropTypes.bool,
-  fab: PropTypes.bool,
-  // this is an icon
-  leftLabel: PropTypes.string,
-  // this is an icon
-  rightLabel: PropTypes.string
+  iconMini: PropTypes.bool,
+  wd: PropTypes.bool
 };
 
 export default CustomButton;
