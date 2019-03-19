@@ -8,7 +8,7 @@ Hoje em dia as redes sociais possuem um papel muito relevante da difusão da inf
 
 Dashboard desenvolvida em React.
 
-Créditos da template: https://www.creative-tim.com/product/paper-dashboard-react
+Créditos da template: https://www.creative-tim.com/product/now-ui-dashboard-react
 
 
 # Instagram's Bot
