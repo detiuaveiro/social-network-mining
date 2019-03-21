@@ -2,17 +2,6 @@ from abc import ABC
 from abc import abstractmethod
 
 
-class Storage(ABC):
-    @staticmethod
-    @abstractmethod
-    def connect(**parameters):
-        pass
-
-    @abstractmethod
-    def close(self):
-        raise NotImplementedError
-
-
 class Bot(ABC):
     __slots__ = ()
 
@@ -41,17 +30,8 @@ class Bot(ABC):
     def proxy(self):
         raise NotImplementedError
 
-    @property
-    @abstractmethod
-    def storage(self) -> Storage:
-        raise NotImplementedError
-
     @abstractmethod
     def start(self, **kwargs):
-        raise NotImplementedError
-
-    @abstractmethod
-    def connect_to_storage(self):
         raise NotImplementedError
 
     @abstractmethod
