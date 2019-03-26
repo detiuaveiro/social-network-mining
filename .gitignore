@@ -74,3 +74,5 @@ documentation/Notas/Bots_Do_Twitter.txt
 documentation/Notas/Notas para o use cases diagram.txt
 
 **/.DS_Store
+
+**/*.code-workspace
