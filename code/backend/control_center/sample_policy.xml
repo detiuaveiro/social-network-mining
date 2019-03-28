@@ -1,0 +1,30 @@
+<xacml3:Policy xmlns:xacml3="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicyId="child-eat-icecream" Version="1" RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides">
+    <xacml3:Description>Define which children can eat ice-cream</xacml3:Description>
+    <xacml3:PolicyDefaults><xacml3:XPathVersion>http://www.w3.org/TR/1999/Rec-xpath-19991116</xacml3:XPathVersion></xacml3:PolicyDefaults><em><xacml3:Target>
+        <xacml3:AnyOf>
+        <xacml3:AllOf>
+        <xacml3:Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+            <xacml3:AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">eat</xacml3:AttributeValue>
+            <xacml3:AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action"  AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false"/>
+        </xacml3:Match>
+        <xacml3:Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+            <xacml3:AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ice cream</xacml3:AttributeValue>
+            <xacml3:AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"  AttributeId="food" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false"/>
+        </xacml3:Match>
+        </xacml3:AllOf>
+        </xacml3:AnyOf>
+    </xacml3:Target></em>
+    <xacml3:Rule RuleId="children-eat" Effect="Permit">
+        <xacml3:Description>let any child eat ice cream</xacml3:Description>
+        <xacml3:Target>
+            <xacml3:AnyOf>
+            <xacml3:AllOf>
+            <xacml3:Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                <xacml3:AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">child</xacml3:AttributeValue>
+                <xacml3:AttributeDesignator Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"  AttributeId="urn:org:apache:tomcat:user-role" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false"/>
+            </xacml3:Match>
+            </xacml3:AllOf>
+            </xacml3:AnyOf>
+        </xacml3:Target>
+    </xacml3:Rule>
+</xacml3:Policy>

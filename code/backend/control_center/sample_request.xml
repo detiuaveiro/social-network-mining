@@ -1,0 +1,19 @@
+<xacml-ctx:Request ReturnPolicyIdList="true" CombinedDecision="false" xmlns:xacml-ctx="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+    <xacml-ctx:Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+    </xacml-ctx:Attributes>
+    <xacml-ctx:Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action">
+        <xacml-ctx:Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" IncludeInResult="false">
+            <xacml-ctx:AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">eat</xacml-ctx:AttributeValue>
+        </xacml-ctx:Attribute>
+    </xacml-ctx:Attributes>
+    <xacml-ctx:Attributes Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject">
+        <xacml-ctx:Attribute AttributeId="urn:org:apache:tomcat:user-role" IncludeInResult="false">
+            <xacml-ctx:AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">child</xacml-ctx:AttributeValue>
+        </xacml-ctx:Attribute>
+    </xacml-ctx:Attributes>
+    <xacml-ctx:Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource">
+        <xacml-ctx:Attribute AttributeId="food" IncludeInResult="false">
+            <xacml-ctx:AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ice cream</xacml-ctx:AttributeValue>
+        </xacml-ctx:Attribute>
+    </xacml-ctx:Attributes>
+</xacml-ctx:Request>
