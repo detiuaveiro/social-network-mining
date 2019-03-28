@@ -27,21 +27,4 @@
             </xacml3:AnyOf>
         </xacml3:Target>
     </xacml3:Rule>
-    <xacml3:Rule RuleId="naughty-children-punish" Effect="Deny">
-        <xacml3:Description>do not let naughty children have ice cream</xacml3:Description>
-        <xacml3:Target>
-            <xacml3:AnyOf>
-            <xacml3:AllOf>
-            <xacml3:Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-                <xacml3:AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">child</xacml3:AttributeValue>
-                <xacml3:AttributeDesignator Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"  AttributeId="urn:org:apache:tomcat:user-role" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false"/>
-            </xacml3:Match>
-            <xacml3:Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-                <xacml3:AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">naughty</xacml3:AttributeValue>
-                <xacml3:AttributeDesignator Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"  AttributeId="behavior" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false"/>
-            </xacml3:Match>
-            </xacml3:AllOf>
-            </xacml3:AnyOf>
-        </xacml3:Target>
-    </xacml3:Rule>
 </xacml3:Policy>
