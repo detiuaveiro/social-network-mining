@@ -3,9 +3,7 @@
 pages:
   stage: deploy
   script:
-  - mkdir .public
-  - cp -r * .public
-  - mv .public public
+  - echo "nothing to do..."
   artifacts:
     paths:
     - public
