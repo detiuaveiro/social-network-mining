@@ -71,7 +71,9 @@ venv.bak/
 .idea/
 
 documentation/Notas/Bots_Do_Twitter.txt
+
 documentation/Notas/Notas para o use cases diagram.txt
+doc_generator/
 
 **/.DS_Store
 
