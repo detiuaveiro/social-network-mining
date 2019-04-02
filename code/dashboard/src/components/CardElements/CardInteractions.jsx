@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 import { Button } from "components";
 
-class CardSocials extends React.Component {
+class CardInteractions extends React.Component {
   render() {
     return (
       <div className="button-container">
@@ -12,13 +12,13 @@ class CardSocials extends React.Component {
           return (
             <Button
               color="neutral"
-              icon
-              round
               size={this.props.size}
               key={key}
-              href={prop.link}
             >
-              <i className={prop.icon} />
+              <i className={prop.icon}/>
+              <h5 className="text-muted">
+                {prop.number} LIKES
+              </h5>
             </Button>
           );
         })}
@@ -27,11 +27,11 @@ class CardSocials extends React.Component {
   }
 }
 
-CardSocials.propTypes = {
+CardInteractions.propTypes = {
   // size of all social buttons
   size: PropTypes.oneOf(["sm", "lg"]),
   // example: [{icon: "name of icon", href="href of icon"},...]
   socials: PropTypes.arrayOf(PropTypes.object)
 };
 
-export default CardSocials;
+export default CardInteractions;

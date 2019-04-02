@@ -1,10 +1,10 @@
 import React from "react";
 import { Card, CardHeader, CardBody, Row, Col } from "reactstrap";
 
-import { PanelHeader, FormInputs, CardAuthor, CardSocials } from "components";
+import { PanelHeader, FormInputs, CardAuthor, CardNumbers } from "components";
 
-import userBackground from "assets/img/bg5.jpg";
 import userAvatar from "assets/img/mike.jpg";
+import CardInteractions from "../../components/CardElements/CardInteractions";
 
 class User extends React.Component {
   render() {
@@ -13,10 +13,49 @@ class User extends React.Component {
         <PanelHeader size="sm" />
         <div className="content">
           <Row>
+            <Col md={4} xs={12}>
+              <Card className="card-user">
+                <CardBody>
+                  <CardAuthor
+                    avatar={userAvatar}
+                    avatarAlt="..."
+                    title="Afonso Silva"
+                    description="@afonsosilva01"
+                  />
+                  <p className="description text-center">
+                    Description<br />
+                  </p>
+                </CardBody>
+                <hr />
+                <CardNumbers
+                  size="sm"
+                  socials={[
+                    {
+                      text: "Tweets",
+                    },
+                    {
+                      text: "Following",
+                    },
+                    {
+                      text: "Followers",
+                    }
+                  ]}
+                />
+                <CardInteractions
+                  size="lg"
+                  socials={[
+                    {
+                      icon: "fas fa-3x fa-heart",
+                      number: 120,
+                    },
+                  ]}
+                />
+              </Card>
+            </Col>
             <Col md={8} xs={12}>
               <Card>
                 <CardHeader>
-                  <h5 className="title">Edit Profile</h5>
+                  <h5 className="title">Profile</h5>
                 </CardHeader>
                 <CardBody>
                   <form>
@@ -136,44 +175,6 @@ class User extends React.Component {
                     />
                   </form>
                 </CardBody>
-              </Card>
-            </Col>
-            <Col md={4} xs={12}>
-              <Card className="card-user">
-                <div className="image">
-                  <img src={userBackground} alt="..." />
-                </div>
-                <CardBody>
-                  <CardAuthor
-                    avatar={userAvatar}
-                    avatarAlt="..."
-                    title="Mike Andrew"
-                    description="michael23"
-                  />
-                  <p className="description text-center">
-                    "Lamborghini Mercy <br />
-                    Your chick she so thirsty <br />
-                    I'm in that two seat Lambo"
-                  </p>
-                </CardBody>
-                <hr />
-                <CardSocials
-                  size="lg"
-                  socials={[
-                    {
-                      icon: "fab fa-facebook-f",
-                      href: "https://www.facebook.com/"
-                    },
-                    {
-                      icon: "fab fa-twitter",
-                      href: "https://www.facebook.com/"
-                    },
-                    {
-                      icon: "fab fa-google-plus-g",
-                      href: "https://plus.google.com/discover"
-                    }
-                  ]}
-                />
               </Card>
             </Col>
           </Row>
