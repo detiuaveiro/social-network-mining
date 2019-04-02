@@ -22,6 +22,7 @@
     "react-notification-alert": "0.0.10",
     "react-router-dom": "5.0.0",
     "react-scripts": "2.1.8",
+    "react-table": "^6.9.2",
     "reactstrap": "7.1.0"
   },
   "scripts": {

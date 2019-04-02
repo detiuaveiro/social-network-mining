@@ -24,6 +24,9 @@ import Stats from './Stats/Stats';
 
 import Tasks from './Tasks/Tasks';
 
+import DataTables from './DataTables/DataTables';
+
+
 export {
     // CardElements
     CardAuthor,
@@ -50,4 +53,6 @@ export {
     Stats,
     // Tasks
     Tasks,
+    // DataTables
+    DataTables,
 };

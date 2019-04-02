@@ -1,19 +1,20 @@
 import React from "react";
 // used for making the prop types of this component
+import { Link } from 'react-router-dom'
 import PropTypes from "prop-types";
 
 class CardAuthor extends React.Component {
   render() {
     return (
       <div className="author">
-        <a href={this.props.link ? this.props.link : "#"}>
+        <Link to={this.props.link ? this.props.link : "/bots/1"}>
           <img
             className="avatar border-gray"
             src={this.props.avatar}
             alt={this.props.avatarAlt}
           />
           <h5 className="title">{this.props.title}</h5>
-        </a>
+        </Link>
         <p className="description">{this.props.description}</p>
       </div>
     );

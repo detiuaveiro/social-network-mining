@@ -16,9 +16,8 @@ class CardInteractions extends React.Component {
               key={key}
             >
               <i className={prop.icon}/>
-
               <h5 className="text-muted">
-                {prop.number} Likes
+                {prop.number}
               </h5>              
             </Button>
           );

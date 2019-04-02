@@ -1,9 +1,9 @@
 import Dashboard from "views/Dashboard/Dashboard.jsx";
 import Notifications from "views/Notifications/Notifications.jsx";
-import Icons from "views/Icons/Icons.jsx";
 import Typography from "views/Typography/Typography.jsx";
-import TableList from "views/TableList/TableList.jsx";
+import Policies from "views/Policies/Policies.jsx";
 import UserPage from "views/UserPage/UserPage.jsx";
+import BotsPage from "views/BotsPage/BotsPage.jsx";
 
 
 var dashRoutes = [
@@ -11,31 +11,43 @@ var dashRoutes = [
     path: "/dashboard/",
     name: "Dashboard",
     icon: "fas fa-cube",
-    component: Dashboard
+    component: Dashboard,
+    hide: false,
   },
   {
     path: "/network",
     name: "Network",
     icon: "fas fa-network-wired",
-    component: Notifications
+    component: Notifications,
+    hide: false,
+  },
+  {
+    path: "/bots/:botId",
+    name: "Bots",
+    icon: "fas fa-robot",
+    component: UserPage,
+    hide: true,
   },
   {
     path: "/bots",
     name: "Bots",
     icon: "fas fa-robot",
-    component: UserPage
+    component: BotsPage,
+    hide: false,
   },
   {
     path: "/policies",
     name: "Policies",
     icon: "fas fa-list-alt",
-    component: TableList
+    component: Policies,
+    hide: false,
   },
   {
     path: "/instagram",
     name: "Instagram",
     icon: "fab fa-instagram",
-    component: Typography
+    component: Typography,
+    hide: false,
   },
   { redirect: true, path: "/", pathTo: "/dashboard", name: "Dashboard" }
 ];

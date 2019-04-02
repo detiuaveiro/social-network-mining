@@ -34,9 +34,11 @@ class Dashboard extends React.Component {
     return (
       <div>
         <PanelHeader
-          size="sm"
+          size="md"
           content={
-            <div></div>
+            <div className="header text-center">
+              <h2 className="title">Dashboard</h2>
+            </div>
           }
         />
         <div className="content">
