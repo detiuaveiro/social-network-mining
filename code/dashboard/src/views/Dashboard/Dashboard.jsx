@@ -33,12 +33,9 @@ class Dashboard extends React.Component {
     return (
       <div>
         <PanelHeader
-          size="lg"
+          size="sm"
           content={
-            <Line
-              data={dashboardPanelChart.data}
-              options={dashboardPanelChart.options}
-            />
+            <div></div>
           }
         />
         <div className="content">
@@ -46,8 +43,9 @@ class Dashboard extends React.Component {
             <Col xs={12} md={4}>
               <Card className="card-chart">
                 <CardHeader>
-                  <CardCategory>Global Sales</CardCategory>
-                  <CardTitle tag="h4">Shipped Products</CardTitle>
+                  {/*<CardCategory>Global Sales</CardCategory>*/}
+                  <CardTitle tag="h4">Nº Tweets</CardTitle>
+                  {/*
                   <UncontrolledDropdown>
                     <DropdownToggle
                       className="btn-round btn-simple btn-icon"
@@ -64,6 +62,7 @@ class Dashboard extends React.Component {
                       </DropdownItem>
                     </DropdownMenu>
                   </UncontrolledDropdown>
+                  */}
                 </CardHeader>
                 <CardBody>
                   <div className="chart-area">
@@ -73,6 +72,7 @@ class Dashboard extends React.Component {
                     />
                   </div>
                 </CardBody>
+                {/*
                 <CardFooter>
                   <Stats>
                     {[
@@ -83,13 +83,15 @@ class Dashboard extends React.Component {
                     ]}
                   </Stats>
                 </CardFooter>
+                  */}
               </Card>
             </Col>
             <Col xs={12} md={4}>
               <Card className="card-chart">
                 <CardHeader>
-                  <CardCategory>2018 Sales</CardCategory>
-                  <CardTitle tag="h4">All products</CardTitle>
+                  {/*<CardCategory>2018 Sales</CardCategory>*/}
+                  <CardTitle tag="h4">Nº Instagram Photos</CardTitle>
+                  {/*
                   <UncontrolledDropdown>
                     <DropdownToggle
                       className="btn-round btn-simple btn-icon"
@@ -106,6 +108,7 @@ class Dashboard extends React.Component {
                       </DropdownItem>
                     </DropdownMenu>
                   </UncontrolledDropdown>
+                  */}
                 </CardHeader>
                 <CardBody>
                   <div className="chart-area">
@@ -115,6 +118,7 @@ class Dashboard extends React.Component {
                     />
                   </div>
                 </CardBody>
+                {/*
                 <CardFooter>
                   <Stats>
                     {[
@@ -125,9 +129,11 @@ class Dashboard extends React.Component {
                     ]}
                   </Stats>
                 </CardFooter>
+                  */}
               </Card>
             </Col>
             <Col xs={12} md={4}>
+              {/*
               <Card className="card-chart">
                 <CardHeader>
                   <CardCategory>Email Statistics</CardCategory>
@@ -147,8 +153,10 @@ class Dashboard extends React.Component {
                   </Stats>
                 </CardFooter>
               </Card>
+              */}
             </Col>
           </Row>
+          {/*
           <Row>
             <Col xs={12} md={6}>
               <Card className="card-tasks">
@@ -225,6 +233,7 @@ class Dashboard extends React.Component {
               </Card>
             </Col>
           </Row>
+                  */}
         </div>
       </div>
     );
