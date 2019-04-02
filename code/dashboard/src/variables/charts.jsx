@@ -38,9 +38,9 @@ const gradientChartOptionsConfiguration = {
   scales: {
     yAxes: [
       {
-        display: 0,
+        display: true,
         ticks: {
-          display: false
+          display: true
         },
         gridLines: {
           zeroLineColor: "transparent",
@@ -52,9 +52,9 @@ const gradientChartOptionsConfiguration = {
     ],
     xAxes: [
       {
-        display: 0,
+        display: true,
         ticks: {
-          display: false
+          display: true
         },
         gridLines: {
           zeroLineColor: "transparent",
@@ -96,9 +96,9 @@ var gradientChartOptionsConfigurationWithNumbersAndGrid = {
     ],
     xAxes: [
       {
-        display: 0,
+        display: true,
         ticks: {
-          display: false
+          display: true
         },
         gridLines: {
           zeroLineColor: "transparent",
@@ -325,22 +325,17 @@ const dashboard24HoursPerformanceChart = {
     gradientFill.addColorStop(1, hexToRGB("#2CA8FF", 0.6));
     return {
       labels: [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday"
       ],
       datasets: [
         {
-          label: "Active Countries",
+          label: "Nº of Bots",
           backgroundColor: gradientFill,
           borderColor: "#2CA8FF",
           pointBorderColor: "#FFF",
@@ -351,7 +346,7 @@ const dashboard24HoursPerformanceChart = {
           pointRadius: 4,
           fill: true,
           borderWidth: 1,
-          data: [80, 99, 86, 96, 123, 85, 100, 75, 88, 90, 123, 155]
+          data: [1,1,1,1,2,2,3]
         }
       ]
     };
@@ -382,9 +377,105 @@ const dashboard24HoursPerformanceChart = {
       ],
       xAxes: [
         {
-          display: 0,
+          display: true,
           ticks: {
-            display: false
+            display: true
+          },
+          gridLines: {
+            zeroLineColor: "transparent",
+            drawTicks: false,
+            display: false,
+            drawBorder: false
+          }
+        }
+      ]
+    },
+    layout: {
+      padding: { left: 0, right: 0, top: 15, bottom: 15 }
+    }
+  }
+};
+
+const dashboardFollowersPerformanceChart = {
+  data: canvas => {
+    var ctx = canvas.getContext("2d");
+    var gradientFill = ctx.createLinearGradient(0, 170, 0, 50);
+    gradientFill.addColorStop(0, "rgba(128, 182, 244, 0)");
+    gradientFill.addColorStop(1, hexToRGB("#2CA8FF", 0.6));
+    var gradientFill2 = ctx.createLinearGradient(0, 170, 0, 50);
+    gradientFill2.addColorStop(0, "rgba(128, 182, 244, 0)");
+    gradientFill2.addColorStop(1, "rgba(249, 99, 59, 0.40)");
+    return {
+      labels: [
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday"
+      ],
+      datasets: [
+        {
+          label: "Nº of Followers",
+          backgroundColor: gradientFill,
+          borderColor: "#2CA8FF",
+          pointBorderColor: "#FFF",
+          pointBackgroundColor: "#2CA8FF",
+          pointBorderWidth: 2,
+          pointHoverRadius: 4,
+          pointHoverBorderWidth: 1,
+          pointRadius: 4,
+          fill: true,
+          borderWidth: 1,
+          data: [1,2,20,53,68,120,193]
+        },
+        {
+          label: "Nº of Followed",
+          backgroundColor: gradientFill2,
+          borderColor: "#f96332",
+          pointBorderColor: "#FFF",
+          pointBackgroundColor: "#f96332",
+          pointBorderWidth: 2,
+          pointHoverRadius: 4,
+          pointHoverBorderWidth: 1,
+          pointRadius: 4,
+          fill: true,
+          borderWidth: 1,
+          data: [1,4,55,78,92,136,189]
+        }
+      ]
+    };
+  },
+  options: {
+    maintainAspectRatio: false,
+    legend: {
+      display: false
+    },
+    tooltips: {
+      bodySpacing: 4,
+      mode: "nearest",
+      intersect: 0,
+      position: "nearest",
+      xPadding: 10,
+      yPadding: 10,
+      caretPadding: 10
+    },
+    responsive: 1,
+    scales: {
+      yAxes: [
+        {
+          gridLines: {
+            zeroLineColor: "transparent",
+            drawBorder: false
+          }
+        }
+      ],
+      xAxes: [
+        {
+          display: true,
+          ticks: {
+            display: true
           },
           gridLines: {
             zeroLineColor: "transparent",
@@ -405,5 +496,6 @@ module.exports = {
   dashboardPanelChart, // Chart for Dashboard view - Will be rendered in panel
   dashboardShippedProductsChart, // Chart for Dashboard view - Shipped Products Card
   dashboardAllProductsChart, // Chart for Dashboard view - All products Card
-  dashboard24HoursPerformanceChart // Chart for Dashboard view - 24 Hours Performance Card
+  dashboard24HoursPerformanceChart, // Chart for Dashboard view - 24 Hours Performance Card
+  dashboardFollowersPerformanceChart // Experimental Chart for followers and following
 };
