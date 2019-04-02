@@ -17,7 +17,7 @@ class Footer extends React.Component {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Social Network Mining
+               Social Network Mining
             </a>
           </div>
         </Container>

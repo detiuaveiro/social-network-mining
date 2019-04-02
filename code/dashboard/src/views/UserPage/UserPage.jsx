@@ -41,15 +41,6 @@ class User extends React.Component {
                     }
                   ]}
                 />
-                <CardInteractions
-                  size="lg"
-                  socials={[
-                    {
-                      icon: "fas fa-3x fa-heart",
-                      number: 120,
-                    },
-                  ]}
-                />
               </Card>
             </Col>
             <Col md={8} xs={12}>
@@ -59,123 +50,114 @@ class User extends React.Component {
                 </CardHeader>
                 <CardBody>
                   <form>
+                    <i className="fab fa-3x fa-twitter"></i>
                     <FormInputs
                       ncols={[
-                        "col-md-5 pr-1",
-                        "col-md-3 px-1",
-                        "col-md-4 pl-1"
+                        "col-md-6 pr-1",
+                        "col-md-6 px-1",
                       ]}
                       proprieties={[
                         {
-                          label: "Company (disabled)",
+                          label: "Nome",
                           inputProps: {
                             type: "text",
                             disabled: true,
-                            defaultValue: "Creative Code Inc."
                           }
                         },
                         {
                           label: "Username",
                           inputProps: {
                             type: "text",
-                            defaultValue: "michael23"
+                            disabled: true,
                           }
                         },
-                        {
-                          label: "Email address",
-                          inputProps: {
-                            type: "email",
-                            placeholder: "Email"
-                          }
-                        }
                       ]}
                     />
                     <FormInputs
                       ncols={["col-md-6 pr-1", "col-md-6 pl-1"]}
                       proprieties={[
                         {
-                          label: "First Name",
+                          label: "Birthday",
                           inputProps: {
-                            type: "text",
-                            placeholder: "First Name",
-                            defaultValue: "Mike"
+                            type: "date",
+                            disabled: true,
                           }
                         },
                         {
-                          label: "Last Name",
+                          label: "Location",
                           inputProps: {
                             type: "text",
-                            placeholder: "Last Name",
-                            defaultValue: "Andrew"
-                          }
-                        }
-                      ]}
-                    />
-                    <FormInputs
-                      ncols={["col-md-12"]}
-                      proprieties={[
-                        {
-                          label: "Address",
-                          inputProps: {
-                            type: "text",
-                            placeholder: "Home Address",
-                            defaultValue:
-                              "Bld Mihail Kogalniceanu, nr. 8 Bl 1, Sc 1, Ap 09"
+                            disabled: true,
                           }
                         }
                       ]}
                     />
                     <FormInputs
                       ncols={[
-                        "col-md-4 pr-1",
-                        "col-md-4 px-1",
-                        "col-md-4 pl-1"
+                        "col-md-12 pr-1"
                       ]}
                       proprieties={[
                         {
-                          label: "City",
+                          label: "Email",
                           inputProps: {
-                            type: "text",
-                            defaultValue: "Bucharest",
-                            placeholder: "City"
+                            type: "email",
+                            disabled: true,
                           }
                         },
-                        {
-                          label: "Country",
-                          inputProps: {
-                            type: "text",
-                            defaultValue: "Romania",
-                            placeholder: "Country"
-                          }
-                        },
-                        {
-                          label: "Postal Code",
-                          inputProps: {
-                            type: "number",
-                            placeholder: "ZIP Code"
-                          }
-                        }
                       ]}
                     />
                     <FormInputs
                       ncols={["col-md-12"]}
                       proprieties={[
                         {
-                          label: "About Me",
+                          label: "Description",
                           inputProps: {
                             type: "textarea",
                             rows: "4",
                             cols: "80",
                             defaultValue:
-                              "Lamborghini Mercy, Your chick she so thirsty, I'm in that two seat Lambo.",
-                            placeholder: "Here can be your description"
-                          }
+                              "Description.",
+                            disabled: true,
+                            }
                         }
                       ]}
                     />
                   </form>
                 </CardBody>
               </Card>
+            </Col>
+            <Col md={12} xs={12}>
+              <div class="card card-nav-tabs card-plain">
+                <div class="card-header card-header-danger">
+                    <div class="nav-tabs-navigation">
+                        <div class="nav-tabs-wrapper">
+                            <ul class="nav nav-tabs" data-tabs="tabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="#home" data-toggle="tab">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#updates" data-toggle="tab">Updates</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#history" data-toggle="tab">History</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div><div class="card-body ">
+                    <div class="tab-content text-center">
+                        <div class="tab-pane active" id="home">
+                            <p>I think that&#x2019;s a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. So when you get something that has the name Kanye West on it, it&#x2019;s supposed to be pushing the furthest possibilities. I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus.</p>
+                        </div>
+                        <div class="tab-pane" id="updates">
+                            <p> I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus. I think that&#x2019;s a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. I think that&#x2019;s a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. </p>
+                        </div>
+                        <div class="tab-pane" id="history">
+                            <p> I think that&#x2019;s a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus. I think that&#x2019;s a responsibility that I have, to push possibilities, to show people, this is the level that things could be at.</p>
+                        </div>
+                    </div>
+                </div>
+              </div>
             </Col>
           </Row>
         </div>
