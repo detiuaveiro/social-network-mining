@@ -1,136 +1,136 @@
 import React from "react";
-import { Card, CardHeader, CardBody, Row, Col } from "reactstrap";
 
-import { PanelHeader, FormInputs, CardAuthor, CardSocials } from "components";
+import { PanelHeader, FormInputs, CardAuthor, CardNumbers } from "components";
+import { Nav, NavItem, NavLink, Card, CardHeader, CardBody, TabPane, TabContent, Row, Col } from 'reactstrap';
 
-import userBackground from "assets/img/bg5.jpg";
 import userAvatar from "assets/img/mike.jpg";
 
 class User extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+        activeTab: '1',
+    };
+    this.toggle = this.toggle.bind(this);
+}
+toggle(tab) {
+    if (this.state.activeTab !== tab) {
+        this.setState({
+            activeTab: tab
+        });
+    }
+}
   render() {
     return (
       <div>
         <PanelHeader size="sm" />
         <div className="content">
           <Row>
+            <Col md={4} xs={12}>
+              <Card className="card-user">
+                <CardBody>
+                  <CardAuthor
+                    avatar={userAvatar}
+                    avatarAlt="..."
+                    title="Afonso Silva"
+                    description="@afonsosilva01"
+                  />
+                  <p className="description text-center">
+                    Description<br />
+                  </p>
+                </CardBody>
+                <hr />
+                <CardNumbers
+                  size="sm"
+                  socials={[
+                    {
+                      text: "Tweets",
+                    },
+                    {
+                      text: "Following",
+                    },
+                    {
+                      text: "Followers",
+                    }
+                  ]}
+                />
+              </Card>
+            </Col>
             <Col md={8} xs={12}>
               <Card>
                 <CardHeader>
-                  <h5 className="title">Edit Profile</h5>
+                  <h5 className="title"><i className="fab fa-2x fa-twitter"></i> Profile</h5>
                 </CardHeader>
                 <CardBody>
                   <form>
                     <FormInputs
                       ncols={[
-                        "col-md-5 pr-1",
-                        "col-md-3 px-1",
-                        "col-md-4 pl-1"
+                        "col-md-6 pr-1",
+                        "col-md-6 px-1",
                       ]}
                       proprieties={[
                         {
-                          label: "Company (disabled)",
+                          label: "Nome",
                           inputProps: {
                             type: "text",
                             disabled: true,
-                            defaultValue: "Creative Code Inc."
                           }
                         },
                         {
                           label: "Username",
                           inputProps: {
                             type: "text",
-                            defaultValue: "michael23"
+                            disabled: true,
                           }
                         },
-                        {
-                          label: "Email address",
-                          inputProps: {
-                            type: "email",
-                            placeholder: "Email"
-                          }
-                        }
                       ]}
                     />
                     <FormInputs
                       ncols={["col-md-6 pr-1", "col-md-6 pl-1"]}
                       proprieties={[
                         {
-                          label: "First Name",
+                          label: "Birthday",
                           inputProps: {
-                            type: "text",
-                            placeholder: "First Name",
-                            defaultValue: "Mike"
+                            type: "date",
+                            disabled: true,
                           }
                         },
                         {
-                          label: "Last Name",
+                          label: "Location",
                           inputProps: {
                             type: "text",
-                            placeholder: "Last Name",
-                            defaultValue: "Andrew"
-                          }
-                        }
-                      ]}
-                    />
-                    <FormInputs
-                      ncols={["col-md-12"]}
-                      proprieties={[
-                        {
-                          label: "Address",
-                          inputProps: {
-                            type: "text",
-                            placeholder: "Home Address",
-                            defaultValue:
-                              "Bld Mihail Kogalniceanu, nr. 8 Bl 1, Sc 1, Ap 09"
+                            disabled: true,
                           }
                         }
                       ]}
                     />
                     <FormInputs
                       ncols={[
-                        "col-md-4 pr-1",
-                        "col-md-4 px-1",
-                        "col-md-4 pl-1"
+                        "col-md-12 pr-1"
                       ]}
                       proprieties={[
                         {
-                          label: "City",
+                          label: "Email",
                           inputProps: {
-                            type: "text",
-                            defaultValue: "Bucharest",
-                            placeholder: "City"
+                            type: "email",
+                            disabled: true,
                           }
                         },
-                        {
-                          label: "Country",
-                          inputProps: {
-                            type: "text",
-                            defaultValue: "Romania",
-                            placeholder: "Country"
-                          }
-                        },
-                        {
-                          label: "Postal Code",
-                          inputProps: {
-                            type: "number",
-                            placeholder: "ZIP Code"
-                          }
-                        }
                       ]}
                     />
                     <FormInputs
                       ncols={["col-md-12"]}
                       proprieties={[
                         {
-                          label: "About Me",
+                          label: "Description",
                           inputProps: {
                             type: "textarea",
                             rows: "4",
                             cols: "80",
                             defaultValue:
-                              "Lamborghini Mercy, Your chick she so thirsty, I'm in that two seat Lambo.",
-                            placeholder: "Here can be your description"
-                          }
+                              "Description.",
+                            disabled: true,
+                            }
                         }
                       ]}
                     />
@@ -138,43 +138,58 @@ class User extends React.Component {
                 </CardBody>
               </Card>
             </Col>
-            <Col md={4} xs={12}>
-              <Card className="card-user">
-                <div className="image">
-                  <img src={userBackground} alt="..." />
-                </div>
+            <Col md={12} xs={12}>
+              <Card className="card-plain">
+                <CardHeader>
+                    <Nav className="justify-content-center" tabs>
+                        <NavItem>
+                            <NavLink
+                                className={this.state.activeTab === '1' ? 'active':''}
+                                onClick={() => { this.toggle('1'); }}
+                                >
+                                  Tweets
+                            </NavLink>
+                        </NavItem>
+                        <NavItem>
+                            <NavLink
+                                className={this.state.activeTab === '2' ? 'active':''}
+                                onClick={() => { this.toggle('2'); }}
+                            >
+                              Followers
+                            </NavLink>
+                        </NavItem>
+                        <NavItem>
+                            <NavLink
+                                className={this.state.activeTab === '3' ? 'active':''}
+                                onClick={() => { this.toggle('3'); }}
+                            >
+                              Following
+                            </NavLink>
+                        </NavItem>
+                        <NavItem>
+                            <NavLink
+                                className={this.state.activeTab === '4' ? 'active':''}
+                                onClick={() => { this.toggle('4'); }}
+                            >
+                              Statistics
+                            </NavLink>
+                        </NavItem>
+                    </Nav>
+                </CardHeader>
                 <CardBody>
-                  <CardAuthor
-                    avatar={userAvatar}
-                    avatarAlt="..."
-                    title="Mike Andrew"
-                    description="michael23"
-                  />
-                  <p className="description text-center">
-                    "Lamborghini Mercy <br />
-                    Your chick she so thirsty <br />
-                    I'm in that two seat Lambo"
-                  </p>
+                    <TabContent activeTab={this.state.activeTab} className="text-center">
+                        <TabPane tabId="1">
+                            <p>I think that's a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. So when you get something that has the name Kanye West on it, it's supposed to be pushing the furthest possibilities. I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus.</p>
+                        </TabPane>
+                        <TabPane tabId="2">
+                            <p> I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus. I think that's a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. I think that's a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. </p>
+                        </TabPane>
+                        <TabPane tabId="3">
+                            <p> I think that's a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus. I think that's a responsibility that I have, to push possibilities, to show people, this is the level that things could be at.</p>
+                        </TabPane>
+                    </TabContent>
                 </CardBody>
-                <hr />
-                <CardSocials
-                  size="lg"
-                  socials={[
-                    {
-                      icon: "fab fa-facebook-f",
-                      href: "https://www.facebook.com/"
-                    },
-                    {
-                      icon: "fab fa-twitter",
-                      href: "https://www.facebook.com/"
-                    },
-                    {
-                      icon: "fab fa-google-plus-g",
-                      href: "https://plus.google.com/discover"
-                    }
-                  ]}
-                />
-              </Card>
+            </Card>
             </Col>
           </Row>
         </div>

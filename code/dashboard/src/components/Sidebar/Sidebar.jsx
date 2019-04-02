@@ -4,8 +4,6 @@ import { Nav } from "reactstrap";
 // javascript plugin used to create scrollbars on windows
 import PerfectScrollbar from "perfect-scrollbar";
 
-import logo from "logo-white.svg";
-
 var ps;
 
 class Sidebar extends React.Component {
@@ -35,29 +33,31 @@ class Sidebar extends React.Component {
       <div className="sidebar" data-color="blue">
         <div className="logo">
           <a
-            href="https://www.creative-tim.com"
-            className="simple-text logo-mini"
+            href="https://pi_group2.gitlab.io/social-network-mining"
+            className="simple-text logo-normal text-center text-wrap"
           >
-            <div className="logo-img">
-              <img src={logo} alt="react-logo" />
-            </div>
-          </a>
-          <a
-            href="https://www.creative-tim.com"
-            className="simple-text logo-normal"
-          >
-            Creative Tim
+            Social Network Mining
           </a>
         </div>
         <div className="sidebar-wrapper" ref="sidebar">
           <Nav>
             {this.props.routes.map((prop, key) => {
               if (prop.redirect) return null;
+              if (prop.hide){
+                return (
+                  <li
+                    className={
+                      this.activeRoute(prop.path)
+                    }
+                    key={key}
+                  >
+                  </li>
+                );
+              }
               return (
                 <li
                   className={
-                    this.activeRoute(prop.path) +
-                    (prop.pro ? " active active-pro" : "")
+                    this.activeRoute(prop.path)
                   }
                   key={key}
                 >
@@ -66,7 +66,7 @@ class Sidebar extends React.Component {
                     className="nav-link"
                     activeClassName="active"
                   >
-                    <i className={"now-ui-icons " + prop.icon} />
+                    <i className={prop.icon} />
                     <p>{prop.name}</p>
                   </NavLink>
                 </li>

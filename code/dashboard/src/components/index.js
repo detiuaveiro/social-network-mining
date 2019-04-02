@@ -1,6 +1,8 @@
 import CardAuthor from './CardElements/CardAuthor';
 import CardCategory from './CardElements/CardCategory';
-import CardSocials from './CardElements/CardSocials';
+import CardNumbers from './CardElements/CardNumbers';
+import CardInteractions from './CardElements/CardInteractions';
+
 
 import Button from './CustomButton/CustomButton';
 
@@ -22,11 +24,15 @@ import Stats from './Stats/Stats';
 
 import Tasks from './Tasks/Tasks';
 
+import DataTables from './DataTables/DataTables';
+
+
 export {
     // CardElements
     CardAuthor,
     CardCategory,
-    CardSocials,
+    CardNumbers,
+    CardInteractions,
     // CustomButton
     Button,
     // CustomCheckbox
@@ -47,4 +53,6 @@ export {
     Stats,
     // Tasks
     Tasks,
+    // DataTables
+    DataTables,
 };

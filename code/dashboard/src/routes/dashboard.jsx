@@ -1,51 +1,53 @@
 import Dashboard from "views/Dashboard/Dashboard.jsx";
 import Notifications from "views/Notifications/Notifications.jsx";
-import Icons from "views/Icons/Icons.jsx";
 import Typography from "views/Typography/Typography.jsx";
-import TableList from "views/TableList/TableList.jsx";
-import Maps from "views/Maps/Maps.jsx";
-import Upgrade from "views/Upgrade/Upgrade.jsx";
+import Policies from "views/Policies/Policies.jsx";
 import UserPage from "views/UserPage/UserPage.jsx";
+import BotsPage from "views/BotsPage/BotsPage.jsx";
+
 
 var dashRoutes = [
   {
-    path: "/dashboard",
+    path: "/dashboard/",
     name: "Dashboard",
-    icon: "design_app",
-    component: Dashboard
-  },
-  { path: "/icons", name: "Icons", icon: "design_image", component: Icons },
-  { path: "/maps", name: "Maps", icon: "location_map-big", component: Maps },
-  {
-    path: "/notifications",
-    name: "Notifications",
-    icon: "ui-1_bell-53",
-    component: Notifications
+    icon: "fas fa-cube",
+    component: Dashboard,
+    hide: false,
   },
   {
-    path: "/user-page",
-    name: "User Profile",
-    icon: "users_single-02",
-    component: UserPage
+    path: "/network",
+    name: "Network",
+    icon: "fas fa-network-wired",
+    component: Notifications,
+    hide: false,
   },
   {
-    path: "/extended-tables",
-    name: "Table List",
-    icon: "files_paper",
-    component: TableList
+    path: "/bots/:botId",
+    name: "Bots",
+    icon: "fas fa-robot",
+    component: UserPage,
+    hide: true,
   },
   {
-    path: "/typography",
-    name: "Typography",
-    icon: "design-2_ruler-pencil",
-    component: Typography
+    path: "/bots",
+    name: "Bots",
+    icon: "fas fa-robot",
+    component: BotsPage,
+    hide: false,
   },
   {
-    pro: true,
-    path: "/upgrade",
-    name: "Upgrade to PRO",
-    icon: "objects_spaceship",
-    component: Upgrade
+    path: "/policies",
+    name: "Policies",
+    icon: "fas fa-list-alt",
+    component: Policies,
+    hide: false,
+  },
+  {
+    path: "/instagram",
+    name: "Instagram",
+    icon: "fab fa-instagram",
+    component: Typography,
+    hide: false,
   },
   { redirect: true, path: "/", pathTo: "/dashboard", name: "Dashboard" }
 ];
