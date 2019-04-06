@@ -1,14 +1,17 @@
-#!/usr/bin/env python
-import pika
+import requests
+import json
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-channel = connection.channel()
+url="http://mqtt-redesfis.ws.atnog.av.it.pt:80/api/exchanges/%2f/amq.default/publish"
 
+auth=('pi_rabbit_admin', 'yPvawEVxks7MLg3lfr3g')
 
-channel.queue_declare(queue='hello')
+body={
+    "properties":{},
+    "routing_key":"API",
+    "payload":"message test 2",
+    "payload_encoding":"string"
+    }
 
-channel.basic_publish(exchange='',
-                      routing_key='hello',
-                      body='Hello World!')
-print(" [x] Sent 'Hello World!'")
-connection.close()
+response = requests.post(url=url, auth=auth, data=json.dumps(body))
+
+print(response)

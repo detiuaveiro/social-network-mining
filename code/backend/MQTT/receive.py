@@ -1,18 +1,12 @@
-#!/usr/bin/env python
-import pika
+import requests
+import json
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-channel = connection.channel()
+url="http://mqtt-redesfis.ws.atnog.av.it.pt:80/api/queues/%2f/API/get"
 
+auth=('pi_rabbit_admin', 'yPvawEVxks7MLg3lfr3g')
 
-channel.queue_declare(queue='hello')
+body={"count":1,"ackmode":"ack_requeue_false","encoding":"auto"}
 
-def callback(ch, method, properties, body):
-    print(" [x] Received %r" % body)
+response = requests.post(url=url, auth=auth, data=json.dumps(body))
 
-channel.basic_consume(callback,
-                      queue='hello',
-                      no_ack=True)
-
-print(' [*] Waiting for messages. To exit press CTRL+C')
-channel.start_consuming()
+print(response)
