@@ -56,7 +56,8 @@ class Colour:
     def from_rgb(cls, r, g, b) -> Colour:
         """Factory method for a :class:`Colour` from an RGB tuple."""
         return cls((r << 16) + (g << 8) + b)
-
+    def to_json(self):
+        return str(self)
 
 Color = Colour
 
@@ -128,20 +129,24 @@ class User(BaseModel):
     default_profile: bool
     default_profile_image: bool
     notifications: bool
-    suspended: bool
+    suspended: bool = False
 
+    def to_json(self):
+        """
+        Returns the JSON that represents this entity
+        """
+        return self._json
     @staticmethod
     def from_json(api, json: dict):
         """Returns an instance of this Model from the JSON supplied"""
         # copying the
-
         unclean_json = json
         # removing unused attributes
         ignore_attributes = ["id_str", "entities", "created_at", "utc_offset", "time_zone",
                              "geo_enabled", "is_translator", "is_translation_enabled",
-                             "needs_phone_verification", "translator_type"]
+                             "needs_phone_verification", "translator_type", "status", "profile_banner_url"]
         for i in ignore_attributes:
-            unclean_json.pop(i)
+            unclean_json.pop(i,None)
         # To make things easier for to us, we're going transforming some of the attributes into objects
         # TODO: Currently only for colours, do the same for entities
         unclean_json["profile_background_color"] = Colour.from_hex(
@@ -169,7 +174,9 @@ class User(BaseModel):
     def follow(self):
         self._api.create_friendship(user_id=self.id)
         self.following = True
+        self._json["following"] = True
 
     def unfollow(self):
         self._api.destroy_friendship(user_id=self.id)
         self.following = False
+        self._json["following"] = False
