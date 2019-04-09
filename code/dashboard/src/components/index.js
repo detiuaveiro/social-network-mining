@@ -26,6 +26,7 @@ import Tasks from './Tasks/Tasks';
 
 import DataTables from './DataTables/DataTables';
 
+import Tweet from './Tweet/Tweet';
 
 export {
     // CardElements
@@ -55,4 +56,6 @@ export {
     Tasks,
     // DataTables
     DataTables,
+    //Tweet
+    Tweet,
 };
