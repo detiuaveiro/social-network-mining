@@ -73,6 +73,7 @@ venv.bak/
 documentation/Notas/Bots_Do_Twitter.txt
 
 documentation/Notas/Notas para o use cases diagram.txt
+documentation/Images/*.vsdx
 doc_generator/
 
 **/.DS_Store

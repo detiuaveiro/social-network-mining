@@ -1,0 +1,89 @@
+====End Points====
+
+/twitter/bots/{id}/policies
+/twitter/bots/{id}/logs
+/twitter/bots/{id}
+/twitter/bots
+/twitter/users/{id}/tweets
+/twitter/users/{id}/stats
+/twitter/users/{id}/followers
+/twitter/users/{id}/following
+/twitter/users/{id}/replies
+/twitter/users/{id}
+/twitter/users/stats
+/twitter/users
+/twitter/tweets/{id}/stats
+/twitter/tweets/{id}
+/twitter/tweets/stats
+/twitter/tweets
+/twitter/stats
+/twitter/network
+/twitter/policies
+
+/instagram/bots/{id}/policies
+/instagram/bots/{id}/logs
+/instagram/bots/{id}
+/instagram/bots
+/instagram/users/{id}/stats
+/instagram/users/{id}
+/instagram/users/stats
+/instagram/users
+/instagram/stats
+/instagram/network
+/instagram/policies
+
+/policies
+/policies/out
+/policies/{id}
+
+==== Data Returned by End Points===
+
+/twitter/bots/{id}
+
+- {
+    id: string,
+    name: string,
+    username: string,
+    email: int,
+    n_followers: int,
+    n_likes: int
+  }
+
+/twitter/bots/
+
+- [
+    {
+      id: string,
+      name: string,
+      photo: url,
+      n_tweets: int,
+      n_followers: int,
+      n_likes: int
+    },
+    ...
+  ]
+
+/instagram/bots/{id}
+
+- {
+    id: string,
+    name: string,
+    photo: url,
+    n_posts: int,
+    n_followers: int,
+    n_likes: int
+  }
+
+/instagram/bots/
+
+- [
+    {
+      id: string,
+      name: string,
+      photo: url,
+      n_posts: int,
+      n_followers: int,
+      n_likes: int
+    },
+    ...
+  ]
