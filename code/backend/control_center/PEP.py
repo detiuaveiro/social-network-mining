@@ -1,45 +1,33 @@
 import json
-import pika
-
 
 class PEP:
 
     def __init__(self):
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-        self.channel = self.connection.channel()
-        self.channel.queue_declare(queue='hello')
-        self.channel.start_consuming()
         return
+
+    def receive_message(self,msg):
+        return self.formulate_request(msg)
+        
+    '''
+    rever isto
+    '''
+    def formulate_request(self,msg):
+        intermediate={"name":msg}
+        message=json.dumps(intermediate)
+        return self.send_request(message)
+        
+    def send_request(self,msg):
+        return msg #PDP().receive_request(msg)
     
-    def callback(self,ch, method, properties, body):
-        print(" [x] Received %r" % body)
-    
-
-    def receive_amqp_message(self):
-        self.channel.basic_consume(self.callback,
-                      queue='hello',
-                      no_ack=True)
-
-        return
-
-    def formulate_request(self):
-        return
-
-    def send_request(self):
-        #json dumps do formulate_request()
-        return
-    
-    def receive_response(self):
+    def receive_response(self,msg):
         #json loads da resposta do PDP
-        return
-    
-    def enforce(self): #send_amqp_message(self) probably more suitable...
-
-        #get response and enforce it
-        self.channel.basic_publish(exchange='',
-                      routing_key='hello',
-                      body='Hello World!')
-        return
+        message=json.loads(msg)
+        return self.enforce(message)
+        
+    def enforce(self,msg): 
+        if msg["response"]=="DENY":
+            return 0
+        return 1
 
     def close_connection(self):
-        self.connection.close()
+        return NotImplementedError
