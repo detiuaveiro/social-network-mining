@@ -4,4 +4,4 @@ RUN pip install -r /requirements.txt
 RUN mkdir -p /bots
 COPY . /bots
 WORKDIR /bots
-CMD python start_bot.py
+CMD python twitter_bot.py

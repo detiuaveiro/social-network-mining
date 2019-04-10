@@ -27,3 +27,14 @@ RETWEET_CHANCE = 0.9
 
 # Can be reasonably low
 FAVOURITE_CHANCE = 0.5
+
+# Max retries before exiting from task-routine
+MAX_RETRIES = 5
+
+# Messagin-related settings
+TASKS_EXCHANGE = "tasks_deliver"
+LOG_EXCHANGE = "bot_logs"
+TASKS_QUEUE_PREFIX = "bot"
+TASKS_ROUTING_KEY_PREFIX = "tasks.twitter"
+QUERY_EXCHANGE = "queries"
+DATA_EXCHANGE = "twitter_data"

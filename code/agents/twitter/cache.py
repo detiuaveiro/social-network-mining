@@ -1,9 +1,8 @@
-from typing import Any, Dict, Optional
-import tweepy
-from models import User
-
 import json
 from json import JSONEncoder
+from typing import Any, Dict, Optional
+
+from models import User, Tweet
 
 
 def _default(self, obj):
@@ -59,11 +58,11 @@ class Cache:
         self._cache[key] = value
         self._flush()
 
-    def get(self, key: str) -> Optional[Any]:
-        return self._cache.get(key, None)
+    def get(self, key: str, val=None) -> Optional[Any]:
+        return self._cache.get(key, val)
 
-    def save_tweet(self, tweet_obj: tweepy.models.Status):
-        self._cache["tweets"][tweet_obj.id] = tweet_obj._json
+    def save_tweet(self, tweet_obj: Tweet):
+        self._cache["tweets"][tweet_obj.id] = tweet_obj.to_json()
         self._flush()
 
     def save_user(self, user_obj: User):
@@ -73,7 +72,7 @@ class Cache:
     def get_user(self, user_obj: User) -> Optional[User]:
         return self._cache.get("users", {}).get(user_obj.id, None)
 
-    def get_tweet(self, tweet_obj: tweepy.models.Status) -> Optional[tweepy.models.Status]:
+    def get_tweet(self, tweet_obj: Tweet) -> Optional[Tweet]:
         return self._cache.get("tweets", {}).get(tweet_obj.id, None)
 
     def close(self):

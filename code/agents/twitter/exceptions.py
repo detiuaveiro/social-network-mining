@@ -1,0 +1,3 @@
+
+class NoMessagesInQueue(Exception):
+    pass

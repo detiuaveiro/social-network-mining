@@ -1,8 +1,9 @@
+import datetime
 import json
 import random
-import datetime
-import readtime
 import time
+import requests
+import readtime
 
 TWITTER_EPOCH = 1288834974657
 
@@ -22,6 +23,11 @@ def random_between(min_val, max_val):
 def snowflake_time(id: int) -> datetime.datetime:
     """Returns the creation date in UTC of a Twitter id."""
     return datetime.datetime.utcfromtimestamp(((id >> 22) + TWITTER_EPOCH) / 1000)
+
+
+def wait_for(secs):
+    """Uses time.sleep to wait for a specified amount of seconds"""
+    time.sleep(secs)
 
 
 def read_text_and_wait(text: str):
@@ -46,7 +52,16 @@ def read_text_and_wait(text: str):
     # wait for the some time
     wait_time = random_between(time_for_text * 0.9, time_for_text * 1.10)
     # wait the given time
-    time.sleep(round(wait_time))
+
+    wait_for(round(wait_time))
 
     # handy return for keeping track of the total times
     return wait_time
+
+
+def current_time():
+    return datetime.datetime.utcnow().timestamp()
+
+
+def make_request_json(method, url, data, **options):
+    return requests.request(method=method, url=url, data=to_json(data), **options)
