@@ -79,3 +79,5 @@ doc_generator/
 
 **/*.code-workspace
 *.vsdx
+
+cache_*.json
