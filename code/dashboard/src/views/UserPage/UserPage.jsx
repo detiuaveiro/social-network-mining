@@ -1,4 +1,5 @@
 import React from "react";
+import axios from 'axios';
 
 import { PanelHeader, FormInputs, CardAuthor, CardNumbers, Tweet} from "components";
 import { Nav, NavItem, NavLink, Card, CardHeader, CardBody, TabPane, TabContent, Row, Col } from 'reactstrap';
@@ -6,20 +7,32 @@ import { Nav, NavItem, NavLink, Card, CardHeader, CardBody, TabPane, TabContent,
 import userAvatar from "assets/img/mike.jpg";
 
 class User extends React.Component {
+  state = {
+    tweets: [],
+  };
   constructor(props) {
     super(props);
-    this.state = {
-        activeTab: '1',
-    };
-    this.toggle = this.toggle.bind(this);
-}
-toggle(tab) {
-    if (this.state.activeTab !== tab) {
-        this.setState({
-            activeTab: tab
-        });
-    }
-}
+      this.state = {
+          activeTab: '1',
+      };
+      this.toggle = this.toggle.bind(this);
+  }
+  componentDidMount() {
+    axios.get('/twitter/tweets')
+      .then(res => {
+        console.log(res.data)
+        const tweets = res.data;
+        this.setState({ tweets });
+        console.log(this.state.tweets)
+      })
+  }
+  toggle(tab) {
+      if (this.state.activeTab !== tab) {
+          this.setState({
+              activeTab: tab
+          });
+      }
+  }
   render() {
     return (
       <div>
@@ -187,13 +200,19 @@ toggle(tab) {
                 <CardBody>
                     <TabContent activeTab={this.state.activeTab} className="text-center">
                         <TabPane tabId="1">
-                          <Tweet></Tweet>
+                          <Tweet ></Tweet>
                         </TabPane>
                         <TabPane tabId="2">
-                            <p> I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus. I think that's a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. I think that's a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. </p>
+                            <p>Not ready</p>
                         </TabPane>
                         <TabPane tabId="3">
-                            <p> I think that's a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus. I think that's a responsibility that I have, to push possibilities, to show people, this is the level that things could be at.</p>
+                            <p>Not ready</p>
+                        </TabPane>
+                        <TabPane tabId="3">
+                            <p>Not ready</p>
+                        </TabPane>
+                        <TabPane tabId="3">
+                            <p>Not ready</p>
                         </TabPane>
                     </TabContent>
                 </CardBody>

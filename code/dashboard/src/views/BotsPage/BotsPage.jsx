@@ -14,15 +14,28 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "reactstrap";
+import axios from 'axios';
 import userAvatar from "assets/img/mike.jpg";
 
 class BotsPage extends React.Component {
+  state = {
+    twitter_bots: [],
+    instagram_bots:[],
+  };
   constructor(props) {
     super(props);
     this.state = {
         activeTab: '1',
     };
     this.toggle = this.toggle.bind(this);
+  }
+  componentDidMount() {
+    axios.get('/twitter/bots')
+      .then(res => {
+        console.log(res.data)
+        const twitter_bots = res.data;
+        this.setState({ twitter_bots });
+      })
   }
   toggle(tab) {
       if (this.state.activeTab !== tab) {
@@ -44,134 +57,33 @@ class BotsPage extends React.Component {
         />
         <div className="content">
           <Row>
-            <Col xs={12} md={4}>
-              <Card className="card-chart">
-                <CardHeader>
-                  <CardCategory>Twitter</CardCategory>
-                  <CardAuthor
-                    avatar={userAvatar}
-                    avatarAlt="..."
-                    title="Afonso Silva"
-                    description="@afonsosilva01"
-                  />
-                </CardHeader>
-                <CardBody>
-                  <CardInteractions
-                    size="sm"
-                    socials={[
-                      {
-                        icon: "fas fa-2x fa-quote-left",
-                        number: 123,
-                      },
-                      {
-                        icon: "fas fa-2x fa-retweet",
-                        number: 43,
-                      },
-                      {
-                        icon: "fas fa-2x fa-comments",
-                        number: 12,
-                      },
-                    ]}
-                  />
-                </CardBody>
-                <CardFooter>
-                  <Stats>
-                    {[
-                      {
-                        i: "now-ui-icons arrows-1_refresh-69",
-                        t: "Just Updated"
-                      }
-                    ]}
-                  </Stats>
-                </CardFooter>
-              </Card>
-            </Col>
-            <Col xs={12} md={4}>
-              <Card className="card-chart">
-                <CardHeader>
-                  <CardCategory>Twitter</CardCategory>
-                  <CardAuthor
-                    avatar={userAvatar}
-                    avatarAlt="..."
-                    title="Afonso Silva"
-                    description="@afonsosilva01"
-                  />
-                </CardHeader>
-                <CardBody>
-                  <CardInteractions
-                    size="sm"
-                    socials={[
-                      {
-                        icon: "fas fa-2x fa-quote-left",
-                        number: 123,
-                      },
-                      {
-                        icon: "fas fa-2x fa-retweet",
-                        number: 43,
-                      },
-                      {
-                        icon: "fas fa-2x fa-comments",
-                        number: 12,
-                      },
-                    ]}
-                  />
-                </CardBody>
-                <CardFooter>
-                  <Stats>
-                    {[
-                      {
-                        i: "now-ui-icons arrows-1_refresh-69",
-                        t: "Just Updated"
-                      }
-                    ]}
-                  </Stats>
-                </CardFooter>
-              </Card>
-            </Col>
-            <Col xs={12} md={4}>
-              <Card className="card-chart">
-                <CardHeader>
-                  <CardCategory>Twitter</CardCategory>
-                  <CardAuthor
-                    avatar={userAvatar}
-                    avatarAlt="..."
-                    title="Afonso Silva"
-                    link="1"
-                    description="@afonsosilva01"
-                  />
-                </CardHeader>
-                <CardBody>
-                  <CardInteractions
-                    size="sm"
-                    socials={[
-                      {
-                        icon: "fas fa-2x fa-quote-left",
-                        number: 123,
-                      },
-                      {
-                        icon: "fas fa-2x fa-retweet",
-                        number: 43,
-                      },
-                      {
-                        icon: "fas fa-2x fa-comments",
-                        number: 12,
-                      },
-                    ]}
-                  />
-                </CardBody>
-                <CardFooter>
-                  <Stats>
-                    {[
-                      {
-                        i: "now-ui-icons arrows-1_refresh-69",
-                        t: "Just Updated"
-                      }
-                    ]}
-                  </Stats>
-                </CardFooter>
-              </Card>
-            </Col>
-          </Row>
+              <Col xs={12} md={4}>
+                <Card className="card-chart">
+                  <CardHeader>
+                    <CardCategory>Twitter</CardCategory>
+                    <CardAuthor
+                      avatar={userAvatar}
+                      avatarAlt="..."
+                      title="Afonso Silva"
+                      description="@afonsosilva01"
+                    />
+                  </CardHeader>
+                  <CardBody>
+
+                  </CardBody>
+                  <CardFooter>
+                    <Stats>
+                      {[
+                        {
+                          i: "now-ui-icons arrows-1_refresh-69",
+                          t: "Just Updated"
+                        }
+                      ]}
+                    </Stats>
+                  </CardFooter>
+                </Card>
+              </Col>
+         </Row>
         </div>
       </div>
     );
