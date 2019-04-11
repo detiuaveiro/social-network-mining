@@ -5,7 +5,7 @@ app=Flask(__name__)
 
 #mongo.insertOneData(2, ["porto", "desporto"], "abilio", "o porto foi um justo vencedor!")
 
-f=open("file.json","r+")
+f=open("/home/user/Transferências/file.json","r+")
 
 json_to_send=json.load(f)
 
@@ -15,7 +15,9 @@ def home():
 
 @app.route("/twitter/users")
 def user_general():
-    return json.dumps(json_to_send["users"])
+    users = json_to_send["users"]
+    data = [v for i,v in users.items()]
+    return jsonify(data)
     #return "<h1>"+ str(mongoUsers.dataCollection()) + "</h1>"
 
 @app.route("/twitter/users/stats")
@@ -25,7 +27,12 @@ def user_general_stats():
 
 @app.route("/twitter/users/<id>")
 def user_by_id(id):
-    return json.dumps(json_to_send["users"][id])
+    try:
+        user = json_to_send["users"][id]
+        data = [v for i,v in user.items()]
+        return jsonify(data)
+    except KeyError:
+        return "not found"
     #return "<h1>"+ str(mongoUsers.dataCollection(findText={"id":int(id)})) + "</h1>"
 
 @app.route("/twitter/users/<id>/tweets")
@@ -36,8 +43,10 @@ def user_tweets(id):
 
 @app.route("/twitter/users/<id>/followers")
 def user_followers(id):
-    return json.dumps(json_to_send["users"][id]["followers_count"])
-    # return "user followers"
+    followers = json_to_send["users"][id]["followers_count"]
+    data = [v for i,v in followers.items()]
+    return jsonify(data)
+    
 
 @app.route("/twitter/users/<id>/following")
 def user_following(id):
@@ -73,12 +82,12 @@ def tt_stats():
 
 @app.route("/twitter/bots")
 def tt_bots():
-    return json.dumps(json_to_send["users"]["1103294806497902594"])
+    return "TBD" #json.dumps(json_to_send["users"]["1103294806497902594"])
 
 @app.route("/twitter/bots/<id>")
 def tt_bots_by_id(id):
-    if id=="1103294806497902594":
-        return json.dumps(json_to_send["users"][id])
+    #if id=="1103294806497902594":
+    #    return json.dumps(json_to_send["users"][id])
     return "twitter"
 
 @app.route("/twitter/bots/<id>/logs")
@@ -100,13 +109,18 @@ def tt_tweet_stats():
 
 @app.route("/twitter/tweets/<id>")
 def tt_tweet_by_id(id):
-    return json.dumps(json_to_send["tweets"][id])
+    tweet=json_to_send["tweets"][id]
+    data = [v for i,v in tweet.items()]
+    print(data)
+    return jsonify(data)
     #return "<h1>"+ str(mongoTweets.dataCollection(findText={"id":int(id)})) + "</h1>"
 
 @app.route("/twitter/tweets/<id>/stats")
 def tt_tweet_stats_by_id(id):
-    return json.dumps({"Retweet count":json_to_send["tweets"][id]["retweet_count"],"Favorite count":json_to_send["tweets"][id]["favorite_count"]})
-
+    rt_count=json_to_send["tweets"][id]["retweet_count"]
+    fav_count=json_to_send["tweets"][id]["favorite_count"]
+    data = [("retweet_count",rt_count),("favorite_count",fav_count)]
+    return jsonify(data)
 
 '''
 policies paths
