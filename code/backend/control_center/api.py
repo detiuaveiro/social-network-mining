@@ -44,7 +44,6 @@ def user_general_stats():
 
 @app.route("/twitter/users/<id>")
 def user_by_id(id):
-    
     try:
         mapa=mongo.dataCollection(findText={"id":int(id)})
         if len(mapa)>0:
