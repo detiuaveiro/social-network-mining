@@ -19,15 +19,21 @@ cl.create_binding(vhost='PI', exchange='BOTS_MESSAGES', queue='API', rt_key='API
 
 #Example of an message
 body={
+<<<<<<< HEAD
     "type":7,
     "data":{
         "id": 1122,
         "text": "texto 12345",
     },
+=======
+    "type":1,
+    "text":"sajnddjsa",
+>>>>>>> Rabbitmq http api example
     }
 #send message
 cl.publish('PI', 'BOTS_MESSAGES', 'API', payload=json.dumps(body),payload_enc='string')
 
+<<<<<<< HEAD
 class MessagingWrapper:
     def __init__(self, host, port, vhost, username, password):
         self.host = host
@@ -69,3 +75,7 @@ class MessagingWrapper:
         cl.publish(self.vhost, self.exchange, self.queue, payload=json.dumps(data), payload_enc='string')
 
 
+=======
+#receive messages
+print(cl.get_messages('PI', 'API'))
+>>>>>>> Rabbitmq http api example
