@@ -9,23 +9,21 @@ import userAvatar from "assets/img/mike.jpg";
 class User extends React.Component {
   state = {
     tweets: [],
+    activeTab: '1',
   };
-  constructor(props) {
-    super(props);
-      this.state = {
-          activeTab: '1',
-      };
-      this.toggle = this.toggle.bind(this);
-  }
   componentDidMount() {
     axios.get('/twitter/tweets')
       .then(res => {
-        console.log(res.data)
         const tweets = res.data;
         this.setState({ tweets });
         console.log(this.state.tweets)
       })
   }
+  constructor(props) {
+    super(props);
+      this.toggle = this.toggle.bind(this);
+  }
+
   toggle(tab) {
       if (this.state.activeTab !== tab) {
           this.setState({
@@ -200,7 +198,8 @@ class User extends React.Component {
                 <CardBody>
                     <TabContent activeTab={this.state.activeTab} className="text-center">
                         <TabPane tabId="1">
-                          <Tweet ></Tweet>
+                          {this.state.tweets.map(tweet => <Tweet text={tweet.text}/>
+                          )}
                         </TabPane>
                         <TabPane tabId="2">
                             <p>Not ready</p>

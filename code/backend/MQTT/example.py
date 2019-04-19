@@ -19,11 +19,12 @@ cl.create_binding(vhost='PI', exchange='BOTS_MESSAGES', queue='API', rt_key='API
 
 #Example of an message
 body={
-    "type":1,
-    "text":"sajnddjsa",
+    "type":7,
+    "data":{
+        "id": 1122,
+        "text": "texto 12345",
+    },
     }
 #send message
 cl.publish('PI', 'BOTS_MESSAGES', 'API', payload=json.dumps(body),payload_enc='string')
 
-#receive messages
-print(cl.get_messages('PI', 'API'))
