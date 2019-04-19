@@ -26,8 +26,9 @@ class Rabbitmq():
         print('--------------- Connection Established ---------------')
         print()
 
-    def receive(self, queue):
-        self.channel.queue_declare(queue=queue)
+    def receive(self, q):
+        self.queue = q
+        self.channel.queue_declare(queue=self.queue)
         
         print(' [*] Waiting for MESSAGES. To exit press CTRL+C')
 
@@ -37,7 +38,7 @@ class Rabbitmq():
             #Make sure no mistake is made
             time.sleep(20)
 
-        self.channel.basic_consume(callback, queue=queue, no_ack=True)
+        self.channel.basic_consume(queue=self.queue, on_message_callback=callback, auto_ack=True)
         self.channel.start_consuming()
 
     def send(self, exchange, routing_key, message):
@@ -51,4 +52,4 @@ class Rabbitmq():
 
 if __name__ == "__main__":
     rabbit = Rabbitmq(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
-    message = rabbit.receive(queue='API')
+    rabbit.receive(q='API')

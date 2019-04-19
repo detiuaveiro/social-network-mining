@@ -30,7 +30,6 @@ def home():
 
 @app.route("/twitter/users")
 def user_general():
-    
     mapa=mongo.dataCollection()
     for i in mapa:
         user_id=str(i["id"])
@@ -64,9 +63,9 @@ def user_tweets(id):
 
 @app.route("/twitter/users/<id>/followers")
 def user_followers(id):
-    
     followers = mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"followers_count":True,"_id":False})
     return jsonify(followers)
+
 @app.route("/twitter/users/<id>/following")
 def user_following(id):
     mapa=mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"friends_count":True,"_id":False})
