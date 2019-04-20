@@ -8,7 +8,7 @@ import Test from "views/Test/Test.jsx"
 
 var dashRoutes = [
   {
-    path: "/dashboard/",
+    path: "/dashboard",
     name: "Dashboard",
     icon: "fas fa-cube",
     component: Dashboard,
