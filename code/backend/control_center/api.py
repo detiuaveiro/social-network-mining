@@ -1,5 +1,4 @@
-from flask import Flask,url_for, Response, jsonify
-import json
+from flask import Flask,url_for, Response, jsonify, json
 
 app=Flask(__name__)
 
@@ -17,7 +16,7 @@ def home():
 def user_general():
     users = json_to_send["users"]
     data = [v for i,v in users.items()]
-    return jsonify(data)
+    return jsonify(data) #Response(json.dumps(data),mimetype='application/json')
     #return "<h1>"+ str(mongoUsers.dataCollection()) + "</h1>"
 
 @app.route("/twitter/users/stats")
@@ -29,8 +28,7 @@ def user_general_stats():
 def user_by_id(id):
     try:
         user = json_to_send["users"][id]
-        data = [v for i,v in user.items()]
-        return jsonify(data)
+        return jsonify(user)
     except KeyError:
         return "not found"
     #return "<h1>"+ str(mongoUsers.dataCollection(findText={"id":int(id)})) + "</h1>"
@@ -44,8 +42,7 @@ def user_tweets(id):
 @app.route("/twitter/users/<id>/followers")
 def user_followers(id):
     followers = json_to_send["users"][id]["followers_count"]
-    data = [v for i,v in followers.items()]
-    return jsonify(data)
+    return jsonify(followers)
     
 
 @app.route("/twitter/users/<id>/following")
@@ -110,16 +107,14 @@ def tt_tweet_stats():
 @app.route("/twitter/tweets/<id>")
 def tt_tweet_by_id(id):
     tweet=json_to_send["tweets"][id]
-    data = [v for i,v in tweet.items()]
-    print(data)
-    return jsonify(data)
+    return jsonify(tweet)
     #return "<h1>"+ str(mongoTweets.dataCollection(findText={"id":int(id)})) + "</h1>"
 
 @app.route("/twitter/tweets/<id>/stats")
 def tt_tweet_stats_by_id(id):
     rt_count=json_to_send["tweets"][id]["retweet_count"]
     fav_count=json_to_send["tweets"][id]["favorite_count"]
-    data = [("retweet_count",rt_count),("favorite_count",fav_count)]
+    data = [{"retweet_count":rt_count,"favorite_count":fav_count}]
     return jsonify(data)
 
 '''
