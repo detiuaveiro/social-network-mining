@@ -3,13 +3,12 @@ import {
   Card,
   CardHeader,
   CardBody,
-  CardFooter,
   CardTitle,
   Row,
   Col
 } from "reactstrap";
 
-import { PanelHeader, Stats, CardCategory, Tasks, DataTables } from "components";
+import { PanelHeader, DataTables } from "components";
 
 class Policies extends React.Component {
   render() {

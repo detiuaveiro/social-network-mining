@@ -4,6 +4,7 @@ import { createBrowserHistory } from "history";
 import { Router, Route, Switch} from "react-router-dom";
 
 import "bootstrap/dist/css/bootstrap.css";
+import "popoto/dist/popoto.min.css"
 import "assets/scss/now-ui-dashboard.css";
 import "assets/css/demo.css";
 

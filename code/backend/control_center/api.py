@@ -112,7 +112,8 @@ def tt_stats():
 
 @app.route("/twitter/bots")
 def tt_bots():
-    return "TBD" #json.dumps(json_to_send["users"]["1103294806497902594"])
+    data = [json_to_send["users"]["1103294806497902594"]]
+    return jsonify(data)
 
 @app.route("/twitter/bots/<id>")
 def tt_bots_by_id(id):

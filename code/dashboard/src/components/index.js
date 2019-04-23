@@ -2,7 +2,7 @@ import CardAuthor from './CardElements/CardAuthor';
 import CardCategory from './CardElements/CardCategory';
 import CardNumbers from './CardElements/CardNumbers';
 import CardInteractions from './CardElements/CardInteractions';
-
+import CardAuthor2 from './CardElements/CardAuthor2';
 
 import Button from './CustomButton/CustomButton';
 
@@ -27,6 +27,10 @@ import Tasks from './Tasks/Tasks';
 import DataTables from './DataTables/DataTables';
 
 import Tweet from './Tweet/Tweet';
+
+import CardBot from './CardElements/CardBot';
+
+import UserInfo from './User/User';
 
 export {
     // CardElements
@@ -58,4 +62,10 @@ export {
     DataTables,
     //Tweet
     Tweet,
+    //CardBot
+    CardBot,
+    //CardAuthor2
+    CardAuthor2,
+    //User
+    UserInfo,
 };

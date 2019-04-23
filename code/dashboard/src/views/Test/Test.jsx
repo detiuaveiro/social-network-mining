@@ -1,26 +1,25 @@
 import React from "react";
 // react plugin used to create charts
 // function that returns a color based on an interval of numbers
-
-import axios from 'axios';
-
+import * as popoto from "popoto";
+import { PanelHeader} from "components";
 class Test extends React.Component {
-  state = {
-    divisions: []
-  };
-  componentDidMount() {
-    axios.get('/twitter/tweets')
-      .then(res => {
-        const divisions = res.data;
-        this.setState({ divisions });
-        console.log(this.state.divisions)
-      })
-  }
+
   render() {
     return (
       <div>
-          {this.state.divisions.map(tweet => <div>test</div>
-          )}
+        <PanelHeader
+          size="sm"
+          content={
+            <div>
+              <div className="header text-center">
+                <h2 className="title">Network</h2>
+              </div>
+            </div>
+          }
+        />
+        <div id="popoto-graph" className="ppt-div-graph w-100" style={{height:600}}>
+        </div>
       </div>
     );
   }

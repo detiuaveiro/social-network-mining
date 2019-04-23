@@ -1,8 +1,8 @@
 import React from "react";
 import axios from 'axios';
 
-import { PanelHeader, FormInputs, CardAuthor, CardNumbers, Tweet} from "components";
-import { Nav, NavItem, NavLink, Card, CardHeader, CardBody, TabPane, TabContent, Row, Col } from 'reactstrap';
+import {FormInputs, CardAuthor, CardNumbers, Tweet, UserInfo, PanelHeader} from "components";
+import {Nav, NavItem, NavLink, Card, CardHeader, CardBody, TabPane, TabContent, Row, Col, Badge } from 'reactstrap';
 
 import userAvatar from "assets/img/mike.jpg";
 
@@ -16,25 +16,27 @@ class User extends React.Component {
       .then(res => {
         const tweets = res.data;
         this.setState({ tweets });
-        console.log(this.state.tweets)
       })
   }
+
   constructor(props) {
     super(props);
-      this.toggle = this.toggle.bind(this);
+    this.toggle = this.toggle.bind(this);
   }
 
   toggle(tab) {
-      if (this.state.activeTab !== tab) {
-          this.setState({
-              activeTab: tab
-          });
-      }
+    if (this.state.activeTab !== tab) {
+        this.setState({
+            activeTab: tab
+        });
+    }
   }
   render() {
     return (
       <div>
-        <PanelHeader size="sm" />
+        <PanelHeader
+          size="sm"
+        />
         <div className="content">
           <Row>
             <Col md={4} xs={12}>
@@ -70,7 +72,8 @@ class User extends React.Component {
             <Col md={8} xs={12}>
               <Card>
                 <CardHeader>
-                  <h5 className="title"><i className="fab fa-2x fa-twitter"></i> Profile</h5>
+                  <h5 className="title">Profile <Badge color="light"><i className="fab fa-1x fa-twitter"></i></Badge>
+</h5>
                 </CardHeader>
                 <CardBody>
                   <form>
@@ -198,20 +201,37 @@ class User extends React.Component {
                 <CardBody>
                     <TabContent activeTab={this.state.activeTab} className="text-center">
                         <TabPane tabId="1">
-                          {this.state.tweets.map(tweet => <Tweet text={tweet.text}/>
-                          )}
+                          <Row>
+                            {this.state.tweets.map(tweet => 
+                            <Col xs={12} md={6}>
+                              <Tweet text={tweet.text}/>
+                            </Col>
+                            )}
+                          </Row>
                         </TabPane>
                         <TabPane tabId="2">
-                            <p>Not ready</p>
+                          <Row>
+                            {this.state.tweets.map(tweet => 
+                            <Col xs={12} md={6}>
+                              <UserInfo text={tweet.text}/>
+                            </Col>
+                            )}
+                          </Row>
                         </TabPane>
                         <TabPane tabId="3">
-                            <p>Not ready</p>
+                          <Row>
+                            {this.state.tweets.map(tweet => 
+                            <Col xs={12} md={6}>
+                              <UserInfo text={tweet.text}/>
+                            </Col>
+                            )}
+                          </Row>
                         </TabPane>
-                        <TabPane tabId="3">
-                            <p>Not ready</p>
+                        <TabPane tabId="4">
+                            <p>Not ready 4</p>
                         </TabPane>
-                        <TabPane tabId="3">
-                            <p>Not ready</p>
+                        <TabPane tabId="5">
+                            <p>Not ready 5</p>
                         </TabPane>
                     </TabContent>
                 </CardBody>

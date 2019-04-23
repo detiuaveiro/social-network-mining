@@ -16,9 +16,9 @@ class CardInteractions extends React.Component {
               key={key}
             >
               <i className={prop.icon}/>
-              <h5 className="text-muted">
+              <h6 className="text-muted">
                 {prop.number}
-              </h5>              
+              </h6>              
             </Button>
           );
         })}
@@ -29,7 +29,7 @@ class CardInteractions extends React.Component {
 
 CardInteractions.propTypes = {
   // size of all social buttons
-  size: PropTypes.oneOf(["sm", "lg"]),
+  size: PropTypes.oneOf(["xs", "sm", "lg"]),
   // example: [{icon: "name of icon", href="href of icon"},...]
   socials: PropTypes.arrayOf(PropTypes.object)
 };
