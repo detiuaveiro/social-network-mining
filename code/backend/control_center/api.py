@@ -16,6 +16,10 @@ def home():
 def user_general():
     users = json_to_send["users"]
     data = [v for i,v in users.items()]
+    for i in data:
+        user_id=str(i["id"])
+        i.pop("id")
+        i["id"] = user_id
     return jsonify(data) #Response(json.dumps(data),mimetype='application/json')
     #return "<h1>"+ str(mongoUsers.dataCollection()) + "</h1>"
 
@@ -27,10 +31,13 @@ def user_general_stats():
 @app.route("/twitter/users/<id>")
 def user_by_id(id):
     try:
+        user_id = str(json_to_send["users"][id]["id"])
+        json_to_send["users"][id].pop("id")
+        json_to_send["users"][id]["id"] = user_id
         user = json_to_send["users"][id]
         return jsonify(user)
     except KeyError:
-        return "not found"
+        return jsonify({"id":"not found"})
     #return "<h1>"+ str(mongoUsers.dataCollection(findText={"id":int(id)})) + "</h1>"
 
 @app.route("/twitter/users/<id>/tweets")
