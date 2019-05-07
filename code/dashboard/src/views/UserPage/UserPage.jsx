@@ -9,6 +9,7 @@ import userAvatar from "assets/img/mike.jpg";
 class User extends React.Component {
   state = {
     tweets: [],
+    profile_data: [],
     activeTab: '1',
   };
   componentDidMount() {
@@ -16,6 +17,11 @@ class User extends React.Component {
       .then(res => {
         const tweets = res.data;
         this.setState({ tweets });
+      })
+    axios.get('/twitter/users/1103294806497902594')
+      .then(res => {
+        const profile_data = res.data;
+        this.setState({ profile_data });
       })
   }
 
@@ -43,13 +49,13 @@ class User extends React.Component {
               <Card className="card-user">
                 <CardBody>
                   <CardAuthor
-                    avatar={userAvatar}
+                    avatar={this.state.profile_data["profile_image_url_https"]}
                     avatarAlt="..."
-                    title="Afonso Silva"
-                    description="@afonsosilva01"
+                    title={this.state.profile_data["name"]}
+                    description={"@"+this.state.profile_data["screen_name"]}
                   />
                   <p className="description text-center">
-                    Description<br />
+                    {this.state.profile_data["description"]}<br />
                   </p>
                 </CardBody>
                 <hr />
@@ -58,12 +64,15 @@ class User extends React.Component {
                   socials={[
                     {
                       text: "Tweets",
+                      number:30
                     },
                     {
                       text: "Following",
+                      number:this.state.profile_data["friends_count"]
                     },
                     {
                       text: "Followers",
+                      number:this.state.profile_data["followers_count"]
                     }
                   ]}
                 />
@@ -88,6 +97,7 @@ class User extends React.Component {
                           inputProps: {
                             type: "text",
                             disabled: true,
+                            defaultValue: this.state.profile_data["name"]
                           }
                         },
                         {
@@ -95,6 +105,7 @@ class User extends React.Component {
                           inputProps: {
                             type: "text",
                             disabled: true,
+                            defaultValue: this.state.profile_data["screen_name"]
                           }
                         },
                       ]}
@@ -114,6 +125,7 @@ class User extends React.Component {
                           inputProps: {
                             type: "text",
                             disabled: true,
+                            defaultValue: this.state.profile_data["location"]
                           }
                         }
                       ]}
@@ -128,6 +140,7 @@ class User extends React.Component {
                           inputProps: {
                             type: "email",
                             disabled: true,
+                            defaultValue: "marianalopes1@protonmail.com"
                           }
                         },
                       ]}
@@ -141,8 +154,7 @@ class User extends React.Component {
                             type: "textarea",
                             rows: "4",
                             cols: "80",
-                            defaultValue:
-                              "Description.",
+                            defaultValue: this.state.profile_data["description"],
                             disabled: true,
                             }
                         }
@@ -204,7 +216,7 @@ class User extends React.Component {
                           <Row>
                             {this.state.tweets.map(tweet => 
                             <Col xs={12} md={6}>
-                              <Tweet text={tweet.text}/>
+                              <Tweet info={tweet}/>
                             </Col>
                             )}
                           </Row>
@@ -213,7 +225,7 @@ class User extends React.Component {
                           <Row>
                             {this.state.tweets.map(tweet => 
                             <Col xs={12} md={6}>
-                              <UserInfo text={tweet.text}/>
+                              <UserInfo info={tweet}/>
                             </Col>
                             )}
                           </Row>
@@ -222,7 +234,7 @@ class User extends React.Component {
                           <Row>
                             {this.state.tweets.map(tweet => 
                             <Col xs={12} md={6}>
-                              <UserInfo text={tweet.text}/>
+                              <UserInfo info={tweet}/>
                             </Col>
                             )}
                           </Row>

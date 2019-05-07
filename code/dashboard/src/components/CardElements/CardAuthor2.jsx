@@ -11,7 +11,7 @@ class CardAuthor2 extends React.Component {
   render() {
     return (
       <div className="author">
-        <Link to={this.props.link ? this.props.link : "/bots/1"}>
+        <Link to={this.props.link ? this.props.link : "/dashboard"}>
           <Row>
             <Col xs={12} md={4}>
               <img

@@ -88,8 +88,8 @@ class BotsPage extends React.Component {
               <TabPane tabId="1">
                 <Row>
                   {this.state.twitter_bots.map(bots => 
-                    <Col xs={12} md={3}>
-                      <CardBot/>
+                    <Col xs={12} md={4}>
+                      <CardBot info={bots} />
                     </Col>
                   )}
                 </Row>
@@ -102,8 +102,8 @@ class BotsPage extends React.Component {
               <TabPane tabId="2">
                 <Row>
                   {this.state.twitter_bots.map(bots => 
-                    <Col xs={12} md={3}>
-                      <CardBot/>
+                    <Col xs={12} md={4}>
+                      <CardBot info={bots}/>
                     </Col>
                   )}
                 </Row>

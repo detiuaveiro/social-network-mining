@@ -23,20 +23,20 @@ class Tweet extends React.Component {
             <Col xs={12} md={2}>
               <img
                 className="avatar border-gray"
-                src={userAvatar}
+                src={this.props.info["user"]["profile_image_url_https"]}
               />
             </Col>
-            <Col className="text-left my-auto" xs={12} md={6}>
-              <h6 className="title">Afonso Silva</h6>
-              <p className="description">@afonsosilva01</p>
+            <Col className="text-left my-auto" xs={12} md={4}>
+              <h6 className="title">{this.props.info["user"]["name"]}</h6>
+              <p className="description">{"@"+this.props.info["user"]["screen_name"]}</p>
             </Col>
-            <Col xs={12} md={2}>
+            <Col xs={12} md={3}>
               <p className="description text-left">
-                23/4
+                {this.props.info["created_at"]}
               </p>
             </Col>
             <Col xs={12} md={2}>
-              <a>
+              <a href={this.props.info["entities"]["urls"]["url"]}>
                 <Badge color="light">
                   <i class="fas fa-2x fa-external-link-alt"></i>
                 </Badge>
@@ -47,7 +47,7 @@ class Tweet extends React.Component {
             <Col xs={12} md={2}>
             </Col>
             <Col xs={12} md={10}>
-              <p className="text-left">O pai da Lara @brunobiancoleal sabe tudo sobre a #NovaPrevid\u00eancia. E aproveitou para esclarecer alguns fatos sobre\u2026</p>
+              <p className="text-left">{this.props.info["text"]}</p>
             </Col>
           </Row>
           <Row>
@@ -59,22 +59,18 @@ class Tweet extends React.Component {
                 socials={[
                   {
                     icon: "fas fa-heart",
-                    number: 123,
+                    number: this.props.info["favorite_count"],
                   },
                   {
                     icon: "fas fa-retweet",
-                    number: 43,
-                  },
-                  {
-                    icon: "fas fa-comments",
-                    number: 12,
+                    number: this.props.info["retweet_count"],
                   },
                 ]}
               />
             </Col>
             <Col className="text-center my-auto" xs={12} md={5}>
               <a>
-                <i class="fas fa-map-marker-alt"></i> Location
+                <i class="fas fa-map-marker-alt"></i> {this.props.info["geo"]}
               </a>
             </Col>
           </Row>

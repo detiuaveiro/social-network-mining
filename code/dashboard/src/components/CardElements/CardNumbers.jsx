@@ -17,7 +17,7 @@ class CardNumbers extends React.Component {
               >
                 {prop.text}
                 <p className="text-muted">
-                  12
+                  {prop.number}
                 </p>
               </Button>
           );

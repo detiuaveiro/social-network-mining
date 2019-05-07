@@ -5,19 +5,27 @@ import PropTypes from "prop-types";
 import {CardAuthor2, CardInteractions, Stats} from "components";
 import {Card, CardHeader, CardBody, CardFooter, Badge } from 'reactstrap';
 
-import userAvatar from "assets/img/mike.jpg";
-
 
 class CardBot extends React.Component {
+  state = {
+    bot_id: this.props.info["id"],
+    title: this.props.info["name"],
+    image: this.props.info["profile_image_url_https"],
+    username: this.props.info["screen_name"],
+  }
+  componentDidMount(){
+    console.log(this.props.info)
+  }
   render() {
     return (
       <Card>
         <CardHeader>
           <CardAuthor2
-            avatar={userAvatar}
+            avatar={this.state.image}
             avatarAlt="..."
-            title="Afonso Silva"
-            description="@afonsosilva01"
+            title={this.state.title}
+            description={"@"+this.state.username}
+            link={"bots/"+this.state.bot_id}
           />
           <p className="description text-center">
           <Badge color="light"><i className="fab fa-2x fa-twitter"></i></Badge>
@@ -31,15 +39,15 @@ class CardBot extends React.Component {
             socials={[
               {
                 icon: "fas fa-2x fa-quote-left",
-                number: 123,
+                number: 30,
               },
               {
                 icon: "fas fa-2x fa-retweet",
-                number: 43,
+                number: 12,
               },
               {
                 icon: "fas fa-2x fa-comments",
-                number: 12,
+                number: 0,
               },
             ]}
           />
@@ -63,6 +71,7 @@ CardBot.propTypes = {
   // size of all social buttons
   size: PropTypes.oneOf(["sm", "lg"]),
   // example: [{icon: "name of icon", href="href of icon"},...]
+  info: PropTypes.objectOf(PropTypes.object),
   socials: PropTypes.arrayOf(PropTypes.object)
 };
 
