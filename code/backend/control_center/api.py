@@ -11,7 +11,6 @@ postgres=postgreSQLConnect()
 timescale=postgres.connect("postgres")
 policy=postgres.connect("policies")
 neo=Neo4jAPI()
-
 '''/
     users
         user
@@ -30,6 +29,7 @@ def home():
 
 @app.route("/twitter/users")
 def user_general():
+
     mapa=mongo.dataCollection()
     for i in mapa:
         user_id=str(i["id"])
@@ -127,7 +127,6 @@ def tt_bot_logs(id):
 
 @app.route("/twitter/tweets")
 def tt_tweets():
-    
     mapa=mongo_t.dataCollection()
     return jsonify(mapa)
 
