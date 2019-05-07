@@ -6,9 +6,9 @@ mongo=AppMongo(app,"users")
 mongo_t=AppMongo(app,"tweets")
 #mongo.insertOneData(2, ["porto", "desporto"], "abilio", "o porto foi um justo vencedor!")
 
-f=open("/home/user/Transferências/file.json","r+")
+#f=open("/home/user/Transferências/file.json","r+")
 
-json_to_send=json.load(f)
+#json_to_send=json.load(f)
 
 '''/
     users
@@ -24,27 +24,18 @@ def home():
     #print(mongo.dataCollection(findText={"id":1103294806497902594}))
     #mongo_t.removeData("")
     #print(mongo_t.dataCollection())
-    return jsonify(mongo_t.dataCollection())
+    return "root"#jsonify(mongo_t.dataCollection())
 
 @app.route("/twitter/users")
 def user_general():
-    '''
-    mapa(?)=mongo.dataCollection()
-    data = [v for i,v in users.items()]
-    for i in data:
+    
+    mapa=mongo.dataCollection()
+    for i in mapa:
         user_id=str(i["id"])
         i.pop("id")
         i["id"] = user_id
-    return jsonify(data)
-    '''
-    users = json_to_send["users"]
-    data = [v for i,v in users.items()]
-    for i in data:
-        user_id=str(i["id"])
-        i.pop("id")
-        i["id"] = user_id
-    return jsonify(data) #Response(json.dumps(data),mimetype='application/json')
-
+    return jsonify(mapa)
+    
 @app.route("/twitter/users/stats")
 def user_general_stats():
     #stand by
@@ -52,24 +43,15 @@ def user_general_stats():
 
 @app.route("/twitter/users/<id>")
 def user_by_id(id):
-    '''
+    
     try:
-        mapa(?)=mongo.findCollection(findText={"id":int(id)})
-        mapa(?).pop("id")
-        mapa(?)["id"]=str(id)
-        return jsonify(mapa(?))
-    except ERROR_PYMONGO_INVALID_KEY:
-        return jsonify({"id":"not found"})
-    '''
-    try:
-        user_id = str(json_to_send["users"][id]["id"]) #id -> str(id)
-        json_to_send["users"][id].pop("id") #remove id as ID
-        json_to_send["users"][id]["id"] = user_id #add str(id) as ID
-        user = json_to_send["users"][id] #good to go
-        return jsonify(user)
-    except KeyError:
-        return jsonify({"id":"not found"})
-
+        mapa=mongo.dataCollection(findText={"id":int(id)})
+        mapa[0].pop("id")
+        mapa[0]["id"]=(str(id))
+        return jsonify(mapa)
+    except TypeError:
+        return jsonify({"error":"invalid"})
+    
 @app.route("/twitter/users/<id>/tweets")
 def user_tweets(id):
     #query nos tweets a procurar pelo id=id
@@ -78,13 +60,8 @@ def user_tweets(id):
 
 @app.route("/twitter/users/<id>/followers")
 def user_followers(id):
-    '''
-    TODO:VERIFICAR SE PERMITE FAZER 'SELECT' via PyMongo
-
-    val/mapa(?)=mongo.findCollection(findText={"id":int(id)}, {"followers_count":1,"_id":0})
-    return jsonify(val/mapa(?))
-    '''
-    followers = json_to_send["users"][id]["followers_count"]
+    
+    followers = mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"followers_count":True,"_id":False})
     return jsonify(followers)
     
 
