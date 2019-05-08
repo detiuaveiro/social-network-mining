@@ -32,9 +32,13 @@ FAVOURITE_CHANCE = 0.5
 MAX_RETRIES = 5
 
 # Messagin-related settings
+VHOST = "PI"
 TASKS_EXCHANGE = "tasks_deliver"
 LOG_EXCHANGE = "bot_logs"
 TASKS_QUEUE_PREFIX = "bot"
 TASKS_ROUTING_KEY_PREFIX = "tasks.twitter"
 QUERY_EXCHANGE = "queries"
+QUERY_ROUTING_KEY = "queries.twitter"
 DATA_EXCHANGE = "twitter_data"
+DATA_ROUTING_KEY = "data.twitter"
+LOG_ROUTING_KEY = "logs.twitter"

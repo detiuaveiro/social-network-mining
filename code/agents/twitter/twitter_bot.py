@@ -2,16 +2,16 @@ import argparse
 import logging
 import os
 import sys
-from typing import List, Any, Callable, Optional
+from typing import List, Any, Callable, Optional, Dict
 
 import tweepy
+from pyrabbit2 import Client
 
 import settings
 import utils
 from cache import Cache
 from enums import Task, MessageType
 from exceptions import NoMessagesInQueue
-from messaging import MessagingWrapper
 from models import User, Tweet, BaseModel
 
 log = logging.getLogger("bot-agents")
@@ -22,7 +22,7 @@ log.addHandler(handler)
 
 
 class TwitterBot:
-    def __init__(self, messaging_manager: MessagingWrapper, *, consumer_key: str,
+    def __init__(self, messaging_manager: Client, *, consumer_key: str,
                  consumer_secret: str,
                  token: str, token_secret: str,
                  user_agent: str,
@@ -33,6 +33,7 @@ class TwitterBot:
         self._proxies = tor_proxies
         self._id = token.split("-")[0]
         self._cache: Cache = Cache(f"cache_{self._id}", logger=log)
+        self.vhost = settings.VHOST
         # Name of the exchange to receive the tasks
         self.tasks_exchange: str = settings.TASKS_EXCHANGE
         # Name of the queue we're going to use to receive the tasks
@@ -40,10 +41,13 @@ class TwitterBot:
         self.tasks_routing_key = f"{settings.TASKS_ROUTING_KEY_PREFIX}.{self._id}"
         # Name of the exchange to upload the actions
         self.query_exchange = settings.QUERY_EXCHANGE
+        self.query_routing_key = settings.QUERY_ROUTING_KEY
         # Name of the exchange to upload the logs
         self.log_exchange = settings.LOG_EXCHANGE
+        self.log_routing_key = settings.LOG_ROUTING_KEY
         # Name of the exchange to upload data
         self.data_exchange = settings.DATA_EXCHANGE
+        self.data_routing_key = settings.DATA_ROUTING_KEY
         # Last Tweet read
         self.last_home_tweet: int = None
         self.key: str = consumer_key
@@ -100,15 +104,13 @@ class TwitterBot:
         # edge case, return data
         return dirty_data
 
-    def _setup(self):
-        log.debug(f"Setting up with: {self}")
-        log.debug("---------------------------------------")
+    def _setup_messaging(self):
         log.debug("Setting up Messaging to: Receive Tasks")
         log.debug(f"Connecting to exchange {self.tasks_exchange}")
-        self.messaging.create_direct_exchange(self.tasks_exchange)
+        self.messaging.create_exchange(vhost=self.vhost, name=self.tasks_exchange, xtype="direct")
         log.debug(f"Binding exchange to queue {self.tasks_queue} with key {self.tasks_routing_key}")
-        self.messaging.bind_queue_to_exchange(self.tasks_exchange, self.tasks_queue,
-                                              routing_key=self.tasks_routing_key)
+        self.messaging.create_binding(vhost=self.vhost, exchange=self.tasks_exchange,
+                                      queue=self.tasks_queue, rt_key=self.tasks_routing_key)
         log.info("---------------------------------------")
         log.info(
             f"Connected to Messaging Service using: exchange={self.tasks_exchange}, queue={self.tasks_queue}, routing_key={self.tasks_routing_key}")
@@ -117,7 +119,7 @@ class TwitterBot:
         log.debug("---------------------------------------")
         log.debug("Setting up Messaging to: Upload Logs")
         log.debug(f"Connecting to exchange {self.log_exchange}")
-        self.messaging.create_direct_exchange(self.log_exchange)
+        self.messaging.create_exchange(vhost=self.vhost, name=self.log_exchange, xtype="direct")
         log.info("---------------------------------------")
         log.info(
             f"Connected to Messaging Service using: exchange={self.log_exchange}")
@@ -126,7 +128,7 @@ class TwitterBot:
         log.debug("---------------------------------------")
         log.debug("Setting up Messaging to: Make Queries")
         log.debug(f"Connecting to exchange {self.query_exchange}")
-        self.messaging.create_direct_exchange(self.query_exchange)
+        self.messaging.create_exchange(vhost=self.vhost, name=self.query_exchange, xtype="direct")
         log.info("---------------------------------------")
         log.info(
             f"Connected to Messaging Service using: exchange={self.query_exchange}")
@@ -135,11 +137,16 @@ class TwitterBot:
         log.debug("---------------------------------------")
         log.debug("Setting up Messaging to: Upload Data")
         log.debug(f"Connecting to exchange {self.data_exchange}")
-        self.messaging.create_direct_exchange(self.data_exchange)
+        self.messaging.create_exchange(vhost=self.vhost, name=self.data_exchange, xtype="direct")
         log.info("---------------------------------------")
         log.info(
             f"Connected to Messaging Service using: exchange={self.data_exchange}")
         log.info("Ready to: Upload Data")
+
+    def _setup(self):
+        log.debug(f"Setting up with: {self}")
+        log.debug("---------------------------------------")
+        self._setup_messaging()
         log.debug("Verifying credentials")
         self.user: User = self._request(self._api.verify_credentials)
         log.debug(f"Logged in as:{self.user}")
@@ -152,6 +159,13 @@ class TwitterBot:
         self.last_home_tweet = self._cache.get("last_home_tweet", None)
         log.debug(f"Last Tweet was: <{self.last_home_tweet}>")
 
+    def get_new_message(self):
+        msg: List[Dict] = self.messaging.get_messages(vhost=self.vhost, qname=self.tasks_queue,
+                                                      count=1)
+        if msg and msg[0].get("payload", None):
+            return msg[0]["payload"]
+        raise NoMessagesInQueue("Queue has no messages left!")
+
     def run(self):
         self._setup()
         retries = settings.MAX_RETRIES
@@ -159,7 +173,7 @@ class TwitterBot:
         while True:
             try:
                 log.debug(f"Getting next task from {self.tasks_queue}")
-                task_msg = self.messaging.get_next_message(self.tasks_queue)
+                task_msg = self.get_new_message()
                 task_type, task_params = task_msg["type"], task_msg["params"]
                 log.debug(f"Received task {task_msg} with:", task_params)
                 if task_msg == Task.FIND_BY_KEYWORDS:
@@ -168,9 +182,12 @@ class TwitterBot:
                 elif task_msg == Task.FOLLOW_USERS:
                     self.follow_users_routine(task_params["users"])
                     pass
+                elif task_msg == Task.LIKE_TWEETS:
+                    self.like_tweets_routine(task_params["tweets"])
+                elif task_msg == Task.RETWEET_TWEETS:
+                    self.retweet_tweets_routine(task_params["tweets"])
                 else:
                     log.warning(f"Received unknown task_msg: {task_msg}")
-
             except NoMessagesInQueue:
                 if retries == 0:
                     break
@@ -183,28 +200,50 @@ class TwitterBot:
         log.warning("TODO: Implement Clean up")
         self._cache.close()
 
+    def like_tweets_routine(self, tweets):
+        log.debug("Starting 'Like Tweets' routine...")
+        for tweet_id in tweets:
+            tweet: Tweet = self._request(self._api.get_status, tweet_id=tweet_id)
+            if tweet.favorited:
+                log.debug(f"Tweet with ID={tweet.id} already liked, no need to like again")
+            else:
+                log.debug(f"Liking Tweet with ID={tweet.id}")
+                tweet.like()
+                self.send_event(MessageType.EVENT_TWEET_LIKED, tweet)
+
+    def retweet_tweets_routine(self, tweets):
+        log.debug("Starting 'Retweet Tweets' routine...")
+        for tweet_id in tweets:
+            tweet: Tweet = self._request(self._api.get_status, tweet_id=tweet_id)
+            if tweet.retweeted:
+                log.debug(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
+            else:
+                log.debug(f"Retweeting Tweet with ID={tweet.id}")
+                tweet.retweet()
+                self.send_event(MessageType.EVENT_TWEET_RETWEETED, tweet)
+
     def find_keywords_routine(self, keywords):
-        log.debug("Starting Keywords Routine...")
-        log.debug("Getting Home Timeline")
+        log.info("Starting Keywords Routine...")
+        log.info("Getting Home Timeline")
         tweet_numbers = utils.random_between(settings.MIN_HOME_TIMELINE_TWEETS,
                                              settings.MAX_HOME_TIMELINE_TWEETS)
-        log.debug(f"Trying to get {tweet_numbers} tweets")
+        log.info(f"Trying to get {tweet_numbers} tweets")
         timeline_posts = self.get_user_timeline_tweets(self.user,
                                                        count=tweet_numbers,
                                                        max_id=self.last_home_tweet)
 
         if not timeline_posts:
-            log.debug(f"No tweets found in timeline")
+            log.info(f"No tweets found in timeline")
         else:
-            log.debug(f"Timeline has {len(timeline_posts)} tweets")
-            log.debug("'Reading' tweets in timeline")
+            log.info(f"Timeline has {len(timeline_posts)} tweets")
+            log.info("'Reading' tweets in timeline")
             self.read_timeline(self.user, timeline_posts, keywords)
-        log.debug("Exiting Keywords Routine...")
+        log.info("Exiting Keywords Routine...")
 
     def follow_users_routine(self, users: List[int]):
-        log.debug("Starting Follow Users Routine...")
+        log.info("Starting 'Follow Users' routine...")
         if not users:
-            log.debug("No users provided")
+            log.info("No users provided!")
         else:
             for user_id in users:
                 # Skip our own, just in case
@@ -212,11 +251,11 @@ class TwitterBot:
                     continue
                 # get the user object
                 # TODO: Use the cache as, you know, an actual cache
-                log.debug(f"Getting user object for User with ID={user_id}")
+                log.info(f"Getting user object for User with ID={user_id}")
                 user = self._request(self._api.get_user, user_id=user_id)
-                log.debug(f"Found with: ", user)
+                log.info(f"Found with: ", user)
                 self.search_in_user(user)
-        log.debug("Exiting Follow Users Routine...")
+        log.info("Exiting Follow Users Routine...")
 
     def send_user(self, user: User) -> None:
         """ Helper function for sending the user to the server
@@ -224,13 +263,14 @@ class TwitterBot:
         ----------
         user : `class` User
         """
-        log.debug(f"Sending Tweet object to: {self.data_exchange} with", user)
+        log.debug(f"Sending User object to: {self.data_exchange} with", user)
         payload = {
             "type"     : MessageType.SEND_USER,
             "timestamp": utils.current_time(),
             "data"     : user.to_json()
         }
-        self.messaging.publish_message(self.data_exchange, data=payload)
+        self.messaging.publish(vhost=self.vhost, xname=self.data_exchange,
+                               rt_key=self.data_routing_key, payload=utils.to_json(payload))
 
     def send_tweet(self, tweet: Tweet):
         """ Helper function for sending a tweet to the server
@@ -244,13 +284,31 @@ class TwitterBot:
             "timestamp": utils.current_time(),
             "data"     : tweet.to_json()
         }
-        self.messaging.publish_message(self.data_exchange, data=payload)
+        self.messaging.publish(vhost=self.vhost, xname=self.data_exchange,
+                               rt_key=self.data_routing_key, payload=utils.to_json(payload))
 
-    def send_event(self, messageType: MessageType, data: BaseModel):
+    def send_query(self, messageType: MessageType, data: BaseModel):
         """ Generic Helper function for sending an to the server
         Parameters
         ----------
-        tweet : `class` Tweet
+        messageType : `class` MessageType the event to send
+        data: `class` BaseModel the data associated with the event (usually the object)
+        """
+        log.debug(f"Sending query <{messageType}> to: {self.query_exchange} with", data)
+        payload = {
+            "type"     : messageType,
+            "timestamp": utils.current_time(),
+            "data"     : data.to_json(),
+        }
+        self.messaging.publish(vhost=self.vhost, xname=self.query_exchange,
+                               rt_key=self.query_routing_key, payload=utils.to_json(payload))
+
+    def send_event(self, messageType: MessageType, data: BaseModel):
+        """ Generic Helper function for sending an event to the server
+        Parameters
+        ----------
+        messageType : `class` MessageType the event to send
+        data: `class` BaseModel the data associated with the event (usually the object)
         """
         log.debug(f"Sending event <{messageType}> to: {self.log_exchange} with", data)
         payload = {
@@ -258,20 +316,39 @@ class TwitterBot:
             "timestamp": utils.current_time(),
             "data"     : data.to_json(),
         }
-        self.messaging.publish_message(self.log_exchange, data=payload)
+        self.messaging.publish(vhost=self.vhost, xname=self.log_exchange,
+                               rt_key=self.log_routing_key, payload=utils.to_json(payload))
+
+    def query_like_tweet(self, tweet: Tweet):
+        if tweet.favorited:
+            log.info(f"Tweet with ID={tweet.id} already liked, no need to like again")
+            return
+        else:
+            log.info(f"Asking to like Tweet with ID={tweet.id}")
+            self.send_query(MessageType.QUERY_TWEET_LIKE, tweet)
+
+    def query_retweet_tweet(self, tweet: Tweet):
+        if tweet.retweeted:
+            log.info(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
+            return
+        else:
+            log.info(f"Asking to Retweet Tweet with ID={tweet.id}")
+            self.send_query(MessageType.QUERY_TWEET_RETWEET, tweet)
 
     def search_in_user(self, user_obj: User):
-        log.debug(f"Searching User with id={user_obj.id}")
+        log.info(f"Searching User with id={user_obj.id}")
         # Save the user
         self._cache.save_user(user_obj)
         self.send_user(user_obj)
         # read the user's  description
         utils.read_text_and_wait(user_obj.description)
         if user_obj.protected:
-            log.debug(f"Found protected user with id={user_obj.id}")
+            log.info(f"Found protected user with id={user_obj.id}")
             # just try to follow him, since we can't read his tweets
             try:
                 user_obj.follow()
+                log.info(f"Followed User with ID={user_obj.id}")
+                self.send_event(MessageType.EVENT_USER_FOLLOWED, user_obj)
             except tweepy.error.TweepError as e:
                 if e.api_code == 161:
                     # can't follow, just ignore
@@ -287,15 +364,16 @@ class TwitterBot:
             # get the user's timeline tweets
             tweets = self.get_user_timeline_tweets(user_obj, count=tweets_to_get)
             self.read_timeline(user_obj, tweets)
-            # TODO: implement logic for following user?
             try:
                 user_obj.follow()
+                log.info(f"Followed User with ID={user_obj.id}")
+                self.send_event(MessageType.EVENT_USER_FOLLOWED, user_obj)
             except tweepy.error.TweepError as e:
                 if e.api_code == 161:
-                    # can't follow, just ignore
-                    # TODO: implement logic for resuming follows
+                    log.error(f"Unable to follow User with SPECIAL api_code={e.api_code}")
                     pass
                 else:
+                    log.error(f"Unable to follow User with SPECIAL api_code={e.api_code}")
                     raise e
             return
 
@@ -305,7 +383,7 @@ class TwitterBot:
         Helper method so we don't have to worry about handling the home timeline
         ----------
         usr : User
-            The User to get the tweets for 
+            The User to get the tweets for
         kwargs : Dict[Any]
             Keyword arguments for the api
         Returns
@@ -340,9 +418,7 @@ class TwitterBot:
             if self.user.id == tweet.user.id:
                 continue
             if not keywords:
-                log.debug(f"Liking Tweet with ID={tweet.id}")
-                tweet.like()
-                self.send_event(MessageType.TWEET_LIKED, tweet)
+                self.query_like_tweet(tweet)
                 continue
             else:
                 # For reading other timelines
@@ -357,17 +433,13 @@ class TwitterBot:
                     log.debug(
                         f"Liking chance of «{favourite_chance}» out of «{settings.FAVOURITE_CHANCE}»")
                     if favourite_chance >= settings.FAVOURITE_CHANCE:
-                        log.debug(f"Liking Tweet with ID={tweet.id}")
-                        tweet.like()
-                        self.send_event(MessageType.TWEET_LIKED, tweet)
+                        self.query_like_tweet(tweet)
                     # same for retweeting
                     retweet_chance = utils.random_between(percentage_matches, 1)
                     log.debug(
                         f"Retweeting chance of «{retweet_chance}» out of «{settings.RETWEET_CHANCE}»")
                     if retweet_chance >= settings.RETWEET_CHANCE:
-                        log.debug(f"Retweeting Tweet with ID={tweet.id}")
-                        tweet.retweet()
-                        self.send_event(MessageType.TWEET_RETWEED, tweet)
+                        self.query_retweet_tweet(tweet)
                 # TODO: for reading our home timeline?
                 # TODO: Do logic for replies
 
@@ -397,8 +469,10 @@ if __name__ == "__main__":
     token_secret = os.environ["TOKEN_SECRET"]
 
     # TODO: change password
-    messaging_manager = MessagingWrapper(host=server,
-                                         auth=('pi_rabbit_admin', 'yPvawEVxks7MLg3lfr3g'))
+    messaging_manager = Client(api_url=server,
+                               user='pi_rabbit_admin',
+                               passwd='yPvawEVxks7MLg3lfr3g')
+
     bot = TwitterBot(messaging_manager,
                      tor_proxies=proxies, user_agent=user_agent, consumer_key=key,
                      consumer_secret=secret, token=token, token_secret=token_secret)
