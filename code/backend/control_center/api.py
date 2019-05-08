@@ -143,9 +143,9 @@ def tt_tweet_stats():
     '''
     pipeline=[
         {"$unwind": "$favorite_count"},
-        {"$unwind": "$retweet_count"},
+        #{"$unwind": "$retweet_count"},
         {"$group": {"_id": "$favorite_count", "count": {"$sum": 1}}},
-        {"$group": {"_id": "$retweet_count", "count": {"$sum": 1}}},
+        #{"$group": {"_id": "$retweet_count", "retweet_count": {"$sum": 1}}},
     ]
     mapa=mongo_t.aggregate(pipeline)
     return jsonify(mapa)

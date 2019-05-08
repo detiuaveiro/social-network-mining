@@ -13,7 +13,7 @@ class AppMongo:
 		return list(self.app.db.collection.find(findText,projection))
 
 	def aggregate(self,pipeline):
-		return list(self.app.db.aggregate(pipeline))
+		return list(self.app.db.collection.aggregate(pipeline))
 	
 	def getCount(self, findText={}):
 		return self.app.db.collection.count_documents(findText)
