@@ -1,5 +1,6 @@
 from enum import IntEnum
 from mongo_api import MongoAPI
+from postgreSQL import postgreSQL_API
 
 class MessageTypes(IntEnum):
     USER_FOLLOWED = 1
@@ -16,10 +17,16 @@ class MessageTypes(IntEnum):
 class Task():
     def __init__(self):
         self.mongo = MongoAPI()
+        self.postgreSQL = postgreSQL_API("Tweets")
 
     def menu(self, message_type, message):
         if (message_type == MessageTypes.USER_FOLLOWED):
-            
+            pass
+        elif (message_type == MessageTypes.TWEET_LIKED):
+            pass
+        elif (message_type == MessageTypes.TWEET_RETWEETDED):
+            pass
+        elif (message_type == MessageTypes.TWEET_REPLIED):
             pass
         elif (message_type == MessageTypes.REQUEST_TWEET_LIKE):
             pass
@@ -35,3 +42,4 @@ class Task():
         elif(message_type == MessageTypes.SAVE_TWEET):
             print('--------------- Saving Tweet ---------------')
             self.mongo.save('tweets', message['data'])
+            self.postgreSQL.insertDataTweets(message['data']['timestamp'],message['data']['id'],message['data']['user_id'],message['data']['likes_count'],message['data']['retweets_count'])
