@@ -138,17 +138,31 @@ def tt_tweet_stats():
         {"$group": {"_id": "$tags", "count": {"$sum": 1}}},
         {"$sort": SON([("count", -1), ("_id", -1)])}
     ]
+    cursor = db.test.aggregate_raw_batches([
+        {'$project': {'x': {'$multiply': [2, '$x']}}}])
+
     import pprint
     pprint.pprint(list(db.things.aggregate(pipeline)))
-    '''
+
     pipeline=[
         {"$unwind": "$favorite_count"},
         #{"$unwind": "$retweet_count"},
         {"$group": {"_id": "$favorite_count", "count": {"$sum": 1}}},
         #{"$group": {"_id": "$retweet_count", "retweet_count": {"$sum": 1}}},
-    ]
+    ]'''
+    pipeline=[{'$project':{
+        'favorite': {'$sum': '$favorite_count'},
+        'retweet': {'$sum': '$retweet_count'}
+    }}]
+
     mapa=mongo_t.aggregate(pipeline)
-    return jsonify(mapa)
+    #print(mapa)
+    fav=0
+    ret=0
+    for i in mapa:
+        fav+=i["favorite"]
+        ret+=i["retweet"]
+    return jsonify({"favorite_count":fav,"retweet_count":ret})
 ##################################################################################
 
 @app.route("/twitter/tweets/<id>")
@@ -179,7 +193,7 @@ def policies_by_id(id):
 @app.route("/policies/bots/<id>")
 def policies_by_bot(id):
     return "<h1>policies by bot</h1>"
-##########################################################################################################################
+##################################################################################################################################
 '''
 instagram paths
 '''
