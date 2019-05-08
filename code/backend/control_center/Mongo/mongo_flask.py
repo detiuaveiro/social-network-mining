@@ -6,7 +6,7 @@ class AppMongo:
 		appFlask.config["MONGO_URI"] = "mongodb://192.168.85.46:32769/"+db
 		self.app = PyMongo(appFlask)
 	
-	def dataCollection(self, findText={},projection={}):
+	def dataCollection(self, findText={}):
 		return list(self.app.db.collection.find(findText,projection={'_id':False}))
 
 	def getOneFilteredDoc(self, findText={},projection={'_id':False}):

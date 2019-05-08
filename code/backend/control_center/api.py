@@ -104,6 +104,7 @@ def tt_policies():
     mapa=policy.getPoliciesByAPI("Twitter")
     return jsonify(mapa)
 
+##################################################################################
 @app.route("/twitter/stats")
 def tt_stats():
     stats=postgres.getAllStats()
@@ -130,6 +131,7 @@ def tt_tweets():
     mapa=mongo_t.dataCollection()
     return jsonify(mapa)
 
+##################################################################################
 @app.route("/twitter/tweets/stats")
 def tt_tweet_stats():
     #agregação de likes, retweets
