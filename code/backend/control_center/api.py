@@ -9,6 +9,7 @@ mongo_t=AppMongo(app,"tweets")
 postgres=postgreSQLConnect()
 timescale=postgres.connect("postgres")
 policy=postgres.connect("policies")
+
 '''/
     users
         user
@@ -64,7 +65,6 @@ def user_followers(id):
     
     followers = mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"followers_count":True,"_id":False})
     return jsonify(followers)
-
 @app.route("/twitter/users/<id>/following")
 def user_following(id):
     mapa=mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"friends_count":True,"_id":False})
@@ -218,6 +218,7 @@ def update_policy():
     send=postgres.updatePolicy(mapa)
     return jsonify(send)
 ##################################################################################################################################
+
 '''
 instagram paths
 '''
@@ -241,7 +242,6 @@ def bot_by_id(id):
 @app.route("/instagram/bots/<int:id>/logs")
 def bot_logs(id):
     return "bot logs"
-
 
 if __name__ == "__main__":
     app.run(debug=True)
