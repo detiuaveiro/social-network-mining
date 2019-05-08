@@ -4,11 +4,6 @@ app=Flask(__name__)
 
 mongo=AppMongo(app,"users")
 mongo_t=AppMongo(app,"tweets")
-#mongo.insertOneData(2, ["porto", "desporto"], "abilio", "o porto foi um justo vencedor!")
-
-#f=open("/home/user/Transferências/file.json","r+")
-
-#json_to_send=json.load(f)
 
 '''/
     users
@@ -35,28 +30,32 @@ def user_general():
         i.pop("id")
         i["id"] = user_id
     return jsonify(mapa)
-    
+
+##################################################################################    
 @app.route("/twitter/users/stats")
 def user_general_stats():
     #stand by
     return "user stats"
+##################################################################################
 
 @app.route("/twitter/users/<id>")
 def user_by_id(id):
     
     try:
         mapa=mongo.dataCollection(findText={"id":int(id)})
-        mapa[0].pop("id")
-        mapa[0]["id"]=(str(id))
-        return jsonify(mapa)
+        if len(mapa)>0:
+            mapa[0].pop("id")
+            mapa[0]["id"]=(str(id))
+            return jsonify(mapa)
+        else:
+            return jsonify({"error":"wrong id"})
     except TypeError:
         return jsonify({"error":"invalid"})
-    
+
 @app.route("/twitter/users/<id>/tweets")
 def user_tweets(id):
-    #query nos tweets a procurar pelo id=id
-    #retornar json com os tweets
-    return "user tweets"
+    mapa=mongo_t.dataCollection(findText={"user.id_str":str(id)})
+    return jsonify(mapa)
 
 @app.route("/twitter/users/<id>/followers")
 def user_followers(id):
@@ -64,23 +63,32 @@ def user_followers(id):
     followers = mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"followers_count":True,"_id":False})
     return jsonify(followers)
     
-
 @app.route("/twitter/users/<id>/following")
 def user_following(id):
-    #como fazer com o following???
-    #return json.dumps(json_to_send["users"][id]["followers_count"])
-    return "user following"
+    mapa=mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"friends_count":True,"_id":False})
+    return jsonify(mapa)
 
+##################################################################################
+'''
+Check the objective of this path first. Could be:
+    - All replies from the user
+    - Count of all the replies from the user
+'''
+'''
+The relevant fields in a reply tweet are in_reply_to_status_id, in_reply_to_status_id_str, in_reply_to_screen_name, in_reply_to_user_id, in_reply_to_user_id_str.
+The names of each of these fields reasonably describe their contents. 
+The most significant of these is in_reply_to_status_id, which supports finding the tweet to which the reply tweet is a reply.
+'''
 @app.route("/twitter/users/<id>/replies")
 def user_replies(id):
-    #query nos tweets a procurar pelo id=id
-    #retornar json com os replies
-    return "user replies"
+    mapa=mongo_t.dataCollection(findText={"in_reply_to_user_id_str":str(id)})
+    return jsonify(mapa)
+##################################################################################
 
 @app.route("/twitter/users/<id>/stats")
 def user_stats(id):
-    #stand by
-    return "user stats"
+    stats=mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"favourites_count":True,"follow_request_sent":True,"followers_count":True,"following":True,"friends_count":True,"lang":True,"location":True,"name":True,"screen_name":True,"statuses_count":True,"verified":True,"_id":False})
+    return jsonify(stats)
 
 '''
 twitter paths
@@ -93,9 +101,11 @@ def tt_network():
 def tt_policies():
     return "twitter"
 
+##################################################################################
 @app.route("/twitter/stats")
 def tt_stats():
     return "twitter"
+##################################################################################
 
 @app.route("/twitter/bots")
 def tt_bots():
@@ -113,33 +123,47 @@ def tt_bot_logs(id):
 
 @app.route("/twitter/tweets")
 def tt_tweets():
-    '''
-    mapa(?)=mongo_t.findCollection()
-    ...
-    '''
-    tweets = json_to_send["tweets"]
-    data = [v for i,v in tweets.items()]
-    return jsonify(data)
-    #return "<h1>"+ str(mongoTweets.dataCollection()) + "</h1>"
+    
+    mapa=mongo_t.dataCollection()
+    return jsonify(mapa)
 
-
+##################################################################################
 @app.route("/twitter/tweets/stats")
 def tt_tweet_stats():
     #agregação de likes, retweets
-    return "twitter"
+    '''
+    from bson.son import SON
+    pipeline = [
+        {"$unwind": "$tags"},
+        {"$group": {"_id": "$tags", "count": {"$sum": 1}}},
+        {"$sort": SON([("count", -1), ("_id", -1)])}
+    ]
+    import pprint
+    pprint.pprint(list(db.things.aggregate(pipeline)))
+    '''
+    pipeline=[
+        {"$unwind": "$favorite_count"},
+        {"$unwind": "$retweet_count"},
+        {"$group": {"_id": "$favorite_count", "count": {"$sum": 1}}},
+        {"$group": {"_id": "$retweet_count", "count": {"$sum": 1}}},
+    ]
+    mapa=mongo_t.aggregate(pipeline)
+    return jsonify(mapa)
+##################################################################################
 
 @app.route("/twitter/tweets/<id>")
 def tt_tweet_by_id(id):
-    tweet=json_to_send["tweets"][id]
-    return jsonify(tweet)
-    #return "<h1>"+ str(mongoTweets.dataCollection(findText={"id":int(id)})) + "</h1>"
-
+    try:
+        mapa=mongo_t.dataCollection(findText={"id":int(id)})
+        return jsonify(mapa)
+    except TypeError:
+        return jsonify({"error":"invalid"})
+    
+    
 @app.route("/twitter/tweets/<id>/stats")
 def tt_tweet_stats_by_id(id):
-    rt_count=json_to_send["tweets"][id]["retweet_count"]
-    fav_count=json_to_send["tweets"][id]["favorite_count"]
-    data = [{"retweet_count":rt_count,"favorite_count":fav_count}]
-    return jsonify(data)
+    mapa=mongo_t.getOneFilteredDoc(findText={"id":int(id)},projection={"created_at":True,"entities.hashtags":True,"entities.user_mentions.name":True,"entities.user_mentions.screen_name":True,"favorited":True,"geo":True,"in_reply_to_screen_name":True,"in_reply_to_status_id":True,"in_reply_to_status_id_str":True,"in_reply_to_user_id":True,"in_reply_to_user_id_str":True,"is_quote_status":True,"place":True,"favorite_count":True,"retweet_count":True,"retweeted":True,'user.id_str':True,'user.name':True,'user.screen_name':True,'_id':False})
+    return jsonify(mapa)
 
 '''
 policies paths
@@ -178,11 +202,6 @@ def bot_by_id(id):
 @app.route("/instagram/bots/<int:id>/logs")
 def bot_logs(id):
     return "bot logs"
-
-@app.route("/twitter/network")
-def network():
-    return "<h1>network</h1>"
-
 
 @app.route("/timescale")
 def timescale():
