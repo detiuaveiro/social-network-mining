@@ -3,11 +3,7 @@ from PDP import PDP
 
 pep=PEP()
 pdp=PDP()
-'''
-define the lifecycle of PDP and PEP to avoid circular imports
-solve PDP.send_response(msg)
-solve PEP.send_request(msg)
-'''
+
 def lifecycle(msg):
     #request ready to be sent to PDP
     alfa=pep.receive_message(msg)

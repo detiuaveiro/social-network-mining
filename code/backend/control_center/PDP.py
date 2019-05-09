@@ -1,18 +1,14 @@
 import json
 import psycopg2
-import redis
 
 class PDP:
     '''
     Open connection with databases:
         - Policy database (postgresql)
-        - Logging database (redis)
-    Check params for psycopg2 (port 5432 is default of postgres)
-    Check host, port and password for redis
+    Port 5432 is default of postgres
     '''
     def __init__(self):
-        self.conn=psycopg2.connect(dbname="NOME_DA_DB", user="NOME_DO_USER", password="PASSWORD", host="HOSTNAME", port=5432)
-        self.log=redis.Redis(host='HOSTNAME',port=8443,password='PASSWORD')
+        self.conn=psycopg2.connect(host="192.168.85.46",database="policies", user="postgres", password="password")
         return
     
     def receive_request(self,msg):
@@ -20,36 +16,61 @@ class PDP:
         message=json.loads(msg)
         return self.evaluate(message)
         
-    '''
-    workflow of this function
+    def evaluate(self,msg):
+        '''
+        workflow of this function
         - pre-processing of request (filter, prepare db request, etc)
         - request to DB
         - get request from DB
         - post-processing of response (clean response from db, etc)
         - DECIDE (PERMIT, DENY)
     
-    msg- dictionary with necessary fields to perform the query
-    '''
-    def evaluate(self,msg):
-        
+        msg- dictionary with necessary fields to perform the query
+        msg={"name":action}
+        '''
         evaluate_answer=True
 
         #PRE-PROCESSING the request to get the QUERY
-        query=""
+        '''
+        prepare the query according to the request
+        '''
+        if msg["name"]=="REQUEST_TWEET_LIKE" or msg["name"]==5:
+            query=""
+        elif msg["name"]=="REQUEST_TWEET_RETWEET" or msg["name"]==6:
+            query=""
+        elif msg["name"]=="REQUEST_TWEET_REPLY" or msg["name"]==7:        
+            query=""
+        elif msg["name"]=="REQUEST_FOLLOW_USER" or msg["name"]==8:
+            query=""
+        else:
+            return self.send_response({"response":"DENY"})
 
         cur=self.conn.cursor()
         try:
-            cur.execute(query) #execute("QUERY")
+            cur.execute(query)
             DB_val=cur.fetchall() #or fetchone()
-
-            #check DB_val, post-process result
-
+            
             self.conn.commit()
-            #log to the Redis the action is successful
-            #BOT X performed query Y
-        except psycopg2.Error as e:
-            #log to the Redis the action failed
-            #BOT X performed query Y with following error: e.pgcode , e.pgerror
+            
+            #check DB_val, post-process result
+            #WARNING: THE CODE BETWEEN LINES 55 TO 60 ARE ONLY NECESSARY IF
+            #THE fetchall() METHOD WAS USED
+            #FOR fetchone() use the following:
+            '''
+            d={}
+            ll=[]
+            for i in DB_val:
+                ll.append(i)
+            d[i[0]]=ll
+            '''
+            d={}
+            for i in DB_val:
+                ll=[]
+                for j in i:
+                    ll.append(j)
+                d[i[0]]=ll
+
+        except psycopg2.Error:
             self.conn.rollback()
             evaluate_answer=False
         finally:
