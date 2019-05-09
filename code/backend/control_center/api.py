@@ -1,10 +1,14 @@
 from flask import Flask,url_for, Response, jsonify, json
 from mongo_flask import AppMongo
+from postgreSQL import postgreSQLConnect
+
 app=Flask(__name__)
 
 mongo=AppMongo(app,"users")
 mongo_t=AppMongo(app,"tweets")
-
+postgres=postgreSQLConnect()
+timescale=postgres.connect("postgres")
+policy=postgres.connect("policies")
 '''/
     users
         user
@@ -16,10 +20,7 @@ mongo_t=AppMongo(app,"tweets")
 
 @app.route("/")
 def home():
-    #print(mongo.dataCollection(findText={"id":1103294806497902594}))
-    #mongo_t.removeData("")
-    #print(mongo_t.dataCollection())
-    return "root"#jsonify(mongo_t.dataCollection())
+    return "root"
 
 @app.route("/twitter/users")
 def user_general():
@@ -48,9 +49,9 @@ def user_by_id(id):
             mapa[0]["id"]=(str(id))
             return jsonify(mapa)
         else:
-            return jsonify({"error":"wrong id"})
+            return jsonify({"Error":"wrong id"})
     except TypeError:
-        return jsonify({"error":"invalid"})
+        return jsonify({"Error":"invalid"})
 
 @app.route("/twitter/users/<id>/tweets")
 def user_tweets(id):
@@ -99,7 +100,8 @@ def tt_network():
 
 @app.route("/twitter/policies")
 def tt_policies():
-    return "twitter"
+    mapa=policy.getPoliciesByAPI("twitter")
+    return jsonify(mapa)
 
 ##################################################################################
 @app.route("/twitter/stats")
@@ -131,32 +133,11 @@ def tt_tweets():
 @app.route("/twitter/tweets/stats")
 def tt_tweet_stats():
     #agregação de likes, retweets
-    '''
-    from bson.son import SON
-    pipeline = [
-        {"$unwind": "$tags"},
-        {"$group": {"_id": "$tags", "count": {"$sum": 1}}},
-        {"$sort": SON([("count", -1), ("_id", -1)])}
-    ]
-    cursor = db.test.aggregate_raw_batches([
-        {'$project': {'x': {'$multiply': [2, '$x']}}}])
-
-    import pprint
-    pprint.pprint(list(db.things.aggregate(pipeline)))
-
-    pipeline=[
-        {"$unwind": "$favorite_count"},
-        #{"$unwind": "$retweet_count"},
-        {"$group": {"_id": "$favorite_count", "count": {"$sum": 1}}},
-        #{"$group": {"_id": "$retweet_count", "retweet_count": {"$sum": 1}}},
-    ]'''
     pipeline=[{'$project':{
         'favorite': {'$sum': '$favorite_count'},
-        'retweet': {'$sum': '$retweet_count'}
-    }}]
+        'retweet': {'$sum': '$retweet_count'}}}]
 
     mapa=mongo_t.aggregate(pipeline)
-    #print(mapa)
     fav=0
     ret=0
     for i in mapa:
@@ -171,7 +152,7 @@ def tt_tweet_by_id(id):
         mapa=mongo_t.dataCollection(findText={"id":int(id)})
         return jsonify(mapa)
     except TypeError:
-        return jsonify({"error":"invalid"})
+        return jsonify({"Error":"invalid"})
     
     
 @app.route("/twitter/tweets/<id>/stats")
@@ -184,22 +165,50 @@ policies paths
 '''
 @app.route("/policies")
 def policies():
-    return "<h1>policies</h1>"
+    mapa=policy.getAllPolicies()
+    return jsonify(mapa)
 
 @app.route("/policies/<id>")
 def policies_by_id(id):
-    return "<h1>policies by id</h1>"
+    mapa=policy.getPoliciesByID(id)
+    return jsonify(mapa)
 
 @app.route("/policies/bots/<id>")
 def policies_by_bot(id):
-    return "<h1>policies by bot</h1>"
+    mapa=policy.getPoliciesByBot(id)
+    return jsonify(mapa)
+
+@app.route("/policies/add")
+def add_policy():
+    '''
+    This function receives all the information needed to create a policy.
+    It is stored in a list and then is sent to the db
+    Returns the json with the response from the database:
+        - Inserted successfully
+        - Error (returns the driver's specific error)
+    '''
+    lista=[]
+    send=policy.addPolicy(lista)
+    return jsonify(send)
+
+@app.route("/policies/remove/<id>")
+def remove_policy(id):
+    '''
+    This function gets the id of the policy to be removed and queries the db for its removal.
+    Returns the json with the response from the database:
+        - Removed successfully
+        - Error (returns the driver's specific error)
+    '''
+    send=policy.removePolicy(id)
+    return jsonify(send)
 ##################################################################################################################################
 '''
 instagram paths
 '''
 @app.route("/instagram/policies")
 def ig_policies():
-    return "ig policies"
+    mapa=policy.getPoliciesByAPI("instagram")
+    return jsonify(mapa)
 
 @app.route("/instagram/stats")
 def ig_stats():
@@ -216,10 +225,6 @@ def bot_by_id(id):
 @app.route("/instagram/bots/<int:id>/logs")
 def bot_logs(id):
     return "bot logs"
-
-@app.route("/timescale")
-def timescale():
-    return "<h1>timescale</h1>"
 
 
 if __name__ == "__main__":
