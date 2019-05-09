@@ -18,6 +18,10 @@ class Rabbitmq():
         self.channel = connection.channel()
 
         self.channel.exchange_declare(exchange='BOTS_MESSAGES', exchange_type='direct', durable=True)
+        
+        channel.queue_bind(exchange=exchange_name,
+                   queue=queue_name,
+                   routing_key='black')
 
         self.channel.exchange_declare(exchange='CC_MESSAGES', exchange_type='direct', durable=True)
 
