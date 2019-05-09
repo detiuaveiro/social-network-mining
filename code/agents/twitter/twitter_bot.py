@@ -165,7 +165,7 @@ class TwitterBot:
         msg: List[Dict] = self.messaging.get_messages(vhost=self.vhost, qname=self.tasks_queue,
                                                       count=1)
         if msg and msg[0].get("payload", None):
-            return msg[0]["payload"]
+            return utils.from_json(msg[0]["payload"])
         raise NoMessagesInQueue("Queue has no messages left!")
 
     def run(self):
@@ -178,15 +178,15 @@ class TwitterBot:
                 task_msg = self.get_new_message()
                 task_type, task_params = task_msg["type"], task_msg["params"]
                 log.debug(f"Received task {task_msg} with:", task_params)
-                if task_msg == Task.FIND_BY_KEYWORDS:
+                if task_type == Task.FIND_BY_KEYWORDS:
                     self.find_keywords_routine(task_params["keywords"])
                     pass
-                elif task_msg == Task.FOLLOW_USERS:
+                elif task_type == Task.FOLLOW_USERS:
                     self.follow_users_routine(task_params["users"])
                     pass
-                elif task_msg == Task.LIKE_TWEETS:
+                elif task_type == Task.LIKE_TWEETS:
                     self.like_tweets_routine(task_params["tweets"])
-                elif task_msg == Task.RETWEET_TWEETS:
+                elif task_type == Task.RETWEET_TWEETS:
                     self.retweet_tweets_routine(task_params["tweets"])
                 else:
                     log.warning(f"Received unknown task_msg: {task_msg}")
