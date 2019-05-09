@@ -108,6 +108,8 @@ class TwitterBot:
         log.debug("Setting up Messaging to: Receive Tasks")
         log.debug(f"Connecting to exchange {self.tasks_exchange}")
         self.messaging.create_exchange(vhost=self.vhost, name=self.tasks_exchange, xtype="direct")
+        log.debug(f"Creating queue {self.tasks_queue}")
+        self.messaging.create_queue(vhost=self.vhost, name=self.tasks_queue)
         log.debug(f"Binding exchange to queue {self.tasks_queue} with key {self.tasks_routing_key}")
         self.messaging.create_binding(vhost=self.vhost, exchange=self.tasks_exchange,
                                       queue=self.tasks_queue, rt_key=self.tasks_routing_key)
@@ -265,9 +267,10 @@ class TwitterBot:
         """
         log.debug(f"Sending User object to: {self.data_exchange} with", user)
         payload = {
-            "type"     : MessageType.SEND_USER,
+            "type"     : MessageType.SAVE_USER,
+            "bot_id"   : self._id,
             "timestamp": utils.current_time(),
-            "data"     : user.to_json()
+            "data"     : user.to_json(),
         }
         self.messaging.publish(vhost=self.vhost, xname=self.data_exchange,
                                rt_key=self.data_routing_key, payload=utils.to_json(payload))
@@ -280,7 +283,8 @@ class TwitterBot:
         """
         log.debug(f"Sending Tweet object to: {self.data_exchange} with", tweet)
         payload = {
-            "type"     : MessageType.SEND_TWEET,
+            "type"     : MessageType.SAVE_TWEET,
+            "bot_id"   : self._id,
             "timestamp": utils.current_time(),
             "data"     : tweet.to_json()
         }
@@ -297,6 +301,7 @@ class TwitterBot:
         log.debug(f"Sending query <{messageType}> to: {self.query_exchange} with", data)
         payload = {
             "type"     : messageType,
+            "bot_id"   : self._id,
             "timestamp": utils.current_time(),
             "data"     : data.to_json(),
         }
@@ -313,6 +318,7 @@ class TwitterBot:
         log.debug(f"Sending event <{messageType}> to: {self.log_exchange} with", data)
         payload = {
             "type"     : messageType,
+            "bot_id"   : self._id,
             "timestamp": utils.current_time(),
             "data"     : data.to_json(),
         }
