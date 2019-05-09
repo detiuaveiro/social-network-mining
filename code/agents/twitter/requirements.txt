@@ -7,6 +7,7 @@ lxml==4.3.3
 markdown2==2.3.7
 oauthlib==3.0.1
 pyquery==1.4.0
+pyrabbit2==1.0.7
 PySocks==1.6.8
 readtime==1.1.0
 requests==2.21.0
