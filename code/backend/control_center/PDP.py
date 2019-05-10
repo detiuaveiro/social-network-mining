@@ -33,14 +33,22 @@ class PDP:
         #PRE-PROCESSING the request to get the QUERY
         '''
         prepare the query according to the request
+        for now, all the REQUEST_TWEET* will be admitted.
+        in a recent future, it will evolve into two types:
+            - based on a heuristic (if it's in the threshold, request accepted) 0 to 1
+            - based on a target (user)
         '''
         if msg["name"]=="REQUEST_TWEET_LIKE" or msg["name"]==5:
-            query=""
+            return self.send_response({"response":"PERMIT"})
         elif msg["name"]=="REQUEST_TWEET_RETWEET" or msg["name"]==6:
-            query=""
+            return self.send_response({"response":"PERMIT"})
         elif msg["name"]=="REQUEST_TWEET_REPLY" or msg["name"]==7:        
-            query=""
+            return self.send_response({"response":"PERMIT"})
         elif msg["name"]=="REQUEST_FOLLOW_USER" or msg["name"]==8:
+            '''
+            check user
+            check bot
+            '''
             query=""
         else:
             return self.send_response({"response":"DENY"})

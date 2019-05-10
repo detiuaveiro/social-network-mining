@@ -107,10 +107,15 @@ class postgreSQLConnect:
         return list("TBD")
     
     def addPolicy(self,lista):
-        
+        '''
+        adiciona uma politica após confirmar que a api e o filter já estão na db
+        '''
         return list("hehe")
     
     def removePolicy(self,id):
+        '''
+        remove uma politica
+        '''
         try:
             cur=self.conn.cursor()
             cur.execute("delete from policies where id_policy=%s;",(id,))
@@ -119,7 +124,7 @@ class postgreSQLConnect:
             return [{"Error":e}]
         finally:
             cur.close()
-        return list("hehe")
+        return [{"Message":"Success"}]
 
     def postProcessResults(self,lista):
         d={}
