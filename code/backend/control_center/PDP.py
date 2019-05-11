@@ -35,19 +35,42 @@ class PDP:
         prepare the query according to the request
         for now, all the REQUEST_TWEET* will be admitted.
         in a recent future, it will evolve into two types:
-            - based on a heuristic (if it's in the threshold, request accepted) 0 to 1
+            - based on a heuristic (if it's in the threshold, request accepted): 0 to 1
             - based on a target (user)
         '''
         if msg["name"]=="REQUEST_TWEET_LIKE" or msg["name"]==5:
+            '''
+            bot_id
+            tweet_id
+            tweet_text
+            tweet_entities
+                - from entities, fetch hashtags and mentions
+            '''
             return self.send_response({"response":"PERMIT"})
         elif msg["name"]=="REQUEST_TWEET_RETWEET" or msg["name"]==6:
+            '''
+            bot_id
+            tweet_id
+            tweet_text
+            tweet_entities
+                - from entities, fetch hashtags and mentions
+            '''
             return self.send_response({"response":"PERMIT"})
-        elif msg["name"]=="REQUEST_TWEET_REPLY" or msg["name"]==7:        
+        elif msg["name"]=="REQUEST_TWEET_REPLY" or msg["name"]==7:
+            '''
+            bot_id        
+            tweet_id
+            tweet_text
+            tweet_entities
+            tweet_in_reply_to_status_id_str
+            tweet_in_reply_to_user_id_str
+            tweet_in_reply_to_screen_name
+            '''
             return self.send_response({"response":"PERMIT"})
         elif msg["name"]=="REQUEST_FOLLOW_USER" or msg["name"]==8:
             '''
-            check user
-            check bot
+            bot_id
+            tweet_user_id
             '''
             query=""
         else:
@@ -83,6 +106,7 @@ class PDP:
             evaluate_answer=False
         finally:
             cur.close()
+            self.conn.close()
 
         if evaluate_answer:
             return self.send_response({"response":"PERMIT"})
