@@ -20,6 +20,7 @@ policy=postgres.connect("policies")
 
 @app.route("/")
 def home():
+    #a=postgres.addPolicy({"API_type":"Twitter"})
     return "root"
 
 @app.route("/twitter/users")
@@ -100,7 +101,7 @@ def tt_network():
 
 @app.route("/twitter/policies")
 def tt_policies():
-    mapa=policy.getPoliciesByAPI("twitter")
+    mapa=postgres.getPoliciesByAPI("Twitter")
     return jsonify(mapa)
 
 ##################################################################################
@@ -165,30 +166,31 @@ policies paths
 '''
 @app.route("/policies")
 def policies():
-    mapa=policy.getAllPolicies()
+    mapa=postgres.getAllPolicies()
     return jsonify(mapa)
 
 @app.route("/policies/<id>")
 def policies_by_id(id):
-    mapa=policy.getPoliciesByID(id)
+    mapa=postgres.getPoliciesByID(id)
     return jsonify(mapa)
 
 @app.route("/policies/bots/<id>")
 def policies_by_bot(id):
-    mapa=policy.getPoliciesByBot(id)
+    mapa=postgres.getPoliciesByBot(id)
     return jsonify(mapa)
 
 @app.route("/policies/add")
 def add_policy():
     '''
     This function receives all the information needed to create a policy.
-    It is stored in a list and then is sent to the db
+    It is stored in a dictionary and then is sent to the db
     Returns the json with the response from the database:
         - Inserted successfully
         - Error (returns the driver's specific error)
     '''
-    lista=[]
-    send=policy.addPolicy(lista)
+    #mapa -> dados recebidos da dashboard
+    mapa={}
+    send=postgres.addPolicy(mapa)
     return jsonify(send)
 
 @app.route("/policies/remove/<id>")
@@ -199,7 +201,20 @@ def remove_policy(id):
         - Removed successfully
         - Error (returns the driver's specific error)
     '''
-    send=policy.removePolicy(id)
+    send=postgres.removePolicy(id)
+    return jsonify(send)
+
+@app.route("/policies/update")
+def update_policy():
+    '''
+    Update a policy. Sends a dictionary with the columns and respective values that are going to be updated. 
+    Returns the json with the response from the database:
+        - Updated successfully
+        - Error (returns the driver's specific error)
+    '''
+    #mapa -> dados recebidos da dashboard
+    mapa={}
+    send=postgres.updatePolicy(mapa)
     return jsonify(send)
 ##################################################################################################################################
 '''
@@ -207,7 +222,7 @@ instagram paths
 '''
 @app.route("/instagram/policies")
 def ig_policies():
-    mapa=policy.getPoliciesByAPI("instagram")
+    mapa=postgres.getPoliciesByAPI("Instagram")
     return jsonify(mapa)
 
 @app.route("/instagram/stats")
