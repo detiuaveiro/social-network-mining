@@ -167,17 +167,17 @@ policies paths
 '''
 @app.route("/policies")
 def policies():
-    mapa=policy.getAllPolicies()
+    mapa=postgres.getAllPolicies()
     return jsonify(mapa)
 
 @app.route("/policies/<id>")
 def policies_by_id(id):
-    mapa=policy.getPoliciesByID(id)
+    mapa=postgres.getPoliciesByID(id)
     return jsonify(mapa)
 
 @app.route("/policies/bots/<id>")
 def policies_by_bot(id):
-    mapa=policy.getPoliciesByBot(id)
+    mapa=postgres.getPoliciesByBot(id)
     return jsonify(mapa)
 
 @app.route("/policies/add", methods=['POST'])
