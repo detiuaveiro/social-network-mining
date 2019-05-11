@@ -80,26 +80,14 @@ class PDP:
         try:
             cur.execute(query)
             DB_val=cur.fetchall() #or fetchone()
-            
+            #needs revision
+            num=len(DB_val)
             self.conn.commit()
             
             #check DB_val, post-process result
-            #WARNING: THE CODE BETWEEN LINES 55 TO 60 ARE ONLY NECESSARY IF
-            #THE fetchall() METHOD WAS USED
-            #FOR fetchone() use the following:
-            '''
-            d={}
-            ll=[]
-            for i in DB_val:
-                ll.append(i)
-            d[i[0]]=ll
-            '''
-            d={}
-            for i in DB_val:
-                ll=[]
-                for j in i:
-                    ll.append(j)
-                d[i[0]]=ll
+            data=self.postProcess(num,DB_val)
+            
+            #apply the heuristics here
 
         except psycopg2.Error:
             self.conn.rollback()
@@ -113,6 +101,25 @@ class PDP:
         else:
             return self.send_response({"response":"DENY"})
         
+    def postProcess(self,num,DB_val):
+        if num==1:
+            d={}
+            ll=[]
+            for i in DB_val:
+                ll.append(i)
+            d[i[0]]=ll
+            return d
+        elif num>1:
+            d={}
+            for i in DB_val:
+                ll=[]
+                for j in i:
+                    ll.append(j)
+                d[i[0]]=ll            
+            return d
+        else:
+            return self.send_response({"response":"DENY"})
+            
     def send_response(self,msg):
         #json dumps da decisão
         message=json.dumps(msg)
