@@ -14,8 +14,7 @@ class PEP:
         - REQUEST_FOLLOW_USER = 8
         So, it is put in a dictionary, converted to json and sent to the PDP
         '''
-        intermediate={"name":msg}
-        message=json.dumps(intermediate)
+        message=json.dumps(msg)
         return self.send_request(message)
         
     def send_request(self,msg):

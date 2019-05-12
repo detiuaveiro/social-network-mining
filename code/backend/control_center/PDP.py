@@ -38,7 +38,7 @@ class PDP:
             - based on a heuristic (if it's in the threshold, request accepted): 0 to 1
             - based on a target (user)
         '''
-        if msg["name"]=="REQUEST_TWEET_LIKE" or msg["name"]==5:
+        if msg["request"]=="REQUEST_TWEET_LIKE" or msg["request"]==5:
             '''
             bot_id
             tweet_id
@@ -47,7 +47,7 @@ class PDP:
                 - from entities, fetch hashtags and mentions
             '''
             return self.send_response({"response":"PERMIT"})
-        elif msg["name"]=="REQUEST_TWEET_RETWEET" or msg["name"]==6:
+        elif msg["request"]=="REQUEST_TWEET_RETWEET" or msg["request"]==6:
             '''
             bot_id
             tweet_id
@@ -56,7 +56,7 @@ class PDP:
                 - from entities, fetch hashtags and mentions
             '''
             return self.send_response({"response":"PERMIT"})
-        elif msg["name"]=="REQUEST_TWEET_REPLY" or msg["name"]==7:
+        elif msg["request"]=="REQUEST_TWEET_REPLY" or msg["request"]==7:
             '''
             bot_id        
             tweet_id
@@ -67,7 +67,7 @@ class PDP:
             tweet_in_reply_to_screen_name
             '''
             return self.send_response({"response":"PERMIT"})
-        elif msg["name"]=="REQUEST_FOLLOW_USER" or msg["name"]==8:
+        elif msg["request"]=="REQUEST_FOLLOW_USER" or msg["request"]==8:
             '''
             bot_id
             tweet_user_id
