@@ -69,7 +69,7 @@ class postgreSQL_API():
             return list(result)
         except psycopg2.Error as e:
             cur.rollback()
-            return [{"Error":e}]
+            return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
     
@@ -83,7 +83,7 @@ class postgreSQL_API():
             return list(result)
         except psycopg2.Error as e:
             cur.rollback()
-            return [{"Error":e}]
+            return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
 
@@ -97,7 +97,7 @@ class postgreSQL_API():
             return list(result)
         except psycopg2.Error as e:
             cur.rollback()
-            return [{"Error":e}]
+            return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
     
@@ -136,7 +136,7 @@ class postgreSQL_API():
             self.conn.commit()
         except psycopg2.Error as e:
             cur.rollback()
-            return [{"Error":e}]
+            return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
 
@@ -152,7 +152,7 @@ class postgreSQL_API():
             self.conn.commit()
         except psycopg2.Error as e:
             cur.rollback()
-            return [{"Error":e}]
+            return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
         return [{"Message":"Success"}]
@@ -174,10 +174,11 @@ class postgreSQL_API():
             self.conn.commit()
         except psycopg2.Error as e:
             cur.rollback()
-            return [{"Error":e}]
+            return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
         return [{"Message":"Success"}]
+
     def postProcessResults(self,lista):
         d={}
         for i in lista:
