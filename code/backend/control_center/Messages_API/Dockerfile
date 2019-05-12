@@ -5,7 +5,10 @@ ADD rabbitmq.py /
 ADD postgreSQL.py /
 ADD PDP.py /
 ADD PEP.py /
+ADD send.py /
 ADD policy_api.py /
+ADD enums.py /
+ADD neo4j_api.py /
 ADD task.py /
 ADD requirements.txt /
 
