@@ -2,6 +2,7 @@ from pymongo import MongoClient
 
 class MongoAPI():
     def __init__(self):
+        print("Connecting to MongoDB")
         self.client = MongoClient('mongodb://192.168.85.46:32769/')
         self.users = self.client.twitter.users
         self.tweets = self.client.twitter.tweets
