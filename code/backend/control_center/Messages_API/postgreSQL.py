@@ -9,7 +9,8 @@ class postgreSQL_API:
             #params = config()
 
             # connect to the PostgreSQL server
-            print('Connecting to the PostgreSQL database...')
+
+            print("Connecting to PostgresSQL")
 
             self.conn = psycopg2.connect(host="192.168.85.46", database=databaseName,user="postgres",password="password")
 
