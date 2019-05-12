@@ -1,8 +1,8 @@
 from mongo_api import MongoAPI
 from postgreSQL import postgreSQL_API
+from send import RabbitSend
 from policy_api import PolicyAPI
 from neo4j_api import Neo4jAPI
-from rabbitmq import Rabbitmq
 from enums import MessageTypes, Neo4jTypes
 
 class Task():
@@ -11,7 +11,7 @@ class Task():
         self.postgreSQL = postgreSQL_API("postgres")
         self.neo4j = Neo4jAPI()
         self.policy = PolicyAPI()
-        self.rabbit = Rabbitmq(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
+        self.rabbit = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
 
 
     def menu(self, message_type, message):
