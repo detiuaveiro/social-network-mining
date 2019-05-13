@@ -102,7 +102,28 @@ class postgreSQL_API():
             cur.close()
     
     def getPoliciesByBot(self,bot_id):
-        return list("TBD")
+        try:
+            cur=self.conn.cursor
+            cur.execute("select * from policies;")
+            data=cur.fetchall()
+            self.conn.commit()
+            result=self.postProcessResults(data)
+            '''
+            {id_policy:[api,filter,params,etc]}
+            '''
+            lista=[]
+            for i in result:
+                for j in result[i]:
+                    if type(j) is list:
+                        response=self.searchForBot(j,bot_id)
+                        if response:
+                            lista.append(result[i])        
+            return lista
+        except psycopg2.Error as e:
+            cur.rollback()
+            return [{e.diag.severity : e.diag.message_primary}]
+        finally:
+            cur.close()
     
     def addPolicy(self,mapa):
         '''
@@ -185,7 +206,7 @@ class postgreSQL_API():
             ll=[]
             for j in i:
                 ll.append(j)
-            d[i[0]]=ll
+            d[i[-1]]=ll
         return d
 
     def checkAPIExistence(self,cur,mapa):
@@ -219,3 +240,12 @@ class postgreSQL_API():
         if data is None:
             cur.execute("insert into filter_api (api_id,filter_id) values (%s,%s);",(id_api,id_filter))
         return
+
+    def searchForBot(self,lista,id_bot):
+        '''
+        lista is the parameter list. now, search for the bot!
+        '''
+        for i in lista:
+            if i==id_bot:
+                return True
+        return False

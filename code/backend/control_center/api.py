@@ -1,4 +1,4 @@
-from flask import Flask,url_for, Response, jsonify, json
+from flask import Flask,url_for, Response, jsonify, json, request
 from mongo_flask import AppMongo
 from postgreSQL import postgreSQLConnect
 
@@ -180,7 +180,7 @@ def policies_by_bot(id):
     mapa=postgres.getPoliciesByBot(id)
     return jsonify(mapa)
 
-@app.route("/policies/add")
+@app.route("/policies/add", methods=['POST'])
 def add_policy():
     '''
     This function receives all the information needed to create a policy.
@@ -191,10 +191,12 @@ def add_policy():
     '''
     #mapa -> dados recebidos da dashboard
     mapa={}
-    send=postgres.addPolicy(mapa)
-    return jsonify(send)
+    if request.method=='POST':
+        #get data from dashboard
+        send=postgres.addPolicy(mapa)
+        return jsonify(send)
 
-@app.route("/policies/remove/<id>")
+@app.route("/policies/remove/<id>",methods=['DELETE','POST'])
 def remove_policy(id):
     '''
     This function gets the id of the policy to be removed and queries the db for its removal.
@@ -202,10 +204,19 @@ def remove_policy(id):
         - Removed successfully
         - Error (returns the driver's specific error)
     '''
-    send=postgres.removePolicy(id)
-    return jsonify(send)
+    try:
+        if request.method=='DELETE':
+            send=postgres.removePolicy(id)
+            return jsonify(send)
+    except:
+        send=postgres.removePolicy(id)
+        return jsonify(send)
 
-@app.route("/policies/update")
+    if request.method=='POST':
+        send=postgres.removePolicy(id)
+        return jsonify(send)
+
+@app.route("/policies/update", methods= ['POST'])
 def update_policy():
     '''
     Update a policy. Sends a dictionary with the columns and respective values that are going to be updated. 
@@ -215,8 +226,9 @@ def update_policy():
     '''
     #mapa -> dados recebidos da dashboard
     mapa={}
-    send=postgres.updatePolicy(mapa)
-    return jsonify(send)
+    if request.method=='POST':
+        send=postgres.updatePolicy(mapa)
+        return jsonify(send)
 ##################################################################################################################################
 
 '''
