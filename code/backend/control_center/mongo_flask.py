@@ -16,11 +16,4 @@ class AppMongo:
 		return list(self.app.db.collection.aggregate(pipeline))
 	
 	def getCount(self, findText={}):
-		return self.app.db.collection.count_documents(findText)
-
-	def insertOneData(self, dataJson):
-		self.app.db.collection.insert(dataJson)
-
-	def removeData(self,data):
-		self.app.db.collection.delete_one({})
-		
+		return self.app.db.collection.count_documents(findText)		
