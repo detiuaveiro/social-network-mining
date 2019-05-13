@@ -2,6 +2,8 @@ import argparse
 import logging
 import os
 import sys
+import time
+import random
 from typing import List, Any, Callable, Optional, Dict
 
 import tweepy
@@ -34,6 +36,11 @@ class TwitterBot:
         self._id = token.split("-")[0]
         self._cache: Cache = Cache(f"cache_{self._id}", logger=log)
         self.vhost = settings.VHOST
+        # Sleeps Between 0 seconds and 3600 seconds (1 hour)
+        print("TIME TO SLEEP")
+        x = random.randint(0, 3600)
+        print("Sleeping "+str(x)+" seconds")
+        time.sleep(x)
         # Name of the exchange to receive the tasks
         self.tasks_exchange: str = settings.TASKS_EXCHANGE
         # Name of the queue we're going to use to receive the tasks
