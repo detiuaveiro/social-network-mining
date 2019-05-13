@@ -1,5 +1,13 @@
 import json
 import psycopg2
+from enum import IntEnum
+
+class PoliciesTypes(IntEnum):
+
+    REQUEST_TWEET_LIKE = 1
+    REQUEST_TWEET_RETWEET = 2
+    REQUEST_TWEET_REPLY = 3
+    REQUEST_FOLLOW_USER = 4
 
 class PDP:
     '''
@@ -9,6 +17,7 @@ class PDP:
     '''
     def __init__(self):
         self.conn=psycopg2.connect(host="192.168.85.46",database="policies", user="postgres", password="password")
+        self.PoliciesTypes=PoliciesTypes(4)
         return
     
     def receive_request(self,msg):
@@ -38,7 +47,7 @@ class PDP:
             - based on a heuristic (if it's in the threshold, request accepted): 0 to 1
             - based on a target (user)
         '''
-        if msg["request"]=="REQUEST_TWEET_LIKE" or msg["request"]==5:
+        if msg["type"]==PoliciesTypes.REQUEST_TWEET_LIKE:
             '''
             bot_id
             tweet_id
@@ -47,7 +56,7 @@ class PDP:
                 - from entities, fetch hashtags and mentions
             '''
             return self.send_response({"response":"PERMIT"})
-        elif msg["request"]=="REQUEST_TWEET_RETWEET" or msg["request"]==6:
+        elif msg["type"]==PoliciesTypes.REQUEST_TWEET_RETWEET:
             '''
             bot_id
             tweet_id
@@ -56,7 +65,7 @@ class PDP:
                 - from entities, fetch hashtags and mentions
             '''
             return self.send_response({"response":"PERMIT"})
-        elif msg["request"]=="REQUEST_TWEET_REPLY" or msg["request"]==7:
+        elif msg["type"]==PoliciesTypes.REQUEST_TWEET_REPLY:
             '''
             bot_id        
             tweet_id
@@ -67,7 +76,7 @@ class PDP:
             tweet_in_reply_to_screen_name
             '''
             return self.send_response({"response":"PERMIT"})
-        elif msg["request"]=="REQUEST_FOLLOW_USER" or msg["request"]==8:
+        elif msg["type"]==PoliciesTypes.REQUEST_FOLLOW_USER:
             '''
             bot_id
             tweet_user_id
