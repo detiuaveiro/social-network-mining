@@ -1,6 +1,7 @@
 from flask import Flask,url_for, Response, jsonify, json, request
 from mongo_flask import AppMongo
 from postgreSQL import postgreSQLConnect
+from neo4j_api import Neo4jAPI
 
 app=Flask(__name__)
 
@@ -9,6 +10,8 @@ mongo_t=AppMongo(app,"tweets")
 postgres=postgreSQLConnect()
 timescale=postgres.connect("postgres")
 policy=postgres.connect("policies")
+
+neo=Neo4jAPI()
 
 '''/
     users
@@ -112,8 +115,9 @@ def tt_stats():
 
 @app.route("/twitter/bots")
 def tt_bots():
-    data = [json_to_send["users"]["1103294806497902594"]]
-    return jsonify(data)
+    val=neo.search_bot()
+    print(val)
+    return val #json.dumps(json_to_send["users"]["1103294806497902594"])
 
 @app.route("/twitter/bots/<id>")
 def tt_bots_by_id(id):
