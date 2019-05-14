@@ -4,7 +4,8 @@ from enums import Neo4jTypes
 class Neo4jAPI():
     def __init__(self):
         print("Creating connection")
-        self._driver = GraphDatabase.driver("bolt://neo4j-redesfis.5g.cn.atnog.av.it.pt:7687", auth=("neo4j", "neo4jPI"))
+        #self._driver = GraphDatabase.driver("bolt://neo4j-redesfis.5g.cn.atnog.av.it.pt:7687", auth=("neo4j", "neo4jPI"))
+        self._driver = GraphDatabase.driver("bolt://192.168.85.187:7687",auth=("neo4j","neo4jPI"))
 
     def close(self):
         self._driver.close()

@@ -10,7 +10,6 @@ mongo_t=AppMongo(app,"tweets")
 postgres=postgreSQLConnect()
 timescale=postgres.connect("postgres")
 policy=postgres.connect("policies")
-
 neo=Neo4jAPI()
 
 '''/
@@ -25,6 +24,8 @@ neo=Neo4jAPI()
 @app.route("/")
 def home():
     #a=postgres.addPolicy({"API_type":"Twitter"})
+    p=neo.search_bot()
+    print(p)
     return "root"
 
 @app.route("/twitter/users")
@@ -40,8 +41,8 @@ def user_general():
 ##################################################################################    
 @app.route("/twitter/users/stats")
 def user_general_stats():
-    #stand by
-    return "user stats"
+    stats=postgres.getAllStatsUsers()
+    return jsonify(stats)
 ##################################################################################
 
 @app.route("/twitter/users/<id>")
@@ -92,7 +93,7 @@ def user_replies(id):
 
 @app.route("/twitter/users/<id>/stats")
 def user_stats(id):
-    stats=mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"favourites_count":True,"followers_count":True,"friends_count":True,"location":True,"name":True,"screen_name":True,"statuses_count":True,"verified":True,"_id":False})
+    stats=postgres.getStatsUserID(id) #mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"favourites_count":True,"followers_count":True,"friends_count":True,"location":True,"name":True,"screen_name":True,"statuses_count":True,"verified":True,"_id":False})
     return jsonify(stats)
 
 '''
@@ -104,13 +105,14 @@ def tt_network():
 
 @app.route("/twitter/policies")
 def tt_policies():
-    mapa=postgres.getPoliciesByAPI("Twitter")
+    mapa=policy.getPoliciesByAPI("Twitter")
     return jsonify(mapa)
 
 ##################################################################################
 @app.route("/twitter/stats")
 def tt_stats():
-    return "twitter"
+    stats=postgres.getAllStats()
+    return jsonify(stats)
 ##################################################################################
 
 @app.route("/twitter/bots")
@@ -139,7 +141,7 @@ def tt_tweets():
 @app.route("/twitter/tweets/stats")
 def tt_tweet_stats():
     #agregação de likes, retweets
-    pipeline=[{'$project':{
+    '''pipeline=[{'$project':{
         'favorite': {'$sum': '$favorite_count'},
         'retweet': {'$sum': '$retweet_count'}}}]
 
@@ -148,8 +150,9 @@ def tt_tweet_stats():
     ret=0
     for i in mapa:
         fav+=i["favorite"]
-        ret+=i["retweet"]
-    return jsonify({"favorite_count":fav,"retweet_count":ret})
+        ret+=i["retweet"]'''
+    stats=postgres.getAllStatsTweets()
+    return jsonify(stats)#jsonify({"favorite_count":fav,"retweet_count":ret})
 ##################################################################################
 
 @app.route("/twitter/tweets/<id>")
@@ -163,25 +166,26 @@ def tt_tweet_by_id(id):
     
 @app.route("/twitter/tweets/<id>/stats")
 def tt_tweet_stats_by_id(id):
-    mapa=mongo_t.getOneFilteredDoc(findText={"id":int(id)},projection={"created_at":True,"entities.hashtags":True,"entities.user_mentions.name":True,"entities.user_mentions.screen_name":True,"favorited":True,"in_reply_to_screen_name":True,"in_reply_to_status_id_str":True,"in_reply_to_user_id_str":True,"is_quote_status":True,"place":True,"favorite_count":True,"retweet_count":True,"retweeted":True,'user.id_str':True,'user.name':True,'user.screen_name':True,'_id':False})
-    return jsonify(mapa)
+    #mapa=mongo_t.getOneFilteredDoc(findText={"id":int(id)},projection={"created_at":True,"entities.hashtags":True,"entities.user_mentions.name":True,"entities.user_mentions.screen_name":True,"favorited":True,"in_reply_to_screen_name":True,"in_reply_to_status_id_str":True,"in_reply_to_user_id_str":True,"is_quote_status":True,"place":True,"favorite_count":True,"retweet_count":True,"retweeted":True,'user.id_str':True,'user.name':True,'user.screen_name':True,'_id':False})
+    stats=postgres.getStatsTweetID(id)
+    return jsonify(stats)
 
 '''
 policies paths
 '''
 @app.route("/policies")
 def policies():
-    mapa=postgres.getAllPolicies()
+    mapa=policy.getAllPolicies()
     return jsonify(mapa)
 
 @app.route("/policies/<id>")
 def policies_by_id(id):
-    mapa=postgres.getPoliciesByID(id)
+    mapa=policy.getPoliciesByID(id)
     return jsonify(mapa)
 
 @app.route("/policies/bots/<id>")
 def policies_by_bot(id):
-    mapa=postgres.getPoliciesByBot(id)
+    mapa=policy.getPoliciesByBot(id)
     return jsonify(mapa)
 
 @app.route("/policies/add", methods=['POST'])
@@ -197,7 +201,7 @@ def add_policy():
     mapa={}
     if request.method=='POST':
         #get data from dashboard
-        send=postgres.addPolicy(mapa)
+        send=policy.addPolicy(mapa)
         return jsonify(send)
 
 @app.route("/policies/remove/<id>",methods=['DELETE','POST'])
@@ -210,14 +214,14 @@ def remove_policy(id):
     '''
     try:
         if request.method=='DELETE':
-            send=postgres.removePolicy(id)
+            send=policy.removePolicy(id)
             return jsonify(send)
     except:
-        send=postgres.removePolicy(id)
+        send=policy.removePolicy(id)
         return jsonify(send)
 
     if request.method=='POST':
-        send=postgres.removePolicy(id)
+        send=policy.removePolicy(id)
         return jsonify(send)
 
 @app.route("/policies/update", methods= ['POST'])
@@ -231,7 +235,7 @@ def update_policy():
     #mapa -> dados recebidos da dashboard
     mapa={}
     if request.method=='POST':
-        send=postgres.updatePolicy(mapa)
+        send=policy.updatePolicy(mapa)
         return jsonify(send)
 ##################################################################################################################################
 
@@ -240,7 +244,7 @@ instagram paths
 '''
 @app.route("/instagram/policies")
 def ig_policies():
-    mapa=postgres.getPoliciesByAPI("Instagram")
+    mapa=policy.getPoliciesByAPI("Instagram")
     return jsonify(mapa)
 
 @app.route("/instagram/stats")

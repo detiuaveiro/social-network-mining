@@ -17,13 +17,6 @@ class postgreSQL_API():
             print(error)
 
 
-    def insertDataTweets(self, timestamp, tweet_id, user_id, likes, retweets):
-        self.cur = self.conn.cursor() 
-        self.cur.execute("INSERT INTO tweets (timestamp, tweet_id, user_id, likes, retweets) VALUES (%s, %s, %s, %s, %s)", (timestamp, tweet_id, user_id, likes, retweets))
-        self.conn.commit()
-        self.cur.close()
-
-
     ##################################################################################################################################
     '''
     These methods belong to the "postgres" database
