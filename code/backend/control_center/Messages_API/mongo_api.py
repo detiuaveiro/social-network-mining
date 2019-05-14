@@ -16,3 +16,12 @@ class MongoAPI():
         else:
             self.tweets.insert_one(self.data)
 
+    def update(self, database, data):
+        self.database = database
+        self.data = data
+
+        if (self.database=='users'):
+            self.users.update_one(self.data)
+        else:
+            self.tweets.update_one(self.data)
+
