@@ -1,4 +1,5 @@
 import pika
+import json
 from task import Task
 
 class Rabbitmq():
@@ -49,11 +50,10 @@ class Rabbitmq():
         print(' [*] Waiting for MESSAGES. To exit press CTRL+C')
 
         def callback(ch, method, properties, body):
-            print("Message Received")
+            print("RABBIT: MESSAGE RECEIVED")            
             message = json.loads(body)
+            print(message)            
             self.task_manager.menu(message['type'], message)
-            #Make sure no mistake is made
-            time.sleep(10)
 
         self.channel.basic_consume(queue=self.queue, on_message_callback=callback, auto_ack=True,)
         self.channel.start_consuming()

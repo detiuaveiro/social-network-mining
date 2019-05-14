@@ -18,3 +18,9 @@ class Neo4jTypes(IntEnum):
     CREATE_RELATION = 3
     SEARCH_USER = 4
     UPDATE_USER = 5
+
+class PoliciesTypes(IntEnum):
+    REQUEST_TWEET_LIKE = 1
+    REQUEST_TWEET_RETWEET = 2
+    REQUEST_TWEET_REPLY = 3
+    REQUEST_FOLLOW_USER = 4

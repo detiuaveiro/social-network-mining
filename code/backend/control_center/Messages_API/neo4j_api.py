@@ -4,7 +4,7 @@ from enums import Neo4jTypes
 class Neo4jAPI():
     def __init__(self):
         print("Creating connection")
-        self._driver = GraphDatabase.driver("bolt://neo4j-redesfis.5g.cn.atnog.av.it.pt:7687", auth=("neo4j", "neo4jPI"))
+        self._driver = GraphDatabase.driver("bolt://neo4j-redesfis.5g.cn.atnog.av.it.pt:7687", auth=("neo4j","neo4jPI"))
 
     def close(self):
         self._driver.close()
@@ -22,10 +22,11 @@ class Neo4jAPI():
                 result = session.write_transaction(self.search_user, data)
                 return result
             elif (query_type==Neo4jTypes.UPDATE_USER):
-                session.write_transaction(self.search_user, data)        
+                session.write_transaction(self.update_user, data)        
 
     @staticmethod
     def create_bot(tx, data):
+        print("NEO4J: TASK CREATE BOT")
         bot_name = data['name']
         bot_id = data['id']
         bot_username = data['username']
@@ -34,6 +35,7 @@ class Neo4jAPI():
 
     @staticmethod
     def create_user(tx, data):
+        print("NEO4J: TASK CREATE USER")
         bot_name = data['name']
         bot_id = data['id']
         bot_username = data['username']
@@ -42,6 +44,7 @@ class Neo4jAPI():
     
     @staticmethod
     def create_relationship(tx, data):
+        print("NEO4J: TASK CREATE RELATION")
         bot_id = data['bot_id']
         user_id = data['user_id']
         print("Query to create relation between two nodes")
@@ -50,21 +53,27 @@ class Neo4jAPI():
 
     @staticmethod
     def search_user(tx, data):
+        print("NEO4J: TASK SEARCH USER")
         user_id = data['user_id']
-        print("Query to search if user is already being followed")
         result = tx.run("MATCH (r:User { id:$id }) \
                         RETURN r", id=user_id)
+        print(result.data())
         if (len(result.data())==0):
-            return 1
-        else:
             return 0
+        else:
+            return 1
     
     @staticmethod
     def update_user(tx, data):
+        print("NEO4J: TASK UPDATE USER")
         user_id = data['user_id']
         user_name = data['user_name']
         user_username = data['user_username']
         print("Query to update user")
         result = tx.run("MATCH (r:User { id:$id }) \
-                        SET r = { id: $id name: $name , username: $username } \
+                        SET r = { id: $id, name: $name, username: $username } \
                         RETURN r", id=user_id, name=user_name, username=user_username)
+
+if __name__ == "__main__":
+    neo = Neo4jAPI()
+    neo.close()
