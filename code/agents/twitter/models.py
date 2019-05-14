@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 import abc
 from dataclasses import dataclass
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 import tweepy
 
@@ -78,7 +79,7 @@ class BaseModel(abc.ABC):
     id_str: :class:`str`
         The `str` representation of the model's unique ID
     """
-    _api: tweepy.api
+    _api: tweepy.API
     _json: Dict[Any]
 
     @property
@@ -89,7 +90,7 @@ class BaseModel(abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
-    def from_json(json):
+    def from_json(api, json):
         """Returns an instance of this Model from the JSON supplied"""
         raise NotImplementedError
 
@@ -100,6 +101,9 @@ class BaseModel(abc.ABC):
 
 @dataclass
 class User(BaseModel):
+    """
+
+    """
     id: int
     name: str
     screen_name: str
@@ -173,14 +177,50 @@ class User(BaseModel):
         # so we can write the following semantically
         return User(_api=api, _json=unclean_json, **unclean_json)
 
-    def timeline(self, **kargs):
-        return self._api.user_timeline(user_id=self.id, **kargs)
+    def timeline(self, **kwargs) -> List[Tweet]:
+        """
+        Gets the user's timeline.
+        Parameters
+        ----------
+        kwargs : Dict[Any]
+            Optional arguments
 
-    def friends(self, **kargs):
-        return self._api.friends(user_id=self.id, **kargs)
+        Returns
+        -------
+        tweets: List[Tweet]
+            List of Tweet objects from the User's Timeline
+        """
+        return self._api.user_timeline(user_id=self.id, **kwargs)
 
-    def followers(self, **kargs):
-        return self._api.followers(user_id=self.id, **kargs)
+    def friends(self, **kwargs) -> List[User]:
+        """
+        Gets the user's friends.
+        Parameters
+        ----------
+        kwargs : Dict[Any]
+            Optional arguments
+
+        Returns
+        -------
+        friends: List[User]
+            List of User objects that are friends of the user
+        """
+        return self._api.friends(user_id=self.id, **kwargs)
+
+    def followers(self, **kwargs) -> List[User]:
+        """
+        Gets the user's followers.
+        Parameters
+        ----------
+        kwargs : Dict[Any]
+            Optional arguments
+
+        Returns
+        -------
+        friends: List[User]
+            List of User objects that are friends of the user
+        """
+        return self._api.followers(user_id=self.id, **kwargs)
 
     def follow(self):
         if self.following:
