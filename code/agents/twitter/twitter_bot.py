@@ -196,6 +196,16 @@ class TwitterBot:
                 log.debug("No Messages found. Waiting...")
                 utils.wait_for(5)
                 retries -= 1
+            except tweepy.error.TweepError as e:
+                if e.api_code == 63 or e.api_code == 64:
+                    payload = {
+                        "type"     : MessageType.EVENT_USER_SUSPENDED,
+                        "bot_id"   : self._id,
+                        "timestamp": utils.current_time(),
+                        "data"     : {"code" : e.api_code, "msg" : e.reason},
+                    }
+                    self.messaging.publish(vhost=self.vhost, xname=self.log_exchange,
+                        rt_key=self.log_routing_key, payload=utils.to_json(payload))
         self.cleanup()
 
     def cleanup(self):
@@ -359,7 +369,7 @@ class TwitterBot:
                 if e.api_code == 161:
                     # can't follow, just ignore
                     # TODO: implement logic for resuming follows
-                    pass
+                    log.error(f"Unable to follow User with SPECIAL api_code={e.api_code}")
                 else:
                     raise e
             return
