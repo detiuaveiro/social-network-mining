@@ -137,6 +137,70 @@ class postgreSQL_API():
 
     ##################################################################################################################################
     '''
+    These methods belong to the "postgres" database
+    '''
+
+    def getAllStatsTweets(self):
+        try:
+            cur=self.conn.cursor()
+            cur.execute("select timestamp, tweet_id, likes, retweets from tweets;")
+            data=cur.fetchall()
+            self.conn.commit()
+            result=self.postProcessResults(data)
+            return [result]
+        except psycopg2.Error as e:
+            cur.rollback()
+            return [{e.diag.severity: e.diag.message_primary}]
+        finally:
+            cur.close()
+
+    def getStatsTweetID(self, tweet_id):
+        try:
+            cur=self.conn.cursor()
+            cur.execute("select timestamp, tweet_id, likes, retweets from tweets where tweet_id=%s;", (tweet_id,))
+            data=cur.fetchall()
+            self.conn.commit()
+            result=self.postProcessResults(data)
+            return [result]
+        except psycopg2.Error as e:
+            cur.rollback()
+            return [{e.diag.severity: e.diag.message_primary}]
+        finally:
+            cur.close()
+
+    def getAllStatsUsers(self):
+        try:
+            cur=self.conn.cursor()
+            cur.execute("select timestamp, user_id, followers, following from users;")
+            data=cur.fetchall()
+            self.conn.commit()
+            result=self.postProcessResults(data)
+            return [result]
+        except psycopg2.Error as e:
+            cur.rollback()
+            return [{e.diag.severity: e.diag.message_primary}]
+        finally:
+            cur.close()
+
+    def getStatsUserID(self, user_id):
+        try:
+            cur=self.conn.cursor()
+            cur.execute("select timestamp, user_id, followers, following from users where user_id=%s;", (user_id,))
+            data=cur.fetchall()
+            self.conn.commit()
+            result=self.postProcessResults(data)
+            return [result]
+        except psycopg2.Error as e:
+            cur.rollback()
+            return [{e.diag.severity: e.diag.message_primary}]
+        finally:
+            cur.close()
+
+    def getAllStats(self):
+        return self.getAllStatsTweets()+self.getAllStatsUsers()
+
+    ##################################################################################################################################
+    '''
     These methods belong to the "policies" database
     '''
 
