@@ -30,7 +30,7 @@ class Policies extends React.Component {
                   <CardTitle tag="h4">Policies</CardTitle>
                 </CardHeader>
                 <CardBody>
-                  <DataTables />
+                  <DataTables policies={[]}/>
                 </CardBody>
               </Card>
             </Col>
