@@ -7,10 +7,9 @@ app=Flask(__name__)
 
 mongo=AppMongo(app,"users")
 mongo_t=AppMongo(app,"tweets")
-postgres=postgreSQLConnect()
-timescale=postgres.connect("postgres")
-policy=postgres.connect("policies")
-#neo=Neo4jAPI()
+postgres=postgreSQLConnect("postgres")
+policy=postgreSQLConnect("policies")
+neo=Neo4jAPI()
 '''/
     users
         user
@@ -167,17 +166,17 @@ policies paths
 '''
 @app.route("/policies")
 def policies():
-    mapa=postgres.getAllPolicies()
+    mapa=policy.getAllPolicies()
     return jsonify(mapa)
 
 @app.route("/policies/<id>")
 def policies_by_id(id):
-    mapa=postgres.getPoliciesByID(id)
+    mapa=policy.getPoliciesByID(id)
     return jsonify(mapa)
 
 @app.route("/policies/bots/<id>")
 def policies_by_bot(id):
-    mapa=postgres.getPoliciesByBot(id)
+    mapa=policy.getPoliciesByBot(id)
     return jsonify(mapa)
 
 @app.route("/policies/add", methods=['POST'])
