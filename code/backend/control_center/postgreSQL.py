@@ -1,9 +1,9 @@
 import psycopg2
 
 
-class postgreSQLConnect:
+class postgreSQL_API():
     
-    def connect(self, databaseName):
+    def __init__(self, databaseName):
         try:
             # read connection parameters
             #params = config()
@@ -12,7 +12,6 @@ class postgreSQLConnect:
             #print('Connecting to the PostgreSQL database...')
             self.databaseName=databaseName
             self.conn = psycopg2.connect(host="192.168.85.46", database=databaseName,user="postgres",password="password")
-            return self.conn
 
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
@@ -50,11 +49,11 @@ class postgreSQLConnect:
             #cur.execute("SELECT * FROM tweets WHERE 
 
     def insertDataTweets(self, timestamp, tweet_id, user_id, likes, retweets):
-        conn= self.connect(self.databaseName)
-        cur = conn.cursor() 
-        cur.execute("INSERT INTO tweets (timestamp, tweet_id, user_id, likes, retweets) VALUES (%s, %s, %s, %s, %s)", (timestamp, tweet_id, user_id, likes, retweets))
-        conn.commit()
-        cur.close()
+        self.cur = self.conn.cursor() 
+        self.cur.execute("INSERT INTO tweets (timestamp, tweet_id, user_id, likes, retweets) VALUES (%s, %s, %s, %s, %s)", (timestamp, tweet_id, user_id, likes, retweets))
+        self.conn.commit()
+        self.cur.close()
+
 
 ##################################################################################################################################
     '''

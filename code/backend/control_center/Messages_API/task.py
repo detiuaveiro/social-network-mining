@@ -3,7 +3,7 @@ from postgreSQL import postgreSQL_API
 from send import RabbitSend
 from policy_api import PolicyAPI
 from neo4j_api import Neo4jAPI
-from enums import MessageTypes, Neo4jTypes
+from enums import MessageTypes, Neo4jTypes, PoliciesTypes
 
 class Task():
     def __init__(self):
@@ -24,8 +24,9 @@ class Task():
         elif (message_type == MessageTypes.TWEET_REPLIED):
             pass
         elif (message_type == MessageTypes.REQUEST_TWEET_LIKE):
-            print('Received a request to like tweet')
+            print("TASK: REQUEST LIKE TWEET")
             data = {
+                "type": PoliciesTypes.REQUEST_TWEET_LIKE,
                 "bot_id": message['bot_id'],
                 "tweet_id": message['data']['id'],
                 "tweet_text": message['data']['text'],
@@ -39,8 +40,9 @@ class Task():
             self.rabbit.send(routing_key=r_key,message=msm)
 
         elif(message_type == MessageTypes.REQUEST_TWEET_RETWEET):
-            print('Received a request to retweet a tweet')
+            print("TASK: REQUEST RETWEET TWEET")
             data = {
+                "type": PoliciesTypes.REQUEST_TWEET_RETWEET,
                 "bot_id": message['bot_id'],
                 "tweet_id": message['data']['id'],
                 "tweet_text": message['data']['text'],
@@ -54,8 +56,9 @@ class Task():
             self.rabbit.send(routing_key=r_key,message=msm)
 
         elif(message_type == MessageTypes.REQUEST_TWEET_REPLY):
-            print('Received a request to reply to a tweet')
+            print("TASK: REQUEST REPLY TWEET")
             data = {
+                "type": PoliciesTypes.REQUEST_TWEET_REPLY,
                 "bot_id": message['bot_id'],
                 "tweet_id": message['data']['id'],
                 "tweet_text": message['data']['text'],
@@ -72,12 +75,15 @@ class Task():
             self.rabbit.send(routing_key=r_key,message=msm)
 
         elif(message_type == MessageTypes.REQUEST_FOLLOW_USER):
-            print('Received a request to Follow User')
+            print("TASK: REQUEST FOLLOW USER")
             data = {
-                "tweet_user_id": message['data']['id'],
+                "type": PoliciesTypes.REQUEST_TWEET_REPLY,
+                "bot_id": message['bot_id'],
+                "user_id": message['data']['id'],
             }
-            #Search if User is already Followed by another Bot
-            result = self.neo4j.task(Neo4jTypes.SEARCH_USER,data)
+            result = self.policy.lifecycle(data)
+            """ #Search if User is already Followed by another Bot
+            result = self.neo4j.task(Neo4jTypes.SEARCH_USER,data={"user_id": message['data']['id']}) """
             #Routing Key
             r_key = 'tasks.deliver.'+message['bot_id']
             #Message
@@ -85,12 +91,12 @@ class Task():
             self.rabbit.send(routing_key=r_key,message=msm)
 
         elif(message_type == MessageTypes.SAVE_USER):
-            print('Save User')
-            
+            print("TASK: SAVE USER")            
             #Save User in Mongo Database
             self.mongo.save('users', message['data'])
             #Asks Neo4j if User exists
-            result = self.neo4j.task(Neo4jTypes.SEARCH_USER,data={"tweet_user_id": message['data']['id']})
+            result = self.neo4j.task(Neo4jTypes.SEARCH_USER,data={"user_id": message['data']['id']})
+            print(result)
             #IF User exists DO THIS
             if (result==1):
                 #Update User in Neo4j
@@ -104,6 +110,6 @@ class Task():
             #TODO: Postgres for Users
 
         elif(message_type == MessageTypes.SAVE_TWEET):
-            print('A Tweet is being saved')
+            print("TASK: SAVE TWEET")            
             self.mongo.save('tweets', message['data'])
             self.postgreSQL.insertDataTweets(message['data']['timestamp'],message['data']['id'],message['data']['user_id'],message['data']['likes_count'],message['data']['retweets_count'])
