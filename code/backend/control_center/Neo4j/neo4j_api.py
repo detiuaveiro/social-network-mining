@@ -13,12 +13,7 @@ class Neo4jTypes(IntEnum):
 class Neo4jAPI():
     def __init__(self):
         print("Creating connection")
-<<<<<<< HEAD:code/backend/control_center/Neo4j/neo4j_api.py
         self._driver = GraphDatabase.driver("bolt://192.168.85.187:7687",auth=("neo4j","neo4jPI"))
-=======
-        self._driver = GraphDatabase.driver("bolt://neo4j-redesfis.5g.cn.atnog.av.it.pt:7687", auth=("neo4j", "neo4jPI"))
-        self.session=self._driver.session()
->>>>>>> api integration with neo4j:code/backend/control_center/neo4j_api.py
 
     def close(self):
         self._driver.close()
@@ -112,7 +107,6 @@ class Neo4jAPI():
                         SET r = { id: $id, name: $name, username: $username } \
                         RETURN r", id=user_id, name=user_name, username=user_username)
 
-<<<<<<< HEAD:code/backend/control_center/Neo4j/neo4j_api.py
     @staticmethod
     def update_bot(tx, data):
         print("NEO4J: TASK UPDATE BOT")
@@ -123,10 +117,3 @@ class Neo4jAPI():
         result = tx.run("MATCH (r:Bot { id:$id }) \
                         SET r = { id: $id, name: $name, username: $username } \
                         RETURN r", id=bot_id, name=bot_name, username=bot_username)
-=======
-    def search_bot(self):
-
-        result=self.session.run("MATCH (n:Bot) RETURN n")
-
-        return result.summary()
->>>>>>> api integration with neo4j:code/backend/control_center/neo4j_api.py
