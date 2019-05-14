@@ -102,7 +102,3 @@ class Neo4jAPI():
         result = tx.run("MATCH (r:Bot { id:$id }) \
                         SET r = { id: $id, name: $name, username: $username } \
                         RETURN r", id=bot_id, name=bot_name, username=bot_username)
-
-if __name__ == "__main__":
-    neo = Neo4jAPI()
-    neo.close()
