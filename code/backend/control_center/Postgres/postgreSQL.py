@@ -140,6 +140,46 @@ class postgreSQL_API():
     These methods belong to the "postgres" database
     '''
 
+    def addTweet(self,mapa):
+        '''
+        adiciona um tweet após confirmar que o tweet e o timestamp já está na db
+        '''
+        try:
+            #check if tweet exists
+            cur=self.conn.cursor()
+            self.checkTweetExistence(cur,mapa)
+
+            #add tweet
+            cur.execute("insert into tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",(mapa["tweet_id"],mapa["user_id"],mapa["likes"],mapa["retweets"]))
+            self.conn.commit()
+        except psycopg2.Error as e:
+            cur.rollback()
+            return [{e.diag.severity : e.diag.message_primary}]
+        finally:
+            cur.close()
+
+        return [{"Message":"Success"}]
+
+    def addUser(self,mapa):
+        '''
+        adiciona um tweet após confirmar que o tweet e o timestamp já está na db
+        '''
+        try:
+            #check if tweet exists
+            cur=self.conn.cursor()
+            self.checkUserExistence(cur,mapa)
+
+            #add tweet
+            cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
+            self.conn.commit()
+        except psycopg2.Error as e:
+            cur.rollback()
+            return [{e.diag.severity : e.diag.message_primary}]
+        finally:
+            cur.close()
+
+        return [{"Message":"Success"}]
+
     def getAllStatsTweets(self):
         try:
             cur=self.conn.cursor()
@@ -383,6 +423,20 @@ class postgreSQL_API():
                 ll.append(j)
             d[i[-1]]=ll
         return d
+
+    def checkUserExistence(self,cur,mapa):
+        cur.execute("select user_id, timestamp from users where tweet_id=%s and timestamp=DEFAULT;",(mapa["user_id"],))
+        data=cur.fetchone()
+        if data is None:
+            cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
+        return
+
+    def checkTweetExistence(self,cur,mapa):
+        cur.execute("select tweet_id, timestamp from tweets where tweet_id=%s and timestamp=DEFAULT;",(mapa["tweet_id"],))
+        data=cur.fetchone()
+        if data is None:
+            cur.execute("insert into tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",(mapa["tweet_id"],mapa["user_id"],mapa["likes"],mapa["retweets"]))
+        return
 
     def checkAPIExistence(self,cur,mapa):
         cur.execute("select name from api where api.name=%s;",(mapa["API_type"],))
