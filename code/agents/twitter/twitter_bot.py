@@ -2,8 +2,6 @@ import argparse
 import logging
 import os
 import sys
-import time
-import random
 from typing import List, Any, Callable, Optional, Dict
 
 import tweepy
