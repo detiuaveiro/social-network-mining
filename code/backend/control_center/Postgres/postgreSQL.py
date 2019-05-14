@@ -238,7 +238,7 @@ class postgreSQL_API():
         return self.getAllStatsTweets()+self.getAllStatsUsers()
 
     def checkUserExistence(self,cur, mapa):
-        cur.execute("select * from users where tweet_id=%s and timestamp=DEFAULT;",(mapa["user_id"],))
+        cur.execute("select * from users where timestamp=DEFAULT;",(mapa["user_id"],))
         data=cur.fetchone()
         if data is None:
             cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
@@ -246,7 +246,7 @@ class postgreSQL_API():
         return True
 
     def checkTweetExistence(self,cur,mapa):
-        cur.execute("select tweet_id, timestamp from tweets where tweet_id=%s and timestamp=DEFAULT;",(mapa["tweet_id"],))
+        cur.execute("select tweet_id, timestamp from tweets where timestamp=DEFAULT;",(mapa["tweet_id"],))
         data=cur.fetchone()
         if data is None:
             cur.execute("insert into tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",(mapa["tweet_id"],mapa["user_id"],mapa["likes"],mapa["retweets"]))
