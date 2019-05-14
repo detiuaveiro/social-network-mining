@@ -11,6 +11,7 @@ class MessageTypes(IntEnum):
     REQUEST_FOLLOW_USER = 8
     SAVE_USER = 9
     SAVE_TWEET = 10
+    ERROR_BOT = 11
 
 class Neo4jTypes(IntEnum):
     CREATE_BOT = 1
@@ -18,6 +19,9 @@ class Neo4jTypes(IntEnum):
     CREATE_RELATION = 3
     SEARCH_USER = 4
     UPDATE_USER = 5
+    SEARCH_BOT = 6
+    UPDATE_BOT = 7
+
 
 class PoliciesTypes(IntEnum):
     REQUEST_TWEET_LIKE = 1
