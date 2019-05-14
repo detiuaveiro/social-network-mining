@@ -8,9 +8,9 @@ class Test extends React.Component {
   componentDidMount() {
     const config = {
       container_id: "viz",
-      server_url: "bolt://100.25.118.163:33822",
+      server_url: "bolt://54.165.85.15:33783",
       server_user: "neo4j",
-      server_password: "requisitions-adjective-motions",
+      server_password: "calories-budget-boards",
       labels: {
       },
       relationships: {
