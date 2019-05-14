@@ -10,7 +10,7 @@ mongo_t=AppMongo(app,"tweets")
 postgres=postgreSQLConnect()
 timescale=postgres.connect("postgres")
 policy=postgres.connect("policies")
-neo=Neo4jAPI()
+#neo=Neo4jAPI()
 '''/
     users
         user

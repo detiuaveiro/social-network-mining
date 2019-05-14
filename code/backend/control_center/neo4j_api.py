@@ -1,5 +1,5 @@
 from neo4j import GraphDatabase
-#from enums import Neo4jTypes
+from enums import Neo4jTypes
 
 class Neo4jAPI():
     def __init__(self):
