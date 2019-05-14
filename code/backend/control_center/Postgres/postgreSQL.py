@@ -16,7 +16,6 @@ class postgreSQL_API():
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
 
-
     ##################################################################################################################################
     '''
     These methods belong to the "postgres" database
