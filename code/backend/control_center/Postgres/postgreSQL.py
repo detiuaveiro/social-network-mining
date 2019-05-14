@@ -437,6 +437,20 @@ class postgreSQL_API():
             d[i[-1]]=ll
         return d
 
+    def checkUserExistence(self,cur,mapa):
+        cur.execute("select user_id, timestamp from users where tweet_id=%s and timestamp=DEFAULT;",(mapa["user_id"],))
+        data=cur.fetchone()
+        if data is None:
+            cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
+        return
+
+    def checkTweetExistence(self,cur,mapa):
+        cur.execute("select tweet_id, timestamp from tweets where tweet_id=%s and timestamp=DEFAULT;",(mapa["tweet_id"],))
+        data=cur.fetchone()
+        if data is None:
+            cur.execute("insert into tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",(mapa["tweet_id"],mapa["user_id"],mapa["likes"],mapa["retweets"]))
+        return
+
     def checkAPIExistence(self,cur,mapa):
         cur.execute("select name from api where api.name=%s;",(mapa["API_type"],))
         data=cur.fetchone()
