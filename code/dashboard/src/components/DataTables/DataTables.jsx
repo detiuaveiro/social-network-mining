@@ -7,8 +7,12 @@ import {
     Table
 } from "reactstrap";
 
-class ReactTables extends React.Component {
+import axios from 'axios';
 
+class ReactTables extends React.Component {
+    state = {
+        policies: this.props.policies
+    };
     /**
      * [
      *   {
@@ -22,27 +26,12 @@ class ReactTables extends React.Component {
      */
     constructor(props) {
         super(props);
-
-        this.state = { policies: props.policies };
+        this.clickRemovePolicy = this.clickRemovePolicy.bind(this);
+        this.clickEditPolicy = this.clickEditPolicy.bind(this);
     }
 
     componentDidMount() {
-        setTimeout(function() {
-            var restData = [{
-                name: "Futebol",
-                social_network: "Twitter",
-                filter: "keywords",
-                params: ["keyword1","keyword2","keyword3"],
-                target : "target1"
-              }];
-            for(let policy of restData) {
-                this.addPolicy(policy);
-            }
-        }.bind(this));
-    }
-
-    clickShowAddModal() {
-
+        this.updatePolicies();
     }
 
     /**
@@ -59,12 +48,21 @@ class ReactTables extends React.Component {
         this.forceUpdate();
     }
 
-    clickRemovePolicy() {
-
+    updatePolicies() {
+        axios.get('/policies')
+             .then(res => {
+                const policies = res.policies;
+                this.setState({policies});
+                console.log(policies);
+        });
     }
 
-    clickEditPolicy() {
+    clickRemovePolicy(e) {
+        
+    }
 
+    clickEditPolicy(e) {
+        
     }
 
     render() {
@@ -96,15 +94,15 @@ class ReactTables extends React.Component {
                                 <td className="text-right">{policy.params.join()}</td>
                                 <td className="text-right">{policy.target}</td>
                                 <td className="text-right">
-                                    <Button icon neutral color="success" size="sm">
+                                    <Button icon neutral color="success" size="sm" onClick={this.clickEditPolicy}>
                                         <i className="now-ui-icons ui-2_settings-90"></i>
                                     </Button>{` `}
-                                    <Button icon neutral color="danger" size="sm">
+                                    <Button icon neutral color="danger" size="sm" onClick={this.clickRemovePolicy}>
                                         <i className="now-ui-icons ui-1_simple-remove"></i>
                                     </Button>{` `}
                                 </td>
                             </tr>);
-                        })}
+                        }.bind(this))}
                     </tbody>
                 </Table>
             </div>
