@@ -28,3 +28,4 @@ class PoliciesTypes(IntEnum):
     REQUEST_TWEET_RETWEET = 2
     REQUEST_TWEET_REPLY = 3
     REQUEST_FOLLOW_USER = 4
+    FIRST_TIME = 5

@@ -1,10 +1,18 @@
 from neo4j import GraphDatabase
-from enums import Neo4jTypes
+from enum import IntEnum
+
+class Neo4jTypes(IntEnum):
+    CREATE_BOT = 1
+    CREATE_USER = 2
+    CREATE_RELATION = 3
+    SEARCH_USER = 4
+    UPDATE_USER = 5
+    SEARCH_BOT = 6
+    UPDATE_BOT = 7
 
 class Neo4jAPI():
     def __init__(self):
         print("Creating connection")
-        #self._driver = GraphDatabase.driver("bolt://neo4j-redesfis.5g.cn.atnog.av.it.pt:7687", auth=("neo4j", "neo4jPI"))
         self._driver = GraphDatabase.driver("bolt://192.168.85.187:7687",auth=("neo4j","neo4jPI"))
 
     def close(self):

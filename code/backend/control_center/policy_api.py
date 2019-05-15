@@ -1,5 +1,5 @@
-from PEP import PEP
-from PDP import PDP
+from PEP.PEP import PEP
+from PDP.PDP import PDP
 
 
 class PolicyAPI():

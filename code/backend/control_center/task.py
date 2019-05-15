@@ -1,9 +1,9 @@
-from mongo_api import MongoAPI
-from postgreSQL import postgreSQL_API
+from Mongo.mongo_api import MongoAPI
+from Postgres.postgreSQL import postgreSQL_API
 from send import RabbitSend
 from policy_api import PolicyAPI
-from neo4j_api import Neo4jAPI
-from enums import MessageTypes, Neo4jTypes, PoliciesTypes
+from Neo4j.neo4j_api import Neo4jAPI
+from Enums.enums import MessageTypes, Neo4jTypes, PoliciesTypes
 
 class Task():
     def __init__(self):
@@ -104,6 +104,11 @@ class Task():
                     #Update User in NEO4J Database
                     self.neo4j.task(Neo4jTypes.UPDATE_BOT,data={"bot_id": message['bot_id'], "bot_name": message['data']['name'], "bot_username": message['data']['screen_name']})
                 else:
+                    data = {
+                        "type": PoliciesTypes.FIRST_TIME,
+                        "bot_id": message['bot_id'],
+                    }
+                    self.policy.lifecycle(data)
                     #Save User in Mongo Database
                     self.mongo.save('users', message['data'])
                     #Create User in Neo4j
