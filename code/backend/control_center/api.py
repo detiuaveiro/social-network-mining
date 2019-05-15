@@ -24,7 +24,7 @@ neo=Neo4jAPI()
 @app.route("/")
 def home():
     #a=postgres.addPolicy({"API_type":"Twitter"})
-    p=neo.search_bot()
+    p=neo.search_a_user()
     print(p)
     return "root"
 
@@ -38,12 +38,10 @@ def user_general():
         i["id"] = user_id
     return jsonify(mapa)
 
-##################################################################################    
 @app.route("/twitter/users/stats")
 def user_general_stats():
     stats=postgres.getAllStatsUsers()
     return jsonify(stats)
-##################################################################################
 
 @app.route("/twitter/users/<id>")
 def user_by_id(id):
@@ -108,12 +106,10 @@ def tt_policies():
     mapa=policy.getPoliciesByAPI("Twitter")
     return jsonify(mapa)
 
-##################################################################################
 @app.route("/twitter/stats")
 def tt_stats():
     stats=postgres.getAllStats()
     return jsonify(stats)
-##################################################################################
 
 @app.route("/twitter/bots")
 def tt_bots():
@@ -137,7 +133,6 @@ def tt_tweets():
     mapa=mongo_t.dataCollection()
     return jsonify(mapa)
 
-##################################################################################
 @app.route("/twitter/tweets/stats")
 def tt_tweet_stats():
     #agregação de likes, retweets
@@ -153,7 +148,6 @@ def tt_tweet_stats():
         ret+=i["retweet"]'''
     stats=postgres.getAllStatsTweets()
     return jsonify(stats)#jsonify({"favorite_count":fav,"retweet_count":ret})
-##################################################################################
 
 @app.route("/twitter/tweets/<id>")
 def tt_tweet_by_id(id):
