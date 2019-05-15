@@ -1,4 +1,0 @@
-pika==1.0.1
-pymongo==3.7.2
-psycopg2==2.8.2
-neo4j-driver==1.7.3

@@ -72,6 +72,10 @@ class Neo4jAPI():
         user_id = data['user_id']
         result = tx.run("MATCH (r:User { id:$id }) \
                         RETURN r", id=user_id)
+<<<<<<< HEAD
+=======
+        print(result.data())
+>>>>>>> RESTRUCTURE
         if (len(result.data())==0):
             return False
         else:
@@ -83,6 +87,10 @@ class Neo4jAPI():
         bot_id = data['bot_id']
         result = tx.run("MATCH (r:Bot { id:$id }) \
                         RETURN r", id=bot_id)
+<<<<<<< HEAD
+=======
+        print(result.data())
+>>>>>>> RESTRUCTURE
         if (len(result.data())==0):
             return False
         else:

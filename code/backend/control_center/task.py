@@ -1,9 +1,9 @@
-from mongo_api import MongoAPI
-from postgreSQL import postgreSQL_API
+from Mongo.mongo_api import MongoAPI
+from Postgres.postgreSQL import postgreSQL_API
 from send import RabbitSend
 from policy_api import PolicyAPI
-from neo4j_api import Neo4jAPI
-from enums import MessageTypes, Neo4jTypes, PoliciesTypes
+from Neo4j.neo4j_api import Neo4jAPI
+from Enums.enums import MessageTypes, Neo4jTypes, PoliciesTypes
 
 class Task():
     def __init__(self):

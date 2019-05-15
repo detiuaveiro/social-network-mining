@@ -3,11 +3,18 @@ import psycopg2
 from enum import IntEnum
 
 class PoliciesTypes(IntEnum):
+<<<<<<< HEAD
+=======
+
+>>>>>>> RESTRUCTURE
     REQUEST_TWEET_LIKE = 1
     REQUEST_TWEET_RETWEET = 2
     REQUEST_TWEET_REPLY = 3
     REQUEST_FOLLOW_USER = 4
+<<<<<<< HEAD
     FIRST_TIME = 5
+=======
+>>>>>>> RESTRUCTURE
 
 class PDP:
     '''
