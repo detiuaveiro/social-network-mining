@@ -82,6 +82,11 @@ class PDP:
             tweet_user_id
             '''
             query=""
+        elif msg["type"]==PoliciesTypes.FIRST_TIME:
+            '''
+            bot_id
+            '''
+            query=""
         else:
             return self.send_response({"response":"DENY"})
 
