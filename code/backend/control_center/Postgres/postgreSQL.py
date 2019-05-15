@@ -256,6 +256,20 @@ class postgreSQL_API():
     '''
     These methods belong to the "policies" database
     '''
+    
+    def searchLog(self, id_bot):
+        try:
+            cur = self.conn.cursor()
+            cur.execute("select * from logs where id_bot=%s;", (id_bot,))
+            data = cur.fetchall()
+            self.conn.commit()
+            result = self.postProcessResults(data)
+            return [result]
+        except psycopg2.Error as e:
+            cur.rollback()
+            return [{e.diag.severity: e.diag.message_primary}]
+        finally:
+            cur.close()
 
     def getAllLogs(self):
         try:
