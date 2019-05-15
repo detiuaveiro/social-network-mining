@@ -3,18 +3,11 @@ import psycopg2
 from enum import IntEnum
 
 class PoliciesTypes(IntEnum):
-<<<<<<< HEAD
-=======
-
->>>>>>> RESTRUCTURE
     REQUEST_TWEET_LIKE = 1
     REQUEST_TWEET_RETWEET = 2
     REQUEST_TWEET_REPLY = 3
     REQUEST_FOLLOW_USER = 4
-<<<<<<< HEAD
     FIRST_TIME = 5
-=======
->>>>>>> RESTRUCTURE
 
 class PDP:
     '''
@@ -92,31 +85,11 @@ class PDP:
         else:
             return self.send_response({"response":"DENY"})
 
-        cur=self.conn.cursor()
-        try:
-            cur.execute(query)
-            DB_val=cur.fetchall() #or fetchone()
-            #needs revision
-            num=len(DB_val)
-            self.conn.commit()
-            
-            #check DB_val, post-process result
-            data=self.postProcess(num,DB_val)
-            
-            #apply the heuristics here
-
-        except psycopg2.Error:
-            self.conn.rollback()
-            evaluate_answer=False
-        finally:
-            cur.close()
-            self.conn.close()
-
         if evaluate_answer:
             return self.send_response({"response":"PERMIT"})
         else:
             return self.send_response({"response":"DENY"})
-        
+
     def postProcess(self,num,DB_val):
         if num==1:
             d={}

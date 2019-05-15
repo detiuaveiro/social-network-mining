@@ -116,4 +116,8 @@ class Neo4jAPI():
         print("Query to update user")
         result = tx.run("MATCH (r:Bot { id:$id }) \
                         SET r = { id: $id, name: $name, username: $username } \
+<<<<<<< HEAD
                         RETURN r", id=bot_id, name=bot_name, username=bot_username)
+=======
+                        RETURN r", id=bot_id, name=bot_name, username=bot_username)
+>>>>>>> RESTRUCTURE

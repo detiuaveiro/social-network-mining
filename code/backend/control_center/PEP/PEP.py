@@ -2,6 +2,7 @@ import json
 
 class PEP:
 
+<<<<<<< HEAD
     def receive_message(self,msg):
         return self.formulate_request(msg)
         
@@ -15,6 +16,20 @@ class PEP:
         So, it is put in a dictionary, converted to json and sent to the PDP
         '''
         message=json.dumps(msg)
+=======
+    def __init__(self):
+        return
+
+    def receive_message(self,msg):
+        return self.formulate_request(msg)
+        
+    '''
+    rever isto
+    '''
+    def formulate_request(self,msg):
+        intermediate={"name":msg}
+        message=json.dumps(intermediate)
+>>>>>>> RESTRUCTURE
         return self.send_request(message)
         
     def send_request(self,msg):
