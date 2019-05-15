@@ -139,6 +139,21 @@ class postgreSQL_API():
     '''
     These methods belong to the "policies" database
     '''
+
+    def getAllLogs(self):
+        try:
+            cur = self.conn.cursor()
+            cur.execute("select * from logs;")
+            data = cur.fetchall()
+            self.conn.commit()
+            result = self.postProcessResults(data)
+            return [result]
+        except psycopg2.Error as e:
+            cur.rollback()
+            return [{e.diag.severity: e.diag.message_primary}]
+        finally:
+            cur.close()
+
     def getAllPolicies(self):
         try:
             cur=self.conn.cursor()
@@ -204,7 +219,23 @@ class postgreSQL_API():
             return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
-    
+
+    def addLog(self,mapa):
+        '''
+        adiciona uma politica após confirmar que a api e o filter já estão na db
+        '''
+        try:
+            #add log
+            cur.execute("insert into logs (id_bot,timestamp,action) values (%s,DEFAULT,%s);",(mapa["id_bot"], mapa["action"]))
+            self.conn.commit()
+        except psycopg2.Error as e:
+            cur.rollback()
+            return [{e.diag.severity : e.diag.message_primary}]
+        finally:
+            cur.close()
+
+        return [{"Message":"Success"}]
+
     def addPolicy(self,mapa):
         '''
         adiciona uma politica após confirmar que a api e o filter já estão na db
