@@ -315,7 +315,7 @@ class postgreSQL_API():
     
     def getPoliciesByBot(self,bot_id):
         try:
-            cur=self.conn.cursor
+            cur=self.conn.cursor()
             cur.execute("select * from policies;")
             data=cur.fetchall()
             self.conn.commit()
@@ -343,6 +343,7 @@ class postgreSQL_API():
         '''
         try:
             #add log
+            cur=self.conn.cursor()
             cur.execute("insert into logs (id_bot,timestamp,action) values (%s,DEFAULT,%s);",(mapa["id_bot"], mapa["action"]))
             self.conn.commit()
         except psycopg2.Error as e:

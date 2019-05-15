@@ -1,7 +1,7 @@
 from flask import Flask,url_for, Response, jsonify, json, request
-from mongo_flask import AppMongo
-from postgreSQL import postgreSQLConnect
-from neo4j_api import Neo4jAPI
+from Mongo.mongo_flask import AppMongo
+from Postgres.postgreSQL import postgreSQLConnect
+from Neo4j.neo4j_api import Neo4jAPI
 
 app=Flask(__name__)
 
