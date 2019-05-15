@@ -10,22 +10,27 @@ import {
 import axios from 'axios';
 
 class ReactTables extends React.Component {
+    /*
+     */
     state = {
-        policies: this.props.policies
+        policies: this.props.policies,
+        editPolicy: this.props.editPolicy || function() {}
     };
     /**
      * [
      *   {
-     *     policy_name : "Example name",
-     *     social_network : "Twitter",
+     *     name : "Example name",
+     *     api_type : "Twitter",
      *     filter : "keywords",
      *     params : ["keyword1","keyword2","keyword3"],
-     *     target : "target1"
+     *     id_policy : "something"
+     *     target : "..."
      *   }
      * ]
      */
     constructor(props) {
         super(props);
+
         this.clickRemovePolicy = this.clickRemovePolicy.bind(this);
         this.clickEditPolicy = this.clickEditPolicy.bind(this);
     }
@@ -34,35 +39,27 @@ class ReactTables extends React.Component {
         this.updatePolicies();
     }
 
-    /**
-     * @typedef {Object} Policy
-     * @property {string} name
-     * @property {string} social_network
-     * @property {string} filter
-     * @property {string[]} params
-     * @property {string} target
-     * @param {Policy} policy 
-     */
-    addPolicy(policy) {
-        this.state.policies.push(policy);
-        this.forceUpdate();
-    }
-
     updatePolicies() {
-        axios.get('/policies')
-             .then(res => {
+        axios.post('/policies')
+            .then(res => {
                 const policies = res.policies;
-                this.setState({policies});
+                this.setState({ policies });
                 console.log(policies);
-        });
+            });
     }
 
     clickRemovePolicy(e) {
-        
+        let id = e.currentTarget.parentElement.parentElement.id;
+        console.log(id);
+        axios.get('/policies/remove/' + id)
+            .then(res => {
+                this.updatePolicies();
+            });
     }
 
     clickEditPolicy(e) {
-        
+        let index = parseInt(e.currentTarget.parentElement.parentElement.dataset.index);
+        this.state.editPolicy(this.state.policies[0]);
     }
 
     render() {
@@ -82,14 +79,14 @@ class ReactTables extends React.Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {this.state.policies.map(function (policy,index) {
-                            return (<tr>
-                                <td className="text-center">{index}</td>
+                        {this.state.policies.map(function (policy, index) {
+                            return (<tr id={policy.id_policy} data-index={index}>
+                                <td className="text-center">{index+1}</td>
                                 <td className="text-center">
                                     <Checkbox />
                                 </td>
                                 <td>{policy.name}</td>
-                                <td>{policy.social_network}</td>
+                                <td>{policy.api_type}</td>
                                 <td className="text-center">{policy.filter}</td>
                                 <td className="text-right">{policy.params.join()}</td>
                                 <td className="text-right">{policy.target}</td>

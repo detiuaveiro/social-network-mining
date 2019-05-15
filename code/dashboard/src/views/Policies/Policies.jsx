@@ -11,6 +11,17 @@ import {
 import { PanelHeader, DataTables } from "components";
 
 class Policies extends React.Component {
+
+  constructor(props) {
+    super(props);
+
+    this.editPolicy = this.editPolicy.bind(this);
+  }
+
+  editPolicy(policy) {
+    
+  }
+
   render() {
     return (
       <div>
@@ -30,7 +41,16 @@ class Policies extends React.Component {
                   <CardTitle tag="h4">Policies</CardTitle>
                 </CardHeader>
                 <CardBody>
-                  <DataTables policies={[]}/>
+                  <DataTables policies={[{
+                    name : "Example name",
+                    api_type : "Twitter",
+                    filter : "keywords",
+                    params : ["keyword1","keyword2","keyword3"],
+                    id_policy : "something",
+                    target : "..."
+                  }]}
+                   editPolicy={this.editPolicy} />
+
                 </CardBody>
               </Card>
             </Col>
