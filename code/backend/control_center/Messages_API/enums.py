@@ -1,0 +1,30 @@
+from enum import IntEnum
+
+class MessageTypes(IntEnum):
+    USER_FOLLOWED = 1
+    TWEET_LIKED = 2
+    TWEET_RETWEETDED = 3
+    TWEET_REPLIED = 4
+    REQUEST_TWEET_LIKE = 5
+    REQUEST_TWEET_RETWEET = 6
+    REQUEST_TWEET_REPLY = 7
+    REQUEST_FOLLOW_USER = 8
+    SAVE_USER = 9
+    SAVE_TWEET = 10
+    ERROR_BOT = 11
+
+class Neo4jTypes(IntEnum):
+    CREATE_BOT = 1
+    CREATE_USER = 2
+    CREATE_RELATION = 3
+    SEARCH_USER = 4
+    UPDATE_USER = 5
+    SEARCH_BOT = 6
+    UPDATE_BOT = 7
+
+
+class PoliciesTypes(IntEnum):
+    REQUEST_TWEET_LIKE = 1
+    REQUEST_TWEET_RETWEET = 2
+    REQUEST_TWEET_REPLY = 3
+    REQUEST_FOLLOW_USER = 4
