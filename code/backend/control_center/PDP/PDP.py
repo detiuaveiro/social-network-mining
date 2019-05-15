@@ -35,7 +35,7 @@ class PDP:
         - DECIDE (PERMIT, DENY)
     
         msg- dictionary with necessary fields to perform the query
-        msg={"name":action}
+        msg={"type":action,data}
         '''
         evaluate_answer=True
 
@@ -80,13 +80,37 @@ class PDP:
             '''
             bot_id
             tweet_user_id
+
+            workflow of this request:
+
+            1- Check bot and its policies
+                1.1- if filter=target and target=tweet_user_id:
+                        return PERMIT
+                1.2- if other_bots.filter=target and other_bots.target=tweet_user_id:
+                        return DENY
+                1.3- No one has this target
+                        GOTO Rule 2
+            
+            2- Check neo4j
+                2.1- Bot already follows tweet_user_id (this case should never happen, just here for precaution)
+                        return DENY
+                2.2- Other bot is following tweet_user_id: (questionable, should be discussed)
+                        return DENY
+                2.3- No one follows tweet_user_id:
+                        return PERMIT
             '''
             query=""
         elif msg["type"]==PoliciesTypes.FIRST_TIME:
             '''
             bot_id
+            
+            workflow of this request:
+
+            new user arrives the jungle. he is presented with some fine-grained users to start analyzing
+            
+            Returns:
+                random number of users to follow, and random users to follow in a dictionary {username : URL }.
             '''
-            query=""
         else:
             return self.send_response({"response":"DENY"})
 
