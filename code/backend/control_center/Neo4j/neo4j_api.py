@@ -72,10 +72,6 @@ class Neo4jAPI():
         user_id = data['user_id']
         result = tx.run("MATCH (r:User { id:$id }) \
                         RETURN r", id=user_id)
-<<<<<<< HEAD
-=======
-        print(result.data())
->>>>>>> RESTRUCTURE
         if (len(result.data())==0):
             return False
         else:
@@ -87,10 +83,6 @@ class Neo4jAPI():
         bot_id = data['bot_id']
         result = tx.run("MATCH (r:Bot { id:$id }) \
                         RETURN r", id=bot_id)
-<<<<<<< HEAD
-=======
-        print(result.data())
->>>>>>> RESTRUCTURE
         if (len(result.data())==0):
             return False
         else:
@@ -116,8 +108,34 @@ class Neo4jAPI():
         print("Query to update user")
         result = tx.run("MATCH (r:Bot { id:$id }) \
                         SET r = { id: $id, name: $name, username: $username } \
-<<<<<<< HEAD
                         RETURN r", id=bot_id, name=bot_name, username=bot_username)
-=======
-                        RETURN r", id=bot_id, name=bot_name, username=bot_username)
->>>>>>> RESTRUCTURE
+
+    def search_all_bots(self):
+        '''
+        temporarily testing with User, instead of Bot
+        '''
+        with self._driver.session() as session:
+            result = session.run("MATCH (a:User) RETURN a")
+            records_iterator=result.values()
+            l=[]
+            for i in records_iterator:
+                d={}
+                a=i[0]
+                d["id"]=a.get("id")
+                d["name"]=a.get("name")
+                d["username"]=a.get("username")
+                l.append(d)
+            #print(result.single()[0].id)
+            #for i in records_iterator:
+            #    print(i.items())
+            return l
+
+    def search_bot_by_id(self,bot_id):
+        '''
+        temporarily testing with User, instead of Bot
+        '''
+        with self._driver.session() as session:
+            result = session.run("MATCH (a:User { id:$bot_id }) RETURN a;",bot_id=bot_id)
+            print("items", result.values())
+            print(result.single())
+        return result.single()

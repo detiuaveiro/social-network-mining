@@ -1,14 +1,14 @@
 from flask import Flask,url_for, Response, jsonify, json, request
 from Mongo.mongo_flask import AppMongo
-from Postgres.postgreSQL import postgreSQLConnect
+from Postgres.postgreSQL import postgreSQL_API
 from Neo4j.neo4j_api import Neo4jAPI
 
 app=Flask(__name__)
 
 mongo=AppMongo(app,"users")
 mongo_t=AppMongo(app,"tweets")
-postgres=postgreSQLConnect("postgres")
-policy=postgreSQLConnect("policies")
+postgres=postgreSQL_API("postgres")
+policy=postgreSQL_API("policies")
 neo=Neo4jAPI()
 '''/
     users
@@ -21,9 +21,6 @@ neo=Neo4jAPI()
 
 @app.route("/")
 def home():
-    #a=postgres.addPolicy({"API_type":"Twitter"})
-    p=neo.search_a_user()
-    print(p)
     return "root"
 
 @app.route("/twitter/users")
@@ -96,7 +93,7 @@ twitter paths
 '''
 @app.route("/twitter/network")
 def tt_network():
-    return "twitter"
+    return "bolt://192.168.85.187:7687"
 
 @app.route("/twitter/policies")
 def tt_policies():
@@ -110,19 +107,20 @@ def tt_stats():
 
 @app.route("/twitter/bots")
 def tt_bots():
-    val=neo.search_bot()
-    print(val)
-    return val #json.dumps(json_to_send["users"]["1103294806497902594"])
+    val=neo.search_all_bots()
+    #print(val)
+    return jsonify(val) #json.dumps(json_to_send["users"]["1103294806497902594"])
 
 @app.route("/twitter/bots/<id>")
 def tt_bots_by_id(id):
-    #if id=="1103294806497902594":
-    #    return json.dumps(json_to_send["users"][id])
-    return "twitter"
+    val=neo.search_bot_by_id(id)
+    print(val)
+    return "val"
 
 @app.route("/twitter/bots/<id>/logs")
 def tt_bot_logs(id):
-    return "TBD"
+    val=postgres.searchLog(id)
+    return jsonify(val)
 
 @app.route("/twitter/tweets")
 def tt_tweets():
