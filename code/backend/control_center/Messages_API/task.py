@@ -128,8 +128,13 @@ class Task():
             #TODO: Postgres for Users
 
         elif(message_type == MessageTypes.SAVE_TWEET):
-            print("TASK: SAVE TWEET")            
-            self.mongo.save('tweets', message['data'])
+            print("TASK: SAVE TWEET")
+            #Check if tweet exists
+            tweet_exists = self.mongo.search('tweets', message['data'])
+            if (tweet_exists):
+                self.mongo.update('tweets', message['data'])
+            else:
+                self.mongo.save('tweets', message['data'])
             self.postgreSQL.insertDataTweets(message['data']['timestamp'],message['data']['id'],message['data']['user_id'],message['data']['likes_count'],message['data']['retweets_count'])
 
         elif(message_type == MessageTypes.SAVE_TWEET):

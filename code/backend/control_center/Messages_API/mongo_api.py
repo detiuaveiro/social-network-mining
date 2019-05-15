@@ -25,3 +25,17 @@ class MongoAPI():
         else:
             self.tweets.update_one(self.data)
 
+    def search(self, database, data):
+        self.database = database
+        self.data = data
+        result
+        if (self.database=='users'):
+            result = self.users.find({"id": self.data['id']})
+        else:
+            result = self.tweets.find({"id": self.data['id']})
+
+        if(len(result)==0):
+            return False
+        else:
+            return True
+
