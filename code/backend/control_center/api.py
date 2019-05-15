@@ -22,7 +22,7 @@ neo=Neo4jAPI()
 @app.route("/")
 def home():
     #a=postgres.addPolicy({"API_type":"Twitter"})
-    p=neo.search_bot()
+    p=neo.search_a_user()
     print(p)
     return "root"
 
