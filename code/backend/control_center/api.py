@@ -114,8 +114,7 @@ def tt_bots():
 @app.route("/twitter/bots/<id>")
 def tt_bots_by_id(id):
     val=neo.search_bot_by_id(id)
-    print(val)
-    return "val"
+    return jsonify(val)
 
 @app.route("/twitter/bots/<id>/logs")
 def tt_bot_logs(id):

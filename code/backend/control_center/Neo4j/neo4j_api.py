@@ -115,7 +115,7 @@ class Neo4jAPI():
         temporarily testing with User, instead of Bot
         '''
         with self._driver.session() as session:
-            result = session.run("MATCH (a:User) RETURN a")
+            result = session.run("MATCH (a:Bot) RETURN a")
             records_iterator=result.values()
             l=[]
             for i in records_iterator:
@@ -135,10 +135,21 @@ class Neo4jAPI():
         temporarily testing with User, instead of Bot
         '''
         with self._driver.session() as session:
-            result = session.run("MATCH (a:User { id:$bot_id }) RETURN a;",bot_id=bot_id)
-            print("items", result.values())
-            print(result.single())
-        return result.single()
+            result = session.run("MATCH (a:Bot { id:$bot_id }) RETURN a;",bot_id=bot_id)
+            #print("items", result.values())
+            #vals=result.values()
+            d={}
+            for i in result.values():
+                d["id"]=i[0].get("id")
+                d["name"]=i[0].get("name")
+                d["username"]=i[0].get("username")
+                break
+        return [d]
     
     def search_relationship(self,user_id,bot_id):
-        return False
+        with self._driver.session() as session:
+            result=session.run("match (b:Bot { id:$bot_id } )-[r:FOLLOWS]->(u:User { id:$user_id } ) return b,u",bot_id=bot_id,user_id=user_id)
+            if (len(result.data())==0):
+                return False
+            else:
+                return True
