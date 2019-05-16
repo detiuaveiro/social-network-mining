@@ -1,7 +1,7 @@
 import argparse
 import logging
 import os
-from typing import List, Dict
+from typing import List, Dict, Any
 
 import tweepy
 from pyrabbit2 import Client
@@ -139,7 +139,7 @@ class TwitterBot:
                     self.find_keywords_routine(task_params["keywords"])
                     pass
                 elif task_type == Task.FOLLOW_USERS:
-                    self.follow_users_routine(task_params["users"])
+                    self.follow_users_routine(task_params)
                     pass
                 elif task_type == Task.LIKE_TWEETS:
                     self.like_tweets_routine(task_params["tweets"])
@@ -249,34 +249,69 @@ class TwitterBot:
             self.read_timeline(self.user, timeline_posts, keywords)
         log.info("Exiting Keywords Routine...")
 
-    def follow_users_routine(self, users: List[int]):
+    def follow_users_routine(self, params : Dict[Any]):
         """
         Routine for the FOLLOW_USERS task
-        For each user, searches in their timelines and reads some of their tweets.
+        We can accept 2 types of users list, either by screen names or by IDs.
+		Params is assumed to be this kind of structure
+
+		"params" : {
+  			"type" : "screen_name"
+  			"data" : ["barackobama",...],
+  		}
+		
+		or 
+
+		"params" : {
+  			"type" : "id"
+  			"data : [2312312312312,...],
+  		}
 
         Parameters
         ----------
-        users : `List[int]`
-            list of users' ids
+        params : Dict[Any]
+        	Dictionary with the payload, the data itself + the type
 
         See Also
         --------
         search_in_user
         """
         log.info("Starting 'Follow Users' routine...")
-        if not users:
+
+        if not params["data"]:
             log.info("No users provided!")
         else:
-            for user_id in users:
-                # Skip our own, just in case
-                if user_id == self.user.id:
-                    continue
+        	# To avoid having to write 2 loops, or making an if check on every loop,
+        	# we'll just take advantage of python's dict as params
+        	# So we'll kinda of do
+        	"""
+				fun_kwargs = {
+					params["type"] : value
+				}
+        	"""
+        	# By default, assume `user_ids`
+        	unclean_type = params["type"].lower()
+        	arg_type = "user_id"
+        	# making a check
+        	if unclean_type == "id" or unclean_type == "user_id":
+        		arg_type = "user_id"
+        	elif unclean_type == "screen_name":
+        		arg_type = "screen_name"
+
+            for i in params["data"]:
                 # get the user object
                 # TODO: Use the cache as, you know, an actual cache
                 log.info(f"Getting user object for User with ID={user_id}")
-                user = self._api.get_user(user_id=user_id)
-                log.info(f"Found with: ", user)
-                self.search_in_user(user)
+                arg_param = {
+                	arg_type : i,
+                }
+                try:
+                	user = self._api.get_user(*arg_param)
+                	if user:
+                		log.info(f"Found with: ", user)
+                		self.search_in_user(user)
+                except Exception as e:
+                	log.error(f"Unable to find user by [{arg_type}] with <{i}>")
         log.info("Exiting Follow Users Routine...")
 
     def search_in_user(self, user_obj: User):
