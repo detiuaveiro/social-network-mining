@@ -1,7 +1,7 @@
 import argparse
 import logging
 import os
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 
 import tweepy
 from pyrabbit2 import Client
@@ -142,9 +142,9 @@ class TwitterBot:
                     self.follow_users_routine(task_params)
                     pass
                 elif task_type == Task.LIKE_TWEETS:
-                    self.like_tweets_routine(task_params["tweets"])
+                    self.like_tweets_routine(task_params)
                 elif task_type == Task.RETWEET_TWEETS:
-                    self.retweet_tweets_routine(task_params["tweets"])
+                    self.retweet_tweets_routine(task_params)
                 else:
                     log.warning(f"Received unknown task_msg: {task_msg}")
             except NoMessagesInQueue:
@@ -177,45 +177,74 @@ class TwitterBot:
         log.warning("TODO: Implement Clean up")
         self._cache.close()
 
-    def like_tweets_routine(self, tweets_ids: List[int]):
+    def like_tweets_routine(self, tweets_ids: Union[int, List[int]]):
         """
         Routine for the LIKE_TWEETS task
-        Likes a list of tweets, with their ids passed as parameters
+        Likes 1 or several tweets, with their ids being the parameters
 
         Parameters
         ----------
-        tweets_ids: `List[int]`
-            list of tweets' ids
+        tweets_ids: `Union[int, List[int]]`
+            Either 1 tweet ID or a list of tweet Ids
         """
         log.debug("Starting 'Like Tweets' routine...")
-        for tweet_id in tweets_ids:
-            tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
-            if tweet.favorited:
-                log.debug(f"Tweet with ID={tweet.id} already liked, no need to like again")
-            else:
-                log.debug(f"Liking Tweet with ID={tweet.id}")
-                tweet.like()
-                self.send_event(MessageType.EVENT_TWEET_LIKED, tweet)
 
-    def retweet_tweets_routine(self, tweets_ids: List[int]):
-        """
-        Routine for the RETWEET_TWEETS task
-        Retweets a list of tweets, with their ids passed as parameters
 
-        Parameters
-        ----------
-        tweets_ids: `List[int]`
-            list of tweets' ids
-        """
+        # Helper function so we don't have to repeat code
+
+        def get_and_like_tweet(tweet_id):
+        	tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
+        	if tweet.favorited:
+        	    log.debug(f"Tweet with ID={tweet.id} already liked, no need to like again")
+        	else:
+        	    log.debug(f"Liking Tweet with ID={tweet.id}")
+        	    tweet.like()
+        	    self.send_event(MessageType.EVENT_TWEET_LIKED, tweet)
+
+        # Single tweet
+        if type(tweets_ids) is int:
+        	get_and_like_tweet(tweet_id=tweet_id)
+        # Multiple tweets
+        elif type(tweets_ids) is list:
+	        for tweet_id in tweets_ids:
+	            get_and_like_tweet(tweet_id=tweet_id)
+	    # Unknown type
+	    else:
+	    	log.warn(f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
+
+    def retweet_tweets_routine(self, tweets_ids: Union[int, List[int]]):
+    	"""
+    	Routine for the RETWEET_TWEETS task
+    	Retweets 1 or several tweets, with their ids being the parameters
+
+    	Parameters
+    	----------
+    	tweets_ids: `Union[int, List[int]]`
+    	    Either 1 tweet ID or a list of tweet Ids
+    	"""
         log.debug("Starting 'Retweet Tweets' routine...")
-        for tweet_id in tweets_ids:
-            tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
-            if tweet.retweeted:
-                log.debug(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
-            else:
-                log.debug(f"Retweeting Tweet with ID={tweet.id}")
-                tweet.retweet()
-                self.send_event(MessageType.EVENT_TWEET_RETWEETED, tweet)
+
+        # Helper function so we don't have to repeat code
+        def get_and_retweet_tweet(tweet_id):
+        	tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
+        	if tweet.retweeted:
+        	    log.debug(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
+        	else:
+        	    log.debug(f"Retweeting Tweet with ID={tweet.id}")
+        	    tweet.retweet()
+        	    self.send_event(MessageType.EVENT_TWEET_RETWEETED, tweet)
+
+        # Single tweet
+        if type(tweets_ids) is int:
+        	get_and_retweet_tweet(tweet_id=tweet_id)
+        # Multiple tweets
+        elif type(tweets_ids) is list:
+	        for tweet_id in tweets_ids:
+	            get_and_retweet_tweet(tweet_id=tweet_id)
+	    # Unknown type
+	    else:
+	    	log.warn(f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
+
 
     def find_keywords_routine(self, keywords: List[str]):
         """
