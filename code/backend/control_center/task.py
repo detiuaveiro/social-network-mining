@@ -55,6 +55,7 @@ class Task():
             msm = {"type": 4,"response": result}
             self.rabbit.send(routing_key=r_key,message=msm)
 
+
         elif(message_type == MessageTypes.REQUEST_TWEET_REPLY):
             print("TASK: REQUEST REPLY TWEET")
             data = {
@@ -74,6 +75,7 @@ class Task():
             msm = {"type": 5,"response": result}
             self.rabbit.send(routing_key=r_key,message=msm)
 
+
         elif(message_type == MessageTypes.REQUEST_FOLLOW_USER):
             print("TASK: REQUEST FOLLOW USER")
             data = {
@@ -82,6 +84,16 @@ class Task():
                 "user_id": message['data']['id'],
             }
             result = self.policy.lifecycle(data)
+            if (result==1):
+                self.postgreSQL.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE FOLLOWED"})
+                #Routing Key
+                r_key = 'tasks.deliver.'+message['bot_id']
+                #Message
+                msm = {"type": ResponseTypes.FOLLOW_USERS,"params": {"type": "id", "data": [message['data']['id']]}}
+                self.rabbit.send(routing_key=r_key,message=msm)
+            else:
+                self.postgreSQL.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE FOLLOWED"})
+
             """ #Search if User is already Followed by another Bot
             result = self.neo4j.task(Neo4jTypes.SEARCH_USER,data={"user_id": message['data']['id']}) """
             #Routing Key
@@ -89,6 +101,7 @@ class Task():
             #Message
             msm = {"type": 1,"response": result}
             self.rabbit.send(routing_key=r_key,message=msm)
+
 
         elif(message_type == MessageTypes.SAVE_USER):
             print("TASK: SAVE USER")
