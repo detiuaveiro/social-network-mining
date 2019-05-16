@@ -18,6 +18,7 @@ class PDP:
     def __init__(self):
         self.conn=psycopg2.connect(host="192.168.85.46",database="policies", user="postgres", password="password")
         self.PoliciesTypes=PoliciesTypes(4)
+        self.neo=Neo4jAPI()
         return
     
     def receive_request(self,msg):
@@ -37,7 +38,7 @@ class PDP:
         msg- dictionary with necessary fields to perform the query
         msg={"type":action,data}
         '''
-        evaluate_answer=True
+        evaluate_answer=False
 
         #PRE-PROCESSING the request to get the QUERY
         '''
@@ -99,7 +100,41 @@ class PDP:
                 2.3- No one follows tweet_user_id:
                         return PERMIT
             '''
-            query=""
+            query="select params from policies,filter where policies.active=TRUE and policies.filter=filter.id and filter.name=Target"
+            cur=self.conn.cursor()
+            try:
+                '''
+                Rule 1
+                '''
+                cur.execute(query)
+                DB_val=cur.fetchall()
+                self.conn.commit()
+                
+                #probably don't need this postProcess, since all logic is handled here
+                #data=self.postProcess(num,DB_val)
+                
+                #apply the heuristics here
+                for i in DB_val:
+                    params=i[0]
+                    if params[0]==msg["tweet_user_id"]:
+                        for j in params[1:]:
+                            if j==msg["bot_id"]:
+                                return self.send_response({"response":"PERMIT"})
+                '''
+                Rule 2
+                '''
+                if self.neo.search_relationship(msg["tweet_user_id"],msg["bot_id"]):
+                    return self.send_response({"response":"DENY"})
+                #Rule 2.2 not implemented (maybe in the future?)
+                else:
+                    return self.send_response({"response":"PERMIT"})
+            except psycopg2.Error:
+                self.conn.rollback()
+                evaluate_answer=False
+            finally:
+                cur.close()
+                self.conn.close()
+
         elif msg["type"]==PoliciesTypes.FIRST_TIME:
             '''
             bot_id

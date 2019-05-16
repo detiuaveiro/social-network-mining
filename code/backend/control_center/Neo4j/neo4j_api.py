@@ -139,3 +139,6 @@ class Neo4jAPI():
             print("items", result.values())
             print(result.single())
         return result.single()
+    
+    def search_relationship(self,user_id,bot_id):
+        return False
