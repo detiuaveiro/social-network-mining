@@ -109,8 +109,10 @@ class PDP:
             new user arrives the jungle. he is presented with some fine-grained users to start analyzing
             
             Returns:
-                random number of users to follow, and random users to follow in a dictionary {username : URL }.
+                random number of users to follow, and random users to follow in a dictionary {args : [] }.
             '''
+            lista=self.get_suggested_users()
+            return self.send_response({"args":lista})
         else:
             return self.send_response({"response":"DENY"})
 
@@ -142,4 +144,21 @@ class PDP:
         #json dumps da decisão
         message=json.dumps(msg)
         return message #pep.receive_response(message)
-        
+    
+    def get_suggested_users(self):
+        '''
+        num_users: Random number of users to start following
+        usernames: List of usernames to return to the bot
+        '''
+        num_users=random.randint(2,10)
+        usernames=[]
+        users=["dailycristina","PaulaNevesD","doloresaveiro","Corpodormente","Manzarra","Feromonas","DanielaRuah","RicardoTPereira","LuciaMoniz","D_Morgado","ClaudiaPFVieira","RuiSinelCordes","DiogoBeja","blackmirror","13ReasonsWhy","NetflixPT","DCComics","gameofthrones","cw_arrow","CW_TheFlash","TheCW_Legends","nbcthisisus","lacasadepapel","lucifernetflix","thecwsupergirl","cw_riverdale","hawaiifive0cbs","cwthe100","agentsofshield","thesimpsons","macgyvercbs","americancrimetv","acsfx","shadowhunterstv","theamericansfx","crimminds_cbs","KimKardashian","khloekardashian","kourtneykardash","KendallJenner","KylieJenner","KrisJenner","pewdiepie","tim_cook","elonmusk","BillGates","FCPorto","KDTrey5","Cristiano","hazardeden10","PauDybala_JR","Sporting_CP","Dame_Lillard","stephenasmith","RealSkipBayless","ManCity","juventusfc","FCBarcelona","realmadrid","SergioRamos","KingJames","katyperry","cher","NICKIMINAJ","deadmau5","kanyewest","axlrose","patrickcarney","vincestaples","KillerMike","thedavidcrosby","samantharonson","Eminem","pittyleone","thesonicyouth","bep","ladygaga","coldplay","britneyspears","backstreetboys","chilipeppers","fosterthepeople","acdc","arcticmonkeys","blurofficial","gorillaz","greenday","linkinpark","MCRofficial","falloutboy","PanicAtTheDisco","AllTimeLow","PTXofficial","kirstin","StephenCurry30","NBA","SLBenfica","partido_pan","ppdpsd","psocialista","_cdspp","cdupcppev","realdonaldtrump","borisjohnson","nigel_farage","jeremycorbyn","theresa_may","joebiden","fhollande","angelamerkeicdu","barackobama","berniesanders","nicolasmaduro","vp","realxi_jinping","mlp_officiel","jguaido","RuiRioPSD","antoniocostapm","catarina_mart","cristasassuncao","heloisapolonia","jairbolsonaro"]
+        while num_users>0:
+            num=random.randint(0,len(users))
+            usernames.append(users[num])
+            num_users-=1
+        for i in usernames:
+            for j in usernames:
+                if i==j:
+                    usernames.remove(j)
+        return usernames
