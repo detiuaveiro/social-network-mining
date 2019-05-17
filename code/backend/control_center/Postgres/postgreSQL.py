@@ -381,7 +381,7 @@ class postgreSQL_API():
             #check filter_api
             self.checkFilterAPIExistence(cur,mapa)
             #add policy
-            cur.execute("insert into policies (API_type,filter,name,params,active,id_policy) values (%s,%s,%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"],mapa["active"],mapa["id_policy"]))
+            cur.execute("insert into policies (API_type,filter,name,params,active) values (%s,%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"],mapa["active"]))
             self.conn.commit()
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -451,20 +451,6 @@ class postgreSQL_API():
                 ll.append(j)
             d[i[-1]]=ll
         return d
-
-    def checkUserExistence(self,cur,mapa):
-        cur.execute("select user_id, timestamp from users where tweet_id=%s and timestamp=DEFAULT;",(mapa["user_id"],))
-        data=cur.fetchone()
-        if data is None:
-            cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
-        return
-
-    def checkTweetExistence(self,cur,mapa):
-        cur.execute("select tweet_id, timestamp from tweets where tweet_id=%s and timestamp=DEFAULT;",(mapa["tweet_id"],))
-        data=cur.fetchone()
-        if data is None:
-            cur.execute("insert into tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",(mapa["tweet_id"],mapa["user_id"],mapa["likes"],mapa["retweets"]))
-        return
 
     def checkAPIExistence(self,cur,mapa):
         cur.execute("select name from api where api.name=%s;",(mapa["API_type"],))
