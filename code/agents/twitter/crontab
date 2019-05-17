@@ -6,13 +6,13 @@ MAILTO=root
 
 HOME=/
 
-KEY=lYa4VucwdoUUTQLC2utgtg
-SECRET=NfnIALNRMcrvC844yypUubWp2xmuiL3zbLN8osjWntM
-TOKEN=1103294806497902594-bI8hncZU8h4JHAmZ4vrPYZ0eDMA5jk
-TOKEN_SECRET=BYtMX7efD0lTl1FZcN6D8zQr4WVcLjjvxL6BpHCQCQFbI
-SERVER_HOST=mqtt-redesfis.ws.atnog.av.it.pt
-SERVER_PORT=80
-TOR_PROXY=18.130.65.85:8118
+export KEY=lYa4VucwdoUUTQLC2utgtg
+export SECRET=NfnIALNRMcrvC844yypUubWp2xmuiL3zbLN8osjWntM
+export TOKEN=1103294806497902594-bI8hncZU8h4JHAmZ4vrPYZ0eDMA5jk
+export TOKEN_SECRET=BYtMX7efD0lTl1FZcN6D8zQr4WVcLjjvxL6BpHCQCQFbI
+export SERVER_HOST=mqtt-redesfis.ws.atnog.av.it.pt
+export SERVER_PORT=80
+export TOR_PROXY=18.130.65.85:8118
 
 # ┌───────────── minute (0 - 59)
 # │ ┌───────────── hour (0 - 23)

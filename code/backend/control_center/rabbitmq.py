@@ -55,7 +55,7 @@ class Rabbitmq():
             print(message)            
             self.task_manager.menu(message['type'], message)
 
-        self.channel.basic_consume(queue=self.queue, on_message_callback=callback, auto_ack=True,)
+        self.channel.basic_consume(queue=self.queue, on_message_callback=callback, auto_ack=True)
         self.channel.start_consuming()
 
     def send(self, routing_key, message):
