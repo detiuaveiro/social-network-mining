@@ -70,7 +70,7 @@ class ReactTables extends React.Component {
     clickRemovePolicy(e) {
         let id = e.currentTarget.parentElement.parentElement.id;
         console.log(id);
-        axios.get('/policies/remove/' + id)
+        axios.delete('/policies/remove/' + id)
             .then(res => {
                 console.log(res);
                 this.loadPolicies();
@@ -98,7 +98,6 @@ class ReactTables extends React.Component {
                             <th>Social Network</th>
                             <th className="text-center">Filter</th>
                             <th className="text-right">Params</th>
-                            <th className="text-right">Target</th>
                             <th className="text-right">Actions</th>
                         </tr>
                     </thead>
@@ -113,7 +112,6 @@ class ReactTables extends React.Component {
                                 <td>{policy.API_type}</td>
                                 <td className="text-center">{policy.filter}</td>
                                 <td className="text-right">{policy.params.join()}</td>
-                                <td className="text-right">{policy.target}</td>
                                 <td className="text-right">
                                     <Button icon neutral color="success" size="sm" onClick={this.clickEditPolicy}>
                                         <i className="now-ui-icons ui-2_settings-90"></i>
@@ -221,4 +219,4 @@ class EditPoliciesModal extends React.Component {
     }
 }
 
-export default ReactTables;
+export default ReactTables;s
