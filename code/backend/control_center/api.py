@@ -21,6 +21,7 @@ neo=Neo4jAPI()
 
 @app.route("/")
 def home():
+    mongo.d()
     return "root"
 
 @app.route("/twitter/users")
@@ -53,7 +54,7 @@ def user_by_id(id):
 
 @app.route("/twitter/users/<id>/tweets")
 def user_tweets(id):
-    mapa=mongo_t.dataCollection(findText={"user.id_str":str(id)})
+    mapa=mongo_t.twitterCollection(findText={"user.id_str":str(id)})
     return jsonify(mapa)
 
 @app.route("/twitter/users/<id>/followers")
@@ -79,7 +80,7 @@ The most significant of these is in_reply_to_status_id, which supports finding t
 '''
 @app.route("/twitter/users/<id>/replies")
 def user_replies(id):
-    mapa=mongo_t.dataCollection(findText={"in_reply_to_user_id_str":str(id)})
+    mapa=mongo_t.twitterCollection(findText={"in_reply_to_user_id_str":str(id)})
     return jsonify(mapa)
 ##################################################################################
 
@@ -145,7 +146,7 @@ def tt_tweet_stats():
 @app.route("/twitter/tweets/<id>")
 def tt_tweet_by_id(id):
     try:
-        mapa=mongo_t.dataCollection(findText={"id":int(id)})
+        mapa=mongo_t.twitterCollection(findText={"id":int(id)})
         return jsonify(mapa)
     except TypeError:
         return jsonify({"error":"invalid"})
