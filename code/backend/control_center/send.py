@@ -15,7 +15,7 @@ class RabbitSend():
         self.channel = self.connection.channel()
 
     def send(self, routing_key, message):
-        channel.basic_publish(
+        self.channel.basic_publish(
             exchange="task_deliver",
             routing_key=routing_key,
             body=message,
