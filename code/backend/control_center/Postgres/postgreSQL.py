@@ -33,7 +33,7 @@ class postgreSQL_API():
                 cur.execute("insert into tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",(mapa["tweet_id"],mapa["user_id"],mapa["likes"],mapa["retweets"]))
             self.conn.commit()
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
@@ -52,7 +52,7 @@ class postgreSQL_API():
                 cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
             self.conn.commit()
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
@@ -68,7 +68,7 @@ class postgreSQL_API():
             result=self.postProcessResults(data)
             return [result]
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity: e.diag.message_primary}]
         finally:
             cur.close()
@@ -82,7 +82,7 @@ class postgreSQL_API():
             result=self.postProcessResults(data)
             return [result]
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity: e.diag.message_primary}]
         finally:
             cur.close()
@@ -96,7 +96,7 @@ class postgreSQL_API():
             result=self.postProcessResults(data)
             return [result]
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity: e.diag.message_primary}]
         finally:
             cur.close()
@@ -110,7 +110,7 @@ class postgreSQL_API():
             result=self.postProcessResults(data)
             return [result]
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity: e.diag.message_primary}]
         finally:
             cur.close()
@@ -266,7 +266,7 @@ class postgreSQL_API():
             result = self.postProcessResults(data)
             return [result]
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity: e.diag.message_primary}]
         finally:
             cur.close()
@@ -280,7 +280,7 @@ class postgreSQL_API():
             result = self.postProcessResults(data)
             return [result]
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity: e.diag.message_primary}]
         finally:
             cur.close()
@@ -294,7 +294,7 @@ class postgreSQL_API():
             result=self.postProcessResults(data)
             return [result]
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
@@ -308,7 +308,7 @@ class postgreSQL_API():
             result=self.postProcessResults(data)
             return [result]
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
@@ -322,7 +322,7 @@ class postgreSQL_API():
             result=self.postProcessResults(data)
             return [result]
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
@@ -346,7 +346,7 @@ class postgreSQL_API():
                             lista.append(result[i])        
             return lista
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
@@ -361,7 +361,7 @@ class postgreSQL_API():
             cur.execute("insert into logs (id_bot,timestamp,action) values (%s,DEFAULT,%s);",(mapa["id_bot"], mapa["action"]))
             self.conn.commit()
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
@@ -384,7 +384,7 @@ class postgreSQL_API():
             cur.execute("insert into policies (API_type,filter,name,params,active,id_policy) values (%s,%s,%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"],mapa["active"],mapa["id_policy"]))
             self.conn.commit()
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
@@ -400,7 +400,7 @@ class postgreSQL_API():
             cur.execute("delete from policies where id_policy=%s;",(id,))
             self.conn.commit()
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
@@ -437,7 +437,7 @@ class postgreSQL_API():
 
             self.conn.commit()
         except psycopg2.Error as e:
-            cur.rollback()
+            self.conn.rollback()
             return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
