@@ -41,8 +41,11 @@ class PEP:
         return self.enforce(message)
         
     def enforce(self,msg): 
-        if msg["response"]=="DENY":
-            return 0
+        if "response" in msg.keys():
+            if msg["response"]=="DENY":
+                return 0
+            else:
+                return 1
         elif "args" in msg.keys():
             return msg["args"]
         else:
