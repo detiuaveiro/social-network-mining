@@ -43,7 +43,10 @@ class PEP:
     def enforce(self,msg): 
         if msg["response"]=="DENY":
             return 0
-        return 1
+        elif "args" in msg.keys():
+            return msg["args"]
+        else:
+            return 1
 
     def close_connection(self):
         return NotImplementedError
