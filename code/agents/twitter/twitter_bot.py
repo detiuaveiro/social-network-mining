@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 from typing import List, Dict, Any, Union
+import sys
 
 import tweepy
 from pyrabbit2 import Client
@@ -193,57 +194,57 @@ class TwitterBot:
         # Helper function so we don't have to repeat code
 
         def get_and_like_tweet(tweet_id):
-        	tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
-        	if tweet.favorited:
-        	    log.debug(f"Tweet with ID={tweet.id} already liked, no need to like again")
-        	else:
-        	    log.debug(f"Liking Tweet with ID={tweet.id}")
-        	    tweet.like()
-        	    self.send_event(MessageType.EVENT_TWEET_LIKED, tweet)
+            tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
+            if tweet.favorited:
+                log.debug(f"Tweet with ID={tweet.id} already liked, no need to like again")
+            else:
+                log.debug(f"Liking Tweet with ID={tweet.id}")
+                tweet.like()
+                self.send_event(MessageType.EVENT_TWEET_LIKED, tweet)
 
         # Single tweet
         if type(tweets_ids) is int:
-        	get_and_like_tweet(tweet_id=tweet_id)
+            get_and_like_tweet(tweet_id=tweet_id)
         # Multiple tweets
         elif type(tweets_ids) is list:
-	        for tweet_id in tweets_ids:
-	            get_and_like_tweet(tweet_id=tweet_id)
-	    # Unknown type
-	    else:
-	    	log.warn(f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
+            for tweet_id in tweets_ids:
+                get_and_like_tweet(tweet_id=tweet_id)
+        # Unknown type
+        else:
+            log.warn(f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
 
     def retweet_tweets_routine(self, tweets_ids: Union[int, List[int]]):
-    	"""
-    	Routine for the RETWEET_TWEETS task
-    	Retweets 1 or several tweets, with their ids being the parameters
+        """
+        Routine for the RETWEET_TWEETS task
+        Retweets 1 or several tweets, with their ids being the parameters
 
-    	Parameters
-    	----------
-    	tweets_ids: `Union[int, List[int]]`
-    	    Either 1 tweet ID or a list of tweet Ids
-    	"""
+        Parameters
+        ----------
+        tweets_ids: `Union[int, List[int]]`
+            Either 1 tweet ID or a list of tweet Ids
+        """
         log.debug("Starting 'Retweet Tweets' routine...")
 
         # Helper function so we don't have to repeat code
         def get_and_retweet_tweet(tweet_id):
-        	tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
-        	if tweet.retweeted:
-        	    log.debug(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
-        	else:
-        	    log.debug(f"Retweeting Tweet with ID={tweet.id}")
-        	    tweet.retweet()
-        	    self.send_event(MessageType.EVENT_TWEET_RETWEETED, tweet)
+            tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
+            if tweet.retweeted:
+                log.debug(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
+            else:
+                log.debug(f"Retweeting Tweet with ID={tweet.id}")
+                tweet.retweet()
+                self.send_event(MessageType.EVENT_TWEET_RETWEETED, tweet)
 
         # Single tweet
         if type(tweets_ids) is int:
-        	get_and_retweet_tweet(tweet_id=tweet_id)
+            get_and_retweet_tweet(tweet_id=tweet_id)
         # Multiple tweets
         elif type(tweets_ids) is list:
-	        for tweet_id in tweets_ids:
-	            get_and_retweet_tweet(tweet_id=tweet_id)
-	    # Unknown type
-	    else:
-	    	log.warn(f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
+            for tweet_id in tweets_ids:
+                get_and_retweet_tweet(tweet_id=tweet_id)
+        # Unknown type
+        else:
+            log.warn(f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
 
 
     def find_keywords_routine(self, keywords: List[str]):
@@ -278,28 +279,28 @@ class TwitterBot:
             self.read_timeline(self.user, timeline_posts, keywords)
         log.info("Exiting Keywords Routine...")
 
-    def follow_users_routine(self, params : Dict[Any]):
+    def follow_users_routine(self, params : Dict[str, Union[str,List[Union[str,int]]]]):
         """
         Routine for the FOLLOW_USERS task
         We can accept 2 types of users list, either by screen names or by IDs.
-		Params is assumed to be this kind of structure
+        Params is assumed to be this kind of structure
 
-		"params" : {
-  			"type" : "screen_name"
-  			"data" : ["barackobama",...],
-  		}
-		
-		or 
+        "params" : {
+            "type" : "screen_name"
+            "data" : ["barackobama",...],
+        }
+        
+        or 
 
-		"params" : {
-  			"type" : "id"
-  			"data : [2312312312312,...],
-  		}
+        "params" : {
+            "type" : "id"
+            "data : [2312312312312,...],
+        }
 
         Parameters
         ----------
         params : Dict[Any]
-        	Dictionary with the payload, the data itself + the type
+            Dictionary with the payload, the data itself + the type
 
         See Also
         --------
@@ -310,37 +311,37 @@ class TwitterBot:
         if not params["data"]:
             log.info("No users provided!")
         else:
-        	# To avoid having to write 2 loops, or making an if check on every loop,
-        	# we'll just take advantage of python's dict as params
-        	# So we'll kinda of do
-        	"""
-				fun_kwargs = {
-					params["type"] : value
-				}
-        	"""
-        	# By default, assume `user_ids`
-        	unclean_type = params["type"].lower()
-        	arg_type = "user_id"
-        	# making a check
-        	if unclean_type == "id" or unclean_type == "user_id":
-        		arg_type = "user_id"
-        	elif unclean_type == "screen_name":
-        		arg_type = "screen_name"
+            # To avoid having to write 2 loops, or making an if check on every loop,
+            # we'll just take advantage of python's dict as params
+            # So we'll kinda of do
+            """
+                fun_kwargs = {
+                    params["type"] : value
+                }
+            """
+            # By default, assume `user_ids`
+            unclean_type = params["type"].lower()
+            arg_type = "user_id"
+            # making a check
+            if unclean_type == "id" or unclean_type == "user_id":
+                arg_type = "user_id"
+            elif unclean_type == "screen_name":
+                arg_type = "screen_name"
 
             for i in params["data"]:
                 # get the user object
                 # TODO: Use the cache as, you know, an actual cache
                 log.info(f"Getting user object for User with ID={user_id}")
                 arg_param = {
-                	arg_type : i,
+                    arg_type : i,
                 }
                 try:
-                	user = self._api.get_user(*arg_param)
-                	if user:
-                		log.info(f"Found with: ", user)
-                		self.search_in_user(user)
+                    user = self._api.get_user(*arg_param)
+                    if user:
+                        log.info(f"Found with: ", user)
+                        self.search_in_user(user)
                 except Exception as e:
-                	log.error(f"Unable to find user by [{arg_type}] with <{i}>")
+                    log.error(f"Unable to find user by [{arg_type}] with <{i}>")
         log.info("Exiting Follow Users Routine...")
 
     def search_in_user(self, user_obj: User):
@@ -610,7 +611,9 @@ if __name__ == "__main__":
     secret = os.environ["SECRET"]
     token = os.environ["TOKEN"]
     token_secret = os.environ["TOKEN_SECRET"]
-
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+    log.addHandler(handler)
     # TODO: change password
     messaging_manager = Client(api_url=server,
                                user='pi_rabbit_admin',
