@@ -1,5 +1,5 @@
 import pika
-
+import json
 class RabbitSend():
     def __init__(self, host, port, vhost, username, password):
         self.host = host
@@ -18,9 +18,9 @@ class RabbitSend():
         self.channel.basic_publish(
             exchange="task_deliver",
             routing_key=routing_key,
-            body=message,
+            body=json.dumps(message),
             properties=pika.BasicProperties(
-                delivery_mode=2,  # make message persistent
+                delivery_mode=1,  # make message persistent
             ))
     def close(self):
         self.connection.close()

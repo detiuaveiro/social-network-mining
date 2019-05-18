@@ -3,7 +3,7 @@ from Postgres.postgreSQL import postgreSQL_API
 from send import RabbitSend
 from policy_api import PolicyAPI
 from Neo4j.neo4j_api import Neo4jAPI
-from Enums.enums import MessageTypes, Neo4jTypes, PoliciesTypes
+from Enums.enums import MessageTypes, Neo4jTypes, PoliciesTypes, ResponseTypes
 
 class Task():
     def __init__(self):
@@ -26,6 +26,7 @@ class Task():
             pass
         elif (message_type == MessageTypes.REQUEST_TWEET_LIKE):
             print("TASK: REQUEST LIKE TWEET")
+            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO LIKE TWEET (ID: "+str(message['data']['id'])+" )"})
             data = {
                 "type": PoliciesTypes.REQUEST_TWEET_LIKE,
                 "bot_id": message['bot_id'],
@@ -34,14 +35,19 @@ class Task():
                 "tweet_entities": message['data']['entities']
             }
             result = self.policy.lifecycle(data)
-            #Routing Key
-            r_key = 'tasks.deliver.'+message['bot_id']
-            #Message
-            msm = {"type": 3, "response": result}
-            self.rabbit.send(routing_key=r_key,message=msm)
+            if (result==1):
+                self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE LIKED"})
+                #Routing Key
+                r_key = 'tasks.deliver.'+message['bot_id']
+                #Message
+                msm = {"type": ResponseTypes.LIKE_TWEETS, "params": message['data']['id']}
+                self.rabbit.send(routing_key=r_key,message=msm)
+            else:
+                self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE LIKED"})
 
         elif(message_type == MessageTypes.REQUEST_TWEET_RETWEET):
             print("TASK: REQUEST RETWEET TWEET")
+            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO RETWEET TWEET (ID: "+str(message['data']['id'])+" )"})
             data = {
                 "type": PoliciesTypes.REQUEST_TWEET_RETWEET,
                 "bot_id": message['bot_id'],
@@ -50,15 +56,20 @@ class Task():
                 "tweet_entities": message['data']['entities']
             }
             result = self.policy.lifecycle(data)
-            #Routing Key
-            r_key = 'tasks.deliver.'+message['bot_id']
-            #Message
-            msm = {"type": 4,"response": result}
-            self.rabbit.send(routing_key=r_key,message=msm)
+            if (result==1):
+                self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE RETWEETED"})
+                #Routing Key
+                r_key = 'tasks.deliver.'+message['bot_id']
+                #Message
+                msm = {"type": ResponseTypes.RETWEET_TWEETS,"params": message['data']['id']}
+                self.rabbit.send(routing_key=r_key,message=msm)
+            else:
+                self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE RETWEETED"})
 
 
         elif(message_type == MessageTypes.REQUEST_TWEET_REPLY):
             print("TASK: REQUEST REPLY TWEET")
+            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO REPLY TWEET (ID: "+str(message['data']['id'])+" )"})
             data = {
                 "type": PoliciesTypes.REQUEST_TWEET_REPLY,
                 "bot_id": message['bot_id'],
@@ -70,15 +81,20 @@ class Task():
                 "tweet_in_reply_to_screen_name": message['data']['in_reply_to_screen_name']
             }
             result = self.policy.lifecycle(data)
-            #Routing Key
-            r_key = 'tasks.deliver.'+message['bot_id']
-            #Message
-            msm = {"type": 5,"response": result}
-            self.rabbit.send(routing_key=r_key,message=msm)
+            if (result==1):
+                self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE REPLIED"})
+                #Routing Key
+                r_key = 'tasks.deliver.'+message['bot_id']
+                #Message
+                msm = {"type": ResponseTypes.REPLY_TWEETS,"params": message['data']['id']}
+                self.rabbit.send(routing_key=r_key,message=msm)
+            else:
+                self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE REPLIED"})
 
 
         elif(message_type == MessageTypes.REQUEST_FOLLOW_USER):
             print("TASK: REQUEST FOLLOW USER")
+            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO FOLLOW USER ("+str(message['data']['id'])+")"})
             data = {
                 "type": PoliciesTypes.REQUEST_TWEET_REPLY,
                 "bot_id": message['bot_id'],
@@ -97,11 +113,6 @@ class Task():
 
             """ #Search if User is already Followed by another Bot
             result = self.neo4j.task(Neo4jTypes.SEARCH_USER,data={"user_id": message['data']['id']}) """
-            #Routing Key
-            r_key = 'tasks.deliver.'+message['bot_id']
-            #Message
-            msm = {"type": 1,"response": result}
-            self.rabbit.send(routing_key=r_key,message=msm)
 
 
         elif(message_type == MessageTypes.SAVE_USER):
@@ -119,6 +130,17 @@ class Task():
                     #Update User in NEO4J Database
                     self.neo4j.task(Neo4jTypes.UPDATE_BOT,data={"bot_id": message['bot_id'], "bot_name": message['data']['name'], "bot_username": message['data']['screen_name']})
                 else:
+                    data = {
+                        "type": PoliciesTypes.FIRST_TIME,
+                        "bot_id": message['bot_id'],
+                    }
+                    result = self.policy.lifecycle(data)
+                    #Routing Key
+                    r_key = 'tasks.deliver.'+message['bot_id']
+                    #Message
+                    print(result)
+                    msm = {"type": ResponseTypes.FOLLOW_USERS,"params": {"type": "screen_name", "data": result}}
+                    self.rabbit.send(routing_key=r_key,message=msm)
                     #Save User in Mongo Database
                     self.mongo.save('users', message['data'])
                     #Create User in Neo4j
@@ -127,11 +149,13 @@ class Task():
                 #Asks Neo4j if User exists
                 exists = self.neo4j.task(Neo4jTypes.SEARCH_USER,data={"user_id": message['data']['id']})
                 if (exists):
+                    self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "UPDATING USER INFO ("+str(message['data']['id'])+")"})
                     #Update User in Mongo Database
                     self.mongo.update('users', message['data'])
                     #Update User in NEO4J Database
                     self.neo4j.task(Neo4jTypes.UPDATE_USER,data={"user_id": message['data']['id'], "user_name": message['data']['name'], "user_username": message['data']['screen_name']})
                 else:
+                    self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "SAVING NEW USER ("+str(message['data']['id'])+")"})
                     #Save User in Mongo Database
                     self.mongo.save('users', message['data'])
                     #Create User in Neo4j
@@ -139,19 +163,20 @@ class Task():
                     #Create Relation between Bot and User
                     self.neo4j.task(Neo4jTypes.CREATE_RELATION,data={"bot_id": message['bot_id'], "user_id": message['data']['id']})
 
-            
-            #TODO: Postgres for Users
+            self.postgreSQL.addUser(mapa={"user_id": message['data']['id'], "followers": message['data']['followers_count'], "following": message['data']['friends_count']})
 
         elif(message_type == MessageTypes.SAVE_TWEET):
             print("TASK: SAVE TWEET")
             #Check if tweet exists
             tweet_exists = self.mongo.search('tweets', message['data'])
             if (tweet_exists):
+                self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "UPDATING TWEET STATS ("+str(message['data']['id'])+")"})
                 self.mongo.update('tweets', message['data'])
             else:
+                self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "SAVING TWEET ("+str(message['data']['id'])+")"})
                 self.mongo.save('tweets', message['data'])
-            self.postgreSQL.insertDataTweets(message['data']['timestamp'],message['data']['id'],message['data']['user_id'],message['data']['likes_count'],message['data']['retweets_count'])
+            self.postgreSQL.addTweet(mapa={"tweet_id": message['data']['timestamp'], "user_id": message['data']['id'], "likes": message['data']['likes_count'], "retweets": message['data']['retweets_count']})
 
         elif(message_type == MessageTypes.SAVE_TWEET):
-            print("TASK: ERROR_BOT")            
-            return message
+            print("TASK: ERROR_BOT")           
+            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "WARNING: BOT WITH THE FOLLOWING ID "+str(message['bot_id'])+" GAVE THIS ERROR "+str(message['data']['msm'])})

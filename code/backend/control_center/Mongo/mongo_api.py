@@ -12,30 +12,46 @@ class MongoAPI():
         self.data = data
 
         if (self.database=='users'):
-            self.users.insert_one(self.data)
+            try:
+                self.users.insert_one(self.data)
+            except:
+                print("WARNING: ERROR INSERTING USER")
         else:
-            self.tweets.insert_one(self.data)
+            try:
+                self.tweets.insert_one(self.data)
+            except:
+                print("WARNING: ERROR INSERTING TWEET")
 
     def update(self, database, data):
         self.database = database
         self.data = data
 
         if (self.database=='users'):
-            self.users.update_one(self.data)
+            try:
+                self.users.update_one(filter={"id": self.data['id']},update=self.data)
+            except:
+                print("WARNING: ERROR UPDATING USER")
         else:
-            self.tweets.update_one(self.data)
+            try:
+                self.tweets.update_one(filter={"id": self.data['id']},update=self.data)
+            except:
+                print("WARNING: ERROR UPDATING TWEET")
 
     def search(self, database, data):
         self.database = database
         self.data = data
         result
         if (self.database=='users'):
-            result = self.users.find({"id": self.data['id']})
+            try:
+                result = self.users.find({"id": self.data['id']})
+            except:
+                print("WARNING: ERROR SEARCHING FOR USER")
         else:
-            result = self.tweets.find({"id": self.data['id']})
-
+            try:
+                result = self.tweets.find({"id": self.data['id']})
+            except:
+                print("WARNING: ERROR SEARCHING FOR TWEET")
         if(len(result)==0):
             return False
         else:
             return True
-

@@ -57,14 +57,6 @@ class Rabbitmq():
 
         self.channel.basic_consume(queue=self.queue, on_message_callback=callback, auto_ack=True)
         self.channel.start_consuming()
-
-    def send(self, routing_key, message):
-        channel.basic_publish(
-            exchange="task_deliver",
-            routing_key=routing_key,
-            body=message,
-            properties=pika.BasicProperties(
-                delivery_mode=2,  # make message persistent
             ))
     def close(self):
         self.connection.close()

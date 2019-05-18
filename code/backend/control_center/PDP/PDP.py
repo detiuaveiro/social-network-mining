@@ -1,5 +1,9 @@
 import json
 import psycopg2
+import random
+import sys
+sys.path.append('../')
+from Neo4j.neo4j_api import Neo4jAPI
 from enum import IntEnum
 
 class PoliciesTypes(IntEnum):
@@ -155,7 +159,7 @@ class PDP:
             return self.send_response({"response":"PERMIT"})
         else:
             return self.send_response({"response":"DENY"})
-
+        
     def postProcess(self,num,DB_val):
         if num==1:
             d={}
