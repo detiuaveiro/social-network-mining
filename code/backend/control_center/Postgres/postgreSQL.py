@@ -136,124 +136,6 @@ class postgreSQL_API():
 
     ##################################################################################################################################
     '''
-    These methods belong to the "postgres" database
-    '''
-
-    def addTweet(self,mapa):
-        '''
-        adiciona um tweet após confirmar que o tweet e o timestamp já está na db
-        '''
-        try:
-            #check if tweet exists
-            cur=self.conn.cursor()
-            if self.checkTweetExistence(cur,mapa):
-                #add tweet
-                cur.execute("insert into tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",(mapa["tweet_id"],mapa["user_id"],mapa["likes"],mapa["retweets"]))
-            self.conn.commit()
-        except psycopg2.Error as e:
-            cur.rollback()
-            return [{e.diag.severity : e.diag.message_primary}]
-        finally:
-            cur.close()
-
-        return [{"Message":"Success"}]
-
-    def addUser(self,mapa):
-        '''
-        adiciona um tweet após confirmar que o tweet e o timestamp já está na db
-        '''
-        try:
-            #check if user exists
-            cur=self.conn.cursor()
-            if self.checkUserExistence(cur,mapa):
-                #add user
-                cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
-            self.conn.commit()
-        except psycopg2.Error as e:
-            cur.rollback()
-            return [{e.diag.severity : e.diag.message_primary}]
-        finally:
-            cur.close()
-
-        return [{"Message":"Success"}]
-
-    def getAllStatsTweets(self):
-        try:
-            cur=self.conn.cursor()
-            cur.execute("select timestamp, tweet_id, likes, retweets from tweets;")
-            data=cur.fetchall()
-            self.conn.commit()
-            result=self.postProcessResults(data)
-            return [result]
-        except psycopg2.Error as e:
-            cur.rollback()
-            return [{e.diag.severity: e.diag.message_primary}]
-        finally:
-            cur.close()
-
-    def getStatsTweetID(self, tweet_id):
-        try:
-            cur=self.conn.cursor()
-            cur.execute("select timestamp, tweet_id, likes, retweets from tweets where tweet_id=%s;", (tweet_id,))
-            data=cur.fetchall()
-            self.conn.commit()
-            result=self.postProcessResults(data)
-            return [result]
-        except psycopg2.Error as e:
-            cur.rollback()
-            return [{e.diag.severity: e.diag.message_primary}]
-        finally:
-            cur.close()
-
-    def getAllStatsUsers(self):
-        try:
-            cur=self.conn.cursor()
-            cur.execute("select timestamp, user_id, followers, following from users;")
-            data=cur.fetchall()
-            self.conn.commit()
-            result=self.postProcessResults(data)
-            return [result]
-        except psycopg2.Error as e:
-            cur.rollback()
-            return [{e.diag.severity: e.diag.message_primary}]
-        finally:
-            cur.close()
-
-    def getStatsUserID(self, user_id):
-        try:
-            cur=self.conn.cursor()
-            cur.execute("select timestamp, user_id, followers, following from users where user_id=%s;", (user_id,))
-            data=cur.fetchall()
-            self.conn.commit()
-            result=self.postProcessResults(data)
-            return [result]
-        except psycopg2.Error as e:
-            cur.rollback()
-            return [{e.diag.severity: e.diag.message_primary}]
-        finally:
-            cur.close()
-
-    def getAllStats(self):
-        return self.getAllStatsTweets()+self.getAllStatsUsers()
-
-    def checkUserExistence(self,cur, mapa):
-        cur.execute("select * from users where timestamp=DEFAULT;",(mapa["user_id"],))
-        data=cur.fetchone()
-        if data is None:
-            cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
-            return False
-        return True
-
-    def checkTweetExistence(self,cur,mapa):
-        cur.execute("select tweet_id, timestamp from tweets where timestamp=DEFAULT;",(mapa["tweet_id"],))
-        data=cur.fetchone()
-        if data is None:
-            cur.execute("insert into tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",(mapa["tweet_id"],mapa["user_id"],mapa["likes"],mapa["retweets"]))
-            return False
-        return True
-
-    ##################################################################################################################################
-    '''
     These methods belong to the "policies" database
     '''
     
@@ -381,7 +263,7 @@ class postgreSQL_API():
             #check filter_api
             self.checkFilterAPIExistence(cur,mapa)
             #add policy
-            cur.execute("insert into policies (API_type,filter,name,params,active) values (%s,%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"],mapa["active"]))
+            cur.execute("insert into policies (API_type,filter,name,params,active,id_policy) values (%s,%s,%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"],mapa["active"],mapa["id_policy"]))
             self.conn.commit()
         except psycopg2.Error as e:
             self.conn.rollback()
