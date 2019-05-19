@@ -12,7 +12,6 @@ class Task():
         self.postgreSQL2 = postgreSQL_API("policies")
         self.neo4j = Neo4jAPI()
         self.policy = PolicyAPI()
-        self.rabbit = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
 
 
     def menu(self, message_type, message):
@@ -38,10 +37,15 @@ class Task():
             if (result==1):
                 self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE LIKED"})
                 #Routing Key
-                r_key = 'tasks.deliver.'+message['bot_id']
+                r_key = 'tasks.twitter.'+message['bot_id']
                 #Message
                 msm = {"type": ResponseTypes.LIKE_TWEETS, "params": message['data']['id']}
-                self.rabbit.send(routing_key=r_key,message=msm)
+                try:
+                    self.rabbit = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
+                    self.rabbit.send(routing_key=r_key,message=msm)
+                    self.rabbit.close()
+                except:
+                    print("WARNING: FAILED TO SEND")
             else:
                 self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE LIKED"})
 
@@ -59,10 +63,15 @@ class Task():
             if (result==1):
                 self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE RETWEETED"})
                 #Routing Key
-                r_key = 'tasks.deliver.'+message['bot_id']
+                r_key = 'tasks.twitter.'+message['bot_id']
                 #Message
                 msm = {"type": ResponseTypes.RETWEET_TWEETS,"params": message['data']['id']}
-                self.rabbit.send(routing_key=r_key,message=msm)
+                try:
+                    self.rabbit = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
+                    self.rabbit.send(routing_key=r_key,message=msm)
+                    self.rabbit.close()
+                except:
+                    print("WARNING: FAILED TO SEND")
             else:
                 self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE RETWEETED"})
 
@@ -84,10 +93,15 @@ class Task():
             if (result==1):
                 self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE REPLIED"})
                 #Routing Key
-                r_key = 'tasks.deliver.'+message['bot_id']
+                r_key = 'tasks.twitter.'+message['bot_id']
                 #Message
                 msm = {"type": ResponseTypes.REPLY_TWEETS,"params": message['data']['id']}
-                self.rabbit.send(routing_key=r_key,message=msm)
+                try:
+                    self.rabbit = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
+                    self.rabbit.send(routing_key=r_key,message=msm)
+                    self.rabbit.close()
+                except:
+                    print("WARNING: FAILED TO SEND")
             else:
                 self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE REPLIED"})
 
@@ -104,10 +118,15 @@ class Task():
             if (result==1):
                 self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE FOLLOWED"})
                 #Routing Key
-                r_key = 'tasks.deliver.'+message['bot_id']
+                r_key = 'tasks.twitter.'+message['bot_id']
                 #Message
                 msm = {"type": ResponseTypes.FOLLOW_USERS,"params": {"type": "id", "data": [message['data']['id']]}}
-                self.rabbit.send(routing_key=r_key,message=msm)
+                try:
+                    self.rabbit = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
+                    self.rabbit.send(routing_key=r_key,message=msm)
+                    self.rabbit.close()
+                except:
+                    print("WARNING: FAILED TO SEND")
             else:
                 self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE FOLLOWED"})
 
@@ -136,11 +155,16 @@ class Task():
                     }
                     result = self.policy.lifecycle(data)
                     #Routing Key
-                    r_key = 'tasks.deliver.'+message['bot_id']
+                    r_key = 'tasks.twitter.'+message['bot_id']
                     #Message
                     print(result)
                     msm = {"type": ResponseTypes.FOLLOW_USERS,"params": {"type": "screen_name", "data": result}}
-                    self.rabbit.send(routing_key=r_key,message=msm)
+                    try:
+                        self.rabbit = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
+                        self.rabbit.send(routing_key=r_key,message=msm)
+                        self.rabbit.close()
+                    except:
+                        print("WARNING: FAILED TO SEND")
                     #Save User in Mongo Database
                     self.mongo.save('users', message['data'])
                     #Create User in Neo4j

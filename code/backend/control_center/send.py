@@ -16,11 +16,9 @@ class RabbitSend():
 
     def send(self, routing_key, message):
         self.channel.basic_publish(
-            exchange="task_deliver",
+            exchange="tasks_deliver",
             routing_key=routing_key,
-            body=json.dumps(message),
-            properties=pika.BasicProperties(
-                delivery_mode=1,  # make message persistent
-            ))
+            body=json.dumps(message)
+            )
     def close(self):
         self.connection.close()

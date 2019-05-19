@@ -28,15 +28,15 @@ class MongoAPI():
 
         if (self.database=='users'):
             try:
-                self.users.update_one(filter={"id": self.data['id']},update=self.data)
-            except:
-                print("WARNING: ERROR UPDATING USER")
+                self.users.replace_one({"id": self.data['data']['id']},self.data)
+            except Exception as e:
+                print("WARNING: ERROR UPDATING USER ("+str(e)+" )")
         else:
             try:
                 self.tweets.update_one(filter={"id": self.data['id']},update=self.data)
-            except:
-                print("WARNING: ERROR UPDATING TWEET")
-
+            except Exception as e:
+                print("WARNING: ERROR UPDATING USER ("+str(e)+" )")
+                
     def search(self, database, data):
         self.database = database
         self.data = data
