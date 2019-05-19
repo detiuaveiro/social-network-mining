@@ -144,6 +144,12 @@ class User(BaseModel):
     notifications: bool
     suspended: bool = False
 
+    def __repr__(self):
+        return f"<User id={self.id}, screen_name={self.screen_name}, name={self.name}, followers={self.followers_count}, following={self.following}>"
+
+    def __str__(self):
+        return f"<User id={self.id}, screen_name={self.screen_name}, name={self.name}, followers={self.followers_count}, following={self.following}>"
+
     def to_json(self):
         """
         Returns the JSON that represents this entity
@@ -261,6 +267,12 @@ class Tweet(BaseModel):
     retweeted: bool
     possibly_sensitive: bool
     lang: str
+
+    def __repr__(self):
+        return f"<Tweet id={self.id}, favorites={self.favorite_count}, retweets={self.retweet_count}, favorited={self.favorited}, retweeted={self.retweeted}, text={self.text}, user={self.user}>"
+
+    def __str__(self):
+        return f"<Tweet id={self.id}, favorites={self.favorite_count}, retweets={self.retweet_count}, favorited={self.favorited}, retweeted={self.retweeted}, text={self.text}, user={self.user}>"
 
     def to_json(self):
         unclean = self._json
