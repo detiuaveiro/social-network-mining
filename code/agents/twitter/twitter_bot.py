@@ -331,7 +331,7 @@ class TwitterBot:
             for i in params["data"]:
                 # get the user object
                 # TODO: Use the cache as, you know, an actual cache
-                log.info(f"Getting user object for User with ID={user_id}")
+                log.info(f"Getting user object for User by [{arg_type}] with <{i}>")
                 arg_param = {
                     arg_type : i,
                 }
