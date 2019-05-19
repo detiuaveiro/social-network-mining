@@ -116,8 +116,7 @@ class TweepyWrapper(tweepy.API):
 
     def get_user(self, **kwargs) -> User:
         __doc__ = self._tweepy.get_status.__doc__
-        tweet_id = kwargs.pop("tweet_id")
-        return self._request(self._tweepy.get_status, tweet_id=tweet_id, **kwargs)
+        return self._request(self._tweepy.get_user, **kwargs)
 
     def home_timeline(self, **kwargs) -> List[Tweet]:
         __doc__ = self._tweepy.home_timeline.__doc__
