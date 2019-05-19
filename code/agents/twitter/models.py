@@ -159,7 +159,7 @@ class User(BaseModel):
         ignore_attributes = ["id_str", "entities", "created_at", "utc_offset", "time_zone",
                              "geo_enabled", "is_translator", "is_translation_enabled",
                              "needs_phone_verification", "translator_type", "status",
-                             "profile_banner_url"]
+                             "profile_banner_url", "profile_location"]
         for i in ignore_attributes:
             unclean_json.pop(i, None)
         # To make things easier for to us, we're going transforming some of the attributes into objects
