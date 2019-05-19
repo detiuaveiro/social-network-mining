@@ -1,14 +1,6 @@
 FROM ubuntu:latest
 
-ADD requirements.txt /
-ADD cache.py /
-ADD enums.py /
-ADD exceptions.py /
-ADD models.py /
-ADD settings.py /
-ADD twitter_bot.py /
-ADD utils.py /
-ADD crontab /
+COPY . /
 
 RUN apt-get update \
   && apt -y install software-properties-common \
