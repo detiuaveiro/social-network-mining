@@ -336,7 +336,7 @@ class TwitterBot:
                     arg_type : i,
                 }
                 try:
-                    user = self._api.get_user(*arg_param)
+                    user = self._api.get_user(**arg_param)
                     if user:
                         log.info(f"Found with: ", user)
                         self.search_in_user(user)
