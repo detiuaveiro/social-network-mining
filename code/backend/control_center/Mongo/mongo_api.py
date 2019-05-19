@@ -25,17 +25,17 @@ class MongoAPI():
     def update(self, database, data):
         self.database = database
         self.data = data
-
+        print(self.data)
         if (self.database=='users'):
             try:
-                self.users.replace_one({"id": self.data['data']['id']},self.data)
+                self.users.replace_one({"id": self.data['id']},self.data)
             except Exception as e:
-                print("WARNING: ERROR UPDATING USER ("+str(e)+" )")
+                print("WARNING: ERROR UPDATING USER ("+str(e)+")")
         else:
             try:
-                self.tweets.replace_one({"id": self.data['data']['id']},self.data)
+                self.tweets.replace_one({"id": self.data['id']},self.data)
             except Exception as e:
-                print("WARNING: ERROR UPDATING TWEET ("+str(e)+" )")
+                print("WARNING: ERROR UPDATING TWEET ("+str(e)+")")
                 
     def search(self, database, data):
         self.database = database
