@@ -335,13 +335,14 @@ class TwitterBot:
                 arg_param = {
                     arg_type : i,
                 }
+                user = None
                 try:
                     user = self._api.get_user(**arg_param)
-                    if user:
-                        log.info(f"Found with: ", user)
-                        self.search_in_user(user)
                 except Exception as e:
                     log.error(f"Unable to find user by [{arg_type}] with <{i}>")
+                if user:
+                    log.info(f"Found with: {user}")
+                    self.search_in_user(user)
         log.info("Exiting Follow Users Routine...")
 
     def search_in_user(self, user_obj: User):
@@ -448,7 +449,6 @@ class TwitterBot:
             return
 
         last_tweet = tweets[0].id
-        # Due to the nature of timelines, we need to pass user_obj for the logic regarding the jumps
         total_read_time = 0
         total_keywords = len(keywords)
         for tweet in tweets:
@@ -458,11 +458,14 @@ class TwitterBot:
             # save the tweet
             self._cache.save_tweet(tweet)
             self.send_tweet(tweet)
+
             # read it's content
             total_read_time += utils.read_text_and_wait(tweet.text)
             # don't do anything if it's our own tweet
             if self.user.id == tweet.user.id:
                 continue
+            # Save the author of the tweet (assuming it's not us)
+            self.send_user(tweet.user)
             if not keywords:
                 self.query_like_tweet(tweet)
                 continue
@@ -498,7 +501,7 @@ class TwitterBot:
         user : User
             The User Object to send
         """
-        log.debug(f"Sending User object to: {self.data_exchange} with", user)
+        log.debug(f"Sending {user} to: {self.data_exchange}")
         payload = {
             "type"     : MessageType.SAVE_USER,
             "bot_id"   : self._id,
@@ -517,7 +520,7 @@ class TwitterBot:
         tweet : Tweet
             The Tweet Object to send
         """
-        log.debug(f"Sending Tweet object to: {self.data_exchange} with", tweet)
+        log.debug(f"Sending {tweet} to: {self.data_exchange}")
         payload = {
             "type"     : MessageType.SAVE_TWEET,
             "bot_id"   : self._id,
@@ -538,7 +541,7 @@ class TwitterBot:
         data: BaseModel
             the data associated with the event (usually the object)
         """
-        log.debug(f"Sending query <{messageType}> to: {self.query_exchange} with", data)
+        log.debug(f"Sending query <{messageType}> to: {self.query_exchange} with {data}")
         payload = {
             "type"     : messageType,
             "bot_id"   : self._id,
@@ -555,7 +558,7 @@ class TwitterBot:
         messageType : `class` MessageType the event to send
         data: `class` BaseModel the data associated with the event (usually the object)
         """
-        log.debug(f"Sending event <{messageType}> to: {self.log_exchange} with", data)
+        log.debug(f"Sending event <{messageType}> to: {self.log_exchange} with {data}")
         payload = {
             "type"     : messageType,
             "bot_id"   : self._id,
