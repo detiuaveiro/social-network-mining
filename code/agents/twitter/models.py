@@ -294,7 +294,7 @@ class Tweet(BaseModel):
         ignore_attributes = ["id_str", "created_at", "in_reply_to_status_id_str",
                              "in_reply_to_user_id_str", "geo", "coordinates", "place",
                              "contributors", "quoted_status_id_str","quoted_status",
-                             "retweeted_status", "retweeted_status_str"]
+                             "retweeted_status", "retweeted_status_str", "extended_entities"]
         for i in ignore_attributes:
             unclean_json.pop(i, None)
         # Filling in with User object for handiness

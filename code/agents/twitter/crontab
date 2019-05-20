@@ -23,5 +23,5 @@ TOR_PROXY=18.130.65.85:8118
 # │ │ │ │ │
 # │ │ │ │ │
 # * * * * *  command to execute
-0 9,12,19,23 * * * root python3.7 -u twitter_bot.py >> /var/log/cron.log
+0 0,9,12,19,23 * * * root python3.7 -u twitter_bot.py > /dev/stdout
 #
