@@ -154,7 +154,7 @@ class User(BaseModel):
         """
         Returns the JSON that represents this entity
         """
-        return self._json
+        return dict(self._json)
 
     @staticmethod
     def from_json(api, json: dict):
@@ -165,7 +165,7 @@ class User(BaseModel):
         ignore_attributes = ["id_str", "entities", "created_at", "utc_offset", "time_zone",
                              "geo_enabled", "is_translator", "is_translation_enabled",
                              "needs_phone_verification", "translator_type", "status",
-                             "profile_banner_url", "profile_location"]
+                             "profile_banner_url", "profile_location", "muting"]
         for i in ignore_attributes:
             unclean_json.pop(i, None)
         # To make things easier for to us, we're going transforming some of the attributes into objects
@@ -256,17 +256,19 @@ class Tweet(BaseModel):
     truncated: str
     entities: Dict
     source: str
-    in_reply_to_status_id: Optional[int]
-    in_reply_to_user_id: Optional[int]
-    in_reply_to_screen_name: Optional[str]
     user: User
     is_quote_status: bool
     retweet_count: int
     favorite_count: int
     favorited: bool
     retweeted: bool
-    possibly_sensitive: bool
     lang: str
+    possibly_sensitive: bool = False
+    in_reply_to_status_id: Optional[int] = None
+    in_reply_to_user_id: Optional[int] = None
+    in_reply_to_screen_name: Optional[str] = None
+    quoted_status_id : Optional[int] = None
+    retweeted_status_id : Optional[int] = None
 
     def __repr__(self):
         return f"<Tweet id={self.id}, favorites={self.favorite_count}, retweets={self.retweet_count}, favorited={self.favorited}, retweeted={self.retweeted}, text={self.text}, user={self.user}>"
@@ -275,7 +277,7 @@ class Tweet(BaseModel):
         return f"<Tweet id={self.id}, favorites={self.favorite_count}, retweets={self.retweet_count}, favorited={self.favorited}, retweeted={self.retweeted}, text={self.text}, user={self.user}>"
 
     def to_json(self):
-        unclean = self._json
+        unclean = dict(self._json)
         # we don't need to send these 2 attribute
         unclean.pop("favorited", None)
         unclean.pop("retweeted", None)
@@ -291,7 +293,8 @@ class Tweet(BaseModel):
         # removing unused attributes
         ignore_attributes = ["id_str", "created_at", "in_reply_to_status_id_str",
                              "in_reply_to_user_id_str", "geo", "coordinates", "place",
-                             "contributors"]
+                             "contributors", "quoted_status_id_str","quoted_status",
+                             "retweeted_status", "retweeted_status_str"]
         for i in ignore_attributes:
             unclean_json.pop(i, None)
         # Filling in with User object for handiness
