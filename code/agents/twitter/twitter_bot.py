@@ -204,7 +204,7 @@ class TwitterBot:
 
         # Single tweet
         if type(tweets_ids) is int:
-            get_and_like_tweet(tweet_id=tweet_id)
+            get_and_like_tweet(tweet_id=tweets_ids)
         # Multiple tweets
         elif type(tweets_ids) is list:
             for tweet_id in tweets_ids:
@@ -237,7 +237,7 @@ class TwitterBot:
 
         # Single tweet
         if type(tweets_ids) is int:
-            get_and_retweet_tweet(tweet_id=tweet_id)
+            get_and_retweet_tweet(tweet_id=tweets_ids)
         # Multiple tweets
         elif type(tweets_ids) is list:
             for tweet_id in tweets_ids:
