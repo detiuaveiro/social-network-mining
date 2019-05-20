@@ -341,7 +341,7 @@ class TwitterBot:
                 except Exception as e:
                     log.error(f"Unable to find user by [{arg_type}] with <{i}>")
                 if user:
-                    log.info(f"Found with: ", user)
+                    log.info(f"Found with: {user}")
                     self.search_in_user(user)
         log.info("Exiting Follow Users Routine...")
 
