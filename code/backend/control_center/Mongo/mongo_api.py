@@ -43,19 +43,18 @@ class MongoAPI():
         if (self.database=='users'):
             try:
                 result = self.users.find_one({"id": self.data['id']})
-                if(len(result)==0):
-                    return False
-                else:
+                if(result):
                     return True
+                else:
+                    return False
             except:
                 print("WARNING: ERROR SEARCHING FOR USER")
         else:
             try:
                 result = self.tweets.find_one({"id": self.data['id']})
-                print(result)
-                if(len(result)==0):
-                    return False
-                else:
+                if(result):
                     return True
+                else:
+                    return False
             except Exception as e:
                 print("WARNING: ERROR SEARCHING FOR TWEET: "+str(e))
