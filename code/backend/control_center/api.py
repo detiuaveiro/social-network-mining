@@ -21,7 +21,6 @@ neo=Neo4jAPI()
 
 @app.route("/")
 def home():
-    mongo.d()
     return "root"
 
 @app.route("/twitter/users")
@@ -48,9 +47,9 @@ def user_by_id(id):
             mapa[0]["id"]=(str(id))
             return jsonify(mapa)
         else:
-            return jsonify({"error":"wrong id"})
+            return jsonify({"Error":"wrong id"})
     except TypeError:
-        return jsonify({"error":"invalid"})
+        return jsonify({"Error":"invalid"})
 
 @app.route("/twitter/users/<id>/tweets")
 def user_tweets(id):
@@ -109,8 +108,21 @@ def tt_stats():
 @app.route("/twitter/bots")
 def tt_bots():
     val=neo.search_all_bots()
-    #print(val)
-    return jsonify(val) #json.dumps(json_to_send["users"]["1103294806497902594"])
+    '''
+    Fazer integração de resultados com o mongoDB
+    '''
+    lista=[]
+    swap=[]
+    for i in val:
+
+        temp=mongo.dataCollection(findText={"id":int(i["id"])}) 
+        lista.append(temp)
+
+    for i in lista:
+        for j in i:
+            swap.append(j)
+
+    return jsonify(swap) #json.dumps(json_to_send["users"]["1103294806497902594"])
 
 @app.route("/twitter/bots/<id>")
 def tt_bots_by_id(id):
@@ -149,7 +161,7 @@ def tt_tweet_by_id(id):
         mapa=mongo_t.twitterCollection(findText={"id":int(id)})
         return jsonify(mapa)
     except TypeError:
-        return jsonify({"error":"invalid"})
+        return jsonify({"Error":"invalid"})
     
     
 @app.route("/twitter/tweets/<id>/stats")
@@ -181,8 +193,8 @@ def add_policy():
     This function receives all the information needed to create a policy.
     It is stored in a dictionary and then is sent to the db
     Returns the json with the response from the database:
-        - Inserted successfully
-        - Error (returns the driver's specific error)
+        - 200 Inserted successfully
+        - 400 Error (returns the driver's specific error)
     '''
     #mapa -> dados recebidos da dashboard
     mapa={}
@@ -196,8 +208,8 @@ def remove_policy(id):
     '''
     This function gets the id of the policy to be removed and queries the db for its removal.
     Returns the json with the response from the database:
-        - Removed successfully
-        - Error (returns the driver's specific error)
+        - 200 Removed successfully
+        - 400 Error (returns the driver's specific error)
     '''
     try:
         if request.method=='DELETE':
@@ -216,8 +228,8 @@ def update_policy():
     '''
     Update a policy. Sends a dictionary with the columns and respective values that are going to be updated. 
     Returns the json with the response from the database:
-        - Updated successfully
-        - Error (returns the driver's specific error)
+        - 200 Updated successfully
+        - 400 Error (returns the driver's specific error)
     '''
     #mapa -> dados recebidos da dashboard
     mapa={}

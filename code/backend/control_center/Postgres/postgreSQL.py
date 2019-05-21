@@ -173,6 +173,8 @@ class postgreSQL_API():
             cur.execute("select * from policies;")
             data=cur.fetchall()
             self.conn.commit()
+            if len(data)==0:
+                return []
             result=self.postProcessResults(data)
             return [result]
         except psycopg2.Error as e:
