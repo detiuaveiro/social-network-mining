@@ -45,11 +45,11 @@ def user_by_id(id):
         if len(mapa)>0:
             mapa[0].pop("id")
             mapa[0]["id"]=(str(id))
-            return jsonify(mapa)
+            return app.response_class(response=json.dumps(mapa),status=200,mimetype='application/json')#jsonify(mapa)
         else:
-            return jsonify({"Error":"wrong id"})
+            return app.response_class(response=json.dumps({"Error":"wrong id"}),status=400,mimetype='application/json')
     except TypeError:
-        return jsonify({"Error":"invalid"})
+        return app.response_class(response=json.dumps({"Error":"invalid"}),status=400,mimetype='application/json')
 
 @app.route("/twitter/users/<id>/tweets")
 def user_tweets(id):
@@ -122,7 +122,7 @@ def tt_bots():
         for j in i:
             swap.append(j)
 
-    return jsonify(swap) #json.dumps(json_to_send["users"]["1103294806497902594"])
+    return jsonify(swap)
 
 @app.route("/twitter/bots/<id>")
 def tt_bots_by_id(id):
@@ -147,11 +147,7 @@ def tt_tweet_stats():
         'retweet': {'$sum': '$retweet_count'}}}]
 
     mapa=mongo_t.aggregate(pipeline)
-    fav=0
-    ret=0
-    for i in mapa:
-        fav+=i["favorite"]
-        ret+=i["retweet"]'''
+    '''
     stats=postgres.getAllStatsTweets()
     return jsonify(stats)#jsonify({"favorite_count":fav,"retweet_count":ret})
 
@@ -161,7 +157,7 @@ def tt_tweet_by_id(id):
         mapa=mongo_t.twitterCollection(findText={"id":int(id)})
         return jsonify(mapa)
     except TypeError:
-        return jsonify({"Error":"invalid"})
+        return app.response_class(response=json.dumps({"Error":"invalid"}),status=400,mimetype='application/json')
     
     
 @app.route("/twitter/tweets/<id>/stats")
@@ -200,7 +196,10 @@ def add_policy():
     mapa={}
     if request.method=='POST':
         #get data from dashboard
+        print(request.data)
         send=policy.addPolicy(mapa)
+        if "Message" not in send[0].keys():
+            return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
         return jsonify(send)
 
 @app.route("/policies/remove/<id>",methods=['DELETE','POST'])
@@ -211,16 +210,16 @@ def remove_policy(id):
         - 200 Removed successfully
         - 400 Error (returns the driver's specific error)
     '''
-    try:
-        if request.method=='DELETE':
-            send=policy.removePolicy(id)
-            return jsonify(send)
-    except:
+    if request.method=='DELETE':
         send=policy.removePolicy(id)
+        if "Message" not in send[0].keys():
+            return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
         return jsonify(send)
 
     if request.method=='POST':
         send=policy.removePolicy(id)
+        if "Message" not in send[0].keys():
+            return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
         return jsonify(send)
 
 @app.route("/policies/update", methods= ['POST'])
@@ -234,7 +233,10 @@ def update_policy():
     #mapa -> dados recebidos da dashboard
     mapa={}
     if request.method=='POST':
+        print(request.data)
         send=policy.updatePolicy(mapa)
+        if "Message" not in send[0].keys():
+            return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
         return jsonify(send)
 ##################################################################################################################################
 
