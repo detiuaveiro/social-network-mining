@@ -121,7 +121,12 @@ def tt_bots():
     for i in lista:
         for j in i:
             swap.append(j)
-
+    
+    for j in swap:
+        user_id=str(j["id"])
+        j.pop("id")
+        j["id"] = user_id
+    
     return jsonify(swap)
 
 @app.route("/twitter/bots/<id>")
