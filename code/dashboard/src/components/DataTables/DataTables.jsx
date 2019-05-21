@@ -219,4 +219,4 @@ class EditPoliciesModal extends React.Component {
     }
 }
 
-export default ReactTables;s
+export default ReactTables;
