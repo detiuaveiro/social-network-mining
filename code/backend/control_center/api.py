@@ -197,6 +197,11 @@ def add_policy():
     if request.method=='POST':
         #get data from dashboard
         print(request.data)
+        vals=request.data
+        mapa["API_type"]=vals.get('API_type')
+        mapa["filter"]=vals.get('filter')
+        mapa["name"]=vals.get('name')
+        mapa["params"]=vals.get('params')
         send=policy.addPolicy(mapa)
         if "Message" not in send[0].keys():
             return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
