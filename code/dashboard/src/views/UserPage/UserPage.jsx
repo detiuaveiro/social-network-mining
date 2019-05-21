@@ -13,15 +13,18 @@ class User extends React.Component {
     activeTab: '1',
   };
   componentDidMount() {
-    axios.get('/twitter/tweets')
+    /* axios.get('/twitter/tweets')
       .then(res => {
         const tweets = res.data;
         this.setState({ tweets });
-      })
-    axios.get('/twitter/users/1103294806497902594')
+      }) */
+    const url = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)
+    axios.get('/twitter/users/'+url)
       .then(res => {
+        console.log(res)
         const profile_data = res.data;
         this.setState({ profile_data });
+        console.log(this.state.profile_data)
       })
   }
 
