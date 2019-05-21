@@ -199,7 +199,7 @@ class Task():
             else:
                 self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "SAVING TWEET ("+str(message['data']['id'])+")"})
                 self.mongo.save('tweets', message['data'])
-            self.postgreSQL.addTweet(mapa={"tweet_id": message['data']['timestamp'], "user_id": message['data']['id'], "likes": message['data']['likes_count'], "retweets": message['data']['retweets_count']})
+            self.postgreSQL.addTweet(mapa={"tweet_id": message['data']['id'], "user_id": message['data']['user'], "likes": message['data']['favorite_count'], "retweets": message['data']['retweet_count']})
 
         elif(message_type == MessageTypes.SAVE_TWEET):
             print("TASK: ERROR_BOT")           
