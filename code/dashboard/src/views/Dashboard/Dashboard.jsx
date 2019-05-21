@@ -19,9 +19,27 @@ import {
   dashboard24HoursPerformanceChart,
   dashboardFollowersPerformanceChart
 } from "variables/charts.jsx";
-
+import axios from "axios";
 
 class Dashboard extends React.Component {
+  state = {
+    twitter_stats: [],
+  };
+
+  componentDidMount() {
+    axios.get('/twitter/stats')
+      .then(res => {
+        const twitter_stats = res.data;
+        this.setState({ twitter_stats });
+        console.log(this.state.twitter_stats)
+      })
+/*     axios.get('/instagram/bots')
+      .then(res => {
+        const instagram_bots = res.data;
+        this.setState({ instagram_bots });
+      }) */
+  }
+
   render() {
     return (
       <div>
