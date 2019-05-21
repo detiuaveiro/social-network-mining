@@ -19,7 +19,7 @@ class Rabbitmq():
         #Declare Exchanges
         self.channel.exchange_declare(exchange='task_deliver', exchange_type='direct', durable=True)
 
-        self.channel.exchange_declare(exchange='data', exchange_type='direct', durable=True)
+        self.channel.exchange_declare(exchange='twitter_data', exchange_type='direct', durable=True)
 
         self.channel.exchange_declare(exchange='logs', exchange_type='direct', durable=True)
 
@@ -27,6 +27,10 @@ class Rabbitmq():
 
         #Create Bindings
         self.channel.queue_bind(exchange="data",
+                   queue="API",
+                   routing_key='data.twitter')
+
+        self.channel.queue_bind(exchange="twitter_data",
                    queue="API",
                    routing_key='data.twitter')
 
