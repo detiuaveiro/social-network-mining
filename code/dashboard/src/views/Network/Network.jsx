@@ -15,6 +15,7 @@ class Network extends React.Component {
         "Bot": {
           "caption": "name",
           "size": "pagerank",
+          "community": "bots",
         },
         "User": {
           "caption": "name",
@@ -22,9 +23,13 @@ class Network extends React.Component {
         }
       },
       relationships: {
+        "FOLLOWS": {
+          caption: true,
+          thickness: "count"
+        }
       },
-      initial_cypher: "MATCH \
-                      (bot:Bot)-[follows:FOLLOWS]->(user:User) \
+      arrows: true,
+      initial_cypher: "MATCH (bot:Bot)-[follows:FOLLOWS]->(user:User) \
                       RETURN bot, follows, user",
     }
     this.viz = new NeoVis(config);
