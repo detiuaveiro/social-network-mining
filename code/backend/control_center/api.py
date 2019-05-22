@@ -58,12 +58,15 @@ def user_tweets(id):
 
 @app.route("/twitter/users/<id>/followers")
 def user_followers(id):
-    followers = mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"followers_count":True,"_id":False})
+    followers=neo.get_followers(id)
+    lista=[]
+    for i in followers:
+        lista.append(i[0])
     return jsonify(followers)
 
 @app.route("/twitter/users/<id>/following")
 def user_following(id):
-    users=neo.get_users_in_relationship(id)
+    users=neo.get_following(id)
     lista=[]
     for i in users:
         lista.append(i[0])
@@ -210,6 +213,7 @@ def add_policy():
         mapa["filter"]=vals.get('filter')
         mapa["name"]=vals.get('name')
         mapa["params"]=vals.get('params')
+        mapa["bots"]=vals.get('bots')
         send=policy.addPolicy(mapa)
         if "Message" not in send[0].keys():
             return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
