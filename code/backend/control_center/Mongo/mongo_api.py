@@ -1,8 +1,12 @@
 from pymongo import MongoClient
+import logging
+
+log = logging.getLogger('Mongo')
+log.setLevel(logging.INFO)
 
 class MongoAPI():
     def __init__(self):
-        print("Connecting to MongoDB")
+        log.debug("Connecting to MongoDB")
         self.client = MongoClient('mongodb://192.168.85.46:32769/')
         self.users = self.client.twitter.users
         self.tweets = self.client.twitter.tweets
@@ -15,27 +19,26 @@ class MongoAPI():
             try:
                 self.users.insert_one(self.data)
             except:
-                print("WARNING: ERROR INSERTING USER")
+                log.debug("ERROR INSERTING USER")
         else:
             try:
                 self.tweets.insert_one(self.data)
             except:
-                print("WARNING: ERROR INSERTING TWEET")
+                log.debug("ERROR INSERTING TWEET")
 
     def update(self, database, data):
         self.database = database
         self.data = data
-        print(self.data)
         if (self.database=='users'):
             try:
                 self.users.replace_one({"id": self.data['id']},self.data)
             except Exception as e:
-                print("WARNING: ERROR UPDATING USER ("+str(e)+")")
+                log.debug("ERROR UPDATING USER ("+str(e)+")")
         else:
             try:
                 self.tweets.replace_one({"id": self.data['id']},self.data)
             except Exception as e:
-                print("WARNING: ERROR UPDATING TWEET ("+str(e)+")")
+                log.debug("ERROR UPDATING TWEET ("+str(e)+")")
                 
     def search(self, database, data):
         self.database = database
@@ -48,7 +51,7 @@ class MongoAPI():
                 else:
                     return False
             except:
-                print("WARNING: ERROR SEARCHING FOR USER")
+                log.debug("ERROR SEARCHING FOR USER")
         else:
             try:
                 result = self.tweets.find_one({"id": self.data['id']})
@@ -57,4 +60,4 @@ class MongoAPI():
                 else:
                     return False
             except Exception as e:
-                print("WARNING: ERROR SEARCHING FOR TWEET: "+str(e))
+                log.debug("ERROR SEARCHING FOR TWEET: "+str(e))

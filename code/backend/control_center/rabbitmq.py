@@ -1,6 +1,10 @@
 import pika
 import json
 from task import Task
+import logging
+
+log = logging.getLogger('Rabbit')
+log.setLevel(logging.INFO)
 
 class Rabbitmq():
     def __init__(self, host, port, vhost, username, password):
@@ -45,18 +49,17 @@ class Rabbitmq():
         #Iniciate Task Manager
         self.task_manager = Task()
 
-        print("Connection to Rabbit Established")
+        log.debug("Connection to Rabbit Established")
 
     def receive(self, q):
         self.queue = q
         self.channel.queue_declare(queue=self.queue)
         
-        print(' [*] Waiting for MESSAGES. To exit press CTRL+C')
+        log.info(' [*] Waiting for MESSAGES. To exit press CTRL+C')
 
         def callback(ch, method, properties, body):
-            print("RABBIT: MESSAGE RECEIVED")            
+            log.debug("MESSAGE RECEIVED")            
             message = json.loads(body)
-            print(message)            
             self.task_manager.menu(message['type'], message)
 
         self.channel.basic_consume(queue=self.queue, on_message_callback=callback, auto_ack=True)
