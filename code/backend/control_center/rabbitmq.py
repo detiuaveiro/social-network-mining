@@ -11,7 +11,21 @@ handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s
 log.addHandler(handler)
 
 class Rabbitmq():
+    """Class representing Rabbit MQ"""
+
     def __init__(self, host, port, vhost, username, password):
+        """
+        Create a Rabbit MQ instance which represents a connection to a Rabbit MQ server
+
+        parameters:
+        -------
+        host : (string) hostname
+        port : (number) port number
+        vhost : (string) virtual host used to avoid conflicts between instances
+        username : (string) username
+        password : (string) password
+        """
+
         self.host = host
         self.port = port
         self.vhost = vhost
@@ -56,6 +70,14 @@ class Rabbitmq():
         log.info("Connection to Rabbit Established")
 
     def receive(self, q):
+        """
+        Receive messages into the queue.
+
+        params:
+        -------
+        q : (string) queue name
+        """
+
         self.queue = q
         self.channel.queue_declare(queue=self.queue)
         
@@ -70,6 +92,9 @@ class Rabbitmq():
         self.channel.start_consuming()
         
     def close(self):
+        """
+        Close the connection with the Rabbit MQ server
+        """
         self.connection.close()
 
 if __name__ == "__main__":
