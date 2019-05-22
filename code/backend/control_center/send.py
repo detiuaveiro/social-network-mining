@@ -1,5 +1,6 @@
 import pika
 import json
+
 class RabbitSend():
     def __init__(self, host, port, vhost, username, password):
         self.host = host

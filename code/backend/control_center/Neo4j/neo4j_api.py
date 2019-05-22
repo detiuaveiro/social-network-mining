@@ -66,6 +66,7 @@ class Neo4jAPI():
         result = tx.run("MATCH (u:Bot { id: $bot_id }), (r:User {id:$user_id}) \
                         CREATE (u)-[:FOLLOWS]->(r)", bot_id=bot_id, user_id=user_id)
 
+
     @staticmethod
     def search_user(tx, data):
         print("NEO4J: TASK SEARCH USER")

@@ -135,7 +135,7 @@ class TwitterBot:
                 log.debug(f"Getting next task from {self.tasks_queue}")
                 task_msg = self.get_new_message()
                 task_type, task_params = task_msg["type"], task_msg["params"]
-                log.debug(f"Received task {task_msg} with:", task_params)
+                log.debug(f"Received task {task_msg} with: {task_params}")
                 if task_type == Task.FIND_BY_KEYWORDS:
                     self.find_keywords_routine(task_params["keywords"])
                     pass
