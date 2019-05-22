@@ -136,7 +136,7 @@ def tt_bots_by_id(id):
 
 @app.route("/twitter/bots/<id>/logs")
 def tt_bot_logs(id):
-    val=postgres.searchLog(id)
+    val=policy.searchLog(id)
     return jsonify(val)
 
 @app.route("/twitter/tweets")
