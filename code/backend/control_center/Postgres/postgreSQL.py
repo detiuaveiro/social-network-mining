@@ -148,7 +148,6 @@ class postgreSQL_API():
             cur.execute("select * from logs;")
             data = cur.fetchall()
             self.conn.commit()
-            print(data)
             result = self.postProcessResults(data)
             return [result]
         except psycopg2.Error as e:
