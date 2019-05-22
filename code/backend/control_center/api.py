@@ -208,7 +208,7 @@ def add_policy():
     if request.method=='POST':
         #get data from dashboard
         print(request.data)
-        vals=request.data
+        vals=request.data.decode('utf-8')
         mapa["API_type"]=vals.get('API_type')
         mapa["filter"]=vals.get('filter')
         mapa["name"]=vals.get('name')
@@ -251,6 +251,11 @@ def update_policy():
     mapa={}
     if request.method=='POST':
         print(request.data)
+        '''
+        if "API_type" in request.data.keys():
+            ...
+        fazer o resto para as restantes
+        '''
         send=policy.updatePolicy(mapa)
         if "Message" not in send[0].keys():
             return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
