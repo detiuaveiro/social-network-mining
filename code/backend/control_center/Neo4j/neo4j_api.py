@@ -153,3 +153,8 @@ class Neo4jAPI():
                 return False
             else:
                 return True
+    
+    def get_users_in_relationship(self,bot_id):
+        with self._driver.session() as session:
+            result=session.run("match (b { id:$bot_id } )-[FOLLOWS]->(r) return r.id", bot_id=bot_id)
+            return result.values()

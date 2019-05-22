@@ -146,6 +146,13 @@ class postgreSQL_API():
             data = cur.fetchall()
             self.conn.commit()
             result = self.postProcessResults(data)
+
+            for i in result.values():
+                print(i[0])
+                #bot_id=str(i["id_bot"])
+                #i.pop("id_bot")
+                #i["id_bot"]=bot_id
+
             return [result]
         except psycopg2.Error as e:
             self.conn.rollback()

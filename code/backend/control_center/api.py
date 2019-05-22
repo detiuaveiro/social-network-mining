@@ -63,8 +63,11 @@ def user_followers(id):
 
 @app.route("/twitter/users/<id>/following")
 def user_following(id):
-    mapa=mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"friends_count":True,"_id":False})
-    return jsonify(mapa)
+    users=neo.get_users_in_relationship(id)
+    lista=[]
+    for i in users:
+        lista.append(i[0])
+    return jsonify(lista)
 
 ##################################################################################
 '''
