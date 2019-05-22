@@ -46,10 +46,7 @@ class postgreSQL_API():
         try:
             #check if user exists
             cur=self.conn.cursor()
-            if self.checkUserExistence(cur,mapa):
-                print("I AM HERE. I AM DUMB. MY NAME IS ABILIO 2")
-                #add user
-                cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
+            self.checkUserExistence(cur,mapa)
             self.conn.commit()
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -122,9 +119,9 @@ class postgreSQL_API():
         cur.execute("select * from users where user_id=%s;",(mapa["user_id"],))
         data=cur.fetchone()
         if data is None:
+            #add user
             cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
-            return False
-        return True
+        return
 
     ##################################################################################################################################
     '''
@@ -151,6 +148,7 @@ class postgreSQL_API():
             cur.execute("select * from logs;")
             data = cur.fetchall()
             self.conn.commit()
+            print(data)
             result = self.postProcessResults(data)
             return [result]
         except psycopg2.Error as e:
