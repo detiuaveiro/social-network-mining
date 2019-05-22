@@ -1,4 +1,5 @@
 import psycopg2
+from datetime import datetime
 
 
 class postgreSQL_API():
@@ -134,14 +135,8 @@ class postgreSQL_API():
             cur.execute("select * from logs where id_bot=%s;", (id_bot,))
             data = cur.fetchall()
             self.conn.commit()
-            result = self.postProcessResults(data)
 
-            for i in result.values():
-                print(i[0])
-                #bot_id=str(i["id_bot"])
-                #i.pop("id_bot")
-                #i["id_bot"]=bot_id
-
+            result=self.getClearLogs(data)
             return [result]
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -155,7 +150,8 @@ class postgreSQL_API():
             cur.execute("select * from logs;")
             data = cur.fetchall()
             self.conn.commit()
-            result = self.postProcessResults(data)
+
+            result = self.getClearLogs(data)
             return [result]
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -261,6 +257,18 @@ class postgreSQL_API():
             #check filter_api
             self.checkFilterAPIExistence(cur,mapa)
             #add policy
+            if mapa["filter"]=="Keywords":
+                if len(mapa["bots"])==1:
+                    mapa["params"].insert(0,mapa["bots"])
+                elif len(mapa["bots"])>1:
+                    for i in mapa["bots"]:
+                        mapa["params"].insert(0,i)
+            elif mapa["filter"]=="Target":
+                if len(mapa["bots"])==1:
+                    mapa["params"].append(mapa["bots"])
+                elif len(mapa["bots"])>1:
+                    for j in mapa["bots"]:
+                        mapa["params"].append(j)
             cur.execute("insert into policies (API_type,filter,name,params,active,id_policy) values (%s,%s,%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"],mapa["active"],mapa["id_policy"]))
             self.conn.commit()
         except psycopg2.Error as e:
@@ -323,13 +331,13 @@ class postgreSQL_API():
             cur.close()
         return [{"Message":"Success"}]
 
-    def postProcessResults(self,lista):
+    def postProcessResults(self,lista,index=-1):
         d={}
         for i in lista:
             ll=[]
             for j in i:
                 ll.append(j)
-            d[i[-1]]=ll
+            d[i[index]]=ll
         return d
 
     def checkAPIExistence(self,cur,mapa):
@@ -372,3 +380,17 @@ class postgreSQL_API():
             if i==id_bot:
                 return True
         return False
+
+    def getClearLogs(self,data):
+        lista=[]
+        for i in data:
+            a=i+(datetime.timestamp(i[1]),)
+            lista.append(a)
+        result = self.postProcessResults(lista)
+        for j in result:
+            print(result[j][0])
+            bot_id=str(result[j][0])
+            del result[j][0]
+            del result[j][-1]
+            result[j].insert(0,bot_id)
+        return result
