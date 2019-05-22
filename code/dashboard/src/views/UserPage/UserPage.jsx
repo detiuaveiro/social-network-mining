@@ -13,18 +13,17 @@ class User extends React.Component {
     activeTab: '1',
   };
   componentDidMount() {
-    /* axios.get('/twitter/tweets')
+    axios.get('/twitter/tweets')
       .then(res => {
         const tweets = res.data;
         this.setState({ tweets });
-      }) */
+        console.log(this.state.tweets)
+      });
     const url = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)
     axios.get('/twitter/users/'+url)
       .then(res => {
-        console.log(res)
-        const profile_data = res.data;
+        const profile_data = res.data[0];
         this.setState({ profile_data });
-        console.log(this.state.profile_data)
       })
   }
 
@@ -65,10 +64,6 @@ class User extends React.Component {
                 <CardNumbers
                   size="sm"
                   socials={[
-                    {
-                      text: "Tweets",
-                      number:30
-                    },
                     {
                       text: "Following",
                       number:this.state.profile_data["friends_count"]
@@ -117,10 +112,11 @@ class User extends React.Component {
                       ncols={["col-md-6 pr-1", "col-md-6 pl-1"]}
                       proprieties={[
                         {
-                          label: "Birthday",
+                          label: "ID",
                           inputProps: {
-                            type: "date",
+                            type: "number",
                             disabled: true,
+                            defaultValue: this.state.profile_data["id"]
                           }
                         },
                         {
@@ -131,21 +127,6 @@ class User extends React.Component {
                             defaultValue: this.state.profile_data["location"]
                           }
                         }
-                      ]}
-                    />
-                    <FormInputs
-                      ncols={[
-                        "col-md-12 pr-1"
-                      ]}
-                      proprieties={[
-                        {
-                          label: "Email",
-                          inputProps: {
-                            type: "email",
-                            disabled: true,
-                            defaultValue: "marianalopes1@protonmail.com"
-                          }
-                        },
                       ]}
                     />
                     <FormInputs
@@ -211,6 +192,14 @@ class User extends React.Component {
                               Policies
                             </NavLink>
                         </NavItem>
+                        <NavItem>
+                            <NavLink
+                                className={this.state.activeTab === '6' ? 'active':''}
+                                onClick={() => { this.toggle('6'); }}
+                            >
+                              Logs
+                            </NavLink>
+                        </NavItem>
                     </Nav>
                 </CardHeader>
                 <CardBody>
@@ -218,9 +207,9 @@ class User extends React.Component {
                         <TabPane tabId="1">
                           <Row>
                             {this.state.tweets.map(tweet => 
-                            <Col xs={12} md={6}>
-                              <Tweet info={tweet}/>
-                            </Col>
+                              <Col xs={12} md={6}>
+                                <Tweet info={tweet}/>
+                              </Col>
                             )}
                           </Row>
                         </TabPane>
@@ -247,6 +236,9 @@ class User extends React.Component {
                         </TabPane>
                         <TabPane tabId="5">
                             <p>Not ready 5</p>
+                        </TabPane>
+                        <TabPane tabId="6">
+                            <p>Not ready 6</p>
                         </TabPane>
                     </TabContent>
                 </CardBody>

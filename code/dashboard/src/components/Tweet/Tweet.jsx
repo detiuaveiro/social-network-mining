@@ -23,12 +23,12 @@ class Tweet extends React.Component {
             <Col xs={12} md={2}>
               <img
                 className="avatar border-gray"
-                src={this.props.info["user"]["profile_image_url_https"]}
+                src={this.props.info["profile_image_url_https"]}
               />
             </Col>
             <Col className="text-left my-auto" xs={12} md={4}>
-              <h6 className="title">{this.props.info["user"]["name"]}</h6>
-              <p className="description">{"@"+this.props.info["user"]["screen_name"]}</p>
+              <h6 className="title">{this.props.info["name"]}</h6>
+              <p className="description">{"@"+this.props.info["screen_name"]}</p>
             </Col>
             <Col xs={12} md={3}>
               <p className="description text-left">
