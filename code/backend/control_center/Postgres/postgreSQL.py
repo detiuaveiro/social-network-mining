@@ -28,12 +28,11 @@ class postgreSQL_API():
         try:
             #check if tweet exists
             cur=self.conn.cursor()
-            if self.checkTweetExistence(cur,mapa):
-                #add tweet
-                cur.execute("insert into tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",(mapa["tweet_id"],mapa["user_id"],mapa["likes"],mapa["retweets"]))
+            cur.execute("insert into tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",(mapa["tweet_id"],mapa["user_id"],mapa["likes"],mapa["retweets"]))
             self.conn.commit()
         except psycopg2.Error as e:
             self.conn.rollback()
+            print(e)
             return [{e.diag.severity : e.diag.message_primary}]
         finally:
             cur.close()
@@ -48,6 +47,7 @@ class postgreSQL_API():
             #check if user exists
             cur=self.conn.cursor()
             if self.checkUserExistence(cur,mapa):
+                print("I AM HERE. I AM DUMB. MY NAME IS ABILIO 2")
                 #add user
                 cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
             self.conn.commit()
@@ -119,18 +119,10 @@ class postgreSQL_API():
         return self.getAllStatsTweets()+self.getAllStatsUsers()
 
     def checkUserExistence(self,cur, mapa):
-        cur.execute("select * from users where timestamp=DEFAULT;",(mapa["user_id"],))
+        cur.execute("select * from users where user_id=%s;",(mapa["user_id"],))
         data=cur.fetchone()
         if data is None:
             cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
-            return False
-        return True
-
-    def checkTweetExistence(self,cur,mapa):
-        cur.execute("select tweet_id, timestamp from tweets where timestamp=DEFAULT;",(mapa["tweet_id"],))
-        data=cur.fetchone()
-        if data is None:
-            cur.execute("insert into tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",(mapa["tweet_id"],mapa["user_id"],mapa["likes"],mapa["retweets"]))
             return False
         return True
 

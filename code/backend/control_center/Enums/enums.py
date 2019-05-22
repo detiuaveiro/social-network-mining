@@ -12,6 +12,7 @@ class MessageTypes(IntEnum):
     SAVE_USER = 9
     SAVE_TWEET = 10
     ERROR_BOT = 11
+    FIND_FOLLOWERS = 12
 
 class ResponseTypes(IntEnum):
     FOLLOW_USERS = 1

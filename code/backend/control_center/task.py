@@ -16,13 +16,22 @@ class Task():
 
     def menu(self, message_type, message):
         if (message_type == MessageTypes.USER_FOLLOWED):
-            pass
+            print("TASK: CREATE RELATION BOT - USER")
+            #Create Relation between Bot and User
+            self.neo4j.task(Neo4jTypes.CREATE_RELATION,data={"bot_id": message['bot_id'], "user_id": message['data']['id']})
+
         elif (message_type == MessageTypes.TWEET_LIKED):
-            pass
+            print("TASK: LOG TWEET LIKED")
+            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET LIKED (ID: "+str(message['data']['id'])+" )"})
+
         elif (message_type == MessageTypes.TWEET_RETWEETDED):
-            pass
+            print("TASK: LOG TWEET RETWEETED")
+            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET RETWEETED (ID: "+str(message['data']['id'])+" )"})
+
         elif (message_type == MessageTypes.TWEET_REPLIED):
-            pass
+            print("TASK: LOG TWEET REPLIED")
+            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET REPLIED (ID: "+str(message['data']['id'])+" )"})
+
         elif (message_type == MessageTypes.REQUEST_TWEET_LIKE):
             print("TASK: REQUEST LIKE TWEET")
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO LIKE TWEET (ID: "+str(message['data']['id'])+" )"})
@@ -184,9 +193,7 @@ class Task():
                     self.mongo.save('users', message['data'])
                     #Create User in Neo4j
                     self.neo4j.task(Neo4jTypes.CREATE_USER,data={"id": message['data']['id'], "name": message['data']['name'], "username": message['data']['screen_name']})
-                    #Create Relation between Bot and User
-                    self.neo4j.task(Neo4jTypes.CREATE_RELATION,data={"bot_id": message['bot_id'], "user_id": message['data']['id']})
-
+                    
             self.postgreSQL.addUser(mapa={"user_id": message['data']['id'], "followers": message['data']['followers_count'], "following": message['data']['friends_count']})
 
         elif(message_type == MessageTypes.SAVE_TWEET):
