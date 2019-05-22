@@ -53,24 +53,24 @@ class Task():
             self.Error_Bot(message=message)
 
     def User_Followed(self, message):
-        log.debug("TASK: CREATE RELATION BOT -> USER")
+        log.info("TASK: CREATE RELATION BOT -> USER")
         self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION,data={"bot_id": message['bot_id'], "user_id": message['data']['id']})
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(message['data']['id'])+" ) FOLLOWED BY BOT (ID: "+str(message['bot_id'])+")"})
 
     def Tweet_Liked(self, message):
-        log.debug("TASK: LOGGING TWEET LIKED")
+        log.info("TASK: LOGGING TWEET LIKED")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET LIKED (ID: "+str(message['data']['id'])+" )"})
 
     def Tweet_Retweeted(self, message):
-        log.debug("TASK: LOG TWEET RETWEETED")
+        log.info("TASK: LOG TWEET RETWEETED")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET RETWEETED (ID: "+str(message['data']['id'])+" )"})
 
     def Tweet_Replied(self, message):
-        log.debug("TASK: LOG TWEET REPLIED")
+        log.info("TASK: LOG TWEET REPLIED")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET REPLIED (ID: "+str(message['data']['id'])+" )"})
 
     def Request_Tweet_Like(self, message):
-        log.debug("TASK: REQUEST LIKE TWEET")
+        log.info("TASK: REQUEST LIKE TWEET")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO LIKE TWEET (ID: "+str(message['data']['id'])+" )"})
 
         result = self.policy.lifecycle(msg={
@@ -94,7 +94,7 @@ class Task():
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE LIKED"})
 
     def Request_Tweet_Retweet(self, message):
-        log.debugf("TASK: REQUEST RETWEET TWEET")
+        log.info("TASK: REQUEST RETWEET TWEET")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO RETWEET TWEET (ID: "+str(message['data']['id'])+" )"})
         result = self.policy.lifecycle(msg={
             "type": PoliciesTypes.REQUEST_TWEET_RETWEET,
@@ -143,7 +143,7 @@ class Task():
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE REPLIED"})
 
     def Request_Follow_User(self, message):
-        log.debug("TASK: REQUEST FOLLOW USER")
+        log.info("TASK: REQUEST FOLLOW USER")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO FOLLOW USER ("+str(message['data']['id'])+")"})
         result = self.policy.lifecycle(msg={
             "type": PoliciesTypes.REQUEST_TWEET_REPLY,
@@ -164,7 +164,7 @@ class Task():
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE FOLLOWED"})
 
     def Save_User(self, message):
-        log.debug("TASK: SAVE USER")
+        log.info("TASK: SAVE USER")
         is_bot = False
         if (int(message['bot_id'])==message['data']['id']):
             log.debug("USER IS BOT")
@@ -204,7 +204,7 @@ class Task():
         self.postgreSQL.addUser(mapa={"user_id": message['data']['id'], "followers": message['data']['followers_count'], "following": message['data']['friends_count']})
 
     def Save_Tweet(self, message):
-        log.debug("TASK: SAVE TWEET")
+        log.info("TASK: SAVE TWEET")
         tweet_exists = self.mongo.search('tweets', message['data'])
         if (tweet_exists):
             log.debug("TWEET EXISTS")
@@ -217,5 +217,5 @@ class Task():
         self.postgreSQL.addTweet(mapa={"tweet_id": message['data']['id'], "user_id": message['data']['user'], "likes": message['data']['favorite_count'], "retweets": message['data']['retweet_count']})
 
     def Error_Bot(self, message):
-        log.debug("TASK: ERROR_BOT")           
+        log.info("TASK: ERROR_BOT")           
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "WARNING: BOT WITH THE FOLLOWING ID "+str(message['bot_id'])+" GAVE THIS ERROR "+str(message['data']['msm'])})
