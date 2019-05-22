@@ -30,7 +30,7 @@ class ReactTables extends React.Component {
      *     filter : "keywords",
      *     params : ["keyword1","keyword2","keyword3"],
      *     id_policy : "something"
-     *     target : "..."
+     *     active : "..."
      *   }
      * ]
      */
@@ -51,9 +51,9 @@ class ReactTables extends React.Component {
     loadPolicies() {
         axios.get('/policies')
              .then(res => {
+                console.log(res);
                 const policies = res.data;
                 this.setState({ policies });
-                console.log(policies);
             });
     }
 
@@ -106,7 +106,7 @@ class ReactTables extends React.Component {
                             return (<tr id={policy.id_policy} key={index.toString()} data-index={index}>
                                 <td className="text-center">{index + 1}</td>
                                 <td className="text-center">
-                                    <Checkbox />
+                                    <Checkbox defaultChecked={policy.active}/>
                                 </td>
                                 <td>{policy.name}</td>
                                 <td>{policy.API_type}</td>
@@ -164,13 +164,23 @@ class EditPoliciesModal extends React.Component {
         let filter = document.getElementById("filter").value;
         let params = document.getElementById("params").value.split(",");
 
-        let updateMessage = {
-            id_policy: this.state.policy.id_policy,
-            API_type: API_type,
+        /**
+         * API_type: API_type,
             name: name,
             filter: filter,
             params: params
+         */
+        let updateMessage = {
+            id_policy: this.state.policy.id_policy
         };
+
+        //Add the fields that need to be updated
+        if(this.state.policy.API_type !== API_type) updateMessage["API_type"] = API_type;
+        if(this.state.policy.name !== name) updateMessage["name"] = name;
+        if(this.state.policy.filter !== filter) updateMessage["filter"] = filter;
+        if(!params.length === this.state.policy.params.length || !params.every(function(ele) {
+            return this.state.policy.params.contains(ele);
+        })) updateMessage["API_type"] = API_type; 
 
         this.toggle();
         if (this.props.submitCallBack) { this.props.submitCallBack(updateMessage); }
