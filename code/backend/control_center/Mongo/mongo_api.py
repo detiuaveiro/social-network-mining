@@ -1,8 +1,12 @@
 from pymongo import MongoClient
 import logging
+import sys
 
 log = logging.getLogger('Mongo')
 log.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+log.addHandler(handler)
 
 class MongoAPI():
     def __init__(self):

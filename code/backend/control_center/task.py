@@ -5,9 +5,13 @@ from policy_api import PolicyAPI
 from Neo4j.neo4j_api import Neo4jAPI
 from Enums.enums import MessageTypes, Neo4jTypes, PoliciesTypes, ResponseTypes
 import logging
+import sys
 
 log = logging.getLogger('Task')
 log.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+log.addHandler(handler)
 
 class Task():
     """Class which represents a Task for a bot to perform."""

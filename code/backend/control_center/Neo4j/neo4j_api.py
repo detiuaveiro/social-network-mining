@@ -1,6 +1,7 @@
 from neo4j import GraphDatabase
 from enum import IntEnum
 import logging
+import sys
 
 class Neo4jTypes(IntEnum):
     CREATE_BOT = 1
@@ -13,6 +14,9 @@ class Neo4jTypes(IntEnum):
 
 log = logging.getLogger('NEO4J')
 log.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+log.addHandler(handler)
 
 class Neo4jAPI():
     def __init__(self):
