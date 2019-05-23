@@ -20,6 +20,7 @@ class ResponseTypes(IntEnum):
     LIKE_TWEETS = 3
     RETWEET_TWEETS = 4
     REPLY_TWEETS = 5
+    FIND_FOLLOWERS = 6
 
 class Neo4jTypes(IntEnum):
     CREATE_BOT = 1
