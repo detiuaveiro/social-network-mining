@@ -1,8 +1,8 @@
 import argparse
 import logging
 import os
-from typing import List, Dict, Any, Union
 import sys
+from typing import List, Dict, Tuple, Union
 
 import tweepy
 from pyrabbit2 import Client
@@ -105,12 +105,13 @@ class TwitterBot:
         log.debug(f"Logged in as:{self.user}")
         log.debug(f"Sending our user to {self.data_exchange}")
         self.send_user(user=self.user)
-
         log.debug("Opening Cache")
         self._cache.open()
-        log.debug("Checking last Tweet")
-        self.last_home_tweet = self._cache.get("last_home_tweet", None)
-        log.debug(f"Last Tweet was: <{self.last_home_tweet}>")
+        log.info("Reading Home Timeline")
+        self.read_timeline(self.user, jump_users=False)
+        #log.debug("Checking last Tweet")
+        #self.last_home_tweet = self._cache.get("last_home_tweet", None)
+        #log.debug(f"Last Tweet was: <{self.last_home_tweet}>")
 
     def get_new_message(self):
         """
@@ -137,7 +138,8 @@ class TwitterBot:
                 task_type, task_params = task_msg["type"], task_msg["params"]
                 log.debug(f"Received task {task_msg} with: {task_params}")
                 if task_type == Task.FIND_BY_KEYWORDS:
-                    self.find_keywords_routine(task_params["keywords"])
+                    #self.find_keywords_routine(task_params["keywords"])
+                    log.warning(f"Not processing {Task.FIND_BY_KEYWORDS.name} with {task_params}")
                     pass
                 elif task_type == Task.FOLLOW_USERS:
                     self.follow_users_routine(task_params)
@@ -146,6 +148,8 @@ class TwitterBot:
                     self.like_tweets_routine(task_params)
                 elif task_type == Task.RETWEET_TWEETS:
                     self.retweet_tweets_routine(task_params)
+                elif task_type == Task.FIND_FOLLOWERS:
+                    self.find_followers(task_params)
                 else:
                     log.warning(f"Received unknown task_msg: {task_msg}")
             except NoMessagesInQueue:
@@ -190,7 +194,6 @@ class TwitterBot:
         """
         log.debug("Starting 'Like Tweets' routine...")
 
-
         # Helper function so we don't have to repeat code
 
         def get_and_like_tweet(tweet_id):
@@ -211,7 +214,7 @@ class TwitterBot:
                 get_and_like_tweet(tweet_id=tweet_id)
         # Unknown type
         else:
-            log.warn(f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
+            log.warning(f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
 
     def retweet_tweets_routine(self, tweets_ids: Union[int, List[int]]):
         """
@@ -244,8 +247,27 @@ class TwitterBot:
                 get_and_retweet_tweet(tweet_id=tweet_id)
         # Unknown type
         else:
-            log.warn(f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
+            log.warning(f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
 
+    def find_followers(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
+        """
+        Routine for the FIND_FOLLOWERS task
+        We can accept 2 types of users list, either by screen names or by IDs.
+        Params is assumed to be this kind of structure
+        "params" : {
+            "type" : "screen_name"
+            "data" : ["barackobama",...],
+        }
+        or
+        "params" : {
+            "type" : "id"
+            "data : [2312312312312,...],
+        }
+        Parameters
+        ----------
+        params : Dict[Any]
+            Dictionary with the payload, the data itself + the type
+        """
 
     def find_keywords_routine(self, keywords: List[str]):
         """
@@ -263,23 +285,11 @@ class TwitterBot:
         get_user_timeline_tweets
         """
         log.info("Starting Keywords Routine...")
-        log.info("Getting Home Timeline")
-        tweet_numbers = utils.random_between(settings.MIN_HOME_TIMELINE_TWEETS,
-                                             settings.MAX_HOME_TIMELINE_TWEETS)
-        log.info(f"Trying to get {tweet_numbers} tweets")
-        timeline_posts = self.get_user_timeline_tweets(self.user,
-                                                       count=tweet_numbers,
-                                                       max_id=self.last_home_tweet)
-
-        if not timeline_posts:
-            log.info(f"No tweets found in timeline")
-        else:
-            log.info(f"Timeline has {len(timeline_posts)} tweets")
-            log.info("'Reading' tweets in timeline")
-            self.read_timeline(self.user, timeline_posts, keywords)
+        log.info(f"Keywords provided: {keywords}")
+        self.read_timeline(self.user, keywords, jump_users=True)
         log.info("Exiting Keywords Routine...")
 
-    def follow_users_routine(self, params : Dict[str, Union[str,List[Union[str,int]]]]):
+    def follow_users_routine(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
         """
         Routine for the FOLLOW_USERS task
         We can accept 2 types of users list, either by screen names or by IDs.
@@ -333,12 +343,12 @@ class TwitterBot:
                 # TODO: Use the cache as, you know, an actual cache
                 log.info(f"Getting user object for User by [{arg_type}] with <{i}>")
                 arg_param = {
-                    arg_type : i,
+                    arg_type: i,
                 }
                 user = None
                 try:
                     user = self._api.get_user(**arg_param)
-                except Exception as e:
+                except tweepy.error.TweepError as e:
                     log.error(f"Unable to find user by [{arg_type}] with <{i}>")
                 if user:
                     log.info(f"Found with: {user}")
@@ -360,14 +370,14 @@ class TwitterBot:
             User object
         """
         log.info(f"Searching User with id={user_obj.id}")
+
+        # self._cache.save_user(user_obj)
         # Save the user
-        self._cache.save_user(user_obj)
         self.send_user(user_obj)
-        # read the user's  description
-        utils.read_text_and_wait(user_obj.description)
-        if user_obj.protected:
-            log.info(f"Found protected user with id={user_obj.id}")
-            # just try to follow him, since we can't read his tweets
+        # If we're not following him, try to follow him
+        if not user_obj.following:
+            # read the user's  description
+            utils.read_text_and_wait(user_obj.description)
             try:
                 user_obj.follow()
                 log.info(f"Followed User with ID={user_obj.id}")
@@ -378,27 +388,10 @@ class TwitterBot:
                     # TODO: implement logic for resuming follows
                     log.error(f"Unable to follow User with api_code={e.api_code},reason={e.reason}")
                 else:
-                    raise e
-            return
-        # he's not protected so try to check his timeline
-        else:
-            tweets_to_get = utils.random_between(settings.MIN_USER_TIMELINE_TWEETS,
-                                                 settings.MAX_USER_TIMELINE_TWEETS)
-            # get the user's timeline tweets
-            tweets = self.get_user_timeline_tweets(user_obj, count=tweets_to_get)
-            self.read_timeline(user_obj, tweets)
-            try:
-                user_obj.follow()
-                log.info(f"Followed User with ID={user_obj.id}")
-                self.send_event(MessageType.EVENT_USER_FOLLOWED, user_obj)
-            except tweepy.error.TweepError as e:
-                if e.api_code == 161:
-                    log.error(f"Unable to follow User with SPECIAL api_code={e.api_code}")
-                    pass
-                else:
-                    log.error(f"Unable to follow User with SPECIAL api_code={e.api_code}")
-                    raise e
-            return
+                    log.error(f"Error with api_code={e.api_code},reason={e.reason}")
+        # If the user isn't protected or he's protected and we're following him, read his timeline
+        if not user_obj.protected or (user_obj.protected and user_obj.following):
+            self.read_timeline(user_obj, jump_users=True)
 
     def get_user_timeline_tweets(self, user_obj: User, **kwargs) -> List[Tweet]:
         """
@@ -412,7 +405,7 @@ class TwitterBot:
             Keyword arguments for the api
         Returns
         -------
-        tweets: List[tweepy.models.Status]
+        tweets: List[Tweet]
             A List of tweets from the provided user's timeline
         """
         log.debug(f"Getting timeline tweets for User with id={user_obj.id}")
@@ -420,77 +413,106 @@ class TwitterBot:
             return self._api.home_timeline()
         return user_obj.timeline(**kwargs)
 
-    def read_timeline(self, user_obj: User, tweets: List[Tweet], keywords: List[str] = []):
+    def read_timeline(self, user_obj: User, keywords: List[str] = None, *, jump_users=False,
+                      max_depth=3, max_jumps=5,current_depth=0, total_jumps=0):
         """
-        Method for reading a user's tweets, from their timeline.
-        For each tweet:
-            If there are any keywords, then we do a simple verification of how many keywords from
-            the tweet match, and ask the control center to like/retweet based on the percentage.
-            If there are no keywords,  then ask the control center to like the tweet.
+        Method for reading a user's timeline.
+        It jumps between timelines with a recursive call of this function
 
         Parameters
         ----------
         user_obj : User
-            User object
-        tweets : List[Tweet]
-            List of Tweet objects
+            User object to read the timeline for
         keywords : List[str]
-            Optional list of keywords.
-
-        See Also
-        --------
-        find_keywords_routine
-        search_in_user
-
+            List of Keywords to search in the tweets' content
+        jump_users : bool
+            Flag to know if we should jump between user's tweets or not
+        max_depth : int
+            Max depth to jump
+        max_jumps : int
+            Max number of total jumps to do
+        current_depth : int
+            Internal control variable for recursive return
+        total_jumps : int
+            Internal variable for recursive return
         """
         log.debug(f"Reading User {user_obj}'s timeline")
+        tweets_to_get = utils.random_between(settings.MIN_USER_TIMELINE_TWEETS,
+                                             settings.MAX_USER_TIMELINE_TWEETS)
+        # get the user's timeline tweets
+        tweets = self.get_user_timeline_tweets(user_obj, count=tweets_to_get)
         if not tweets:
             log.debug("No Tweets to read!")
             return
 
-        last_tweet = tweets[0].id
         total_read_time = 0
-        total_keywords = len(keywords)
         for tweet in tweets:
-            if last_tweet < tweet.id:
-                last_tweet = tweet.id
-            log.debug(f"Saving Tweet with ID={tweet.id} to cache")
+            # log.debug(f"Saving Tweet with ID={tweet.id} to cache")
             # save the tweet
-            self._cache.save_tweet(tweet)
+            # self._cache.save_tweet(tweet)
             self.send_tweet(tweet)
 
             # read it's content
             total_read_time += utils.read_text_and_wait(tweet.text)
-            # don't do anything if it's our own tweet
+            # If it's our own timeline, we don't really need to do any logic
             if self.user.id == tweet.user.id:
                 continue
-            # Save the author of the tweet (assuming it's not us)
-            self.send_user(tweet.user)
+            # process the tweet
             if not keywords:
                 self.query_like_tweet(tweet)
                 continue
             else:
-                # For reading other timelines
-                # if self.user.id != user_obj.id:
-                # check for the keywords in the tweet
-                keywords_tweet_matches = sum([1 for i in keywords if i in tweet.text])
-                percentage_matches = keywords_tweet_matches / total_keywords
-                # If at least a minimum matches
-                if percentage_matches >= settings.MIN_KEYWORD_THRESHOLD:
-                    # randomly decide to favourite
-                    favourite_chance = utils.random_between(percentage_matches, 1)
-                    log.debug(
-                        f"Liking chance of «{favourite_chance}» out of «{settings.FAVOURITE_CHANCE}»")
-                    if favourite_chance >= settings.FAVOURITE_CHANCE:
-                        self.query_like_tweet(tweet)
-                    # same for retweeting
-                    retweet_chance = utils.random_between(percentage_matches, 1)
-                    log.debug(
-                        f"Retweeting chance of «{retweet_chance}» out of «{settings.RETWEET_CHANCE}»")
-                    if retweet_chance >= settings.RETWEET_CHANCE:
-                        self.query_retweet_tweet(tweet)
-                # TODO: for reading our home timeline?
-                # TODO: Do logic for replies
+                like_chance, retweet_chance = self._match_keywords(tweet, keywords)
+                if like_chance >= settings.FAVOURITE_CHANCE:
+                    self.query_like_tweet(tweet)
+                if retweet_chance >= settings.RETWEET_CHANCE:
+                    self.query_retweet_tweet(tweet)
+            # If the author of the tweet isn't the same user that we're reading the timeline
+            # (Because retweets can appear), then jump and do the logic for reading the timeline
+            # (assuming we haven't reach)
+            if (not jump_users) or (total_jumps == max_jumps) or (current_depth == max_depth):
+                continue
+            elif tweet.user != user_obj:
+                # save the user
+                self.send_user(tweet.user)
+                self.read_timeline(user_obj, keywords,
+                                   jump_users=jump_users,
+                                   total_jumps=total_jumps + 1,
+                                   max_jumps=max_jumps,
+                                   current_depth=current_depth + 1,
+                                   max_depth=max_depth,)
+
+        log.debug(f"Read {user_obj}'s timeline in {total_read_time} seconds")
+
+    def _match_keywords(self, tweet: Tweet, keywords: List[str] = None) -> Tuple[float, float]:
+        """
+
+        Parameters
+        ----------
+        tweet : List[Tweet]
+            List of tweets to match keywords againt
+        keywords :  List[str]
+            List of keywords to search for
+
+        Returns
+        -------
+        results : Tuple[float, float]
+            A tuple with the favourite (liking) and retweet chances.
+
+        """
+        if not keywords:
+            return -1, -1
+        total_keywords = len(keywords)
+        keywords_tweet_matches = sum([1 for i in keywords if i in tweet.text])
+        percentage_matches = keywords_tweet_matches / total_keywords
+        # IF it doesn't match minimum threshold, return the same as if there weren't any keywords
+        if percentage_matches < settings.MIN_KEYWORD_THRESHOLD:
+            return -1, -1
+        favourite_chance = utils.random_between(percentage_matches, 1)
+        log.debug(f"Liking chance of «{favourite_chance}» out of «{settings.FAVOURITE_CHANCE}»")
+        retweet_chance = utils.random_between(percentage_matches, 1)
+        log.debug(f"Retweeting chance of «{retweet_chance}» out of «{settings.RETWEET_CHANCE}»")
+        return favourite_chance, retweet_chance
 
     def send_user(self, user: User) -> None:
         """
@@ -530,20 +552,20 @@ class TwitterBot:
         self.messaging.publish(vhost=self.vhost, xname=self.data_exchange,
                                rt_key=self.data_routing_key, payload=utils.to_json(payload))
 
-    def send_query(self, messageType: MessageType, data: BaseModel):
+    def send_query(self, message_type: MessageType, data: BaseModel):
         """
         Generic Helper function for sending a message to the server
 
         Parameters
         ----------
-        messageType : MessageType
+        message_type : MessageType
             The event to send
         data: BaseModel
             the data associated with the event (usually the object)
         """
-        log.debug(f"Sending query <{messageType}> to: {self.query_exchange} with {data}")
+        log.debug(f"Sending query <{message_type}> to: {self.query_exchange} with {data}")
         payload = {
-            "type"     : messageType,
+            "type"     : message_type,
             "bot_id"   : self._id,
             "timestamp": utils.current_time(),
             "data"     : data.to_json(),
@@ -551,16 +573,16 @@ class TwitterBot:
         self.messaging.publish(vhost=self.vhost, xname=self.query_exchange,
                                rt_key=self.query_routing_key, payload=utils.to_json(payload))
 
-    def send_event(self, messageType: MessageType, data: BaseModel):
+    def send_event(self, message_type: MessageType, data: BaseModel):
         """ Generic Helper function for sending an event to the server
         Parameters
         ----------
-        messageType : `class` MessageType the event to send
+        message_type : `class` MessageType the event to send
         data: `class` BaseModel the data associated with the event (usually the object)
         """
-        log.debug(f"Sending event <{messageType}> to: {self.log_exchange} with {data}")
+        log.debug(f"Sending event <{message_type}> to: {self.log_exchange} with {data}")
         payload = {
-            "type"     : messageType,
+            "type"     : message_type,
             "bot_id"   : self._id,
             "timestamp": utils.current_time(),
             "data"     : data.to_json(),
@@ -615,7 +637,8 @@ if __name__ == "__main__":
     token = os.environ["TOKEN"]
     token_secret = os.environ["TOKEN_SECRET"]
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+    handler.setFormatter(
+        logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
     log.addHandler(handler)
     # TODO: change password
     messaging_manager = Client(api_url=server,
