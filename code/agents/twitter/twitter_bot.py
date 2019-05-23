@@ -146,6 +146,8 @@ class TwitterBot:
                     self.like_tweets_routine(task_params)
                 elif task_type == Task.RETWEET_TWEETS:
                     self.retweet_tweets_routine(task_params)
+                elif task_type == Task.FIND_FOLLOWERS:
+                    self.find_followers(task_params)
                 else:
                     log.warning(f"Received unknown task_msg: {task_msg}")
             except NoMessagesInQueue:
@@ -246,6 +248,25 @@ class TwitterBot:
         else:
             log.warn(f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
 
+    def find_followers(self, params: Dict[str, Union[str,List[Union[str,int]]]]):
+        """
+        Routine for the FIND_FOLLOWERS task
+        We can accept 2 types of users list, either by screen names or by IDs.
+        Params is assumed to be this kind of structure
+        "params" : {
+            "type" : "screen_name"
+            "data" : ["barackobama",...],
+        }
+        or
+        "params" : {
+            "type" : "id"
+            "data : [2312312312312,...],
+        }
+        Parameters
+        ----------
+        params : Dict[Any]
+            Dictionary with the payload, the data itself + the type
+        """
 
     def find_keywords_routine(self, keywords: List[str]):
         """
@@ -338,7 +359,7 @@ class TwitterBot:
                 user = None
                 try:
                     user = self._api.get_user(**arg_param)
-                except Exception as e:
+                except tweepy.error.TweepError as e:
                     log.error(f"Unable to find user by [{arg_type}] with <{i}>")
                 if user:
                     log.info(f"Found with: {user}")
@@ -360,14 +381,14 @@ class TwitterBot:
             User object
         """
         log.info(f"Searching User with id={user_obj.id}")
+
+#        self._cache.save_user(user_obj)
         # Save the user
-        self._cache.save_user(user_obj)
         self.send_user(user_obj)
-        # read the user's  description
-        utils.read_text_and_wait(user_obj.description)
-        if user_obj.protected:
-            log.info(f"Found protected user with id={user_obj.id}")
-            # just try to follow him, since we can't read his tweets
+        # If we're not following him, try to follow him
+        if not user_obj.following:
+            # read the user's  description
+            utils.read_text_and_wait(user_obj.description)
             try:
                 user_obj.follow()
                 log.info(f"Followed User with ID={user_obj.id}")
@@ -378,27 +399,14 @@ class TwitterBot:
                     # TODO: implement logic for resuming follows
                     log.error(f"Unable to follow User with api_code={e.api_code},reason={e.reason}")
                 else:
-                    raise e
-            return
-        # he's not protected so try to check his timeline
-        else:
+                    log.error(f"Error with api_code={e.api_code},reason={e.reason}")
+        # If the user isn't protected or he's protected and we're following him, read his timeline
+        if not user_obj.protected or (user_obj.protected and user_obj.following):
             tweets_to_get = utils.random_between(settings.MIN_USER_TIMELINE_TWEETS,
                                                  settings.MAX_USER_TIMELINE_TWEETS)
             # get the user's timeline tweets
             tweets = self.get_user_timeline_tweets(user_obj, count=tweets_to_get)
             self.read_timeline(user_obj, tweets)
-            try:
-                user_obj.follow()
-                log.info(f"Followed User with ID={user_obj.id}")
-                self.send_event(MessageType.EVENT_USER_FOLLOWED, user_obj)
-            except tweepy.error.TweepError as e:
-                if e.api_code == 161:
-                    log.error(f"Unable to follow User with SPECIAL api_code={e.api_code}")
-                    pass
-                else:
-                    log.error(f"Unable to follow User with SPECIAL api_code={e.api_code}")
-                    raise e
-            return
 
     def get_user_timeline_tweets(self, user_obj: User, **kwargs) -> List[Tweet]:
         """
