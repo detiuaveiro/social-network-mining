@@ -147,7 +147,7 @@ def tt_bot_logs(id):
 
 @app.route("/twitter/tweets")
 def tt_tweets():
-    mapa=mongo_t.dataCollection()
+    mapa=mongo_t.twitterCollection()
     return jsonify(mapa)
 
 @app.route("/twitter/tweets/stats")

@@ -388,7 +388,6 @@ class postgreSQL_API():
             lista.append(a)
         result = self.postProcessResults(lista)
         for j in result:
-            print(result[j][0])
             bot_id=str(result[j][0])
             del result[j][0]
             del result[j][-1]
