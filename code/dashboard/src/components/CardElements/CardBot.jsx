@@ -12,6 +12,9 @@ class CardBot extends React.Component {
     title: this.props.info["name"],
     image: this.props.info["profile_image_url_https"],
     username: this.props.info["screen_name"],
+    favorites: this.props.info["favourites_count"],
+    followers: this.props.info["friends_count"],
+    following: this.props.info["followers_count"]
   }
   componentDidMount(){
     console.log(this.props.info)
@@ -38,30 +41,16 @@ class CardBot extends React.Component {
             size="xs"
             socials={[
               {
-                icon: "fas fa-2x fa-quote-left",
-                number: 30,
+                icon: "fas fa-2x fa-heart",
+                number: this.state.favorites,
               },
               {
-                icon: "fas fa-2x fa-retweet",
-                number: 12,
-              },
-              {
-                icon: "fas fa-2x fa-comments",
-                number: 0,
+                icon: "fas fa-2x fa-user",
+                number: this.state.followers,
               },
             ]}
           />
         </CardBody>
-        <CardFooter>
-          <Stats>
-            {[
-              {
-                i: "now-ui-icons arrows-1_refresh-69",
-                t: "Just Updated"
-              }
-            ]}
-          </Stats>
-        </CardFooter>
       </Card>
     );
   }

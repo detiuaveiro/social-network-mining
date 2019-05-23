@@ -4,21 +4,33 @@ import React from "react";
 import NeoVis from "neovis.js";
 import { PanelHeader} from "components";
 
-class Test extends React.Component {
+class Network extends React.Component {
   componentDidMount() {
     const config = {
       container_id: "viz",
-      server_url: "bolt://54.165.85.15:33783",
+      server_url: "bolt://192.168.85.187:7687",
       server_user: "neo4j",
-      server_password: "calories-budget-boards",
+      server_password: "neo4jPI",
       labels: {
+        "Bot": {
+          "caption": "name",
+          "size": "pagerank",
+          "community": "bots",
+        },
+        "User": {
+          "caption": "name",
+          "size": "pagerank",
+        }
       },
       relationships: {
+        "FOLLOWS": {
+          caption: true,
+          thickness: "count"
+        }
       },
-      initial_cypher: "MATCH \
-                      (follower:User)-[follows:FOLLOWS]->(user:User:Me) \
-                      RETURN follower, follows, user \
-                      ORDER BY follower DESC",
+      arrows: true,
+      initial_cypher: "MATCH (bot:Bot)-[follows:FOLLOWS]->(user:User) \
+                      RETURN bot, follows, user",
     }
     this.viz = new NeoVis(config);
     this.viz.render()
@@ -39,7 +51,7 @@ class Test extends React.Component {
         />
         <div
           id="viz"
-          style={{width: "900px",
+          style={{width: "95%",
             height: "700px"}}
         >
         </div>
@@ -48,4 +60,4 @@ class Test extends React.Component {
   }
 }
 
-export default Test;
+export default Network;

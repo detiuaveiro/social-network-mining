@@ -64,16 +64,7 @@ class Policies extends React.Component {
                   <CardTitle tag="h4">Policies</CardTitle>
                 </CardHeader>
                 <CardBody>
-                  <DataTables policies={[{
-                    name: "Example name",
-                    API_type: "Twitter",
-                    filter: "keywords",
-                    params: ["keyword1", "keyword2", "keyword3"],
-                    id_policy: "something",
-                    target: "..."
-                  }]}
-                    ref={this.dataTablesRef} />
-
+                  <DataTables ref={this.dataTablesRef} />
                 </CardBody>
                 <CardFooter>
                   <Row>
