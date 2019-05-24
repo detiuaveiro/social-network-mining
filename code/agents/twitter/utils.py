@@ -2,8 +2,11 @@ import datetime
 import json
 import random
 import time
-import requests
+
 import readtime
+import requests
+
+from enums import MessageType
 
 TWITTER_EPOCH = 1288834974657
 
@@ -65,3 +68,13 @@ def current_time():
 
 def make_request_json(method, url, data, **options):
     return requests.request(method=method, url=url, data=to_json(data), **options)
+
+
+def wrap_message(data, *, bot_id, message_type: MessageType):
+    payload = {
+        "type"     : message_type,
+        "bot_id"   : bot_id,
+        "timestamp": current_time(),
+        "data"     : data,
+    }
+    return payload
