@@ -32,6 +32,8 @@ import CardBot from './CardElements/CardBot';
 
 import UserInfo from './User/User';
 
+import AddModal from './Modals/AddModal';
+
 export {
     // CardElements
     CardAuthor,
@@ -68,4 +70,6 @@ export {
     CardAuthor2,
     //User
     UserInfo,
+    //AddModal
+    AddModal,
 };

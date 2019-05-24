@@ -2,6 +2,7 @@ from flask import Flask,url_for, Response, jsonify, json, request
 from Mongo.mongo_flask import AppMongo
 from Postgres.postgreSQL import postgreSQL_API
 from Neo4j.neo4j_api import Neo4jAPI
+import ast
 
 app=Flask(__name__)
 
@@ -203,17 +204,9 @@ def add_policy():
         - 200 Inserted successfully
         - 400 Error (returns the driver's specific error)
     '''
-    #mapa -> dados recebidos da dashboard
-    mapa={}
-    if request.method=='POST':
-        #get data from dashboard
-        #print(request.data)
-        #vals=request.data.decode('utf-8')
-        mapa["API_type"]=request.form['API_type']
-        mapa["filter"]=request.form['filter']
-        mapa["name"]=request.form['name']
-        mapa["params"]=request.form['params']
-        mapa["bots"]=request.form['bots']
+    if request.method == 'POST':
+        mapa = request.data.decode('utf-8')
+        mapa = ast.literal_eval(mapa)
         print(mapa)
         send=policy.addPolicy(mapa)
         if "Message" not in send[0].keys():

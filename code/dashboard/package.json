@@ -24,6 +24,7 @@
     "react-router-dom": "5.0.0",
     "react-scripts": "2.1.8",
     "react-table": "^6.9.2",
+    "react-tagsinput": "^3.19.0",
     "reactstrap": "7.1.0"
   },
   "scripts": {
@@ -39,7 +40,7 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "proxy": "http://misc-redesfis.5g.cn.atnog.av.it.pt:5000/",
+  "proxy": "http://localhost:5000/",
   "devDependencies": {
     "@types/jquery": "^3.3.29"
   }
