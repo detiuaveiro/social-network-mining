@@ -606,8 +606,8 @@ class TwitterBot:
 
     def send_data(self, data, message_type: MessageType):
         self._send_message(data, message_type=message_type,
-                           routing_key=self.data_exchange,
-                           exchange=self.data_routing_key)
+                           routing_key=self.data_routing_key,
+                           exchange=self.data_exchange)
 
     def send_query(self, message_type: MessageType, data: BaseModel):
         """
