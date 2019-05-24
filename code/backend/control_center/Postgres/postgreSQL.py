@@ -262,7 +262,7 @@ class postgreSQL_API():
                     mapa["params"].insert(0,mapa["bots"])
                 elif len(mapa["bots"])>1:
                     for i in mapa["bots"]:
-                        mapa["params"].insert(0,i)
+                        mapa["params"].insert(0,i),active
             elif mapa["filter"]=="Target":
                 if len(mapa["bots"])==1:
                     mapa["params"].append(mapa["bots"])
@@ -270,9 +270,9 @@ class postgreSQL_API():
                     for j in mapa["bots"]:
                         mapa["params"].append(j)
             if "active" in mapa.keys():
-                cur.execute("insert into policies (API_type,filter,name,params,active,id_policy) values (%s,%s,%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"],mapa["active"],mapa["id_policy"]))
+                cur.execute("insert into policies (API_type,filter,name,params,active) values (%s,%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"],mapa["active"]))
             else:
-                cur.execute("insert into policies (API_type,filter,name,params,id_policy) values (%s,%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"],mapa["id_policy"]))
+                cur.execute("insert into policies (API_type,filter,name,params) values (%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"]))
             self.conn.commit()
         except psycopg2.Error as e:
             self.conn.rollback()
