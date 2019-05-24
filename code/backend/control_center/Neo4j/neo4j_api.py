@@ -31,8 +31,8 @@ class Neo4jAPI():
                 session.write_transaction(self.create_bot, data)
             elif (query_type==Neo4jTypes.CREATE_USER):
                 session.write_transaction(self.create_user, data)
-            elif (query_type==Neo4jTypes.CREATE_RELATION):
-                session.write_transaction(self.create_relationship, data)
+            elif (query_type==Neo4jTypes.CREATE_RELATION_BOT_USER):
+                session.write_transaction(self.create_relationship_bot_user, data)
             elif (query_type==Neo4jTypes.SEARCH_USER):
                 result = session.write_transaction(self.search_user, data)
                 return result
@@ -42,7 +42,9 @@ class Neo4jAPI():
                 result = session.write_transaction(self.search_bot, data)
                 return result
             elif (query_type==Neo4jTypes.UPDATE_BOT):
-                session.write_transaction(self.update_bot, data)           
+                session.write_transaction(self.update_bot, data)
+            elif (query_type==Neo4jTypes.CREATE_RELATION_USER_USER):
+                session.write_transaction(self.create_relationship_user_user, data)
 
     @staticmethod
     def create_bot(tx, data):
@@ -62,12 +64,20 @@ class Neo4jAPI():
     
     
     @staticmethod
-    def create_relationship(tx, data):
-        log.debug("NEO4J TASK: CREATE RELATION")
+    def create_relationship_bot_user(tx, data):
+        log.debug("NEO4J TASK: CREATE RELATION BOT - USER")
         bot_id = data['bot_id']
         user_id = data['user_id']
         result = tx.run("MATCH (u:Bot { id: $bot_id }), (r:User {id:$user_id}) \
                         CREATE (u)-[:FOLLOWS]->(r)", bot_id=bot_id, user_id=user_id)
+
+    @staticmethod
+    def create_relationship_user_user(tx, data):
+        log.debug("NEO4J TASK: CREATE RELATION USER - USER")
+        user1 = data['user1']
+        user2 = data['user2']
+        result = tx.run("MATCH (u:User { id: $user1 }), (r:User {id:$user2}) \
+                        CREATE (u)-[:FOLLOWS]->(r)", user1=user1, user2=user2)
 
 
     @staticmethod

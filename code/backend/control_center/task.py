@@ -69,6 +69,9 @@ class Task():
         elif(message_type == MessageTypes.ERROR_BOT):
             self.Error_Bot(message=message)
 
+        elif(message_type == MessageTypes.FIND_FOLLOWERS):
+            self.Find_Followers(message=message)
+
     def User_Followed(self, message):
         """
         Stores information about a bot following a user.
@@ -78,7 +81,7 @@ class Task():
         message : (dict) A dictionary with the user being followed and the bot following them.
         """
         log.info("TASK: CREATE RELATION BOT -> USER")
-        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION,data={"bot_id": message['bot_id'], "user_id": message['data']['id']})
+        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_BOT_USER,data={"bot_id": message['bot_id'], "user_id": message['data']['id']})
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(message['data']['id'])+" ) FOLLOWED BY BOT (ID: "+str(message['bot_id'])+")"})
 
     def Tweet_Liked(self, message):
@@ -127,6 +130,7 @@ class Task():
         result = self.policy.lifecycle(msg={
             "type": PoliciesTypes.REQUEST_TWEET_LIKE,
             "bot_id": message['bot_id'],
+            "user_id": message['data']['user'],
             "tweet_id": message['data']['id'],
             "tweet_text": message['data']['text'],
             "tweet_entities": message['data']['entities']
@@ -156,6 +160,7 @@ class Task():
         result = self.policy.lifecycle(msg={
             "type": PoliciesTypes.REQUEST_TWEET_RETWEET,
             "bot_id": message['bot_id'],
+            "user_id": message['data']['user'],
             "tweet_id": message['data']['id'],
             "tweet_text": message['data']['text'],
             "tweet_entities": message['data']['entities']
@@ -186,6 +191,7 @@ class Task():
             "type": PoliciesTypes.REQUEST_TWEET_REPLY,
             "bot_id": message['bot_id'],
             "tweet_id": message['data']['id'],
+            "user_id": message['data']['user'],
             "tweet_text": message['data']['text'],
             "tweet_entities": message['data']['entities'],
             "tweet_in_reply_to_status_id_str": message['data']['in_reply_to_status_id_str'],
@@ -306,3 +312,10 @@ class Task():
         """
         log.info("TASK: ERROR_BOT")           
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "WARNING: BOT WITH THE FOLLOWING ID "+str(message['bot_id'])+" GAVE THIS ERROR "+str(message['data']['msm'])})
+
+    def Find_Followers(self, message):
+        log.info("TASK: SAVE FOLLOWERS")
+        for key, value in message['data'].items():
+            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "SAVE LIST OF USERS FOLLOWED BY USER WITH ID: "+str(key)})
+            for user2 in value:
+                self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_USER_USER,data={"user1": key, "user2": user2})

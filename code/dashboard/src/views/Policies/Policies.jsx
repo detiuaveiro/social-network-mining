@@ -14,7 +14,7 @@ import {
   Modal, ModalHeader, ModalBody, ModalFooter,
   FormText
 } from "reactstrap";
-
+import NotificationAlert from "react-notification-alert";
 import { PanelHeader, DataTables, AddModal, Button } from "components";
 import axios from "axios";
 
@@ -25,11 +25,31 @@ class Policies extends React.Component {
         modalTooltips: false,
     };
     this.toggleModalTooltips = this.toggleModalTooltips.bind(this);
+    this.notify = this.notify.bind(this);
   }
   toggleModalTooltips() {
     this.setState({
         modalTooltips: !this.state.modalTooltips
     });
+  }
+
+  notify(msg) {
+    var type = "primary";
+    var options = {};
+    options = {
+      place: "tc",
+      message: (
+        <div>
+          <div>
+            {msg}
+          </div>
+        </div>
+      ),
+      type: type,
+      icon: "now-ui-icons ui-1_bell-53",
+      autoDismiss: 7
+    };
+    this.refs.notificationAlert.notificationAlert(options);
   }
 
   clickAddPolicy(e) {
@@ -40,13 +60,19 @@ class Policies extends React.Component {
     console.log(data);
     axios.post('/policies/add', data)
       .then(function (response) {
+        this.notify(response)
         console.log(response);
+      })
+      .catch(function (response) {
+        console.log(response);
+        this.notify(response)
       })
   }
 
   render() {
     return (
       <div>
+        <NotificationAlert ref="notificationAlert" />
         <PanelHeader
           size="md"
           content={

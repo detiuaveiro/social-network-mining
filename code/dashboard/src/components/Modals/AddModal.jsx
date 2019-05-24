@@ -10,8 +10,8 @@ class AddModal extends React.Component {
     this.state = {
         modalTooltips: props.status,
         name: "",
-        social: "twitter",
-        filter: "keywords",
+        social: "Twitter",
+        filter: "Keywords",
         params: [],
     }
     this.handleTags = this.handleTags.bind(this);
@@ -67,14 +67,14 @@ class AddModal extends React.Component {
               <Row>
                 <FormGroup check className="form-check-radio"> 
                   <Label check>
-                    <Input type="radio" name="social" value="twitter" checked={this.state.social === 'twitter'} onChange={this.handleSocial} />{' '}
+                    <Input type="radio" name="social" value="Twitter" checked={this.state.social === 'Twitter'} onChange={this.handleSocial} />{' '}
                     <span className="form-check-sign" />
                     Twitter
                   </Label>
                 </FormGroup>
                 <FormGroup check className="form-check-radio"> 
                   <Label check>
-                    <Input type="radio" name="social" value="instagram" checked={this.state.social === 'instagram'} onChange={this.handleSocial} />{' '}
+                    <Input type="radio" name="social" value="Instagram" checked={this.state.social === 'Instagram'} onChange={this.handleSocial} />{' '}
                     <span className="form-check-sign" />
                     Instagram
                   </Label>
@@ -90,14 +90,14 @@ class AddModal extends React.Component {
               <Row>
                 <FormGroup check className="form-check-radio"> 
                   <Label check>
-                    <Input type="radio" name="filter" value="keywords" checked={this.state.filter === 'keywords'} onChange={this.handleFilter} />{' '}
+                    <Input type="radio" name="filter" value="Keywords" checked={this.state.filter === 'Keywords'} onChange={this.handleFilter} />{' '}
                     <span className="form-check-sign" />
                     Keywords
                   </Label>
                 </FormGroup>
                 <FormGroup check className="form-check-radio"> 
                   <Label check>
-                    <Input type="radio" name="filter" value="targets" checked={this.state.filter === 'targets'} onChange={this.handleFilter} />{' '}
+                    <Input type="radio" name="filter" value="Targets" checked={this.state.filter === 'Targets'} onChange={this.handleFilter} />{' '}
                     <span className="form-check-sign" />
                     Targets
                   </Label>

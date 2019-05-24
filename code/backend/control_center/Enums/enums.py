@@ -25,12 +25,12 @@ class ResponseTypes(IntEnum):
 class Neo4jTypes(IntEnum):
     CREATE_BOT = 1
     CREATE_USER = 2
-    CREATE_RELATION = 3
+    CREATE_RELATION_BOT_USER = 3
     SEARCH_USER = 4
     UPDATE_USER = 5
     SEARCH_BOT = 6
     UPDATE_BOT = 7
-
+    CREATE_RELATION_USER_USER = 8
 
 class PoliciesTypes(IntEnum):
     REQUEST_TWEET_LIKE = 1
