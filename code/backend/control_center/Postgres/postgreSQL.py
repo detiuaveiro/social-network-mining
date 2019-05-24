@@ -63,7 +63,7 @@ class postgreSQL_API():
             cur.execute("select timestamp, tweet_id, likes, retweets from tweets;")
             data=cur.fetchall()
             self.conn.commit()
-            result=self.postProcessResults(data)
+            result=self.postProcessResults(data,index=1)
             return [result]
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -77,7 +77,7 @@ class postgreSQL_API():
             cur.execute("select timestamp, tweet_id, likes, retweets from tweets where tweet_id=%s;", (tweet_id,))
             data=cur.fetchall()
             self.conn.commit()
-            result=self.postProcessResults(data)
+            result=self.postProcessResults(data,index=1)
             return [result]
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -91,7 +91,7 @@ class postgreSQL_API():
             cur.execute("select timestamp, user_id, followers, following from users;")
             data=cur.fetchall()
             self.conn.commit()
-            result=self.postProcessResults(data)
+            result=self.postProcessResults(data,index=1)
             return [result]
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -105,7 +105,7 @@ class postgreSQL_API():
             cur.execute("select timestamp, user_id, followers, following from users where user_id=%s;", (user_id,))
             data=cur.fetchall()
             self.conn.commit()
-            result=self.postProcessResults(data)
+            result=self.postProcessResults(data,index=1)
             return [result]
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -308,11 +308,11 @@ class postgreSQL_API():
             '''
             when updating, check api, filter and filter_api
             '''
-            if "API_type" in list(mapa.keys()):
+            if "API_type" in mapa.keys():
                 api=self.checkAPIExistence(cur,mapa)
                 flag=1
 
-            if "filter" in list(mapa.keys()):
+            if "filter" in mapa.keys():
                 filter=self.checkFilterExistence(cur,mapa)
                 flag=1
             

@@ -55,6 +55,7 @@ class PDP:
         if msg["type"]==PoliciesTypes.REQUEST_TWEET_LIKE:
             '''
             bot_id
+            user_id
             tweet_id
             tweet_text
             tweet_entities
@@ -64,6 +65,7 @@ class PDP:
         elif msg["type"]==PoliciesTypes.REQUEST_TWEET_RETWEET:
             '''
             bot_id
+            user_id
             tweet_id
             tweet_text
             tweet_entities
@@ -72,7 +74,8 @@ class PDP:
             return self.send_response({"response":"PERMIT"})
         elif msg["type"]==PoliciesTypes.REQUEST_TWEET_REPLY:
             '''
-            bot_id        
+            bot_id 
+            user_id       
             tweet_id
             tweet_text
             tweet_entities
