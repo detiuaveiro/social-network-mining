@@ -9,6 +9,8 @@ class Task(IntEnum):
     FIND_BY_KEYWORDS = 2
     LIKE_TWEETS = 3
     RETWEET_TWEETS = 4
+    REPLY_TWEETS = 5
+    FIND_FOLLOWERS = 6
 
     def __str__(self):
         return self.name
@@ -28,7 +30,7 @@ class MessageType(IntEnum):
     QUERY_FOLLOW_USER = 8
     SAVE_USER = 9
     SAVE_TWEET = 10
-    EVENT_USER_BLOCKED = 11 
+    EVENT_USER_BLOCKED = 11
 
     def __str__(self):
         return self.name
