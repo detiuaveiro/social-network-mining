@@ -269,7 +269,10 @@ class postgreSQL_API():
                 elif len(mapa["bots"])>1:
                     for j in mapa["bots"]:
                         mapa["params"].append(j)
-            cur.execute("insert into policies (API_type,filter,name,params,active,id_policy) values (%s,%s,%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"],mapa["active"],mapa["id_policy"]))
+            if "active" in mapa.keys():
+                cur.execute("insert into policies (API_type,filter,name,params,active,id_policy) values (%s,%s,%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"],mapa["active"],mapa["id_policy"]))
+            else:
+                cur.execute("insert into policies (API_type,filter,name,params,id_policy) values (%s,%s,%s,%s,%s);",(mapa["API_type"],mapa["filter"],mapa["name"],mapa["params"],mapa["id_policy"]))
             self.conn.commit()
         except psycopg2.Error as e:
             self.conn.rollback()
