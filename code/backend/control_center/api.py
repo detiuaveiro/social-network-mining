@@ -149,6 +149,10 @@ def tt_bot_logs(id):
 @app.route("/twitter/tweets")
 def tt_tweets():
     mapa=mongo_t.twitterCollection()
+    for i in mapa:
+        user_id=str(i["id"])
+        i.pop("id")
+        i["id"] = user_id
     return jsonify(mapa)
 
 @app.route("/twitter/tweets/stats")
@@ -266,7 +270,8 @@ def ig_policies():
 
 @app.route("/instagram/stats")
 def ig_stats():
-    return "ig stats"
+    #a=policy.updatePolicy({"id_policy":6,"filter":"Keywords"})
+    return ""#jsonify(a)
 
 @app.route("/instagram/bots")
 def ig_bots_general():
