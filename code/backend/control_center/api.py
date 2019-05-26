@@ -213,7 +213,7 @@ def add_policy():
         mapa = ast.literal_eval(mapa)
         print(mapa)
         send=policy.addPolicy(mapa)
-        if "Message" not in send[0].keys():
+        if "Message" not in send.keys():
             return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
         return jsonify(send)
 
@@ -227,13 +227,13 @@ def remove_policy(id):
     '''
     if request.method=='DELETE':
         send=policy.removePolicy(id)
-        if "Message" not in send[0].keys():
+        if "Message" not in send.keys():
             return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
         return jsonify(send)
 
     if request.method=='POST':
         send=policy.removePolicy(id)
-        if "Message" not in send[0].keys():
+        if "Message" not in send.keys():
             return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
         return jsonify(send)
 
@@ -246,16 +246,11 @@ def update_policy():
         - 400 Error (returns the driver's specific error)
     '''
     #mapa -> dados recebidos da dashboard
-    mapa={}
     if request.method=='POST':
-        print(request.data)
-        '''
-        if "API_type" in request.data.keys():
-            ...
-        fazer o resto para as restantes
-        '''
+        mapa = request.data.decode('utf-8')
+        mapa = ast.literal_eval(mapa)
         send=policy.updatePolicy(mapa)
-        if "Message" not in send[0].keys():
+        if "Message" not in send.keys():
             return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
         return jsonify(send)
 ##################################################################################################################################
