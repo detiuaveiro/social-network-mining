@@ -1,8 +1,10 @@
 import React from "react";
 import { Button, FormInputs, Radio } from 'components';
 import TagsInput from 'react-tagsinput';
+import Select from 'react-select';
 import{ Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input, FormText, Col, Row } from 'reactstrap';
 import PropTypes from "prop-types";
+import axios from "axios";
 
 class AddModal extends React.Component {
   constructor(props) {
@@ -13,11 +15,23 @@ class AddModal extends React.Component {
         social: "Twitter",
         filter: "Keywords",
         params: [],
+        bots: null,
+        options: [],
     }
     this.handleTags = this.handleTags.bind(this);
     this.handleSave = this.handleSave.bind(this);
   }
   componentDidMount() {
+    axios.get('/twitter/bots')
+    .then(res => {
+      const data = res.data;
+      const options = []
+      data.forEach(function(bot){
+        options.push({value: bot['id'], label: bot['name']})
+      })
+      console.log(options)
+      this.setState({ options });
+    })
     this.setState({
       modalTooltips: this.props.status
     })
@@ -49,8 +63,17 @@ class AddModal extends React.Component {
     console.log("filter: "+this.state.filter)
   }
   
+  handleBots = (bots) => {
+    this.setState({ bots });
+    console.log(`Option selected:`, bots);
+  }
+
   handleSave() {
-    const data = {API_type: this.state.social, name: this.state.name, filter: this.state.filter, params: this.state.params}
+    const b = []
+    this.state.bots.forEach(function (bot){
+      b.push(bot['value'])
+    })
+    const data = {API_type: this.state.social, name: this.state.name, filter: this.state.filter, params: this.state.params, bots: b}
     this.props.handleSave(data)
   }
 
@@ -105,12 +128,43 @@ class AddModal extends React.Component {
               </Row>
             </FormGroup>
             <FormGroup required>
-              <Label for="filter">Parameters:</Label>
+              <Label >Parameters:</Label>
               <TagsInput
                 value={this.state.params}
                 onChange={this.handleTags}
                 tagProps={{className: 'react-tagsinput-tag primary' }}
               />
+            </FormGroup>
+            <FormGroup required>
+              <Label>Bots:</Label>
+                <Select
+                  value={this.state.bots}
+                  onChange={this.handleBots}
+                  options={this.state.options}
+                  isMulti
+                  isSearchable
+                  placeholder="Add Bots"
+                  styles={{
+                    control: (provided,state) => ({
+                      ...provided,
+                      borderRadius: 30,
+                      borderColor: state.isFocused ? "#f96332" : "#E3E3E3",
+                      boxShadow: state.isFocused ? "#f96332" : "#E3E3E3",
+                      '&:hover': {
+                        borderColor: state.isFocused ? "#f96332" : "#E3E3E3",
+                        boxShadow: state.isFocused ? "#f96332" : "#E3E3E3",
+                      },
+                    }),
+                    multiValue: (provided, state) => ({
+                      ...provided,
+                      backgroundColor: "#f96332",
+                      color: "white",
+                      borderRadius: 30,
+                    }),
+                  }}
+                  className="primary"
+
+                />
             </FormGroup>
           </Form>
         </ModalBody>

@@ -23,7 +23,8 @@
     "react-notification-alert": "0.0.10",
     "react-router-dom": "5.0.0",
     "react-scripts": "2.1.8",
-    "react-table": "^6.9.2",
+    "react-select": "^2.4.3",
+    "react-table": "^6.10.0",
     "react-tagsinput": "^3.19.0",
     "reactstrap": "7.1.0"
   },
@@ -40,7 +41,7 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "proxy": "http://localhost:5000/",
+  "proxy": "http://192.168.85.182:5000/",
   "devDependencies": {
     "@types/jquery": "^3.3.29"
   }

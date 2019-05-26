@@ -1,37 +1,78 @@
 import React from "react";
 import axios from 'axios';
 
-import {FormInputs, CardAuthor, CardNumbers, Tweet, UserInfo, PanelHeader} from "components";
+import {FormInputs, CardAuthor, CardNumbers, Tweet, UserInfo, PanelHeader, ReactTables} from "components";
 import {Nav, NavItem, NavLink, Card, CardHeader, CardBody, TabPane, TabContent, Row, Col, Badge } from 'reactstrap';
-
-import userAvatar from "assets/img/mike.jpg";
 
 class User extends React.Component {
   state = {
     tweets: [],
     profile_data: [],
+    following: [],
+    followers: [],
     activeTab: '1',
   };
+
   componentDidMount() {
-    axios.get('/twitter/tweets')
-      .then(res => {
-        const tweets = res.data;
-        this.setState({ tweets });
-        console.log(this.state.tweets)
-      });
     const url = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)
+
     axios.get('/twitter/users/'+url)
       .then(res => {
         const profile_data = res.data[0];
         this.setState({ profile_data });
+      })
+    axios.get('/twitter/users/'+url+'/following')
+      .then(res => {
+        const following = res.data;
+        this.setState({ following });
+      })
+    axios.get('/twitter/users/'+url+'/followers')
+      .then(res => {
+        const followers = res.data;
+        this.setState({ followers });
+      })
+    axios.get('/twitter/users/'+url+'/tweets')
+      .then(res => {
+        const tweets = res.data;
+        console.log(tweets)
+        this.setState({ tweets });
       })
   }
 
   constructor(props) {
     super(props);
     this.toggle = this.toggle.bind(this);
+    this.anyTweets = this.anyTweets.bind(this);
+    this.anyFollowers = this.anyFollowers.bind(this);
+    this.anyFollowing = this.anyFollowing.bind(this);
   }
 
+  anyTweets() {
+    if (this.state.tweets.length==0){
+      return false
+    }
+    else{
+      return true
+    }
+  }
+
+  anyFollowing() {
+    if (this.state.following.length==0){
+      return false
+    }
+    else{
+      return true
+    }
+  }
+
+  anyFollowers() {
+    if (this.state.followers.length==0){
+      return false
+    }
+    else{
+      return true
+    }
+  }
   toggle(tab) {
     if (this.state.activeTab !== tab) {
         this.setState({
@@ -79,8 +120,7 @@ class User extends React.Component {
             <Col md={8} xs={12}>
               <Card>
                 <CardHeader>
-                  <h5 className="title">Profile <Badge color="light"><i className="fab fa-1x fa-twitter"></i></Badge>
-</h5>
+                  <h5 className="title">Profile <Badge color="light"><i className="fab fa-1x fa-twitter"></i></Badge></h5>
                 </CardHeader>
                 <CardBody>
                   <form>
@@ -206,29 +246,50 @@ class User extends React.Component {
                     <TabContent activeTab={this.state.activeTab} className="text-center">
                         <TabPane tabId="1">
                           <Row>
-                            {this.state.tweets.map(tweet => 
-                              <Col xs={12} md={6}>
-                                <Tweet info={tweet}/>
-                              </Col>
-                            )}
+                            {this.anyTweets()
+                              ? this.state.tweets.map(tweet => 
+                                <Col xs={12} md={6}>
+                                  <Tweet info={tweet}/>
+                                </Col>
+                                )
+                              : <Col xs={12} md={12}>
+                                  <h5 className="text-muted text-center">
+                                    No Tweets Available
+                                  </h5>
+                                </Col>
+                            }
                           </Row>
                         </TabPane>
                         <TabPane tabId="2">
                           <Row>
-                            {this.state.tweets.map(tweet => 
-                            <Col xs={12} md={6}>
-                              <UserInfo info={tweet}/>
-                            </Col>
-                            )}
+                          {this.anyFollowers()
+                              ? this.state.followers.map(followers => 
+                                <Col xs={12} md={6}>
+                                  <UserInfo userid={followers}/>
+                                </Col>
+                                )
+                              : <Col xs={12} md={12}>
+                                  <h5 className="text-muted text-center">
+                                    No Followers Available
+                                  </h5>
+                                </Col>
+                              }
                           </Row>
                         </TabPane>
                         <TabPane tabId="3">
                           <Row>
-                            {this.state.tweets.map(tweet => 
-                            <Col xs={12} md={6}>
-                              <UserInfo info={tweet}/>
-                            </Col>
-                            )}
+                            {this.anyFollowing()
+                              ? this.state.following.map(following => 
+                                <Col xs={12} md={6}>
+                                  <UserInfo userid={following}/>
+                                </Col>
+                                )
+                              : <Col xs={12} md={12}>
+                                  <h5 className="text-muted text-center">
+                                    Not Following Anyone
+                                  </h5>
+                                </Col>
+                              }
                           </Row>
                         </TabPane>
                         <TabPane tabId="4">
@@ -238,7 +299,7 @@ class User extends React.Component {
                             <p>Not ready 5</p>
                         </TabPane>
                         <TabPane tabId="6">
-                            <p>Not ready 6</p>
+                            <ReactTables userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}></ReactTables>
                         </TabPane>
                     </TabContent>
                 </CardBody>

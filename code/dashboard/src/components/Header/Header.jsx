@@ -1,14 +1,10 @@
 import React from "react";
 import {
-  Collapse,
   Navbar,
   NavbarToggler,
   NavbarBrand,
   Container,
-  InputGroup,
-  InputGroupText,
-  InputGroupAddon,
-  Input
+
 } from "reactstrap";
 
 import dashboardRoutes from "routes/dashboard.jsx";
@@ -135,22 +131,6 @@ class Header extends React.Component {
             <span className="navbar-toggler-bar navbar-kebab" />
             <span className="navbar-toggler-bar navbar-kebab" />
           </NavbarToggler>
-          <Collapse
-            isOpen={this.state.isOpen}
-            navbar
-            className="justify-content-end"
-          >
-            <form>
-              <InputGroup className="no-border">
-                <Input placeholder="Search..." />
-                <InputGroupAddon addonType="append">
-                  <InputGroupText>
-                    <i className="now-ui-icons ui-1_zoom-bold" />
-                  </InputGroupText>
-                </InputGroupAddon>
-              </InputGroup>
-            </form>
-          </Collapse>
         </Container>
       </Navbar>
     );

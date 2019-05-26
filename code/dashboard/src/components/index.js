@@ -34,6 +34,8 @@ import UserInfo from './User/User';
 
 import AddModal from './Modals/AddModal';
 
+import ReactTables from './ReactTable/ReactTable';
+
 export {
     // CardElements
     CardAuthor,
@@ -72,4 +74,6 @@ export {
     UserInfo,
     //AddModal
     AddModal,
+    //ReactTables
+    ReactTables,
 };

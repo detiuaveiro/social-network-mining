@@ -40,7 +40,7 @@ class Network extends React.Component {
     return (
       <div>
         <PanelHeader
-          size="sm"
+          size="md"
           content={
             <div>
               <div className="header text-center">

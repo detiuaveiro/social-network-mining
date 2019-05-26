@@ -1,18 +1,9 @@
 import React from "react";
 import {
   Card,
-  CardHeader,
   CardBody,
-  CardFooter,
-  CardTitle,
   Row,
   Col,
-  Form,
-  FormGroup,
-  Label,
-  Input,
-  Modal, ModalHeader, ModalBody, ModalFooter,
-  FormText
 } from "reactstrap";
 import NotificationAlert from "react-notification-alert";
 import { PanelHeader, DataTables, AddModal, Button } from "components";
@@ -25,15 +16,17 @@ class Policies extends React.Component {
         modalTooltips: false,
     };
     this.toggleModalTooltips = this.toggleModalTooltips.bind(this);
+    this.savePolicy = this.savePolicy.bind(this);
     this.notify = this.notify.bind(this);
   }
+
   toggleModalTooltips() {
     this.setState({
         modalTooltips: !this.state.modalTooltips
     });
   }
 
-  notify(msg) {
+  notify = (msg) => {
     var type = "primary";
     var options = {};
     options = {
@@ -56,17 +49,17 @@ class Policies extends React.Component {
     this.modalRef.current.toggle();
   }
 
-  savePolicy = (data) => {
-    console.log(data);
+  savePolicy(data) {
     axios.post('/policies/add', data)
       .then(function (response) {
-        this.notify(response)
         console.log(response);
+        this.notify("WORKS")
       })
-      .catch(function (response) {
-        console.log(response);
-        this.notify(response)
+      .catch(function (error) {
+        console.log(error);
       })
+      this.notify("WORKING")
+
   }
 
   render() {

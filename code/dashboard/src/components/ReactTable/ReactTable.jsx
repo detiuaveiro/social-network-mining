@@ -1,12 +1,13 @@
 import React from "react";
 // react component for creating dynamic tables
+import ReactTable from 'react-table'
 
 // core components
 import { Button, Checkbox } from "components";
 import {
-    Row,
+    Card,
+    CardBody,
     Col,
-    Table,
     Form,
     FormGroup,
     Label,
@@ -20,107 +21,58 @@ class ReactTables extends React.Component {
     /*
      */
     state = {
-        policies: []
+        logger: [],
+        colums: [ {
+            Header: 'Time',
+            accessor: 'timestamp',
+            style: {
+                height: "50px"
+            }
+          }, {
+            Header: 'Action',
+            accessor: 'action',
+            style: {
+                height: "50px"
+            }
+          }],
+        user_id: this.props.userid
     };
-    /**
-     * [
-     *   {
-     *     name : "Example name",
-     *     API_type : "Twitter",
-     *     filter : "keywords",
-     *     params : ["keyword1","keyword2","keyword3"],
-     *     id_policy : "something"
-     *     active : "..."
-     *   }
-     * ]
-     */
+
     constructor(props) {
         super(props);
 
-        this.modalRef = React.createRef();
-
-        this.clickRemovePolicy = this.clickRemovePolicy.bind(this);
-        this.clickEditPolicy = this.clickEditPolicy.bind(this);
     }
 
     componentDidMount() {
-        axios.get('/policies')
+        const url = '/twitter/bots/'+this.state.user_id+'/logs'
+        console.log(url)
+        axios.get('/twitter/bots/'+this.state.user_id+'/logs')
         .then(res => {
-            console.log(res.data)
-            const policies = res.data;
-            this.setState({ policies });
+           console.log(res.data)
+           const logs = res.data;
+           const logger = []
+           for(var log in logs) {
+                logger.push(logs[log])
+           }
+           this.setState({ logger });
        });
-    }
-
-    updatePolicy(policy) {
-        axios.post("/policies/update", { policy })
-            .then(
-                res => {
-                    console.log(res);
-                    this.loadPolicies();
-                }
-            );
-    }
-
-    clickRemovePolicy(e) {
-        let id = e.currentTarget.parentElement.parentElement.id;
-        console.log(id);
-        axios.delete('/policies/remove/' + id)
-            .then(res => {
-                console.log(res);
-                this.loadPolicies();
-            });
-    }
-
-    clickEditPolicy(e) {
-        let index = parseInt(e.currentTarget.parentElement.parentElement.dataset.index);
-        let policy = this.state.policies[index];
-        console.log(policy);
-
-        this.modalRef.current.setPolicy(policy);
-        this.modalRef.current.toggle();
     }
 
     render() {
         return (
-            <div>
-                <Table responsive striped>
-                    <thead className="text-primary">
-                        <tr>
-                            <th className="text-center">#</th>
-                            <th className="text-center"></th>
-                            <th>Policy Name</th>
-                            <th>Social Network</th>
-                            <th className="text-center">Filter</th>
-                            <th className="text-right">Params</th>
-                            <th className="text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {this.state.policies.map(function (policy, index) {
-                            return (<tr id={policy.id_policy} key={index.toString()} data-index={index}>
-                                <td className="text-center">{index + 1}</td>
-                                <td className="text-center">
-                                    <Checkbox defaultChecked={policy.active}/>
-                                </td>
-                                <td>{policy.name}</td>
-                                <td>{policy.API_type}</td>
-                                <td className="text-center">{policy.filter}</td>
-                                <td className="text-right">{policy.params.join()}</td>
-                                <td className="text-right">
-                                    <Button icon neutral color="success" size="sm" onClick={this.clickEditPolicy}>
-                                        <i className="now-ui-icons ui-2_settings-90"></i>
-                                    </Button>{` `}
-                                    <Button icon neutral color="danger" size="sm" onClick={this.clickRemovePolicy}>
-                                        <i className="now-ui-icons ui-1_simple-remove"></i>
-                                    </Button>{` `}
-                                </td>
-                            </tr>);
-                        }.bind(this))}
-                    </tbody>
-                </Table>
-                <EditPoliciesModal ref={this.modalRef} modal={this.state.edit_mode} submitCallBack={this.updatePolicy} ></EditPoliciesModal>
-            </div>
+            <Card>
+                <CardBody>
+                    <ReactTable
+                        data={this.state.logger}
+                        columns={this.state.colums}
+                        defaultPageSize={10}
+                        showPaginationTop
+                        showPaginationBottom={false}
+                        resizable={false}
+                        className="-striped -highlight"
+                    />
+                </CardBody>
+            </Card>
         );
     }
 }
