@@ -278,10 +278,11 @@ class PDP:
                 if msg["user_id"]==id_user:
                     date=logs[i]["timestamp"]
                     now=datetime.datetime.now()
-                    if (now-date).seconds<30:
+                    if (now-date).seconds<5:
                         threshold-=0.65
-                    elif (now-date).seconds<60:
+                    elif (now-date).seconds<10:
                         threshold-=0.35
+        print(threshold)
         return threshold
 
     def analyze_tweet_retweet(self,msg):
@@ -372,7 +373,7 @@ class PDP:
                     #12h -> 43200s
                     if (now-date).seconds<43200:
                         threshold-=0.5
-
+        print(threshold)
         return threshold
     def analyze_tweet_reply(self,msg):
         return "not implemented yet"
