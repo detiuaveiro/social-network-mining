@@ -54,7 +54,7 @@ def user_by_id(id):
 
 @app.route("/twitter/users/<id>/tweets")
 def user_tweets(id):
-    mapa=mongo_t.twitterCollection(findText={"user.id_str":str(id)})
+    mapa=mongo_t.twitterCollection(findText={"user":id})
     return jsonify(mapa)
 
 @app.route("/twitter/users/<id>/followers")
@@ -63,7 +63,7 @@ def user_followers(id):
     lista=[]
     for i in followers:
         lista.append(i[0])
-    return jsonify(followers)
+    return jsonify(lista)
 
 @app.route("/twitter/users/<id>/following")
 def user_following(id):
