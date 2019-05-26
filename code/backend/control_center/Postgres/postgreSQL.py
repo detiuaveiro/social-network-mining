@@ -31,13 +31,12 @@ class postgreSQL_API():
             cur=self.conn.cursor()
             cur.execute("insert into tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",(mapa["tweet_id"],mapa["user_id"],mapa["likes"],mapa["retweets"]))
             self.conn.commit()
+            cur.close()
         except psycopg2.Error as e:
             self.conn.rollback()
             print(e)
             return {e.diag.severity : e.diag.message_primary}
-        finally:
-            cur.close()
-
+        
         return {"Message":"Success"}
 
     def addUser(self,mapa):
@@ -49,12 +48,11 @@ class postgreSQL_API():
             cur=self.conn.cursor()
             self.checkUserExistence(cur,mapa)
             self.conn.commit()
+            cur.close()
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity : e.diag.message_primary}
-        finally:
-            cur.close()
-
+        
         return {"Message":"Success"}
 
     def getAllStatsTweets(self):
@@ -63,13 +61,12 @@ class postgreSQL_API():
             cur.execute("select timestamp, tweet_id, likes, retweets from tweets;")
             data=cur.fetchall()
             self.conn.commit()
+            cur.close()
             result=self.postProcessResults(data,['timestamp','tweet_id','likes','retweets'])
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity: e.diag.message_primary}
-        finally:
-            cur.close()
 
     def getStatsTweetID(self, tweet_id):
         try:
@@ -77,13 +74,12 @@ class postgreSQL_API():
             cur.execute("select timestamp, tweet_id, likes, retweets from tweets where tweet_id=%s;", (tweet_id,))
             data=cur.fetchall()
             self.conn.commit()
+            cur.close()
             result=self.postProcessResults(data,['timestamp', 'tweet_id', 'likes', 'retweets'])
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity: e.diag.message_primary}
-        finally:
-            cur.close()
 
     def getAllStatsUsers(self):
         try:
@@ -91,13 +87,12 @@ class postgreSQL_API():
             cur.execute("select timestamp, user_id, followers, following from users;")
             data=cur.fetchall()
             self.conn.commit()
+            cur.close()
             result=self.postProcessResults(data,['timestamp', 'user_id', 'followers', 'following'])
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity: e.diag.message_primary}
-        finally:
-            cur.close()
 
     def getStatsUserID(self, user_id):
         try:
@@ -105,13 +100,12 @@ class postgreSQL_API():
             cur.execute("select timestamp, user_id, followers, following from users where user_id=%s;", (user_id,))
             data=cur.fetchall()
             self.conn.commit()
+            cur.close()
             result=self.postProcessResults(data,['timestamp', 'user_id', 'followers', 'following'])
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity: e.diag.message_primary}
-        finally:
-            cur.close()
 
     def getAllStats(self):
         return self.getAllStatsTweets()+self.getAllStatsUsers()
@@ -137,12 +131,11 @@ class postgreSQL_API():
             self.conn.commit()
 
             result=self.getClearLogs(data,["id","timestamp","action","converted"])
+            cur.close()
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity: e.diag.message_primary}
-        finally:
-            cur.close()
 
     def getAllLogs(self):
         try:
@@ -152,12 +145,11 @@ class postgreSQL_API():
             self.conn.commit()
 
             result = self.getClearLogs(data,["id","timestamp","action","converted"])
+            cur.close()
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity: e.diag.message_primary}
-        finally:
-            cur.close()
 
     def getAllPolicies(self):
         try:
@@ -172,6 +164,7 @@ class postgreSQL_API():
             if len(data)==0:
                 return []
             result=self.postProcessResults(data,['API_type','filter','name','params','active','id_policy'])
+            cur.close()
             for i in result:
                 for j in filters:
                     if j[0]==i['filter']:
@@ -183,8 +176,6 @@ class postgreSQL_API():
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity : e.diag.message_primary}
-        finally:
-            cur.close()
     
     def getPoliciesByAPI(self,api):
         try:
@@ -196,6 +187,7 @@ class postgreSQL_API():
             self.conn.commit()
             result=self.postProcessResults(data,
             ['API_type','filter','name','params','active','id_policy','API_name'])
+            cur.close()
             for i in result:
                 del i['API_type']
                 for j in filters:
@@ -205,8 +197,6 @@ class postgreSQL_API():
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity : e.diag.message_primary}
-        finally:
-            cur.close()
 
     def getPoliciesByID(self,id):
         try:
@@ -219,6 +209,7 @@ class postgreSQL_API():
             apis=cur.fetchall()
             self.conn.commit()
             result=self.postProcessResults(data,['API_type','filter','name','params','active','id_policy'])
+            cur.close()
             for i in result:
                 for j in filters:
                     if j[0]==i['filter']:
@@ -230,8 +221,6 @@ class postgreSQL_API():
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity : e.diag.message_primary}
-        finally:
-            cur.close()
     
     def getPoliciesByBot(self,bot_id):
         bot_id=str(bot_id)
@@ -244,6 +233,7 @@ class postgreSQL_API():
             cur.execute("select * from api")
             apis=cur.fetchall()
             self.conn.commit()
+            cur.close()
             result=self.postProcessResults(data,['API_type','filter','name','params','active','id_policy'])
             '''
             {id_policy:[api,filter,params,etc]}
@@ -267,8 +257,6 @@ class postgreSQL_API():
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity : e.diag.message_primary}
-        finally:
-            cur.close()
 
     def addLog(self,mapa):
         '''
@@ -279,11 +267,10 @@ class postgreSQL_API():
             cur=self.conn.cursor()
             cur.execute("insert into logs (id_bot,timestamp,action) values (%s,DEFAULT,%s);",(mapa["id_bot"], mapa["action"]))
             self.conn.commit()
+            cur.close()
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity : e.diag.message_primary}
-        finally:
-            cur.close()
 
         return {"Message":"Success"}
 
@@ -318,11 +305,10 @@ class postgreSQL_API():
             else:
                 cur.execute("insert into policies (API_type,filter,name,params) values (%s,%s,%s,%s);",(api,filtro,mapa["name"],mapa["params"]))
             self.conn.commit()
+            cur.close()
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity : e.diag.message_primary}
-        finally:
-            cur.close()
 
         return {"Message":"Success"}
     
@@ -334,11 +320,10 @@ class postgreSQL_API():
             cur=self.conn.cursor()
             cur.execute("delete from policies where id_policy=%s;",(id,))
             self.conn.commit()
+            cur.close()
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity : e.diag.message_primary}
-        finally:
-            cur.close()
         return {"Message":"Success"}
 
     def updatePolicy(self,mapa):
@@ -380,11 +365,10 @@ class postgreSQL_API():
                 else:
                     pass    
             self.conn.commit()
+            cur.close()
         except psycopg2.Error as e:
             self.conn.rollback()
             return {e.diag.severity : e.diag.message_primary}
-        finally:
-            cur.close()
         return {"Message":"Success"}
 
     def postProcessResults(self,lista,cols):
@@ -467,12 +451,9 @@ class postgreSQL_API():
             cur.execute("select params from policies,filter where policies.active=TRUE and policies.filter=filter.id and filter.name='Target'")
             DB_val=cur.fetchall()
             self.conn.commit()
+            cur.close()
             return DB_val
         except psycopg2.Error as e:
             self.conn.rollback()
             return e.diag.severity
-        finally:
-            cur.close()
     
-    def closeConnection(self):
-        self.conn.close()

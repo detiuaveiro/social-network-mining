@@ -147,7 +147,6 @@ class PDP:
     def send_response(self,msg):
         #json dumps da decisão
         message=json.dumps(msg)
-        self.policies.closeConnection()
         return message #pep.receive_response(message)
     
     def get_suggested_users(self):
