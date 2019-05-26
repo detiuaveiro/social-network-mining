@@ -23,12 +23,12 @@ class MongoAPI():
             try:
                 self.users.insert_one(self.data)
             except:
-                log.debug("ERROR INSERTING USER")
+                log.info("ERROR INSERTING USER")
         else:
             try:
                 self.tweets.insert_one(self.data)
             except:
-                log.debug("ERROR INSERTING TWEET")
+                log.info("ERROR INSERTING TWEET")
 
     def update(self, database, data):
         self.database = database
@@ -37,13 +37,13 @@ class MongoAPI():
             try:
                 self.users.replace_one({"id": self.data['id']},self.data)
             except Exception as e:
-                log.debug("ERROR UPDATING USER ("+str(e)+")")
+                log.info("ERROR UPDATING USER ("+str(e)+")")
         else:
             try:
                 self.tweets.replace_one({"id": self.data['id']},self.data)
             except Exception as e:
-                log.debug("ERROR UPDATING TWEET ("+str(e)+")")
-                
+                log.info("ERROR UPDATING TWEET ("+str(e)+")")
+
     def search(self, database, data):
         self.database = database
         self.data = data
@@ -55,7 +55,7 @@ class MongoAPI():
                 else:
                     return False
             except:
-                log.debug("ERROR SEARCHING FOR USER")
+                log.info("ERROR SEARCHING FOR USER")
         else:
             try:
                 result = self.tweets.find_one({"id": self.data['id']})
@@ -64,4 +64,4 @@ class MongoAPI():
                 else:
                     return False
             except Exception as e:
-                log.debug("ERROR SEARCHING FOR TWEET: "+str(e))
+                log.info("ERROR SEARCHING FOR TWEET: "+str(e))

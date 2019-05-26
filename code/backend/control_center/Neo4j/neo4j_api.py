@@ -6,11 +6,12 @@ import sys
 class Neo4jTypes(IntEnum):
     CREATE_BOT = 1
     CREATE_USER = 2
-    CREATE_RELATION = 3
+    CREATE_RELATION_BOT_USER = 3
     SEARCH_USER = 4
     UPDATE_USER = 5
     SEARCH_BOT = 6
     UPDATE_BOT = 7
+    CREATE_RELATION_USER_USER = 8
 
 log = logging.getLogger('NEO4J')
 log.setLevel(logging.INFO)
@@ -48,7 +49,7 @@ class Neo4jAPI():
 
     @staticmethod
     def create_bot(tx, data):
-        log.debug("NEO4J TASK: CREATE BOT")
+        log.info("NEO4J TASK: CREATE BOT")
         bot_name = data['name']
         bot_id = data['id']
         bot_username = data['username']
@@ -56,7 +57,7 @@ class Neo4jAPI():
 
     @staticmethod
     def create_user(tx, data):
-        log.debug("NEO4J TASK: CREATE USER")
+        log.info("NEO4J TASK: CREATE USER")
         user_name = data['name']
         user_id = data['id']
         user_username = data['username']
@@ -65,7 +66,7 @@ class Neo4jAPI():
     
     @staticmethod
     def create_relationship_bot_user(tx, data):
-        log.debug("NEO4J TASK: CREATE RELATION BOT - USER")
+        log.info("NEO4J TASK: CREATE RELATION BOT - USER")
         bot_id = data['bot_id']
         user_id = data['user_id']
         result = tx.run("MATCH (u:Bot { id: $bot_id }), (r:User {id:$user_id}) \
@@ -73,7 +74,7 @@ class Neo4jAPI():
 
     @staticmethod
     def create_relationship_user_user(tx, data):
-        log.debug("NEO4J TASK: CREATE RELATION USER - USER")
+        log.info("NEO4J TASK: CREATE RELATION USER - USER")
         user1 = data['user1']
         user2 = data['user2']
         result = tx.run("MATCH (u:User { id: $user1 }), (r:User {id:$user2}) \
@@ -82,7 +83,7 @@ class Neo4jAPI():
 
     @staticmethod
     def search_user(tx, data):
-        log.debug("NEO4J TASK: SEARCH USER")
+        log.info("NEO4J TASK: SEARCH USER")
         user_id = data['user_id']
         result = tx.run("MATCH (r:User { id:$id }) \
                         RETURN r", id=user_id)
@@ -93,7 +94,7 @@ class Neo4jAPI():
     
     @staticmethod
     def search_bot(tx, data):
-        log.debug("NEO4J TASK: SEARCH BOT")
+        log.info("NEO4J TASK: SEARCH BOT")
         bot_id = data['bot_id']
         result = tx.run("MATCH (r:Bot { id:$id }) \
                         RETURN r", id=bot_id)
@@ -104,7 +105,7 @@ class Neo4jAPI():
     
     @staticmethod
     def update_user(tx, data):
-        log.debug("NEO4J TASK: UPDATE USER")
+        log.info("NEO4J TASK: UPDATE USER")
         user_id = data['user_id']
         user_name = data['user_name']
         user_username = data['user_username']
@@ -114,7 +115,7 @@ class Neo4jAPI():
 
     @staticmethod
     def update_bot(tx, data):
-        log.debug("NEO4J TASK: UPDATE BOT")
+        log.info("NEO4J TASK: UPDATE BOT")
         bot_id = data['bot_id']
         bot_name = data['bot_name']
         bot_username = data['bot_username']
