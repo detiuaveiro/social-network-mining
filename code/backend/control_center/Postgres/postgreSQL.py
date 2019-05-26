@@ -132,7 +132,7 @@ class postgreSQL_API():
     def searchLog(self, id_bot):
         try:
             cur = self.conn.cursor()
-            cur.execute("select * from logs where id_bot=%s;", (id_bot,))
+            cur.execute("select * from logs where id_bot=%s order by timestamp DESC;", (id_bot,))
             data = cur.fetchall()
             self.conn.commit()
 
@@ -250,7 +250,6 @@ class postgreSQL_API():
             '''
             lista=[]
             for i in result:
-                print(i)
                 for j in i.keys():
                     if j=="params":
                         response=self.searchForBot(i[j],bot_id)
@@ -461,3 +460,19 @@ class postgreSQL_API():
                 del j["converted"]
             j["id"]=bot_id
         return result
+    
+    def getPoliciesParams(self):
+        try:
+            cur=self.conn.cursor()
+            cur.execute("select params from policies,filter where policies.active=TRUE and policies.filter=filter.id and filter.name='Target'")
+            DB_val=cur.fetchall()
+            self.conn.commit()
+            return DB_val
+        except psycopg2.Error as e:
+            self.conn.rollback()
+            return e.diag.severity
+        finally:
+            cur.close()
+    
+    def closeConnection(self):
+        self.conn.close()

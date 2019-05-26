@@ -124,9 +124,6 @@ class Neo4jAPI():
                         RETURN r", id=bot_id, name=bot_name, username=bot_username)
 
     def search_all_bots(self):
-        '''
-        temporarily testing with User, instead of Bot
-        '''
         with self._driver.session() as session:
             result = session.run("MATCH (a:Bot) RETURN a")
             records_iterator=result.values()
@@ -138,19 +135,11 @@ class Neo4jAPI():
                 d["name"]=a.get("name")
                 d["username"]=a.get("username")
                 l.append(d)
-            #print(result.single()[0].id)
-            #for i in records_iterator:
-            #    print(i.items())
             return l
 
     def search_bot_by_id(self,bot_id):
-        '''
-        temporarily testing with User, instead of Bot
-        '''
         with self._driver.session() as session:
             result = session.run("MATCH (a:Bot { id:$bot_id }) RETURN a;",bot_id=bot_id)
-            #print("items", result.values())
-            #vals=result.values()
             d={}
             for i in result.values():
                 d["id"]=i[0].get("id")

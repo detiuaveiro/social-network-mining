@@ -54,7 +54,7 @@ def user_by_id(id):
 
 @app.route("/twitter/users/<id>/tweets")
 def user_tweets(id):
-    mapa=mongo_t.twitterCollection(findText={"user.id_str":str(id)})
+    mapa=mongo_t.twitterCollection(findText={"user":id})
     return jsonify(mapa)
 
 @app.route("/twitter/users/<id>/followers")
@@ -63,7 +63,7 @@ def user_followers(id):
     lista=[]
     for i in followers:
         lista.append(i[0])
-    return jsonify(followers)
+    return jsonify(lista)
 
 @app.route("/twitter/users/<id>/following")
 def user_following(id):
@@ -213,7 +213,7 @@ def add_policy():
         mapa = ast.literal_eval(mapa)
         print(mapa)
         send=policy.addPolicy(mapa)
-        if "Message" not in send[0].keys():
+        if "Message" not in send.keys():
             return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
         return jsonify(send)
 
@@ -227,13 +227,13 @@ def remove_policy(id):
     '''
     if request.method=='DELETE':
         send=policy.removePolicy(id)
-        if "Message" not in send[0].keys():
+        if "Message" not in send.keys():
             return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
         return jsonify(send)
 
     if request.method=='POST':
         send=policy.removePolicy(id)
-        if "Message" not in send[0].keys():
+        if "Message" not in send.keys():
             return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
         return jsonify(send)
 
@@ -246,16 +246,11 @@ def update_policy():
         - 400 Error (returns the driver's specific error)
     '''
     #mapa -> dados recebidos da dashboard
-    mapa={}
     if request.method=='POST':
-        print(request.data)
-        '''
-        if "API_type" in request.data.keys():
-            ...
-        fazer o resto para as restantes
-        '''
+        mapa = request.data.decode('utf-8')
+        mapa = ast.literal_eval(mapa)
         send=policy.updatePolicy(mapa)
-        if "Message" not in send[0].keys():
+        if "Message" not in send.keys():
             return app.response_class(response=json.dumps(send),status=400,mimetype='application/json')
         return jsonify(send)
 ##################################################################################################################################

@@ -2,8 +2,11 @@ import json
 import psycopg2
 import random
 import sys
+import datetime
+from pymongo import MongoClient
 sys.path.append('../')
 from Neo4j.neo4j_api import Neo4jAPI
+from Postgres.postgreSQL import postgreSQL_API
 from enum import IntEnum
 
 class PoliciesTypes(IntEnum):
@@ -20,9 +23,12 @@ class PDP:
     Port 5432 is default of postgres
     '''
     def __init__(self):
-        self.conn=psycopg2.connect(host="192.168.85.46",database="policies", user="postgres", password="password")
         self.PoliciesTypes=PoliciesTypes(4)
         self.neo=Neo4jAPI()
+        self.policies=postgreSQL_API()
+        self.client=MongoClient('mongodb://192.168.85.46:32769/')
+        self.users=self.client.twitter.users
+        self.tweets=self.client.twitter.tweets
         return
     
     def receive_request(self,msg):
@@ -47,10 +53,9 @@ class PDP:
         #PRE-PROCESSING the request to get the QUERY
         '''
         prepare the query according to the request
-        for now, all the REQUEST_TWEET* will be admitted.
-        in a recent future, it will evolve into two types:
-            - based on a heuristic (if it's in the threshold, request accepted): 0 to 1
-            - based on a target (user)
+        for all REQUEST_TWEET*, it's based on a heuristic (if it's in the threshold, request accepted): 0 to 1
+        if it's a REQUEST_FOLLOW_USER, check the rules to see if it is accepted
+        if it's a first time user, give some usernames
         '''
         if msg["type"]==PoliciesTypes.REQUEST_TWEET_LIKE:
             '''
@@ -61,7 +66,11 @@ class PDP:
             tweet_entities
                 - from entities, fetch hashtags and mentions
             '''
-            return self.send_response({"response":"PERMIT"})
+            res=self.analyze_tweet_like(msg)
+            if res>0.4:
+                return self.send_response({"response":"PERMIT"})
+            else:
+                return self.send_response({"response":"DENY"})
         elif msg["type"]==PoliciesTypes.REQUEST_TWEET_RETWEET:
             '''
             bot_id
@@ -71,7 +80,11 @@ class PDP:
             tweet_entities
                 - from entities, fetch hashtags and mentions
             '''
-            return self.send_response({"response":"PERMIT"})
+            res=self.analyze_tweet_retweet(msg)
+            if res>0.6:
+                return self.send_response({"response":"PERMIT"})
+            else:
+                return self.send_response({"response":"DENY"})
         elif msg["type"]==PoliciesTypes.REQUEST_TWEET_REPLY:
             '''
             bot_id 
@@ -83,6 +96,7 @@ class PDP:
             tweet_in_reply_to_user_id_str
             tweet_in_reply_to_screen_name
             '''
+            res=self.analyze_tweet_reply(msg)
             return self.send_response({"response":"PERMIT"})
         elif msg["type"]==PoliciesTypes.REQUEST_FOLLOW_USER:
             '''
@@ -107,40 +121,7 @@ class PDP:
                 2.3- No one follows tweet_user_id:
                         return PERMIT
             '''
-            query="select params from policies,filter where policies.active=TRUE and policies.filter=filter.id and filter.name=Target"
-            cur=self.conn.cursor()
-            try:
-                '''
-                Rule 1
-                '''
-                cur.execute(query)
-                DB_val=cur.fetchall()
-                self.conn.commit()
-                
-                #probably don't need this postProcess, since all logic is handled here
-                #data=self.postProcess(num,DB_val)
-                
-                #apply the heuristics here
-                for i in DB_val:
-                    params=i[0]
-                    if params[0]==msg["tweet_user_id"]:
-                        for j in params[1:]:
-                            if j==msg["bot_id"]:
-                                return self.send_response({"response":"PERMIT"})
-                '''
-                Rule 2
-                '''
-                if self.neo.search_relationship(msg["tweet_user_id"],msg["bot_id"]):
-                    return self.send_response({"response":"DENY"})
-                #Rule 2.2 not implemented (maybe in the future?)
-                else:
-                    return self.send_response({"response":"PERMIT"})
-            except psycopg2.Error:
-                self.conn.rollback()
-                evaluate_answer=False
-            finally:
-                cur.close()
-                self.conn.close()
+            evaluate_answer=self.analyze_follow_user(msg)
 
         elif msg["type"]==PoliciesTypes.FIRST_TIME:
             '''
@@ -162,29 +143,11 @@ class PDP:
             return self.send_response({"response":"PERMIT"})
         else:
             return self.send_response({"response":"DENY"})
-        
-    def postProcess(self,num,DB_val):
-        if num==1:
-            d={}
-            ll=[]
-            for i in DB_val:
-                ll.append(i)
-            d[i[0]]=ll
-            return d
-        elif num>1:
-            d={}
-            for i in DB_val:
-                ll=[]
-                for j in i:
-                    ll.append(j)
-                d[i[0]]=ll            
-            return d
-        else:
-            return self.send_response({"response":"DENY"})
             
     def send_response(self,msg):
         #json dumps da decisão
         message=json.dumps(msg)
+        self.policies.closeConnection()
         return message #pep.receive_response(message)
     
     def get_suggested_users(self):
@@ -204,3 +167,213 @@ class PDP:
                 if i==j:
                     usernames.remove(j)
         return usernames
+    
+    def analyze_follow_user(self,msg):
+        '''
+        Rule 1
+        '''
+        DB_val=self.policies.getPoliciesParams()
+        if DB_val=='ERROR':
+            return self.send_response({"response":"DENY"})
+        #probably don't need postProcess, since all logic is handled here
+        
+        #apply the heuristics here
+        for i in DB_val:
+            params=i[0]
+            if params[0]==msg["tweet_user_id"]:
+                for j in params[1:]:
+                    if j==msg["bot_id"]:
+                        return self.send_response({"response":"PERMIT"})
+        '''
+        Rule 2
+        '''
+        if self.neo.search_relationship(msg["tweet_user_id"],msg["bot_id"]):
+            return self.send_response({"response":"DENY"})
+        #Rule 2.2 not implemented (maybe in the future?)
+        else:
+            return self.send_response({"response":"PERMIT"})
+    
+    def analyze_tweet_like(self,msg):
+        threshold=0
+        '''
+        msg={
+            bot_id
+            user_id 
+            tweet_id
+            tweet_text
+            tweet_entities- from entities, fetch hashtags and mentions
+            }
+        0.4 to pass
+        follows the user: +0.3
+        policy target on that user: +0.4
+        retweeted that tweet: +0.2
+        policy keywords checks out: +0.2
+        already liked too many tweets from that user in a row (2 || 3): -0.35
+        already liked too many tweets from that user in a row (4 || 5): -0.65
+        '''
+        follow=self.neo.search_relationship(msg["user_id"],msg["bot_id"])
+        if follow:
+            threshold+=0.3
+        lista=self.policies.getPoliciesByBot(msg["bot_id"])
+        val=False
+        for i in lista:
+            if i["filter"]=="Target":
+                '''
+                analisar tweet_entities, user_id
+                iterate over tweet_entities.user_mentions.id
+                '''
+                val=False
+                params=i["params"]
+                #if mentioned user is in the parameters, then ++
+                for j in msg["tweet_entities"]["user_mentions"]:
+                    if j["id_str"] in params:
+                        val=True
+                        break
+                #if user is in the parameters, then ++
+                if msg["user_id"] in params:
+                        val=True
+                
+                if val:
+                    threshold+=0.4        
+            elif i["filter"]=="Keywords":
+                '''
+                analisar tweet_entities, tweet_text
+                iterate over tweet_entities.hashtags.text
+                '''
+                val=False
+                for j in msg["tweet_entities"]["hashtags"]:
+                    if j["text"] in i["params"]:
+                        val=True
+                        break
+                for k in i["params"]:
+                    if k in msg["tweet_text"]:
+                        val=True
+                        break
+                if val:
+                    threshold+=0.2
+        val=False
+        logs=self.policies.searchLog(msg["bot_id"])
+        for i in range(len(logs)-1):
+            action=logs[i]["action"]
+            if "TWEET RETWEETED" in action:
+                sp=action.split("ID: ")
+                spp=sp[1].split(" )")
+                id_tweet=spp[0]
+                if id_tweet==msg["tweet_id"]:
+                    val=True
+                    break
+        if val:
+            if threshold==0.9:
+                threshold=1
+            else:
+                threshold+=0.2
+
+        for j in range(len(logs)-1):
+            action=logs[i]["action"]
+            if "TWEET LIKED" in action:
+                sp=action.split("ID: ")
+                spp=sp[1].split(" )")
+                id_tweet=spp[0]
+                
+                id_user=self.tweets.find_one({"id":id_tweet},{"user":1,"_id":0})
+                if msg["user_id"]==id_user:
+                    date=logs[i]["timestamp"]
+                    now=datetime.datetime.now()
+                    if (now-date).seconds<30:
+                        threshold-=0.65
+                    elif (now-date).seconds<60:
+                        threshold-=0.35
+        return threshold
+
+    def analyze_tweet_retweet(self,msg):
+        threshold=0
+        '''
+        msg={
+            bot_id
+            user_id 
+            tweet_id
+            tweet_text
+            tweet_entities- from entities, fetch hashtags and mentions
+            }
+        0.6 to pass
+        follows the user: +0.3
+        policy target on that user: +0.4
+        liked that tweet: +0.3
+        policy keywords checks out: +0.2
+        already retweeted recently from that user (1 || 2) (12h): -0.5
+        '''
+        follow=self.neo.search_relationship(msg["user_id"],msg["bot_id"])
+        if follow:
+            threshold+=0.3
+        lista=self.policies.getPoliciesByBot(msg["bot_id"])
+        val=False
+        for i in lista:
+            if i["filter"]=="Target":
+                '''
+                analisar tweet_entities, user_id
+                iterate over tweet_entities.user_mentions.id
+                '''
+                val=False
+                params=i["params"]
+                #if mentioned user is in the parameters, then ++
+                for j in msg["tweet_entities"]["user_mentions"]:
+                    if j["id_str"] in params:
+                        val=True
+                        break
+                #if user is in the parameters, then ++
+                if msg["user_id"] in params:
+                        val=True
+                
+                if val:
+                    threshold+=0.4        
+            elif i["filter"]=="Keywords":
+                '''
+                analisar tweet_entities, tweet_text
+                iterate over tweet_entities.hashtags.text
+                '''
+                val=False
+                for j in msg["tweet_entities"]["hashtags"]:
+                    if j["text"] in i["params"]:
+                        val=True
+                        break
+                for k in i["params"]:
+                    if k in msg["tweet_text"]:
+                        val=True
+                        break
+                if val:
+                    threshold+=0.2
+        val=False
+        logs=self.policies.searchLog(msg["bot_id"])
+        for i in range(len(logs-1)):
+            action=logs[i]["action"]
+            if "TWEET LIKED" in action:
+                sp=action.split("ID: ")
+                spp=sp[1].split(" )")
+                id_tweet=spp[0]
+                if id_tweet==msg["tweet_id"]:
+                    val=True
+                    break
+        if val:
+            if threshold==0.9:
+                threshold=1
+            else:
+                threshold+=0.3
+        
+        for j in range(len(logs)-1):
+            action=logs[i]["action"]
+            if "TWEET RETWEETED" in action:
+                sp=action.split("ID: ")
+                spp=sp[1].split(" )")
+                id_tweet=spp[0]
+                
+                id_user=self.tweets.find_one({"id":id_tweet},{"user":1,"_id":0})
+                if msg["user_id"]==id_user:
+                    date=logs[i]["timestamp"]
+                    now=datetime.datetime.now()
+                    #12h -> 43200s
+                    if (now-date).seconds<43200:
+                        threshold-=0.5
+
+        return threshold
+    def analyze_tweet_reply(self,msg):
+        return "not implemented yet"
