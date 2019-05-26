@@ -25,7 +25,7 @@ class PDP:
     def __init__(self):
         self.PoliciesTypes=PoliciesTypes(4)
         self.neo=Neo4jAPI()
-        self.policies=postgreSQL_API()
+        self.policies=postgreSQL_API("policies")
         self.client=MongoClient('mongodb://192.168.85.46:32769/')
         self.users=self.client.twitter.users
         self.tweets=self.client.twitter.tweets
