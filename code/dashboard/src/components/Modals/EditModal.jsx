@@ -15,7 +15,7 @@ class EditModal extends React.Component {
         params: [],
     }
     this.handleTags = this.handleTags.bind(this);
-    this.handleSave = this.handleSave.bind(this);
+    this.handleUpdate = this.handleUpdate.bind(this);
   }
   componentDidMount() {
     this.setState({

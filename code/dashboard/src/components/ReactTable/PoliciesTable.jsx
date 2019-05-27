@@ -1,6 +1,7 @@
 import React from "react";
 // react component for creating dynamic tables
 import ReactTable from 'react-table'
+import Switch from 'react-bootstrap-switch';
 import Button from "components/CustomButton/CustomButton.jsx";
 // core components
 import {
@@ -80,8 +81,8 @@ class PoliciesTable extends React.Component {
         this.props.edit(id)
     }
 
-    handleActivate = (id) => {
-        this.props.activate(id)
+    handleActivate = (id,state) => {
+        this.props.activate(id,state)
     }
 
     render() {
@@ -99,35 +100,28 @@ class PoliciesTable extends React.Component {
                                     params: policie['params'],
                                     actions: (
                                         <div className="actions-center">
-                                          <Button
-                                            onClick={() => this.handleActivate(policie['id_policy'])}
-                                            color="info"
-                                            size="sm"
-                                            round
-                                            icon
-                                          >
-                                            {
-                                                policie['active'] ? <i class="fas fa-check-circle"></i> : <i class="fas fa-circle"></i>
-                                            }
-                                          </Button>{" "}
-                                          <Button
-                                            onClick={() => this.handleEdit(policie['id_policy'])}
-                                            color="warning"
-                                            size="sm"
-                                            round
-                                            icon
-                                          >
-                                            <i className="fa fa-edit" />
-                                          </Button>{" "}
-                                          <Button
-                                            onClick={() => this.handleRemove(policie['id_policy'])}
-                                            color="danger"
-                                            size="sm"
-                                            round
-                                            icon
-                                          >
-                                            <i class="fas fa-trash-alt"></i>
-                                          </Button>{" "}
+                                            <Switch
+                                                onChange={(state) => this.handleActivate(policie['id_policy'],state)}
+                                                defaultValue={policie['active']}
+                                            />{" "}
+                                            <Button
+                                                onClick={() => this.handleEdit(policie['id_policy'])}
+                                                color="warning"
+                                                size="sm"
+                                                round
+                                                icon
+                                            >
+                                                <i className="fa fa-edit" />
+                                            </Button>{" "}
+                                            <Button
+                                                onClick={() => this.handleRemove(policie['id_policy'])}
+                                                color="danger"
+                                                size="sm"
+                                                round
+                                                icon
+                                            >
+                                                <i class="fas fa-trash-alt"></i>
+                                            </Button>{" "}
                                         </div>
                                       ),
                                 })

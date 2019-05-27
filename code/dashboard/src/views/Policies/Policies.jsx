@@ -11,11 +11,17 @@ class Policies extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-        modalTooltips: false,
-        policies: []
+        modalAdd: false,
+        modalEdit: false,
+        policies: [],
+        editTools:[]
     };
-    this.toggleModalTooltips = this.toggleModalTooltips.bind(this);
+    this.toggleModalAdd = this.toggleModalAdd.bind(this);
+    this.toggleModalEdit = this.toggleModalEdit.bind(this);
     this.savePolicy = this.savePolicy.bind(this);
+    this.editPolicy = this.editPolicy.bind(this);
+    this.updatePolicy = this.updatePolicy.bind(this);
+    this.activatePolicy = this.activatePolicy.bind(this);
     this.removePolicy = this.removePolicy.bind(this);
     this.notify = this.notify.bind(this);
     this.refresh = this.refresh.bind(this);
@@ -29,9 +35,15 @@ class Policies extends React.Component {
    });
   }
 
-  toggleModalTooltips() {
+  toggleModalAdd() {
     this.setState({
-        modalTooltips: !this.state.modalTooltips
+        modalAdd: !this.state.modalAdd
+    });
+  }
+
+  toggleModalEdit() {
+    this.setState({
+        modalEdit: !this.state.modalEdit
     });
   }
 
@@ -58,7 +70,7 @@ class Policies extends React.Component {
     console.log(tipo)
     switch(tipo){
       case "ADD":
-        this.toggleModalTooltips()
+        this.toggleModalAdd()
         this.notify("Policy Added with "+msg)
         this.componentDidMount()
         break
@@ -67,12 +79,12 @@ class Policies extends React.Component {
         this.componentDidMount()
         break
       case "EDIT":
-        this.toggleModalTooltips()
+        this.toggleModalAdd()
         this.notify("Policy Edited with "+msg)
         this.componentDidMount()
         break
       case "ERROR":
-        this.toggleModalTooltips()
+        this.toggleModalAdd()
         this.notify("ERROR: "+msg)
         this.componentDidMount()
         break
@@ -93,6 +105,19 @@ class Policies extends React.Component {
         });
   }
 
+  editPolicy(id) {
+    console.log(this.state.modalEdit)
+    this.setState({
+      modalEdit: !this.state.modalEdit
+    });
+    axios.get('http://192.168.85.182:5000/policies/'+id)
+    .then(res => {
+        const editTools = res.data;
+        this.setState({ editTools });
+   });
+  }
+
+
   updatePolicy(id) {
     //EXEMPLO
     axios.delete('http://192.168.85.182:5000/policies/remove/'+id)
@@ -101,8 +126,9 @@ class Policies extends React.Component {
         });
   }
 
-  activatePolicy(id) {
+  activatePolicy(id,state) {
     //EXEMPLO
+    console.log(state)
     axios.delete('http://192.168.85.182:5000/policies/remove/'+id)
         .then(response => {
           this.refresh(response.status==200 ? "REMOVE" : "ERROR",response.data['Message'])
@@ -127,13 +153,13 @@ class Policies extends React.Component {
               <PoliciesTable dados={this.state.policies} remove={this.removePolicy} edit={this.editPolicy} activate={this.activatePolicy}/>
             </Col>
             <Col xs={12} md={12} className="text-right">
-              <Button icon round color="primary" onClick={this.toggleModalTooltips} size="md" size="lg">
+              <Button icon round color="primary" onClick={this.toggleModalAdd} size="md" size="lg">
                 <i class="fas fa-2x fa-plus"></i>
               </Button>
             </Col>
           </Row>
-          <AddModal status={this.state.modalTooltips} handleClose={this.toggleModalTooltips} handleSave={this.savePolicy}></AddModal>
-          <EditModal status={this.state.modalTooltips} handleClose={this.toggleModalTooltips} handleUpdate={this.updatePolicy}></EditModal>
+          <AddModal status={this.state.modalAdd} handleClose={this.toggleModalAdd} handleSave={this.savePolicy}></AddModal>
+          <EditModal status={this.state.modalEdit} handleClose={this.toggleModalEdit} handleUpdate={this.updatePolicy} info={this.state.editTools}></EditModal>
         </div>
       </div>
     );
