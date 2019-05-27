@@ -22,14 +22,13 @@ class AddModal extends React.Component {
     this.handleSave = this.handleSave.bind(this);
   }
   componentDidMount() {
-    axios.get('/twitter/bots')
+    axios.get('http://192.168.85.182:5000/twitter/bots')
     .then(res => {
       const data = res.data;
       const options = []
       data.forEach(function(bot){
         options.push({value: bot['id'], label: bot['name']})
       })
-      console.log(options)
       this.setState({ options });
     })
     this.setState({
@@ -45,27 +44,22 @@ class AddModal extends React.Component {
 
   handleTags(params) {
     this.setState({params});
-    console.log("social: "+this.state.params)
   }
 
   handleName = event => {
     this.setState({ name : event.target.value });
-    console.log("name: "+this.state.name)
   }
 
   handleSocial = event => {
     this.setState({social: event.target.value});
-    console.log("name: "+this.state.social)
   }
 
   handleFilter = event => {
     this.setState({ filter : event.target.value });
-    console.log("filter: "+this.state.filter)
   }
   
   handleBots = (bots) => {
     this.setState({ bots });
-    console.log(`Option selected:`, bots);
   }
 
   handleSave() {
@@ -75,6 +69,14 @@ class AddModal extends React.Component {
     })
     const data = {API_type: this.state.social, name: this.state.name, filter: this.state.filter, params: this.state.params, bots: b}
     this.props.handleSave(data)
+    this.setState({
+      name: "",
+      social: "Twitter",
+      filter: "Keywords",
+      params: [],
+      bots: null,
+      options: [],
+    })
   }
 
   render() {

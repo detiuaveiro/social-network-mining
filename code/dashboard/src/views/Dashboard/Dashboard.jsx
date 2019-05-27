@@ -27,7 +27,7 @@ class Dashboard extends React.Component {
   };
 
   componentDidMount() {
-    axios.get('/twitter/stats')
+    axios.get('http://192.168.85.182:5000/twitter/stats')
       .then(res => {
         const twitter_stats = res.data;
         this.setState({ twitter_stats });

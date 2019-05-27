@@ -1,7 +1,7 @@
 import React from "react";
 import axios from 'axios';
 
-import {FormInputs, CardAuthor, CardNumbers, Tweet, UserInfo, PanelHeader, LogsTable, PoliciesTable} from "components";
+import {FormInputs, CardAuthor, CardNumbers, Tweet, UserInfo, PanelHeader, LogsTable, PoliciesTableBot} from "components";
 import {Nav, NavItem, NavLink, Card, CardHeader, CardBody, TabPane, TabContent, Row, Col, Badge } from 'reactstrap';
 
 class User extends React.Component {
@@ -16,22 +16,22 @@ class User extends React.Component {
   componentDidMount() {
     const url = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)
 
-    axios.get('/twitter/users/'+url)
+    axios.get('http://192.168.85.182:5000/twitter/users/'+url)
       .then(res => {
         const profile_data = res.data[0];
         this.setState({ profile_data });
       })
-    axios.get('/twitter/users/'+url+'/following')
+    axios.get('http://192.168.85.182:5000/twitter/users/'+url+'/following')
       .then(res => {
         const following = res.data;
         this.setState({ following });
       })
-    axios.get('/twitter/users/'+url+'/followers')
+    axios.get('http://192.168.85.182:5000/twitter/users/'+url+'/followers')
       .then(res => {
         const followers = res.data;
         this.setState({ followers });
       })
-    axios.get('/twitter/users/'+url+'/tweets')
+    axios.get('http://192.168.85.182:5000/twitter/users/'+url+'/tweets')
       .then(res => {
         const tweets = res.data;
         console.log(tweets)
@@ -197,7 +197,7 @@ class User extends React.Component {
                                 className={this.state.activeTab === '1' ? 'active':''}
                                 onClick={() => { this.toggle('1'); }}
                                 >
-                                  Tweets
+                                  Statistics
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -205,7 +205,7 @@ class User extends React.Component {
                                 className={this.state.activeTab === '2' ? 'active':''}
                                 onClick={() => { this.toggle('2'); }}
                             >
-                              Followers
+                              Replies
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -213,7 +213,7 @@ class User extends React.Component {
                                 className={this.state.activeTab === '3' ? 'active':''}
                                 onClick={() => { this.toggle('3'); }}
                             >
-                              Following
+                              Followers
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -221,7 +221,7 @@ class User extends React.Component {
                                 className={this.state.activeTab === '4' ? 'active':''}
                                 onClick={() => { this.toggle('4'); }}
                             >
-                              Statistics
+                              Following
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -244,7 +244,14 @@ class User extends React.Component {
                 </CardHeader>
                 <CardBody>
                     <TabContent activeTab={this.state.activeTab} className="text-center">
-                        <TabPane tabId="1">
+                      <TabPane tabId="1">
+                          <Col xs={12} md={12}>
+                            <h5 className="text-muted text-center">
+                              Not Ready Yet
+                            </h5>
+                          </Col>
+                        </TabPane>
+                        <TabPane tabId="2">
                           <Row>
                             {this.anyTweets()
                               ? this.state.tweets.map(tweet => 
@@ -260,7 +267,7 @@ class User extends React.Component {
                             }
                           </Row>
                         </TabPane>
-                        <TabPane tabId="2">
+                        <TabPane tabId="3">
                           <Row>
                           {this.anyFollowers()
                               ? this.state.followers.map(followers => 
@@ -276,7 +283,7 @@ class User extends React.Component {
                               }
                           </Row>
                         </TabPane>
-                        <TabPane tabId="3">
+                        <TabPane tabId="4">
                           <Row>
                             {this.anyFollowing()
                               ? this.state.following.map(following => 
@@ -292,18 +299,11 @@ class User extends React.Component {
                               }
                           </Row>
                         </TabPane>
-                        <TabPane tabId="4">
-                          <Col xs={12} md={12}>
-                            <h5 className="text-muted text-center">
-                              Not Ready Yet
-                            </h5>
-                          </Col>
-                        </TabPane>
                         <TabPane tabId="5">
-                          <PoliciesTable userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
+                          <PoliciesTableBot userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
                         </TabPane>
                         <TabPane tabId="6">
-                            <LogsTable userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
+                          <LogsTable userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
                         </TabPane>
                     </TabContent>
                 </CardBody>

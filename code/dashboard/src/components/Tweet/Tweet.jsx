@@ -1,8 +1,6 @@
 import React from "react";
 import { Card, CardHeader, CardBody, Nav, NavItem, NavLink, Row, Col, Badge } from 'reactstrap';
 import {CardInteractions } from 'components';// used for making the prop types of this component
-//import PropTypes from "prop-types";
-import userAvatar from "assets/img/mike.jpg";
 
 class Tweet extends React.Component {
   render() {

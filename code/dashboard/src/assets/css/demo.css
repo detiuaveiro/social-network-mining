@@ -442,7 +442,7 @@
   
   .ReactTable .rt-thead .rt-th, .ReactTable .rt-thead .rt-td {
     font-size: 1.063rem;
-    text-align: left;
+    text-align: center;
     font-weight: 300;
     line-height: 2.5em !important;
     padding: 5px 5px;

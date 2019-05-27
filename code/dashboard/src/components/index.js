@@ -34,9 +34,13 @@ import UserInfo from './User/User';
 
 import AddModal from './Modals/AddModal';
 
+import EditModal from './Modals/EditModal';
+
 import LogsTable from './ReactTable/LogsTable';
 
 import PoliciesTable from './ReactTable/PoliciesTable';
+
+import PoliciesTableBot from './ReactTable/PoliciesTableBot';
 
 export {
     // CardElements
@@ -76,8 +80,12 @@ export {
     UserInfo,
     //AddModal
     AddModal,
+    //EditModal
+    EditModal,
     //LogsTables
     LogsTable,
     //PoliciesTables
     PoliciesTable,
+    //PoliciesTablesBot
+    PoliciesTableBot,
 };

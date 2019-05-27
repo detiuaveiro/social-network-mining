@@ -3,16 +3,9 @@ import React from "react";
 import ReactTable from 'react-table'
 
 // core components
-import { Button, Checkbox } from "components";
 import {
     Card,
     CardBody,
-    Col,
-    Form,
-    FormGroup,
-    Label,
-    Input,
-    Modal, ModalHeader, ModalBody, ModalFooter,
 } from "reactstrap";
 
 import axios from 'axios';
@@ -44,9 +37,9 @@ class LogsTable extends React.Component {
     }
 
     componentDidMount() {
-        const url = '/twitter/bots/'+this.state.user_id+'/logs'
+        const url = 'http://192.168.85.182:5000/twitter/bots/'+this.state.user_id+'/logs'
         console.log(url)
-        axios.get('/twitter/bots/'+this.state.user_id+'/logs')
+        axios.get('http://192.168.85.182:5000/twitter/bots/'+this.state.user_id+'/logs')
         .then(res => {
            console.log(res.data)
            const logs = res.data;

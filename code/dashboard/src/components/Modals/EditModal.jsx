@@ -4,7 +4,7 @@ import TagsInput from 'react-tagsinput';
 import{ Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input, FormText, Col, Row } from 'reactstrap';
 import PropTypes from "prop-types";
 
-class AddModal extends React.Component {
+class EditModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -49,9 +49,9 @@ class AddModal extends React.Component {
     console.log("filter: "+this.state.filter)
   }
   
-  handleSave() {
+  handleUpdate() {
     const data = {API_type: this.state.social, name: this.state.name, filter: this.state.filter, params: this.state.params}
-    this.props.handleSave(data)
+    this.props.handleUpdate(data)
   }
 
   render() {
@@ -118,7 +118,7 @@ class AddModal extends React.Component {
             <Button color="secondary" onClick={this.props.handleClose}>
                 Close
             </Button>
-            <Button color="primary" onClick={this.handleSave}>
+            <Button color="primary" onClick={this.handleUpdate}>
                 Add
             </Button>
         </ModalFooter>
@@ -127,8 +127,8 @@ class AddModal extends React.Component {
   }
 }
 
-AddModal.propTypes = {
+EditModal.propTypes = {
   label: PropTypes.node
 };
 
-export default AddModal;
+export default EditModal;

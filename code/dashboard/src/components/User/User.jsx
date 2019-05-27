@@ -11,7 +11,7 @@ class UserInfo extends React.Component {
   }
 
   componentDidMount() {
-    axios.get('/twitter/users/'+this.props.userid)
+    axios.get('http://192.168.85.182:5000/twitter/users/'+this.props.userid)
       .then(res => {
         console.log(res.data)
         const user_info = res.data[0];

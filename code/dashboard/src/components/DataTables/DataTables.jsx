@@ -44,7 +44,7 @@ class ReactTables extends React.Component {
     }
 
     componentDidMount() {
-        axios.get('/policies')
+        axios.get('http://192.168.85.182:5000/policies')
         .then(res => {
             console.log(res.data)
             const policies = res.data;
@@ -53,7 +53,7 @@ class ReactTables extends React.Component {
     }
 
     updatePolicy(policy) {
-        axios.post("/policies/update", { policy })
+        axios.post("http://192.168.85.182:5000/policies/update", { policy })
             .then(
                 res => {
                     console.log(res);
@@ -65,7 +65,7 @@ class ReactTables extends React.Component {
     clickRemovePolicy(e) {
         let id = e.currentTarget.parentElement.parentElement.id;
         console.log(id);
-        axios.delete('/policies/remove/' + id)
+        axios.delete('http://192.168.85.182:5000/policies/remove/' + id)
             .then(res => {
                 console.log(res);
                 this.loadPolicies();

@@ -1,12 +1,10 @@
 import React from "react";
 import {
-  Card,
-  CardBody,
   Row,
   Col,
 } from "reactstrap";
 import NotificationAlert from "react-notification-alert";
-import { PanelHeader, DataTables, AddModal, Button } from "components";
+import { PanelHeader, AddModal, EditModal, Button, PoliciesTable } from "components";
 import axios from "axios";
 
 class Policies extends React.Component {
@@ -14,10 +12,21 @@ class Policies extends React.Component {
     super(props);
     this.state = {
         modalTooltips: false,
+        policies: []
     };
     this.toggleModalTooltips = this.toggleModalTooltips.bind(this);
     this.savePolicy = this.savePolicy.bind(this);
+    this.removePolicy = this.removePolicy.bind(this);
     this.notify = this.notify.bind(this);
+    this.refresh = this.refresh.bind(this);
+  }
+
+  componentDidMount(){
+    axios.get('http://192.168.85.182:5000/policies')
+    .then(res => {
+        const policies = res.data;
+        this.setState({ policies });
+   });
   }
 
   toggleModalTooltips() {
@@ -45,21 +54,59 @@ class Policies extends React.Component {
     this.refs.notificationAlert.notificationAlert(options);
   }
 
-  clickAddPolicy(e) {
-    this.modalRef.current.toggle();
+  refresh(tipo,msg){
+    console.log(tipo)
+    switch(tipo){
+      case "ADD":
+        this.toggleModalTooltips()
+        this.notify("Policy Added with "+msg)
+        this.componentDidMount()
+        break
+      case "REMOVE":
+        this.notify("Policy Removed with "+msg)
+        this.componentDidMount()
+        break
+      case "EDIT":
+        this.toggleModalTooltips()
+        this.notify("Policy Edited with "+msg)
+        this.componentDidMount()
+        break
+      case "ERROR":
+        this.toggleModalTooltips()
+        this.notify("ERROR: "+msg)
+        this.componentDidMount()
+        break
+    }
   }
 
   savePolicy(data) {
-    axios.post('/policies/add', data)
-      .then(function (response) {
-        console.log(response);
-        this.notify("WORKS")
+    axios.post('http://192.168.85.182:5000/policies/add', data)
+      .then((response) => {
+        this.refresh(response.status==200 ? "ADD" : "ERROR",response.data['Message'])
       })
-      .catch(function (error) {
-        console.log(error);
-      })
-      this.notify("WORKING")
+  }
 
+  removePolicy(id) {
+    axios.delete('http://192.168.85.182:5000/policies/remove/'+id)
+        .then(response => {
+          this.refresh(response.status==200 ? "REMOVE" : "ERROR",response.data['Message'])
+        });
+  }
+
+  updatePolicy(id) {
+    //EXEMPLO
+    axios.delete('http://192.168.85.182:5000/policies/remove/'+id)
+        .then(response => {
+          this.refresh(response.status==200 ? "REMOVE" : "ERROR",response.data['Message'])
+        });
+  }
+
+  activatePolicy(id) {
+    //EXEMPLO
+    axios.delete('http://192.168.85.182:5000/policies/remove/'+id)
+        .then(response => {
+          this.refresh(response.status==200 ? "REMOVE" : "ERROR",response.data['Message'])
+        });
   }
 
   render() {
@@ -77,11 +124,7 @@ class Policies extends React.Component {
         <div className="content">
           <Row>
             <Col xs={12} md={12}>
-              <Card className="card-tasks">
-                <CardBody>
-                  <DataTables ref={this.dataTablesRef} />
-                </CardBody>
-              </Card>
+              <PoliciesTable dados={this.state.policies} remove={this.removePolicy} edit={this.editPolicy} activate={this.activatePolicy}/>
             </Col>
             <Col xs={12} md={12} className="text-right">
               <Button icon round color="primary" onClick={this.toggleModalTooltips} size="md" size="lg">
@@ -90,6 +133,7 @@ class Policies extends React.Component {
             </Col>
           </Row>
           <AddModal status={this.state.modalTooltips} handleClose={this.toggleModalTooltips} handleSave={this.savePolicy}></AddModal>
+          <EditModal status={this.state.modalTooltips} handleClose={this.toggleModalTooltips} handleUpdate={this.updatePolicy}></EditModal>
         </div>
       </div>
     );

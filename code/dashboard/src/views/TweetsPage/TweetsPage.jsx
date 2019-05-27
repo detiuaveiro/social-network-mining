@@ -10,7 +10,7 @@ class User extends React.Component {
   };
 
   componentDidMount() {
-    axios.get('/twitter/tweets')
+    axios.get('http://192.168.85.182:5000/twitter/tweets')
       .then(res => {
         const tweets = res.data;
         this.setState({ tweets });
