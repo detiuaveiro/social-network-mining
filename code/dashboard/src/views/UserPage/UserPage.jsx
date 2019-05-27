@@ -1,7 +1,7 @@
 import React from "react";
 import axios from 'axios';
 
-import {FormInputs, CardAuthor, CardNumbers, Tweet, UserInfo, PanelHeader, ReactTables} from "components";
+import {FormInputs, CardAuthor, CardNumbers, Tweet, UserInfo, PanelHeader, LogsTable, PoliciesTable} from "components";
 import {Nav, NavItem, NavLink, Card, CardHeader, CardBody, TabPane, TabContent, Row, Col, Badge } from 'reactstrap';
 
 class User extends React.Component {
@@ -293,13 +293,17 @@ class User extends React.Component {
                           </Row>
                         </TabPane>
                         <TabPane tabId="4">
-                            <p>Not ready 4</p>
+                          <Col xs={12} md={12}>
+                            <h5 className="text-muted text-center">
+                              Not Ready Yet
+                            </h5>
+                          </Col>
                         </TabPane>
                         <TabPane tabId="5">
-                            <p>Not ready 5</p>
+                          <PoliciesTable userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
                         </TabPane>
                         <TabPane tabId="6">
-                            <ReactTables userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}></ReactTables>
+                            <LogsTable userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
                         </TabPane>
                     </TabContent>
                 </CardBody>

@@ -41,7 +41,6 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "proxy": "http://192.168.85.182:5000/",
   "devDependencies": {
     "@types/jquery": "^3.3.29"
   }

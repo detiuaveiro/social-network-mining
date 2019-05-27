@@ -20,7 +20,7 @@ class BotsPage extends React.Component {
   };
 
   componentDidMount() {
-    axios.get('/twitter/bots')
+    axios.get('http://192.168.85.182:5000/twitter/bots')
       .then(res => {
         const twitter_bots = res.data;
         this.setState({ twitter_bots });

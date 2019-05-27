@@ -1,10 +1,12 @@
 from flask import Flask,url_for, Response, jsonify, json, request
+from flask_cors import CORS
 from Mongo.mongo_flask import AppMongo
 from Postgres.postgreSQL import postgreSQL_API
 from Neo4j.neo4j_api import Neo4jAPI
 import ast
 
 app=Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 mongo=AppMongo(app,"users")
 mongo_t=AppMongo(app,"tweets")
