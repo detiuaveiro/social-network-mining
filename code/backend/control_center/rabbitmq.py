@@ -17,13 +17,18 @@ class Rabbitmq():
         """
         Create a Rabbit MQ instance which represents a connection to a Rabbit MQ server
 
-        parameters:
-        -------
-        host : (string) hostname
-        port : (number) port number
-        vhost : (string) virtual host used to avoid conflicts between instances
-        username : (string) username
-        password : (string) password
+        Parameters
+        ----------
+        host : str
+            Hostname
+        port : int
+            Port Number
+        vhost : str
+            Virtual host used to avoid conflicts between instances
+        username : str
+            Username for authentication
+        password : str
+            Password for authentication
         """
 
         self.host = host
