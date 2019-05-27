@@ -331,7 +331,7 @@ class Task():
             A dictionary containing the id of the bot and the tweet object as the data
         """
         log.info("TASK: ERROR_BOT")           
-        self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "WARNING: BOT WITH THE FOLLOWING ID "+str(message['bot_id'])+" GAVE THIS ERROR "+str(message['data']['msm'])})
+        self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "WARNING: BOT WITH THE FOLLOWING ID "+str(message['bot_id'])+" GAVE THIS ERROR "+str(message['data']['msg'])})
 
     def Find_Followers(self, message):
         """
