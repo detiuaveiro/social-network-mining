@@ -13,7 +13,34 @@ handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
 
-class Task():
+
+def send_reply(*, bot_id, message_type, params):
+    """
+
+    Parameters
+    ----------
+    bot_id :
+        Id of the bot to reply to
+    message_type : ResponseTypes
+        Type of the message
+    params : dict
+        Arguments of the message
+    """
+    log.info(f"Sending {message_type.name} to Bot with ID: <{bot_id}>")
+    log.debug(f"Content: {params}")
+    payload = {
+        "type": message_type,
+        "params": params
+    }
+    try:
+        conn = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",
+                                 username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
+        conn.send(routing_key='tasks.twitter.' + bot_id, message=payload)
+        conn.close()
+    except Exception as e:
+        log.error("FAILED TO SEND MESSAGE")
+
+class Task:
     """Class which represents a Task for a bot to perform."""
 
     def __init__(self):
@@ -146,12 +173,8 @@ class Task():
         if (result==1):
             log.info("TWEET ACCEPTED TO BE LIKED")
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE LIKED"})
-            try:
-                self.rabbit = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
-                self.rabbit.send(routing_key='tasks.twitter.'+message['bot_id'],message={"type": ResponseTypes.LIKE_TWEETS, "params": message['data']['id']})
-                self.rabbit.close()
-            except:
-                log.info("FAILED TO SEND RESPONSE")
+            send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.RETWEET_TWEETS,
+                       params=message['data']['id'])
         else:
             log.info("TWEET NOT ACCEPTED TO BE LIKED")
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE LIKED"})
@@ -178,12 +201,8 @@ class Task():
         if (result==1):
             log.info("TWEET ACCEPTED TO BE RETWEETED")
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE RETWEETED"})
-            try:
-                self.rabbit = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
-                self.rabbit.send(routing_key='tasks.twitter.'+message['bot_id'],message={"type": ResponseTypes.RETWEET_TWEETS,"params": message['data']['id']})
-                self.rabbit.close()
-            except:
-                log.info("FAILED TO SEND RESPONSE")
+            send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.RETWEET_TWEETS,
+                       params=message['data']['id'])
         else:
             log.info("TWEET NOT ACCEPTED TO BE RETWEETED")
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE RETWEETED"})
@@ -213,12 +232,8 @@ class Task():
         if (result==1):
             log.info("TWEET ALLOWED TO BE REPLIED")
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE REPLIED"})
-            try:
-                self.rabbit = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
-                self.rabbit.send(routing_key='tasks.twitter.'+message['bot_id'],message={"type": ResponseTypes.REPLY_TWEETS,"params": message['data']['id']})
-                self.rabbit.close()
-            except:
-                log.info("FAILED TO SEND MESSAGE")
+            send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.REPLY_TWEETS,
+                       params=message['data']['id'])
         else:
             log.info("TWEET NOT ALLOWED TO BE REPLIED")
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE REPLIED"})
@@ -242,12 +257,9 @@ class Task():
         if (result==1):
             log.info("USER ALLOWED TO BE FOLLOWED")
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE FOLLOWED"})
-            try:
-                self.rabbit = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
-                self.rabbit.send(routing_key='tasks.twitter.'+message['bot_id'],message={"type": ResponseTypes.FOLLOW_USERS,"params": {"type": "id", "data": [message['data']['id']]}})
-                self.rabbit.close()
-            except:
-                log.info("FAILED TO SEND MESSAGE")
+            send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.FOLLOW_USERS,
+                       params={"type": "id", "data": [message['data']['id']]})
+
         else:
             log.info("USER NOT ALLOWED TO BE FOLLOWED")
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE FOLLOWED"})
@@ -278,12 +290,9 @@ class Task():
                     "type": PoliciesTypes.FIRST_TIME,
                     "bot_id": message['bot_id'],
                 })
-                try:
-                    self.rabbit = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
-                    self.rabbit.send(routing_key='tasks.twitter.'+message['bot_id'],message={"type": ResponseTypes.FOLLOW_USERS,"params": {"type": "screen_name", "data": result}})
-                    self.rabbit.close()
-                except:
-                    log.info("FAILED TO SEND MESSAGE")
+
+                send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.FOLLOW_USERS,
+                           params={"type": "screen_name", "data": result})
                 self.mongo.save('users', message['data'])
                 self.neo4j.task(Neo4jTypes.CREATE_BOT,data={"id": message['bot_id'], "name": message['data']['name'], "username": message['data']['screen_name']})
         else:
