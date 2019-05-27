@@ -30,10 +30,12 @@ class Task():
         """
         Performs a certain action based on the type of message received.
 
-        params:
-        -------
-        message_type : (enum) The type of the message.
-        message : (dict) the content of the message.
+        Parameters
+        ----------
+        message_type : MessageTypes
+            The type of the message.
+        message : dict
+            The content of the message.
         """
 
         if (message_type == MessageTypes.USER_FOLLOWED):
@@ -76,9 +78,10 @@ class Task():
         """
         Stores information about a bot following a user.
 
-        params:
-        -------
-        message : (dict) A dictionary with the user being followed and the bot following them.
+        Parameters
+        ----------
+        message : dict
+            A dictionary with the user being followed and the bot following them.
         """
         log.info("TASK: CREATE RELATION BOT -> USER")
         self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_BOT_USER,data={"bot_id": message['bot_id'], "user_id": message['data']['id']})
@@ -88,9 +91,10 @@ class Task():
         """
         Stores information about a bot liking a certain tweet.
 
-        params:
-        -------
-        message : (dict) A dictionary containing the id of the bot that liked a certain tweet and the id of the tweet
+        Parameters
+        ----------
+        message : dict
+            A dictionary containing the id of the bot that liked a certain tweet and the id of the tweet
         """
         log.info("TASK: LOGGING TWEET LIKED")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET LIKED (ID: "+str(message['data']['id'])+" )"})
@@ -99,9 +103,10 @@ class Task():
         """
         Stores information about a retweet made by a certain bot.
 
-        params:
-        -------
-        message : (dict) A dictionary containing the id of the bot and the retweet they made.
+        Parameters
+        ----------
+        message : dict
+            A dictionary containing the id of the bot and the retweet they made.
         """
         log.info("TASK: LOG TWEET RETWEETED")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET RETWEETED (ID: "+str(message['data']['id'])+" )"})
@@ -110,9 +115,10 @@ class Task():
         """
         Stores information about a reply by a bot to a certain tweet
 
-        params:
-        -------
-        message : (dict) A dictionary containing the id of the bot and the reply they made.
+        Parameters
+        ----------
+        message : dict
+            A dictionary containing the id of the bot and the reply they made.
         """
         log.info("TASK: LOG TWEET REPLIED")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET REPLIED (ID: "+str(message['data']['id'])+" )"})
@@ -121,8 +127,10 @@ class Task():
         """
         Requests the control center permission to like a certain tweet.
 
-        params:
-        -------
+        Parameters
+        ----------
+        message : dict
+            A dictionary containing the id of the bot and the id of the tweet they want to like
         """
         log.info("TASK: REQUEST LIKE TWEET")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO LIKE TWEET (ID: "+str(message['data']['id'])+" )"})
@@ -152,8 +160,10 @@ class Task():
         """
         Requests the control center permission to retweet a certain tweet.
 
-        params:
-        -------
+        Parameters
+        ----------
+        message : dict
+            A dictionary containing the id of the bot and the id of the tweet they want to retweet
         """
         log.info("TASK: REQUEST RETWEET TWEET")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO RETWEET TWEET (ID: "+str(message['data']['id'])+" )"})
@@ -182,8 +192,10 @@ class Task():
         """
         Requests the control center to reply to a certain tweet.
 
-        params:
-        -------
+        Parameters
+        ----------
+        message : dict
+            A dictionary containing the id of the bot and the id of the tweet they want to reply to
         """
         log.info("TASK: REQUEST REPLY TWEET")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO REPLY TWEET (ID: "+str(message['data']['id'])+" )"})
@@ -213,10 +225,12 @@ class Task():
 
     def Request_Follow_User(self, message):
         """
-        Requests the control center permission to folllow a certain user.
+        Requests the control center permission to follow a certain user.
 
-        params:
-        -------
+        Parameters
+        ----------
+        message : dict
+            A dictionary containing the id of the bot and the id of the user they want to follow
         """
         log.info("TASK: REQUEST FOLLOW USER")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO FOLLOW USER ("+str(message['data']['id'])+")"})
@@ -242,8 +256,10 @@ class Task():
         """
         Stores the information about a certain user.
 
-        params:
-        -------
+        Parameters
+        ----------
+        message : dict
+            A dictionary containing the id of the bot and the User object as the data
         """
         log.info("TASK: SAVE USER")
         is_bot = False
@@ -288,8 +304,10 @@ class Task():
         """
         Stores the information about a certain tweet.
 
-        params:
-        -------
+        Parameters
+        ----------
+        message : dict
+            A dictionary containing the id of the bot and the tweet object as the data
         """
         log.info("TASK: SAVE TWEET")
         tweet_exists = self.mongo.search('tweets', message['data'])
@@ -305,15 +323,25 @@ class Task():
 
     def Error_Bot(self, message):
         """
-        Logs a error that may have occured while a certain bot was running.
+        Logs a error that may have occurred while a certain bot was running.
 
-        params:
-        -------
+        Parameters
+        ----------
+        message : dict
+            A dictionary containing the id of the bot and the tweet object as the data
         """
         log.info("TASK: ERROR_BOT")           
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "WARNING: BOT WITH THE FOLLOWING ID "+str(message['bot_id'])+" GAVE THIS ERROR "+str(message['data']['msm'])})
 
     def Find_Followers(self, message):
+        """
+        Saves the followers for a given user in the graph database
+
+        Parameters
+        ----------
+        message : dict
+            A dictionary containing the id of the bot, and a dictionary that maps user ids into a list of their followers
+        """
         log.info("TASK: SAVE FOLLOWERS")
         for key, value in message['data'].items():
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "SAVE LIST OF USERS FOLLOWED BY USER WITH ID: "+str(key)})
