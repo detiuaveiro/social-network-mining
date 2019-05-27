@@ -285,7 +285,7 @@ class postgreSQL_API():
             #check if filter exists
             filtro=self.checkFilterExistence(cur,mapa)
             #check filter_api
-            self.checkFilterAPIExistence(cur,mapa)
+            #self.checkFilterAPIExistence(cur,mapa)
             #add policy
             if mapa["filter"]=="Keywords":
                 if len(mapa["bots"])==1:
@@ -300,7 +300,6 @@ class postgreSQL_API():
                     for j in mapa["bots"]:
                         mapa["params"].append(str(j))
             if "active" in mapa.keys():
-                print(cur.mogrify("insert into policies (API_type,filter,name,params,active) values (%s,%s,%s,%s,%s);",(api,filtro,mapa["name"],mapa["params"],mapa["active"])))
                 cur.execute("insert into policies (API_type,filter,name,params,active) values (%s,%s,%s,%s,%s);",(api,filtro,mapa["name"],mapa["params"],mapa["active"]))
             else:
                 cur.execute("insert into policies (API_type,filter,name,params) values (%s,%s,%s,%s);",(api,filtro,mapa["name"],mapa["params"]))
@@ -344,12 +343,14 @@ class postgreSQL_API():
                 filtro=self.checkFilterExistence(cur,mapa)
                 flag+=1
 
+            '''
             if flag==1.5:
                 self.checkFilterAPIExistence(cur,mapa)
             elif flag==1:
                 self.checkFilterAPIExistence(cur,mapa,ap=False)
             elif flag==0.5:
                 self.checkFilterAPIExistence(cur,mapa,fil=False)
+            '''
             #update query
             for i in mapa:
                 if i=="API_type":
@@ -386,7 +387,7 @@ class postgreSQL_API():
         return l
 
     def checkAPIExistence(self,cur,mapa):
-        cur.execute("select name from api where api.name=%s;",(mapa["API_type"],))
+        cur.execute("select * from api where api.name=%s;",(mapa["API_type"],))
         data=cur.fetchone()
         cur.execute("select count(id) from api;")
         count=cur.fetchone()
@@ -394,11 +395,11 @@ class postgreSQL_API():
             val=count[0]+1
             cur.execute("insert into api (id,name) values (%s,%s);",(val,mapa["API_type"]))
             return val
-        return count[0]
+        return data[0]
             
     
     def checkFilterExistence(self,cur,mapa):
-        cur.execute("select name from filter where filter.name=%s;",(mapa["filter"],))
+        cur.execute("select * from filter where filter.name=%s;",(mapa["filter"],))
         data=cur.fetchone()
         cur.execute("select count(id) from filter;")
         count=cur.fetchone()
@@ -406,7 +407,7 @@ class postgreSQL_API():
             val=count[0]+1
             cur.execute("insert into filter (id,name) values (%s,%s);",(val,mapa["filter"]))
             return val           
-        return count[0]
+        return data[0]
 
     def checkFilterAPIExistence(self,cur,mapa,ap=True,fil=True):
         if ap:
@@ -420,6 +421,11 @@ class postgreSQL_API():
             data=cur.fetchone()
             if data is None:
                 cur.execute("insert into filter_api (api_id,filter_id) values (%s,%s);",(id_api,id_filter))
+            return
+        if ap and not fil:
+            cur.execute("select * from policies where id_policy=%s",(mapa["id_policy"],))
+            row=cur.fetchone()
+            print(row)
         return
 
     def searchForBot(self,lista,id_bot):
