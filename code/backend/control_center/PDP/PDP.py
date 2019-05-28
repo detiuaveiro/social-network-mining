@@ -127,7 +127,7 @@ class PDP:
         elif msg["type"] == PoliciesTypes.REQUEST_FOLLOW_USER:
             '''
             bot_id
-            tweet_user_id
+            user_id
 
             workflow of this request:
 
@@ -228,14 +228,14 @@ class PDP:
         # apply the heuristics here
         for i in DB_val:
             params = i[0]
-            if params[0] == msg["tweet_user_id"]:
+            if params[0] == msg["user_id"]:
                 for j in params[1:]:
                     if j == msg["bot_id"]:
                         return self.send_response({"response": "PERMIT"})
         '''
         Rule 2
         '''
-        if self.neo.search_relationship(msg["tweet_user_id"], msg["bot_id"]):
+        if self.neo.search_relationship(msg["user_id"], msg["bot_id"]):
             return self.send_response({"response": "DENY"})
         # Rule 2.2 not implemented (maybe in the future?)
         else:
