@@ -27,6 +27,17 @@ class EditModal extends React.Component {
     if (this.props.status !== prevProps.status) {
       this.setState({modalTooltips: this.props.status});
     }
+    console.log(this.props.info);
+    if(this.props.info !== prevProps.info) {
+      const info = this.props.info[0];
+      this.policyId = info.id_policy;
+      this.setState({
+        name: info.name,
+        social: info.API_type,
+        filter : info.filter,
+        params : info.params
+      });
+    }
   }
 
   handleTags(params) {
@@ -50,7 +61,7 @@ class EditModal extends React.Component {
   }
   
   handleUpdate() {
-    const data = {API_type: this.state.social, name: this.state.name, filter: this.state.filter, params: this.state.params}
+    const data = {id_policy: this.policyId, API_type: this.state.social, name: this.state.name, filter: this.state.filter, params: this.state.params}
     this.props.handleUpdate(data)
   }
 
@@ -58,7 +69,7 @@ class EditModal extends React.Component {
     return (
       <Modal isOpen={this.state.modalTooltips} toggle={this.props.handleClose} size="lg">
         <ModalHeader className="justify-content-center" toggle={this.toggleModalTooltips}>
-            Create Policy
+            Edit Policy
         </ModalHeader>
         <ModalBody>
           <Form>
