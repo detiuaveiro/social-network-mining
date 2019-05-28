@@ -79,12 +79,11 @@ class Policies extends React.Component {
         this.componentDidMount()
         break
       case "EDIT":
-        this.toggleModalAdd()
+        this.toggleModalEdit()
         this.notify("Policy Edited with "+msg)
         this.componentDidMount()
         break
       case "ERROR":
-        this.toggleModalAdd()
         this.notify("ERROR: "+msg)
         this.componentDidMount()
         break
@@ -120,7 +119,7 @@ class Policies extends React.Component {
 
   updatePolicy(data) {
     console.log(data);
-    axios.post('http://192.168.85.182:5000/policies/update/', data)
+    axios.post('http://192.168.85.182:5000/policies/update', data)
         .then(response => {
           this.refresh(response.status==200 ? "EDIT" : "ERROR",response.data['Message'])
         });
