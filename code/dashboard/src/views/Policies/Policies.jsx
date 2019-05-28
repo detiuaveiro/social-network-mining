@@ -126,9 +126,10 @@ class Policies extends React.Component {
   }
 
   activatePolicy(id,state) {
-    //EXEMPLO
+    console.log(id)
     console.log(state.state.value);
-    axios.delete('http://192.168.85.182:5000/policies/update/', {id_policy: id, active : state.state.value})
+    const data = {id_policy: id, active: ""+state.state.value}
+    axios.post('http://localhost:5000/policies/update', data)
         .then(response => {
           this.refresh(response.status==200 ? "REMOVE" : "ERROR",response.data['Message'])
         });

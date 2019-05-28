@@ -250,7 +250,7 @@ class Task:
         log.info("TASK: REQUEST FOLLOW USER")
         self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "REQUEST TO FOLLOW USER ("+str(message['data']['id'])+")"})
         result = self.policy.lifecycle(msg={
-            "type": PoliciesTypes.REQUEST_TWEET_REPLY,
+            "type": PoliciesTypes.REQUEST_FOLLOW_USER,
             "bot_id": message['bot_id'],
             "user_id": message['data']['id'],
         })
