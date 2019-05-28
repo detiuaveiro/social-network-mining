@@ -1,8 +1,10 @@
 import React from "react";
 import { Button, FormInputs, Radio } from 'components';
+import Select from 'react-select';
 import TagsInput from 'react-tagsinput';
 import{ Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input, FormText, Col, Row } from 'reactstrap';
 import PropTypes from "prop-types";
+import axios from "axios";
 
 class EditModal extends React.Component {
   constructor(props) {
@@ -13,14 +15,25 @@ class EditModal extends React.Component {
         social: "Twitter",
         filter: "Keywords",
         params: [],
+        bots: null,
+        options: []
     }
     this.handleTags = this.handleTags.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
   }
   componentDidMount() {
+    axios.get('http://192.168.85.182:5000/twitter/bots')
+    .then(res => {
+      const data = res.data;
+      const options = []
+      data.forEach(function(bot){
+        options.push({value: bot['id'], label: bot['name']})
+      })
+      this.setState({ options });
+    });
     this.setState({
       modalTooltips: this.props.status
-    })
+    });
   }
 
   componentDidUpdate(prevProps) {
@@ -59,9 +72,14 @@ class EditModal extends React.Component {
     this.setState({ filter : event.target.value });
     console.log("filter: "+this.state.filter)
   }
+
+  handleBots = (bots) => {
+    this.setState({ bots });
+  }
   
   handleUpdate() {
-    const data = {id_policy: this.policyId, API_type: this.state.social, name: this.state.name, filter: this.state.filter, params: this.state.params}
+    const data = {id_policy: this.policyId, API_type: this.state.social, name: this.state.name, filter: this.state.filter, params: this.state.params, bots: this.state.bots};
+    data.params = data.params.concat( this.state.bots.map( (bot) => bot.value ));
     this.props.handleUpdate(data)
   }
 
@@ -122,6 +140,37 @@ class EditModal extends React.Component {
                 onChange={this.handleTags}
                 tagProps={{className: 'react-tagsinput-tag primary' }}
               />
+            </FormGroup>
+            <FormGroup required>
+              <Label>Bots:</Label>
+                <Select
+                  value={this.state.bots}
+                  onChange={this.handleBots}
+                  options={this.state.options}
+                  isMulti
+                  isSearchable
+                  placeholder="Add Bots"
+                  styles={{
+                    control: (provided,state) => ({
+                      ...provided,
+                      borderRadius: 30,
+                      borderColor: state.isFocused ? "#f96332" : "#E3E3E3",
+                      boxShadow: state.isFocused ? "#f96332" : "#E3E3E3",
+                      '&:hover': {
+                        borderColor: state.isFocused ? "#f96332" : "#E3E3E3",
+                        boxShadow: state.isFocused ? "#f96332" : "#E3E3E3",
+                      },
+                    }),
+                    multiValue: (provided, state) => ({
+                      ...provided,
+                      backgroundColor: "#f96332",
+                      color: "white",
+                      borderRadius: 30,
+                    }),
+                  }}
+                  className="primary"
+
+                />
             </FormGroup>
           </Form>
         </ModalBody>

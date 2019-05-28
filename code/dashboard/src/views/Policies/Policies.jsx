@@ -91,6 +91,7 @@ class Policies extends React.Component {
   }
 
   savePolicy(data) {
+    console.log(data);
     axios.post('http://192.168.85.182:5000/policies/add', data)
       .then((response) => {
         this.refresh(response.status==200 ? "ADD" : "ERROR",response.data['Message'])
@@ -105,7 +106,7 @@ class Policies extends React.Component {
   }
 
   editPolicy(id) {
-    console.log(this.state.modalEdit)
+    console.log(this.state.modalEdit);
     this.setState({
       modalEdit: !this.state.modalEdit
     });
@@ -118,6 +119,7 @@ class Policies extends React.Component {
 
 
   updatePolicy(data) {
+    console.log("Updating policy");
     console.log(data);
     axios.post('http://192.168.85.182:5000/policies/update', data)
         .then(response => {
@@ -128,8 +130,17 @@ class Policies extends React.Component {
   activatePolicy(id,state) {
     console.log(id)
     console.log(state.state.value);
+<<<<<<< Updated upstream
     const data = {id_policy: id, active: ""+state.state.value}
+<<<<<<< HEAD
     axios.post('http://192.168.85.182:5000/policies/update', data)
+=======
+    axios.post('http://localhost:5000/policies/update', data)
+=======
+    console.log({id_policy: id, active : state.state.value});
+    axios.post('http://192.168.85.182:5000/policies/update', {id_policy: id, active : state.state.value})
+>>>>>>> Stashed changes
+>>>>>>> 1d083b423bcbbd1c7f3039dde2a1438ba9bdfbd7
         .then(response => {
           this.refresh(response.status==200 ? "REMOVE" : "ERROR",response.data['Message'])
         });
