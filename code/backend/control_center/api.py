@@ -61,6 +61,8 @@ def user_by_id(id):
 @app.route("/twitter/users/<id>/tweets")
 def user_tweets(id):
     mapa = mongo_t.twitterCollection(findText={"user": id})
+    for i in mapa:
+        i["id"]=str(i["id"])
     return jsonify(mapa)
 
 
@@ -81,32 +83,22 @@ def user_following(id):
         lista.append(i[0])
     return jsonify(lista)
 
-
-##################################################################################
 '''
-Check the objective of this path first. Could be:
-    - All replies from the user
-    - Count of all the replies from the user
-'''
-'''
-The relevant fields in a reply tweet are in_reply_to_status_id, in_reply_to_status_id_str, in_reply_to_screen_name, in_reply_to_user_id, in_reply_to_user_id_str.
-The names of each of these fields reasonably describe their contents. 
+The relevant fields in a reply tweet are in_reply_to_status_id_str, in_reply_to_screen_name, in_reply_to_user_id_str.
 The most significant of these is in_reply_to_status_id, which supports finding the tweet to which the reply tweet is a reply.
 '''
 
-
 @app.route("/twitter/users/<id>/replies")
 def user_replies(id):
-    mapa = mongo_t.twitterCollection(findText={"in_reply_to_user_id_str": str(id)})
+    mapa = mongo_t.twitterCollection(
+        findText={ "$or": [ {"in_reply_to_user_id_str": str(id)}, {"in_reply_to_screen_name": str(id)}, {"in_reply_to_status_id_str":str(id)} ]})
     return jsonify(mapa)
 
 
-##################################################################################
 
 @app.route("/twitter/users/<id>/stats")
 def user_stats(id):
-    stats = postgres.getStatsUserID(
-        id)  # mongo.getOneFilteredDoc(findText={"id":int(id)},projection={"favourites_count":True,"followers_count":True,"friends_count":True,"location":True,"name":True,"screen_name":True,"statuses_count":True,"verified":True,"_id":False})
+    stats = postgres.getStatsUserID(id)
     return jsonify(stats)
 
 

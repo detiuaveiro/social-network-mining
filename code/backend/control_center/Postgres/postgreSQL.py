@@ -253,7 +253,7 @@ class postgreSQL_API():
             #check if filter exists
             filtro=self.checkFilterExistence(cur,mapa)
             #check filter_api
-            #self.checkFilterAPIExistence(cur,mapa)
+            self.checkFilterAPIExistence(cur,mapa,api,filtro)
             #add policy
             if "bots" in mapa.keys():
                 if len(mapa["bots"])==0:
@@ -301,7 +301,6 @@ class postgreSQL_API():
         This function only updates records with the specified fields received.
         mapa is a dictionary with the information needed to update the record (fields to be updated + id_policy)
         '''
-        flag=0
         try:
             cur=self.conn.cursor()
             '''
@@ -309,19 +308,9 @@ class postgreSQL_API():
             '''
             if "API_type" in mapa.keys():
                 api=self.checkAPIExistence(cur,mapa)
-                flag+=0.5
             if "filter" in mapa.keys():
                 filtro=self.checkFilterExistence(cur,mapa)
-                flag+=1
 
-            '''
-            if flag==1.5:
-                self.checkFilterAPIExistence(cur,mapa)
-            elif flag==1:
-                self.checkFilterAPIExistence(cur,mapa,ap=False)
-            elif flag==0.5:
-                self.checkFilterAPIExistence(cur,mapa,fil=False)
-            '''
             #update query
             for i in mapa:
                 if i=="API_type":
@@ -373,7 +362,14 @@ class postgreSQL_API():
                             d[cols[num]]=j
                         num+=1
             elif "Target" in i and "filter" in cols:
-                pass
+                for j in i:
+                    if len(i)==num:
+                        pass
+                    else:
+                        if cols[num]=="params":
+                            params.append(j[0])
+                            for k in j[1:]:
+                                bots_list.append(k)
             else:
                 for j in i:
                     if len(i)==num:
@@ -407,23 +403,11 @@ class postgreSQL_API():
             return val           
         return data[0]
 
-    def checkFilterAPIExistence(self,cur,mapa,ap=True,fil=True):
-        if ap:
-            cur.execute("select id from api where api.name=%s",(mapa["API_type"],))
-            id_api=cur.fetchone()
-        if fil:
-            cur.execute("select id from filter where filter.name=%s",(mapa["filter"],))
-            id_filter=cur.fetchone()
-        if ap and fil:
-            cur.execute("select api_id,filter_id from filter_api where api_id=%s and filter_id=%s;",(id_api,id_filter))
-            data=cur.fetchone()
-            if data is None:
-                cur.execute("insert into filter_api (api_id,filter_id) values (%s,%s);",(id_api,id_filter))
-            return
-        if ap and not fil:
-            cur.execute("select * from policies where id_policy=%s",(mapa["id_policy"],))
-            row=cur.fetchone()
-            print(row)
+    def checkFilterAPIExistence(self,cur,mapa,id_api,id_filter):
+        cur.execute("select api_id,filter_id from filter_api where api_id=%s and filter_id=%s;",(id_api,id_filter))
+        data=cur.fetchone()
+        if data is None:
+            cur.execute("insert into filter_api (api_id,filter_id) values (%s,%s);",(id_api,id_filter))
         return
 
     def searchForBot(self,lista,id_bot):
