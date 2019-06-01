@@ -63,6 +63,8 @@ class postgreSQL_API():
             self.conn.commit()
             cur.close()
             result=self.postProcessResults(data,['timestamp','tweet_id','likes','retweets'])
+            for i in result:
+                i['tweet_id']=str(i['tweet_id'])
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -76,6 +78,8 @@ class postgreSQL_API():
             self.conn.commit()
             cur.close()
             result=self.postProcessResults(data,['timestamp', 'tweet_id', 'likes', 'retweets'])
+            for i in result:
+                i['tweet_id']=str(i['tweet_id'])
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -89,6 +93,8 @@ class postgreSQL_API():
             self.conn.commit()
             cur.close()
             result=self.postProcessResults(data,['timestamp', 'user_id', 'followers', 'following'])
+            for i in result:
+                i['user_id']=str(i['user_id'])
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -102,6 +108,8 @@ class postgreSQL_API():
             self.conn.commit()
             cur.close()
             result=self.postProcessResults(data,['timestamp', 'user_id', 'followers', 'following'])
+            for i in result:
+                i['user_id']=str(i['user_id'])
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -336,12 +344,34 @@ class postgreSQL_API():
         return {"Message":"Success"}
 
     def postProcessResults(self,lista,cols):
+        '''
+        This function gets the result from the postgres and post-process it to the JSON standard
+        const MINIMUM_LENGTH_BOT_ID avoids that numeric keywords such as 911 or 112 to be confused as a bot
+        '''
         l=[]
+        MINIMUM_LENGTH_BOT_ID=19
         for i in lista:
             d={}
             num=0
+            bots_list=[]
+            params=[]
             if "Keywords" in i and "filter" in cols:
-                print(i[3])
+                for j in i:
+                    if len(i)==num:
+                        pass
+                    else:
+                        if cols[num]=="params":
+                            bots_list.append(j[0])
+                            for k in j[1:]:
+                                if k.isnumeric() and len(k)>=MINIMUM_LENGTH_BOT_ID:
+                                    bots_list.append(k)
+                                else:
+                                    params.append(k)
+                            d["bots"]=bots_list
+                            d[cols[num]]=params
+                        else:
+                            d[cols[num]]=j
+                        num+=1
             elif "Target" in i and "filter" in cols:
                 pass
             else:
