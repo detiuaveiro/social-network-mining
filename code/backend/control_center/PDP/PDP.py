@@ -225,6 +225,9 @@ class PDP:
             return self.send_response({"response": "DENY"})
         # probably don't need postProcess, since all logic is handled here
 
+        if self.neo.search_relationship(msg["user_id"], msg["bot_id"]):
+            return self.send_response({"response": "DENY"})
+
         # apply the heuristics here
         for i in DB_val:
             params = i[0]
@@ -235,11 +238,8 @@ class PDP:
         '''
         Rule 2
         '''
-        if self.neo.search_relationship(msg["user_id"], msg["bot_id"]):
-            return self.send_response({"response": "DENY"})
         # Rule 2.2 not implemented (maybe in the future?)
-        else:
-            return self.send_response({"response": "PERMIT"})
+        return self.send_response({"response": "PERMIT"})
 
     def analyze_tweet_like(self, msg):
         """

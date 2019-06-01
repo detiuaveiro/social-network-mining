@@ -154,24 +154,13 @@ class postgreSQL_API():
     def getAllPolicies(self):
         try:
             cur=self.conn.cursor()
-            cur.execute("select * from policies;")
+            cur.execute("select api.name,policies.name,params,active,id_policy,filter.name from policies left outer join filter on filter.id=policies.filter left outer join api on api.id=policies.API_type;")
             data=cur.fetchall()
-            cur.execute("select * from filter")
-            filters=cur.fetchall()
-            cur.execute("select * from api")
-            apis=cur.fetchall()            
             self.conn.commit()
             if len(data)==0:
                 return []
-            result=self.postProcessResults(data,['API_type','filter','name','params','active','id_policy'])
+            result=self.postProcessResults(data,['API_type','name','params','active','id_policy','filter'])
             cur.close()
-            for i in result:
-                for j in filters:
-                    if j[0]==i['filter']:
-                        i['filter']=j[1]
-                for k in apis:
-                    if k[0]==i['API_type']:
-                        i['API_type']=k[1]
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -180,19 +169,12 @@ class postgreSQL_API():
     def getPoliciesByAPI(self,api):
         try:
             cur=self.conn.cursor()
-            cur.execute("select policies.API_type,policies.filter,policies.name,policies.params,policies.active,policies.id_policy,api.name from policies,api where api.id=policies.API_type and api.name=%s;",(api,))
+            cur.execute("select api.name,filter.name,policies.name,policies.params,policies.active,policies.id_policy from policies left outer join filter on filter.id=policies.filter left outer join api on api.id=policies.API_type where api.name=%s;",(api,))
             data=cur.fetchall()
-            cur.execute("select * from filter")
-            filters=cur.fetchall()
             self.conn.commit()
             result=self.postProcessResults(data,
-            ['API_type','filter','name','params','active','id_policy','API_name'])
+            ['API_type','filter','name','params','active','id_policy'])
             cur.close()
-            for i in result:
-                del i['API_type']
-                for j in filters:
-                    if j[0]==i['filter']:
-                        i['filter']=j[1] 
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -201,22 +183,11 @@ class postgreSQL_API():
     def getPoliciesByID(self,id):
         try:
             cur=self.conn.cursor()
-            cur.execute("select * from policies where policies.id_policy=%s;",(id,))
+            cur.execute("select api.name,policies.name,params,active,id_policy,filter.name from policies left outer join filter on filter.id=policies.filter left outer join api on api.id=policies.API_type where policies.id_policy=%s;",(id,))
             data=cur.fetchall()
-            cur.execute("select * from filter")
-            filters=cur.fetchall()
-            cur.execute("select * from api")
-            apis=cur.fetchall()
             self.conn.commit()
-            result=self.postProcessResults(data,['API_type','filter','name','params','active','id_policy'])
+            result=self.postProcessResults(data,['API_type','name','params','active','id_policy','filter'])
             cur.close()
-            for i in result:
-                for j in filters:
-                    if j[0]==i['filter']:
-                        i['filter']=j[1]
-                for k in apis:
-                    if k[0]==i['API_type']:
-                        i['API_type']=k[1]
             return result
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -226,15 +197,11 @@ class postgreSQL_API():
         bot_id=str(bot_id)
         try:
             cur=self.conn.cursor()
-            cur.execute("select * from policies;")
+            cur.execute("select api.name,policies.name,params,active,id_policy,filter.name from policies left outer join filter on filter.id=policies.filter left outer join api on api.id=policies.API_type;")
             data=cur.fetchall()
-            cur.execute("select * from filter")
-            filters=cur.fetchall()
-            cur.execute("select * from api")
-            apis=cur.fetchall()
             self.conn.commit()
             cur.close()
-            result=self.postProcessResults(data,['API_type','filter','name','params','active','id_policy'])
+            result=self.postProcessResults(data,['API_type','name','params','active','id_policy','filter'])
             '''
             {id_policy:[api,filter,params,etc]}
             '''
@@ -246,13 +213,6 @@ class postgreSQL_API():
                         if response:
                             lista.append(i)
             
-            for j in lista:
-                for k in filters:
-                    if k[0]==j['filter']:
-                        j['filter']=k[1]
-                for l in apis:
-                    if l[0]==j['API_type']:
-                        j['API_type']=l[1]
             return lista
         except psycopg2.Error as e:
             self.conn.rollback()
@@ -287,6 +247,9 @@ class postgreSQL_API():
             #check filter_api
             #self.checkFilterAPIExistence(cur,mapa)
             #add policy
+            if "bots" in mapa.keys():
+                if len(mapa["bots"])==0:
+                    return {"ERROR":"No bots associated"}
             if mapa["filter"]=="Keywords":
                 if len(mapa["bots"])==1:
                     mapa["params"].insert(0,str(mapa["bots"][0]))
@@ -377,12 +340,17 @@ class postgreSQL_API():
         for i in lista:
             d={}
             num=0
-            for j in i:
-                if len(i)==num:
-                    pass
-                else:
-                    d[cols[num]]=j
-                    num+=1
+            if "Keywords" in i and "filter" in cols:
+                print(i[3])
+            elif "Target" in i and "filter" in cols:
+                pass
+            else:
+                for j in i:
+                    if len(i)==num:
+                        pass
+                    else:
+                        d[cols[num]]=j
+                        num+=1
             l.append(d)
         return l
 
