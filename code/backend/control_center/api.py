@@ -32,9 +32,7 @@ def home():
 def user_general():
     mapa = mongo.dataCollection()
     for i in mapa:
-        user_id = str(i["id"])
-        i.pop("id")
-        i["id"] = user_id
+        i["id"] = str(i["id"])
     return jsonify(mapa)
 
 
@@ -49,7 +47,6 @@ def user_by_id(id):
     try:
         mapa = mongo.dataCollection(findText={"id": int(id)})
         if len(mapa) > 0:
-            mapa[0].pop("id")
             mapa[0]["id"] = (str(id))
             return app.response_class(response=json.dumps(mapa), status=200,
                                       mimetype='application/json')  # jsonify(mapa)
@@ -153,9 +150,7 @@ def tt_bots():
             swap.append(j)
 
     for j in swap:
-        user_id = str(j["id"])
-        j.pop("id")
-        j["id"] = user_id
+        j["id"] = str(j["id"])
 
     return jsonify(swap)
 
@@ -176,9 +171,7 @@ def tt_bot_logs(id):
 def tt_tweets():
     mapa = mongo_t.twitterCollection()
     for i in mapa:
-        user_id = str(i["id"])
-        i.pop("id")
-        i["id"] = user_id
+        i["id"] = str(i["id"])
     return jsonify(mapa)
 
 

@@ -137,8 +137,8 @@ class postgreSQL_API():
             cur.execute("select * from logs where id_bot=%s order by timestamp DESC;", (id_bot,))
             data = cur.fetchall()
             self.conn.commit()
-
-            result=self.getClearLogs(data,["id","timestamp","action","converted"])
+            print(data[0])
+            result=self.getClearLogs(data,["id","timestamp","action"])
             cur.close()
             return result
         except psycopg2.Error as e:
@@ -148,11 +148,11 @@ class postgreSQL_API():
     def getAllLogs(self):
         try:
             cur = self.conn.cursor()
-            cur.execute("select * from logs;")
+            cur.execute("select * from logs order by timestamp DESC;")
             data = cur.fetchall()
             self.conn.commit()
 
-            result = self.getClearLogs(data,["id","timestamp","action","converted"])
+            result = self.getClearLogs(data,["id","timestamp","action"])
             cur.close()
             return result
         except psycopg2.Error as e:
@@ -436,17 +436,9 @@ class postgreSQL_API():
         return False
 
     def getClearLogs(self,data,cols):
-        lista=[]
-        for i in data:
-            a=i+(datetime.timestamp(i[1]),)
-            lista.append(a)
-        result = self.postProcessResults(lista,cols)
+        result = self.postProcessResults(data,cols)
         for j in result:
-            bot_id=str(j["id"])
-            del j["id"]
-            if "converted" in j.keys():
-                del j["converted"]
-            j["id"]=bot_id
+            j["id"]=str(j["id"])
         return result
     
     def getPoliciesParams(self):
