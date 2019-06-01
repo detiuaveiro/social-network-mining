@@ -297,8 +297,7 @@ def ig_policies():
 
 @app.route("/instagram/stats")
 def ig_stats():
-    #a=policy.updatePolicy({"id_policy":62,"active":True})
-    return ""#jsonify(a)
+    return "instagram stats"
 
 
 @app.route("/instagram/bots")

@@ -258,18 +258,18 @@ class postgreSQL_API():
             if "bots" in mapa.keys():
                 if len(mapa["bots"])==0:
                     return {"ERROR":"No bots associated"}
-            if mapa["filter"]=="Keywords":
-                if len(mapa["bots"])==1:
-                    mapa["params"].insert(0,str(mapa["bots"][0]))
-                elif len(mapa["bots"])>1:
-                    for i in mapa["bots"]:
-                        mapa["params"].insert(0,str(i))
-            elif mapa["filter"]=="Target":
-                if len(mapa["bots"])==1:
-                    mapa["params"].append(str(mapa["bots"][0]))
-                elif len(mapa["bots"])>1:
-                    for j in mapa["bots"]:
-                        mapa["params"].append(str(j))
+                if mapa["filter"]=="Keywords":
+                    if len(mapa["bots"])==1:
+                        mapa["params"].insert(0,str(mapa["bots"][0]))
+                    elif len(mapa["bots"])>1:
+                        for i in mapa["bots"]:
+                            mapa["params"].insert(0,str(i))
+                elif mapa["filter"]=="Target":
+                    if len(mapa["bots"])==1:
+                        mapa["params"].append(str(mapa["bots"][0]))
+                    elif len(mapa["bots"])>1:
+                        for j in mapa["bots"]:
+                            mapa["params"].append(str(j))
             if "active" in mapa.keys():
                 cur.execute("insert into policies (API_type,filter,name,params,active) values (%s,%s,%s,%s,%s);",(api,filtro,mapa["name"],mapa["params"],mapa["active"]))
             else:
@@ -310,7 +310,22 @@ class postgreSQL_API():
                 api=self.checkAPIExistence(cur,mapa)
             if "filter" in mapa.keys():
                 filtro=self.checkFilterExistence(cur,mapa)
-
+            
+            if "bots" in mapa.keys():
+                if len(mapa["bots"])==0:
+                    return {"ERROR":"No bots associated"}
+                if "filter" in mapa.keys() and mapa["filter"]=="Keywords" and "params" in mapa.keys():
+                    if len(mapa["bots"])==1:
+                        mapa["params"].insert(0,str(mapa["bots"][0]))
+                    elif len(mapa["bots"])>1:
+                        for i in mapa["bots"]:
+                            mapa["params"].insert(0,str(i))
+                elif "filter" in mapa.keys() and mapa["filter"]=="Target" and "params" in mapa.keys():
+                    if len(mapa["bots"])==1:
+                        mapa["params"].append(str(mapa["bots"][0]))
+                    elif len(mapa["bots"])>1:
+                        for j in mapa["bots"]:
+                            mapa["params"].append(str(j))
             #update query
             for i in mapa:
                 if i=="API_type":
