@@ -2,7 +2,7 @@ import React from "react";
 import axios from 'axios';
 
 import { Tweet, PanelHeader} from "components";
-import {Collapse, Row, Col, InputGroup, InputGroupText, InputGroupAddon, Input } from 'reactstrap';
+import {Row, Col, InputGroup, InputGroupText, InputGroupAddon, Input } from 'reactstrap';
 
 class User extends React.Component {
   state = {
@@ -23,7 +23,7 @@ class User extends React.Component {
   }
 
   anyTweets() {
-    if (this.state.tweets.length==0){
+    if (this.state.tweets.length===0){
       return false
     }
     else{
@@ -43,7 +43,7 @@ class User extends React.Component {
               </div>
               <div>
                 <p className="title text-center text-white">- Filters -</p>
-                <Col xs={6} xs={5}
+                <Col xs={6} md={5}
                     navbar
                     className="justify-content-end"
                   >

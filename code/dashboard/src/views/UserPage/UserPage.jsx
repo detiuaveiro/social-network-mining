@@ -12,6 +12,14 @@ class User extends React.Component {
     followers: [],
     activeTab: '1',
   };
+  
+  constructor(props) {
+    super(props);
+    this.toggle = this.toggle.bind(this);
+    this.anyTweets = this.anyTweets.bind(this);
+    this.anyFollowers = this.anyFollowers.bind(this);
+    this.anyFollowing = this.anyFollowing.bind(this);
+  }
 
   componentDidMount() {
     const url = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)
@@ -39,16 +47,8 @@ class User extends React.Component {
       })
   }
 
-  constructor(props) {
-    super(props);
-    this.toggle = this.toggle.bind(this);
-    this.anyTweets = this.anyTweets.bind(this);
-    this.anyFollowers = this.anyFollowers.bind(this);
-    this.anyFollowing = this.anyFollowing.bind(this);
-  }
-
   anyTweets() {
-    if (this.state.tweets.length==0){
+    if (this.state.tweets.length===0){
       return false
     }
     else{
@@ -57,7 +57,7 @@ class User extends React.Component {
   }
 
   anyFollowing() {
-    if (this.state.following.length==0){
+    if (this.state.following.length===0){
       return false
     }
     else{
@@ -66,7 +66,7 @@ class User extends React.Component {
   }
 
   anyFollowers() {
-    if (this.state.followers.length==0){
+    if (this.state.followers.length===0){
       return false
     }
     else{

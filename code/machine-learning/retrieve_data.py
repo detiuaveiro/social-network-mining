@@ -25,7 +25,7 @@ def dateformater(years,months):
                 print(url)
                 total_size += len(data.content)
                 file_name = "./data/data("+after+"_"+before+").json"
-                with open(file_name, "a+") as d:
+                with open(file_name, "w") as d:
                     try:
                         json.dump(json.loads(data.content.decode("utf-8")), d)
                         d.close()

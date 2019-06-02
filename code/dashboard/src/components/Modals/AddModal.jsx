@@ -1,8 +1,8 @@
 import React from "react";
-import { Button, FormInputs, Radio } from 'components';
+import { Button} from 'components';
 import TagsInput from 'react-tagsinput';
 import Select from 'react-select';
-import{ Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input, FormText, Col, Row } from 'reactstrap';
+import{ Modal, ModalHeader, ModalBody, ModalFooter, Form, FormText, FormGroup, Label, Input, Row } from 'reactstrap';
 import PropTypes from "prop-types";
 import axios from "axios";
 
@@ -15,8 +15,11 @@ class AddModal extends React.Component {
         social: "Twitter",
         filter: "Keywords",
         params: [],
-        bots: null,
+        bots: [],
         options: [],
+        emptyName: false,
+        emptyTags: false,
+        emptyBots: false,
     }
     this.handleTags = this.handleTags.bind(this);
     this.handleSave = this.handleSave.bind(this);
@@ -42,12 +45,8 @@ class AddModal extends React.Component {
     }
   }
 
-  handleTags(params) {
-    this.setState({params});
-  }
-
   handleName = event => {
-    this.setState({ name : event.target.value });
+    this.setState({ name : event.target.value, emptyName: false });
   }
 
   handleSocial = event => {
@@ -55,28 +54,43 @@ class AddModal extends React.Component {
   }
 
   handleFilter = event => {
-    this.setState({ filter : event.target.value });
+    this.setState({ filter : event.target.value, params: [] });
+  }
+
+  handleTags(params) {
+    this.setState({params, emptyTags: false});
   }
   
   handleBots = (bots) => {
-    this.setState({ bots });
+    this.setState({ bots, emptyBots: false});
   }
 
   handleSave() {
-    const b = []
-    this.state.bots.forEach(function (bot){
-      b.push(bot['value'])
-    })
-    const data = {API_type: this.state.social, name: this.state.name, filter: this.state.filter, params: this.state.params, bots: b}
-    this.props.handleSave(data)
-    this.setState({
-      name: "",
-      social: "Twitter",
-      filter: "Keywords",
-      params: [],
-      bots: null,
-      options: [],
-    })
+    if (this.state.name===""){
+      this.setState({emptyName: true})
+    }
+    else if (this.state.params.length===0){
+      this.setState({emptyTags: true})
+    }
+    else if (this.state.bots.length===0){
+      this.setState({emptyBots: true})
+    }
+    else {
+      const b = []
+      this.state.bots.forEach(function (bot){
+        b.push(bot['value'])
+      })
+      const data = {API_type: this.state.social, name: this.state.name, filter: this.state.filter, params: this.state.params, bots: b}
+      this.props.handleSave(data)
+      this.setState({
+        name: "",
+        social: "Twitter",
+        filter: "Keywords",
+        params: [],
+        bots: [],
+        options: [],
+      })
+    }
   }
 
   render() {
@@ -109,6 +123,9 @@ class AddModal extends React.Component {
             <FormGroup required>
               <Label for="name">Name:</Label>
               <Input type="text" name="name" id="name" placeholder="e.g: Sports" value={this.state.name} onChange={this.handleName}/>
+              <div hidden={!this.state.emptyName} className="alert-danger mt-2 p-2" style={{borderRadius: 30}}>
+                  Field can't be empty!
+              </div>
             </FormGroup>
             <FormGroup required>
               <Label for="filter">Filter:</Label>
@@ -122,9 +139,9 @@ class AddModal extends React.Component {
                 </FormGroup>
                 <FormGroup check className="form-check-radio"> 
                   <Label check>
-                    <Input type="radio" name="filter" value="Targets" checked={this.state.filter === 'Targets'} onChange={this.handleFilter} />{' '}
+                    <Input type="radio" name="filter" value="Target" checked={this.state.filter === 'Target'} onChange={this.handleFilter} />{' '}
                     <span className="form-check-sign" />
-                    Targets
+                    Target
                   </Label>
                 </FormGroup>
               </Row>
@@ -135,7 +152,12 @@ class AddModal extends React.Component {
                 value={this.state.params}
                 onChange={this.handleTags}
                 tagProps={{className: 'react-tagsinput-tag primary' }}
+                maxTags={this.state.filter==="Target" ? "1" : "-1" }
               />
+              <div hidden={!this.state.emptyTags} className="alert-danger mt-2 p-2" style={{borderRadius: 30}}>
+                  Field can't be empty!
+              </div>
+              <FormText>If you choose filter "Target" add one target (username) only.</FormText>
             </FormGroup>
             <FormGroup required>
               <Label>Bots:</Label>
@@ -167,6 +189,9 @@ class AddModal extends React.Component {
                   className="primary"
 
                 />
+                <div hidden={!this.state.emptyBots} className="alert-danger mt-2 p-2" style={{borderRadius: 30}}>
+                    Field can't be empty!
+                </div>
             </FormGroup>
           </Form>
         </ModalBody>

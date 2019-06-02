@@ -24,8 +24,6 @@ import Stats from './Stats/Stats';
 
 import Tasks from './Tasks/Tasks';
 
-import DataTables from './DataTables/DataTables';
-
 import Tweet from './Tweet/Tweet';
 
 import CardBot from './CardElements/CardBot';
@@ -68,8 +66,6 @@ export {
     Stats,
     // Tasks
     Tasks,
-    // DataTables
-    DataTables,
     //Tweet
     Tweet,
     //CardBot

@@ -2,8 +2,6 @@ import React from "react";
 // react component for creating dynamic tables
 import ReactTable from 'react-table'
 
-// core components
-import { Button, Checkbox } from "components";
 import {
     Card,
     CardBody,
@@ -58,10 +56,8 @@ class PoliciesTableBot extends React.Component {
     };
 
     componentDidMount() {
-        console.log('http://192.168.85.182:5000/policies/bots/'+this.props.userid)
         axios.get('http://192.168.85.182:5000/policies/bots/'+this.props.userid)
         .then(res => {
-           console.log(res.data)
            const policies = res.data;
            this.setState({ policies });
        });
@@ -72,7 +68,15 @@ class PoliciesTableBot extends React.Component {
             <Card>
                 <CardBody>
                     <ReactTable
-                        data={this.state.policies}
+                        data={this.state.policies.map(policie => {
+                            return({
+                            id_policy: policie['id_policy'],
+                            name: policie['name'],
+                            API_type: policie['API_type'],
+                            filter: policie['filter'],
+                            params: policie['params'].join(),
+                            })
+                        })}
                         columns={this.state.colums}
                         defaultPageSize={10}
                         showPaginationTop
