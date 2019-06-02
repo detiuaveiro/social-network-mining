@@ -216,7 +216,7 @@ class postgreSQL_API():
             lista=[]
             for i in result:
                 for j in i.keys():
-                    if j=="params":
+                    if j=="bots":
                         response=self.searchForBot(i[j],bot_id)
                         if response:
                             lista.append(i)
