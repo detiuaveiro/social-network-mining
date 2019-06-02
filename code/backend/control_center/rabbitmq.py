@@ -43,6 +43,8 @@ class Rabbitmq():
         
         self.channel = self.connection.channel()
 
+        self.channel.queue_declare(queue='API')
+
         #Declare Exchanges
         self.channel.exchange_declare(exchange='task_deliver', exchange_type='direct', durable=True)
 

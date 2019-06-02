@@ -22,6 +22,7 @@ class Tweet extends React.Component {
                 <img
                   className="avatar border-gray"
                   src={this.props.info["profile_image_url_https"]}
+                  alt=""
                 />
               </Col>
               <Col className="text-left my-auto" xs={12} md={4}>
@@ -67,7 +68,7 @@ class Tweet extends React.Component {
                 />
               </Col>
               <Col className="text-center my-auto" xs={12} md={5}>
-                <a>
+                <a href="www.google.pt">
                   <i class="fas fa-map-marker-alt"></i> {this.props.info["geo"]}
                 </a>
               </Col>

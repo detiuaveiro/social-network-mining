@@ -30,12 +30,7 @@ class LogsTable extends React.Component {
           }],
         user_id: this.props.userid
     };
-
-    constructor(props) {
-        super(props);
-
-    }
-
+    
     componentDidMount() {
         const url = 'http://192.168.85.182:5000/twitter/bots/'+this.state.user_id+'/logs'
         console.log(url)

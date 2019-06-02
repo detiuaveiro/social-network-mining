@@ -2,8 +2,8 @@ import React from "react";
 // used for making the prop types of this component
 import PropTypes from "prop-types";
 
-import {CardAuthor2, CardInteractions, Stats} from "components";
-import {Card, CardHeader, CardBody, CardFooter, Badge } from 'reactstrap';
+import {CardAuthor2, CardInteractions} from "components";
+import {Card, CardHeader, CardBody, Badge } from 'reactstrap';
 
 
 class CardBot extends React.Component {
@@ -15,9 +15,6 @@ class CardBot extends React.Component {
     favorites: this.props.info["favourites_count"],
     followers: this.props.info["friends_count"],
     following: this.props.info["followers_count"]
-  }
-  componentDidMount(){
-    console.log(this.props.info)
   }
   render() {
     return (

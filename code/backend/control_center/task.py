@@ -351,8 +351,21 @@ class Task:
         message : dict
             A dictionary containing the id of the bot, and a dictionary that maps user ids into a list of their followers
         """
-        log.info("TASK: SAVE FOLLOWERS")
+        log.info("TASK: SAVE FOLLOWERS OF USER")
         for key, value in message['data'].items():
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "SAVE LIST OF USERS FOLLOWED BY USER WITH ID: "+str(key)})
             for user2 in value:
-                self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_USER_USER,data={"user1": key, "user2": user2})
+                result = self.policy.lifecycle(msg={
+                    "type": PoliciesTypes.REQUEST_FOLLOW_USER,
+                    "bot_id": message['bot_id'],
+                    "user_id": user2,
+                })
+                if (result==1):
+                    log.info("USER ALLOWED TO BE FOLLOWED")
+                    self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE FOLLOWED"})
+                    send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.FOLLOW_USERS,
+                            params={"type": "id", "data": [user2]})
+                else:
+                    log.info("USER NOT ALLOWED TO BE FOLLOWED")
+                    self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(message['data']['id'])+" ) NOT ALLOWED TO BE FOLLOWED"})
+        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_USER_USER,data={"user1": key, "user2": user2})

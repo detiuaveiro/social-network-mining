@@ -14,7 +14,7 @@ class Policies extends React.Component {
         modalAdd: false,
         modalEdit: false,
         policies: [],
-        editTools:[]
+        editData:[]
     };
     this.toggleModalAdd = this.toggleModalAdd.bind(this);
     this.toggleModalEdit = this.toggleModalEdit.bind(this);
@@ -67,7 +67,6 @@ class Policies extends React.Component {
   }
 
   refresh(tipo,msg){
-    console.log(tipo)
     switch(tipo){
       case "ADD":
         this.toggleModalAdd()
@@ -83,66 +82,60 @@ class Policies extends React.Component {
         this.notify("Policy Edited with "+msg)
         this.componentDidMount()
         break
+      case "ACTIVE":
+        this.notify("Policy Activated with "+msg)
+        break
+      case "DEACTIVE":
+        this.notify("Policy Stopped with "+msg)
+        break
       case "ERROR":
         this.notify("ERROR: "+msg)
         this.componentDidMount()
+        break
+      default:
+        this.notify("ERROR")
         break
     }
   }
 
   savePolicy(data) {
-    console.log(data);
     axios.post('http://192.168.85.182:5000/policies/add', data)
       .then((response) => {
-        this.refresh(response.status==200 ? "ADD" : "ERROR",response.data['Message'])
+        this.refresh(response.status===200 ? "ADD" : "ERROR",response.data['Message'])
       })
   }
 
   removePolicy(id) {
     axios.delete('http://192.168.85.182:5000/policies/remove/'+id)
         .then(response => {
-          this.refresh(response.status==200 ? "REMOVE" : "ERROR",response.data['Message'])
+          this.refresh(response.status===200 ? "REMOVE" : "ERROR",response.data['Message'])
         });
   }
 
   editPolicy(id) {
-    console.log(this.state.modalEdit);
     this.setState({
       modalEdit: !this.state.modalEdit
     });
     axios.get('http://192.168.85.182:5000/policies/'+id)
     .then(res => {
-        const editTools = res.data;
-        this.setState({ editTools });
+        const editData = res.data;
+        this.setState({ editData });
    });
   }
 
 
   updatePolicy(data) {
-    console.log("Updating policy");
-    console.log(data);
     axios.post('http://192.168.85.182:5000/policies/update', data)
         .then(response => {
-          this.refresh(response.status==200 ? "EDIT" : "ERROR",response.data['Message'])
+          this.refresh(response.status===200 ? "EDIT" : "ERROR",response.data['Message'])
         });
   }
 
   activatePolicy(id,state) {
-    console.log(id)
-    console.log(state.state.value);
-<<<<<<< Updated upstream
     const data = {id_policy: id, active: ""+state.state.value}
-<<<<<<< HEAD
     axios.post('http://192.168.85.182:5000/policies/update', data)
-=======
-    axios.post('http://localhost:5000/policies/update', data)
-=======
-    console.log({id_policy: id, active : state.state.value});
-    axios.post('http://192.168.85.182:5000/policies/update', {id_policy: id, active : state.state.value})
->>>>>>> Stashed changes
->>>>>>> 1d083b423bcbbd1c7f3039dde2a1438ba9bdfbd7
         .then(response => {
-          this.refresh(response.status==200 ? "REMOVE" : "ERROR",response.data['Message'])
+          this.refresh(response.status===200 ? state.state.value ? "ACTIVE" : "DEACTIVE" : "ERROR",response.data['Message'])
         });
   }
 
@@ -164,13 +157,13 @@ class Policies extends React.Component {
               <PoliciesTable dados={this.state.policies} remove={this.removePolicy} edit={this.editPolicy} activate={this.activatePolicy}/>
             </Col>
             <Col xs={12} md={12} className="text-right">
-              <Button icon round color="primary" onClick={this.toggleModalAdd} size="md" size="lg">
+              <Button icon round color="primary" onClick={this.toggleModalAdd} size="lg">
                 <i class="fas fa-2x fa-plus"></i>
               </Button>
             </Col>
           </Row>
           <AddModal status={this.state.modalAdd} handleClose={this.toggleModalAdd} handleSave={this.savePolicy}></AddModal>
-          <EditModal status={this.state.modalEdit} handleClose={this.toggleModalEdit} handleUpdate={this.updatePolicy} info={this.state.editTools}></EditModal>
+          <EditModal status={this.state.modalEdit} handleClose={this.toggleModalEdit} handleUpdate={this.updatePolicy} info={this.state.editData}></EditModal>
         </div>
       </div>
     );

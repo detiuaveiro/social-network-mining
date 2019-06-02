@@ -27,6 +27,7 @@ class UserInfo extends React.Component {
               <img
                 className="avatar border-gray"
                 src={this.state.user_info["profile_image_url_https"]}
+                alt=""
               />
             </Col>
             <Col className="text-center my-auto" xs={12} md={6}>

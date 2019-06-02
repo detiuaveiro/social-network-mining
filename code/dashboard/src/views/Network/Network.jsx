@@ -1,7 +1,6 @@
 import React from "react";
 // react plugin used to create charts
 // function that returns a color based on an interval of numbers
-import NeoVis from "neovis.js";
 import { PanelHeader} from "components";
 
 class Network extends React.Component {
@@ -29,11 +28,10 @@ class Network extends React.Component {
         }
       },
       arrows: true,
-      initial_cypher: "MATCH (bot:Bot)-[follows:FOLLOWS]->(user:User) \
-                      RETURN bot, follows, user",
+      initial_cypher: "MATCH (bot:Bot)-[follows:FOLLOWS]->(user:User) RETURN bot, follows, user",
     }
-    this.viz = new NeoVis(config);
-    this.viz.render()
+    this.vis = new window.NeoVis.default(config);
+    this.vis.render();
   }
 
   render() {

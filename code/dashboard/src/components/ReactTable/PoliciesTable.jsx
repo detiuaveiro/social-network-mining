@@ -12,7 +12,6 @@ import {
 class PoliciesTable extends React.Component {
 
     componentDidMount() {
-        console.log(this.props.dados)
         this.setState({policies: this.props.dados})
     }
 
@@ -30,28 +29,41 @@ class PoliciesTable extends React.Component {
                 accessor: 'id_policy',
                 width: 60,
                 style: {
-                    "text-align": "center",
+                    textAlign: "center",
                     height: "50px",
+                }
+            }, {
+                Header: 'Status',
+                accessor: 'status',
+                sortable: false,
+                filterable: false,
+                width: 90,
+                style: {
+                    textAlign: "center",
+                    height: "50px"
                 }
             }, {
                 Header: 'Name',
                 accessor: 'name',
+                width: 150,
                 style: {
-                    "text-align": "center",
+                    textAlign: "center",
                     height: "50px"
                 }
             }, {
                 Header: 'API',
                 accessor: 'API_type',
+                width: 100,
                 style: {
-                    "text-align": "center",
+                    textAlign: "center",
                     height: "50px"
                 }
             }, {
                 Header: 'Filter',
                 accessor: 'filter',
+                width: 100,
                 style: {
-                    "text-align": "center",
+                    textAlign: "center",
                     height: "50px"
                 }
             }, {
@@ -63,13 +75,19 @@ class PoliciesTable extends React.Component {
                     height: "50px"
                 },
             }, {
-                Header: 'Actions',
-                accessor: 'actions',
+                Header: 'Bots',
+                accessor: 'bots',
                 sortable: false,
                 filterable: false,
                 style: {
                     height: "50px"
                 },
+            }, {
+                Header: 'Actions',
+                accessor: 'actions',
+                width: 150,
+                sortable: false,
+                filterable: false,
             }],
     };
 
@@ -94,16 +112,21 @@ class PoliciesTable extends React.Component {
                             this.state.policies.map(policie => {
                                 return({
                                     id_policy: policie['id_policy'],
-                                    name: policie['name'],
-                                    API_type: policie['API_type'],
-                                    filter: policie['filter'],
-                                    params: policie['params'],
-                                    actions: (
+                                    status: (
                                         <div className="actions-center">
                                             <Switch
                                                 onChange={(state) => this.handleActivate(policie['id_policy'],state)}
                                                 defaultValue={policie['active']}
                                             />{" "}
+                                        </div>
+                                      ),
+                                    name: policie['name'],
+                                    API_type: policie['API_type'],
+                                    filter: policie['filter'],
+                                    params: policie['params'].join(),
+                                    bots: policie['bots'].join(),
+                                    actions: (
+                                        <div className="actions-center">
                                             <Button
                                                 onClick={() => this.handleEdit(policie['id_policy'])}
                                                 color="warning"
