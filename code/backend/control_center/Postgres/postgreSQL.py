@@ -365,8 +365,7 @@ class postgreSQL_API():
                         pass
                     else:
                         if cols[num]=="params":
-                            bots_list.append(j[0])
-                            for k in j[1:]:
+                            for k in j:
                                 if k.isnumeric() and len(k)>=MINIMUM_LENGTH_BOT_ID:
                                     bots_list.append(k)
                                 else:
