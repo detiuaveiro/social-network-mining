@@ -3,14 +3,19 @@ from datetime import datetime
 
 
 class postgreSQL_API():
-    
+    '''
+    This class represents all api and PDP interactions with PostgreSQL. It is used to get data from two databases:
+    - policies (for bots policies and PDP queries)
+    - postgres (for time series analysis)
+    '''
     def __init__(self, databaseName):
+        '''
+        Connection to the database.
+        Parameters:
+            databaseName - name of the database to connect.
+        '''
         try:
-            # read connection parameters
-            #params = config()
-
             # connect to the PostgreSQL server
-            #print('Connecting to the PostgreSQL database...')
             self.databaseName=databaseName
             self.conn = psycopg2.connect(host="192.168.85.46", database=databaseName,user="postgres",password="password")
 
@@ -51,11 +56,23 @@ class postgreSQL_API():
             cur.close()
         except psycopg2.Error as e:
             self.conn.rollback()
+            print(e)
             return {e.diag.severity : e.diag.message_primary}
         
         return {"Message":"Success"}
 
     def getAllStatsTweets(self):
+        '''
+        This function gets all tweets and its time-series statistics.
+            Can return:
+                result - A list of dictionaries with all tweets' statistics
+                    Keys:
+                        - timestamp
+                        - tweet_id
+                        - likes
+                        - retweets
+                DB error - A dictionary with key:ERROR and value: Specific DB Error 
+        '''
         try:
             cur=self.conn.cursor()
             cur.execute("select timestamp, tweet_id, likes, retweets from tweets;")
@@ -71,6 +88,19 @@ class postgreSQL_API():
             return {e.diag.severity: e.diag.message_primary}
 
     def getStatsTweetID(self, tweet_id):
+        '''
+        This function gets a specific tweet and its time-series statistics.
+            Parameters:
+                tweet_id: ID of the tweet to search in the DB
+            Can return:
+                result - A list of dictionaries with the specific tweet statistics
+                    Keys:
+                        - timestamp
+                        - tweet_id
+                        - likes
+                        - retweets
+                DB error - A dictionary with key:ERROR and value: Specific DB Error 
+        '''
         try:
             cur=self.conn.cursor()
             cur.execute("select timestamp, tweet_id, likes, retweets from tweets where tweet_id=%s;", (tweet_id,))
@@ -86,6 +116,17 @@ class postgreSQL_API():
             return {e.diag.severity: e.diag.message_primary}
 
     def getAllStatsUsers(self):
+        '''
+        This function gets all users and its time-series statistics.
+            Can return:
+                result - A list of dictionaries with all users' statistics
+                    Keys:
+                        - timestamp
+                        - user_id
+                        - followers
+                        - following
+                DB error - A dictionary with key:ERROR and value: Specific DB Error 
+        '''
         try:
             cur=self.conn.cursor()
             cur.execute("select timestamp, user_id, followers, following from users;")
@@ -101,6 +142,19 @@ class postgreSQL_API():
             return {e.diag.severity: e.diag.message_primary}
 
     def getStatsUserID(self, user_id):
+        '''
+        This function gets a specific user and its time-series statistics.
+            Parameters:
+                user_id: ID of the user to search in the DB
+            Can return:
+                result - A list of dictionaries with the specific user statistics
+                    Keys:
+                        - timestamp
+                        - user_id
+                        - followers
+                        - following
+                DB error - A dictionary with key:ERROR and value: Specific DB Error
+        '''
         try:
             cur=self.conn.cursor()
             cur.execute("select timestamp, user_id, followers, following from users where user_id=%s;", (user_id,))
@@ -116,9 +170,24 @@ class postgreSQL_API():
             return {e.diag.severity: e.diag.message_primary}
 
     def getAllStats(self):
+        '''
+        This function gets all statistics from getAllStatsTweets and getAllStatsUsers
+            Can return:
+                All tweets and users stats (For more references, check the mentioned functions documentation)
+                DB error- A dictionary with key:ERROR and value: Specific DB Error
+        '''
         return self.getAllStatsTweets()+self.getAllStatsUsers()
 
     def checkUserExistence(self,cur, mapa):
+        '''
+        This function is a helper function. It checks if a specific user exists. If it doesn't exist, it creates that user.
+            Parameters:
+                cur- Cursor to query the database
+                mapa- Dictionary with keys: 
+                    - user_id
+                    - followers
+                    - following
+        '''
         cur.execute("select * from users where user_id=%s;",(mapa["user_id"],))
         data=cur.fetchone()
         if data is None:
@@ -132,12 +201,24 @@ class postgreSQL_API():
     '''
     
     def searchLog(self, id_bot):
+        '''
+        This function gets all logs from a specific a bot, starting with the most recent actions.
+            Parameters:
+                id_bot- ID of the bot
+            Can return:
+                result- List of dictionaries with all actions made by the specific bot
+                    Keys:
+                        - id
+                        - timestamp
+                        - action
+                DB error- A dictionary with key:ERROR and value: Specific DB Error
+
+        '''
         try:
             cur = self.conn.cursor()
             cur.execute("select * from logs where id_bot=%s order by timestamp DESC;", (id_bot,))
             data = cur.fetchall()
             self.conn.commit()
-            print(data[0])
             result=self.getClearLogs(data,["id","timestamp","action"])
             cur.close()
             return result
@@ -146,6 +227,16 @@ class postgreSQL_API():
             return {e.diag.severity: e.diag.message_primary}
 
     def getAllLogs(self):
+        '''
+        This function gets all logs from all bots, starting with the most recent actions.
+            Can return:
+                result- List of dictionaries with all actions made by all bots
+                    Keys:
+                        - id
+                        - timestamp
+                        - action
+                DB error- A dictionary with key:ERROR and value: Specific DB Error
+        '''
         try:
             cur = self.conn.cursor()
             cur.execute("select * from logs order by timestamp DESC;")
@@ -160,6 +251,20 @@ class postgreSQL_API():
             return {e.diag.severity: e.diag.message_primary}
 
     def getAllPolicies(self):
+        '''
+        This function gets all policies.
+            Can return:
+                Empty list, if there are no policies
+                result - List of dictionaries with all policies
+                    Keys:
+                        - API_type
+                        - name
+                        - params
+                        - active
+                        - id_policy
+                        - filter
+                DB error- A dictionary with key:ERROR and value: Specific DB Error
+        '''
         try:
             cur=self.conn.cursor()
             cur.execute("select api.name,policies.name,params,active,id_policy,filter.name from policies left outer join filter on filter.id=policies.filter left outer join api on api.id=policies.API_type;")
@@ -175,6 +280,21 @@ class postgreSQL_API():
             return {e.diag.severity : e.diag.message_primary}
     
     def getPoliciesByAPI(self,api):
+        '''
+        This function gets all policies from a specific API (e.g. Twitter).
+            Parameters:
+                api- Name of the api (string)
+            Can return:
+                result- List of dictionaries with all policies from a specific API
+                    Keys:
+                        - API_type
+                        - name
+                        - params
+                        - active
+                        - id_policy
+                        - filter
+                DB error- A dictionary with key:ERROR and value: Specific DB Error
+        '''
         try:
             cur=self.conn.cursor()
             cur.execute("select api.name,filter.name,policies.name,policies.params,policies.active,policies.id_policy from policies left outer join filter on filter.id=policies.filter left outer join api on api.id=policies.API_type where api.name=%s;",(api,))
@@ -189,6 +309,21 @@ class postgreSQL_API():
             return {e.diag.severity : e.diag.message_primary}
 
     def getPoliciesByID(self,id):
+        '''
+        This function gets a specific policy.
+            Parameters:
+                id- ID of the policy
+            Can return:
+                result- List of dictionaries from a specific policy
+                    Keys:
+                        - API_type
+                        - name
+                        - params
+                        - active
+                        - id_policy
+                        - filter
+                DB error- A dictionary with key:ERROR and value: Specific DB Error
+        '''
         try:
             cur=self.conn.cursor()
             cur.execute("select api.name,policies.name,params,active,id_policy,filter.name from policies left outer join filter on filter.id=policies.filter left outer join api on api.id=policies.API_type where policies.id_policy=%s;",(id,))
@@ -202,6 +337,21 @@ class postgreSQL_API():
             return {e.diag.severity : e.diag.message_primary}
     
     def getPoliciesByBot(self,bot_id):
+        '''
+        This function gets all policies from a specific bot.
+            Parameters:
+                id- Bot ID
+            Can return:
+                result- List of dictionaries with all policies from a specific bot
+                    Keys:
+                        - API_type
+                        - name
+                        - params
+                        - active
+                        - id_policy
+                        - filter
+                DB error- A dictionary with key:ERROR and value: Specific DB Error
+        '''
         bot_id=str(bot_id)
         try:
             cur=self.conn.cursor()
@@ -228,7 +378,15 @@ class postgreSQL_API():
 
     def addLog(self,mapa):
         '''
-        adiciona uma politica após confirmar que a api e o filter já estão na db
+        This function adds a log to the database.
+            Parameters:
+                mapa- Dictionary with data to be inserted.
+                    Keys:
+                        - id_bot
+                        - action
+            Can return:
+                Dictionary with key:Message and value: "Success"
+                DB error- A dictionary with key:ERROR and value: Specific DB Error
         '''
         try:
             #add log
@@ -244,7 +402,19 @@ class postgreSQL_API():
 
     def addPolicy(self,mapa):
         '''
-        adiciona uma politica após confirmar que a api e o filter já estão na db
+        This function adds a policy to the database.
+            Parameters:
+                mapa- Dictionary with data to be inserted
+                    Keys:
+                        - API_type
+                        - filter
+                        - name
+                        - params
+                        - bots
+                        - [OPTIONAL] active
+            Can return:
+                Dictionary with key:Message and value: Success
+                DB error- A dictionary with key:ERROR and value: Specific DB Error
         '''
         try:
             #check if api exists
@@ -284,7 +454,12 @@ class postgreSQL_API():
     
     def removePolicy(self,id):
         '''
-        remove uma politica
+        This function removes a policy from the database, given the specified ID of the policy.
+            Parameters:
+                id- ID of the policy to be removed
+            Can return:
+                Dictionary with key:Message and value: "Success"
+                DB error- A dictionary with key:ERROR and value: Specific DB Error
         '''
         try:
             cur=self.conn.cursor()
@@ -298,8 +473,12 @@ class postgreSQL_API():
 
     def updatePolicy(self,mapa):
         '''
-        This function only updates records with the specified fields received.
-        mapa is a dictionary with the information needed to update the record (fields to be updated + id_policy)
+        This function updates a policy from the database.
+            Parameters:
+                mapa- Dictionary with information to be updated + ID of the policy
+            Can return:
+                Dictionary with key:Message and value: "Success"
+                DB error- A dictionary with key:ERROR and value: Specific DB Error
         '''
         try:
             cur=self.conn.cursor()
@@ -349,8 +528,12 @@ class postgreSQL_API():
 
     def postProcessResults(self,lista,cols):
         '''
-        This function gets the result from the postgres and post-process it to the JSON standard
+        This function gets the result from the postgres query and post-process it to the JSON standard.
         const MINIMUM_LENGTH_BOT_ID avoids that numeric keywords such as 911 or 112 to be confused as a bot
+            Parameters:
+                lista- list of tuples containing the values of the returned dictionary
+                cols- list containing the keys of the returned dictionary
+            Returns list of dictionaries
         '''
         l=[]
         MINIMUM_LENGTH_BOT_ID=19
@@ -395,6 +578,16 @@ class postgreSQL_API():
         return l
 
     def checkAPIExistence(self,cur,mapa):
+        '''
+        This function is a helper function of addPolicy and updatePolicy.
+        It checks the id of the queried API. If it doesn't exist, create a new one
+            Parameters:
+                cur- Cursor to query the database
+                mapa- Data to be inserted in the database
+            Can return:
+                val- ID of the new API
+                data[0]- ID of the API
+        '''
         cur.execute("select * from api where api.name=%s;",(mapa["API_type"],))
         data=cur.fetchone()
         cur.execute("select count(id) from api;")
@@ -403,10 +596,19 @@ class postgreSQL_API():
             val=count[0]+1
             cur.execute("insert into api (id,name) values (%s,%s);",(val,mapa["API_type"]))
             return val
-        return data[0]
-            
+        return data[0]            
     
     def checkFilterExistence(self,cur,mapa):
+        '''
+        This function is a helper function of addPolicy and updatePolicy.
+        It checks the id of the queried filter. If it doesn't exist, create a new one
+            Parameters:
+                cur- Cursor to query the database
+                mapa- Data to be inserted in the database
+            Can return:
+                val- ID of the new filter
+                data[0]- ID of the filter
+        '''
         cur.execute("select * from filter where filter.name=%s;",(mapa["filter"],))
         data=cur.fetchone()
         cur.execute("select count(id) from filter;")
@@ -418,6 +620,15 @@ class postgreSQL_API():
         return data[0]
 
     def checkFilterAPIExistence(self,cur,mapa,id_api,id_filter):
+        '''
+        This function is a helper function of addPolicy.
+        It checks if the API and filter are already mapped in the database. If not, create a new entry
+           Parameters:
+            cur- Cursor to query the database
+            mapa- Data to be inserted in the database
+            id_api- ID of the api
+            id_filter- ID of the filter
+        '''
         cur.execute("select api_id,filter_id from filter_api where api_id=%s and filter_id=%s;",(id_api,id_filter))
         data=cur.fetchone()
         if data is None:
@@ -426,7 +637,11 @@ class postgreSQL_API():
 
     def searchForBot(self,lista,id_bot):
         '''
-        lista is the parameter list. now, search for the bot!
+        This function is a helper function to the getPoliciesByBot function. Returns true if the bot is in the list or false if otherwise.
+            Parameters:
+                lista- list of bots in a specific policy
+                id_bot- bot ID to compare with bots' list
+            Returns: Bool
         '''
         for i in lista:
             if i==id_bot:
@@ -434,12 +649,25 @@ class postgreSQL_API():
         return False
 
     def getClearLogs(self,data,cols):
+        '''
+        This function is a helper function to the searchLog and getAllLogs functions. Post-processes the data and returns.
+            Parameters:
+                data- list of tuples containing the values of the returned dictionary
+                cols- list containing the keys of the returned dictionary
+            Returns the result of the postProcessResults function    
+        '''
         result = self.postProcessResults(data,cols)
         for j in result:
             j["id"]=str(j["id"])
         return result
     
     def getPoliciesParams(self):
+        '''
+        This function is used by the PDP to get the parameters of active policies.
+        Can return:
+            DB_val: parameters from the active policies
+            DB specific error
+        '''
         try:
             cur=self.conn.cursor()
             cur.execute("select params from policies,filter where policies.active=TRUE and policies.filter=filter.id and filter.name='Target'")
