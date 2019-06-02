@@ -567,6 +567,11 @@ class postgreSQL_API():
                             params.append(j[0])
                             for k in j[1:]:
                                 bots_list.append(k)
+                            d["bots"]=bots_list
+                            d[cols[num]]=params
+                        else:
+                            d[cols[num]]=j
+                    num+=1
             else:
                 for j in i:
                     if len(i)==num:
