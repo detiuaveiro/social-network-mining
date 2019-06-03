@@ -13,7 +13,7 @@ rabbit_vhost = os.environ.get("RABBIT_VIRTUALHOST", "PI")
 rabbit_username = os.environ.get("RABBIT_USER", "pi_rabbit_admin")
 rabbit_pass = os.environ.get("RABBIT_PASS", "yPvawEVxks7MLg3lfr3g")
 
-RABBIT_CONNECTION = RabbitSend(host=rabbit_host, port=rabbit_port, vhost=rabbit_username,
+RABBIT_CONNECTION = RabbitSend(host=rabbit_host, port=rabbit_port, vhost=rabbit_vhost,
                                username=rabbit_username,
                                password=rabbit_pass)
 
@@ -31,7 +31,7 @@ def print_divider():
 def print_current_session():
     print("Currently using the following variables:")
     for k, v in current_session.items():
-        print(f"{k}={v}")
+        print("{}={}".format(k,v))
 
 
 def cleanup():
@@ -40,7 +40,7 @@ def cleanup():
 
 def setup_current_session():
     while True:
-        print(f"You currently have the BOT ID set to: {current_session.get(BOT_ID_SESSION_KEY, None)}")
+        print("You currently have the BOT ID set to: {0}".format(current_session.get(BOT_ID_SESSION_KEY, None)))
         print("Would you like to change it? (Y/N)")
         option = input("> ").strip().lower()
         if option == "n":
@@ -77,7 +77,7 @@ def follow_users_task():
     if option == "n":
         print("Canceled")
         return
-    print(f"Sending to bot with ID={current_session.get(BOT_ID_SESSION_KEY)}...")
+    print("Sending to bot with ID={}...".format(current_session.get(BOT_ID_SESSION_KEY)))
     payload = {
         "type" : enums.ResponseTypes.FOLLOW_USERS,
         "params" : {
@@ -86,7 +86,7 @@ def follow_users_task():
         }
     }
     RABBIT_CONNECTION.send(
-        routing_key=f"{TASKS_ROUTING_KEY_PREFIX}.{current_session.get(BOT_ID_SESSION_KEY)}",
+        routing_key="{0}.{1}".format(TASKS_ROUTING_KEY_PREFIX,current_session.get(BOT_ID_SESSION_KEY)),
         message=payload
     )
     print("Sent")
@@ -96,7 +96,7 @@ def send_task_loop():
     while True:
         print("Select a task (type /exit to exit):")
         for val in enums.ResponseTypes:
-            print(f"{val} - {val.name}")
+            print("{0} - {0.name}".format(val))
         option = input("> ")
         if option is enums.ResponseTypes.FOLLOW_USERS:
             follow_users_task()
@@ -106,7 +106,7 @@ def send_task_loop():
             print("Not implemented/Invalid option, try again!")
 
 
-print(f"{'-' * 5} Twitter Bots Helper Scripts{'-' * 5}")
+print("{0} Twitter Bots Helper Scripts {0}".format('-' * 5))
 while True:
     print_divider()
     print_current_session()
@@ -127,5 +127,6 @@ while True:
         if current_session.get(BOT_ID_SESSION_KEY, None) is None:
             print("Bot id is none! You need to setup first!")
             continue
+        send_task_loop()
     else:
         print("Incorrect option! Try again")
