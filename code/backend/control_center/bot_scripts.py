@@ -57,7 +57,7 @@ def setup_current_session():
             print("Incorrect option! Try again")
 
 
-def follow_users_task():
+def read_users_list():
     # reading the users
     print("Type the Screen Names of the users (type /exit to end)")
     users = []
@@ -70,6 +70,32 @@ def follow_users_task():
                 break
         else:
             users += [user]
+    return users
+
+def find_followers_task():
+    users = read_users_list()
+    print("User currently has: ")
+    print(users)
+    print("Do you want to send? (press Enter to confirm, N to cancel)")
+    option = input("> ").strip().lower()
+    if option == "n":
+        print("Canceled")
+        return
+    print("Sending to bot with ID={}...".format(current_session.get(BOT_ID_SESSION_KEY)))
+    payload = {
+        "type" : enums.ResponseTypes.FIND_FOLLOWERS,
+        "params" : {
+            "type" : "screen_name",
+            "data" : users
+        }
+    }
+    RABBIT_CONNECTION.send(
+        routing_key="{0}.{1}".format(TASKS_ROUTING_KEY_PREFIX,current_session.get(BOT_ID_SESSION_KEY)),
+        message=payload
+    )
+
+def follow_users_task():
+    users = read_users_list()
     print("User currently has: ")
     print(users)
     print("Do you want to send? (press Enter to confirm, N to cancel)")
@@ -104,6 +130,8 @@ def send_task_loop():
             choice = enums.ResponseTypes(int(option))
             if option is enums.ResponseTypes.FOLLOW_USERS:
                 follow_users_task()
+            elif option is enums.ResponseTypes.FIND_FOLLOWERS:
+                find_followers_task()
             else:
                 print("Not implemented, try again!")
         except ValueError:
@@ -131,5 +159,6 @@ while True:
         if current_session.get(BOT_ID_SESSION_KEY, None) is None:
             print("Bot id is none! You need to setup first!")
             continue
+        send_task_loop()
     else:
         print("Incorrect option! Try again")
