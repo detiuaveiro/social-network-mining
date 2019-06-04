@@ -98,12 +98,16 @@ def send_task_loop():
         for val in enums.ResponseTypes:
             print("{0} - {0.name}".format(val))
         option = input("> ")
-        if option is enums.ResponseTypes.FOLLOW_USERS:
-            follow_users_task()
-        elif option == "/exit":
-            return
-        else:
-            print("Not implemented/Invalid option, try again!")
+        if option == "/exit":
+            return  
+        try:
+            choice = enums.ResponseTypes(int(option))
+            if option is enums.ResponseTypes.FOLLOW_USERS:
+                follow_users_task()
+            else:
+                print("Not implemented, try again!")
+        except ValueError:
+            print("Invalid option, try again!")
 
 
 print("{0} Twitter Bots Helper Scripts {0}".format('-' * 5))
