@@ -130,7 +130,7 @@ def send_task_loop():
             choice = enums.ResponseTypes(int(option))
             if choice is enums.ResponseTypes.FOLLOW_USERS:
                 follow_users_task()
-            elif option is enums.ResponseTypes.FIND_FOLLOWERS:
+            elif choice is enums.ResponseTypes.FIND_FOLLOWERS:
                 find_followers_task()
             else:
                 print("Not implemented, try again!")
