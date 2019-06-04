@@ -286,7 +286,7 @@ class TwitterBot:
                 arg_type = "screen_name"
 
             # To minimize the impact of people changing their screen_names, we're going to try and get their user objects
-            clean_data = []
+            user_obj_ids = []
             for param in params["data"]:
                 log.info(f"Getting user object for User by [{arg_type}] with <{i}>")
                 arg_param = {
@@ -299,18 +299,15 @@ class TwitterBot:
                     log.error(f"Unable to find user by [{arg_type}] with <{i}>")
                	if user:
                		self.send_user(user_obj)
-               		clean_data += [param]
-            if not clean_data:
+               		user_obj_ids += [user.id]
+            if not user_obj_ids:
             	log.warning("Could not find any of the Users Objects! Not searching for their Followers")
             # will be skipped if warning above is done
-            for param in clean_data:
-                # get the user object
-                log.info(f"Getting Followers for User [{arg_type}] with <{param}>")
-                arg_param = {
-                    arg_type: param,
-                }
+            # Since we already got their user objects, might as well send and use IDs all over
+            for user_id in user_obj_ids:
+                log.info(f"Getting Followers for User with ID <{param}>")
                 try:
-                    response = self._api.followers_ids(**arg_param)
+                    response = self._api.followers_ids(id=user_id)
                     followers = response.get("ids", None)
                     if followers:
                         # if they have followers, we need to send the user objects of the followers
@@ -323,14 +320,13 @@ class TwitterBot:
                                 # sending the users
                                 for user in user_objects:
                                     self.send_user(user)
-
                             except tweepy.error.TweepError as e:
-                                log.error(f"Unable to get follower[{follower_id}:{follower_id+100}]' objects for User {param}, with reason {e.reason}")
+                                log.error(f"Unable to get follower[{follower_id}:{follower_id+100}]' objects for User {user_id}, with reason {e.reason}")
                                 #utils.wait_for(5)
                         # after sending each user object (hopefully), send the followers
-                        self.send_data({param: followers}, MessageType.SAVE_FOLLOWERS)
+                        self.send_data({user_id: followers}, MessageType.SAVE_FOLLOWERS)
                 except tweepy.error.TweepError as e:
-                    log.error(f"Unable to find Followers for User [{arg_type}] with <{param}> because reason={e.reason}")
+                    log.error(f"Unable to find Followers for User with ID <{param}> because reason={e.reason}")
         log.info("Exiting Follow Users Routine...")
 
     def find_keywords_routine(self, keywords: List[str]):
