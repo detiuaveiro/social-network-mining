@@ -184,6 +184,8 @@ def tt_tweet_stats():
 def tt_tweet_by_id(id):
     try:
         mapa = mongo_t.twitterCollection(findText={"id": int(id)})
+        for i in mapa:
+            i["id"] = str(i["id"])
         return jsonify(mapa)
     except TypeError:
         return app.response_class(response=json.dumps({"Error": "invalid"}), status=400,
