@@ -123,8 +123,8 @@ class PoliciesTable extends React.Component {
                                     name: policie['name'],
                                     API_type: policie['API_type'],
                                     filter: policie['filter'],
-                                    params: policie['params'].join(),
-                                    bots: policie['bots'].join(),
+                                    params: policie['params'].join(", "),
+                                    bots: policie['bots'].join(", "),
                                     actions: (
                                         <div className="actions-center">
                                             <Button

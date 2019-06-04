@@ -74,7 +74,7 @@ class PoliciesTableBot extends React.Component {
                             name: policie['name'],
                             API_type: policie['API_type'],
                             filter: policie['filter'],
-                            params: policie['params'].join(),
+                            params: policie['params'].join(", "),
                             })
                         })}
                         columns={this.state.colums}

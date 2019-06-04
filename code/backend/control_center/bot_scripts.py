@@ -127,6 +127,5 @@ while True:
         if current_session.get(BOT_ID_SESSION_KEY, None) is None:
             print("Bot id is none! You need to setup first!")
             continue
-        send_task_loop()
     else:
         print("Incorrect option! Try again")

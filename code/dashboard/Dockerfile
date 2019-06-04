@@ -11,7 +11,7 @@ COPY . /usr/src/app
 RUN npm run build
 
 ### STAGE 2: Production Environment ###
-FROM nginx:1.13.12-alpine
+FROM nginx:latest
 COPY --from=build /usr/src/app/build /var/www
 COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
