@@ -7,7 +7,7 @@ class Network extends React.Component {
   componentDidMount() {
     const config = {
       container_id: "viz",
-      server_url: "bolt://192.168.85.187:7473",
+      server_url: "bolt://192.168.85.187:7687",
       server_user: "neo4j",
       server_password: "neo4jPI",
       labels: {
@@ -28,8 +28,6 @@ class Network extends React.Component {
         }
       },
       arrows: true,
-      encrypted: "ENCRYPTION_ON",
-      trust: 'TRUST_CUSTOM_CA_SIGNED_CERTIFICATES',
       initial_cypher: "MATCH (bot:Bot)-[follows:FOLLOWS]->(user:User) RETURN bot, follows, user",
     }
     this.vis = new window.NeoVis.default(config);
