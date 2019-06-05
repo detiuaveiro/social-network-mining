@@ -77,8 +77,8 @@ class Neo4jAPI():
         log.info("NEO4J TASK: CREATE RELATION USER - USER")
         user1 = data['user1']
         user2 = data['user2']
-        result = tx.run("MATCH (u:User { id: $user1 }), (r:User {id:$user2}) \
-                        MERGE (u)-[:FOLLOWS]->(r)", user1=user1, user2=user2)
+        result = tx.run("MATCH (u:User { id: $user1 }), (r:User { id:$user2 }) \
+                        MERGE (u)<-[:FOLLOWS]-(r)", user1=user1, user2=user2)
 
 
     @staticmethod
