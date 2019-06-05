@@ -277,11 +277,12 @@ class PDP:
                 params = i["params"]
                 # if mentioned user is in the parameters, then ++
                 for j in msg["tweet_entities"]["user_mentions"]:
-                    if j["id_str"] in params:
+                    if j["screen_name"] in params:
                         val = True
                         break
                 # if user is in the parameters, then ++
-                if msg["user_id"] in params:
+                username=self.users.find_one({"id":msg["user_id"]},{"_id":0,"screen_name":1})
+                if username["screen_name"] in params:
                     val = True
 
                 if val:
@@ -321,7 +322,7 @@ class PDP:
                 spp = sp[1].split(" )")
                 id_tweet = spp[0]
 
-                id_user = self.tweets.find_one({"id": id_tweet}, {"user": 1, "_id": 0})
+                id_user = self.tweets.find_one({"id": id_tweet}, filter={"user": 1, "_id": 0})
                 if msg["user_id"] == id_user:
                     date = logs[i]["timestamp"]
                     now = datetime.datetime.now()
@@ -367,11 +368,12 @@ class PDP:
                 params = i["params"]
                 # if mentioned user is in the parameters, then ++
                 for j in msg["tweet_entities"]["user_mentions"]:
-                    if j["id_str"] in params:
+                    if j["screen_name"] in params:
                         val = True
                         break
                 # if user is in the parameters, then ++
-                if msg["user_id"] in params:
+                username=self.users.find_one({"id":msg["user_id"]},{"_id":0,"screen_name":1})
+                if username["screen_name"] in params:
                     val = True
 
                 if val:
@@ -412,7 +414,7 @@ class PDP:
                 spp = sp[1].split(" )")
                 id_tweet = spp[0]
 
-                id_user = self.tweets.find_one({"id": id_tweet}, {"user": 1, "_id": 0})
+                id_user = self.tweets.find_one({"id": id_tweet}, filter={"user": 1, "_id": 0})
                 if msg["user_id"] == id_user:
                     date = logs[i]["timestamp"]
                     now = datetime.datetime.now()
