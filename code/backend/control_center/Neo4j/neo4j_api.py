@@ -12,6 +12,7 @@ class Neo4jTypes(IntEnum):
     SEARCH_BOT = 6
     UPDATE_BOT = 7
     CREATE_RELATION_USER_USER = 8
+    CREATE_RELATION_BOT_BOT = 9
 
 log = logging.getLogger('NEO4J')
 log.setLevel(logging.INFO)
@@ -46,6 +47,8 @@ class Neo4jAPI():
                 session.write_transaction(self.update_bot, data)
             elif (query_type==Neo4jTypes.CREATE_RELATION_USER_USER):
                 session.write_transaction(self.create_relationship_user_user, data)
+            elif (query_type==Neo4jTypes.CREATE_RELATION_BOT_BOT):
+                session.write_transaction(self.create_relationship_bot_bot, data)
 
     @staticmethod
     def create_bot(tx, data):
@@ -71,6 +74,14 @@ class Neo4jAPI():
         user_id = data['user_id']
         result = tx.run("MATCH (u:Bot { id: $bot_id }), (r:User {id:$user_id}) \
                         MERGE (u)-[:FOLLOWS]->(r)", bot_id=bot_id, user_id=user_id)
+
+    @staticmethod
+    def create_relationship_bot_bot(tx, data):
+        log.info("NEO4J TASK: CREATE RELATION BOT - BOT")
+        bot1 = data['bot1']
+        bot2 = data['bot2']
+        result = tx.run("MATCH (u:Bot { id: $bot1 }), (r:Bot {id:$bot2}) \
+                        MERGE (u)<-[:FOLLOWS]-(r)", bot1=bot1, bot2=bot2)
 
     @staticmethod
     def create_relationship_user_user(tx, data):

@@ -31,6 +31,7 @@ class Neo4jTypes(IntEnum):
     SEARCH_BOT = 6
     UPDATE_BOT = 7
     CREATE_RELATION_USER_USER = 8
+    CREATE_RELATION_BOT_BOT = 9
 
 class PoliciesTypes(IntEnum):
     REQUEST_TWEET_LIKE = 1

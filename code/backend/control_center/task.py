@@ -355,10 +355,11 @@ class Task:
         for key, value in message['data'].items():
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "SAVE LIST OF USERS FOLLOWED BY USER WITH ID: "+str(key)})
             exists = self.neo4j.task(Neo4jTypes.SEARCH_USER,data={"user_id": int(key)})
+            isBot = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"user_id": int(key)})
             if (exists):
                 for user2 in value:
                     exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"user_id": int(user2)})
-                    if (exists2):
+                    if (not exists2):
                         result = self.policy.lifecycle(msg={
                             "type": PoliciesTypes.REQUEST_FOLLOW_USER,
                             "bot_id": message['bot_id'],
@@ -375,13 +376,32 @@ class Task:
                         self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_USER_USER,data={"user1": int(key), "user2": int(user2)})
                     else:
                         continue
-
+            elif (isBot):
+                for user2 in value:
+                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"user_id": int(user2)})
+                    if (not exists2):
+                        result = self.policy.lifecycle(msg={
+                            "type": PoliciesTypes.REQUEST_FOLLOW_USER,
+                            "bot_id": message['bot_id'],
+                            "user_id": int(user2),
+                        })
+                        if (result==1):
+                            log.info("USER ALLOWED TO BE FOLLOWED")
+                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(user2)+" ) ALLOWED TO BE FOLLOWED"})
+                            send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.FOLLOW_USERS,
+                                    params={"type": "id", "data": [int(user2)]})
+                        else:
+                            log.info("USER NOT ALLOWED TO BE FOLLOWED")
+                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(user2)+" ) NOT ALLOWED TO BE FOLLOWED"})
+                        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_BOT_USER,data={"bot_id": key, "user_id": int(user2)})
+                    else:
+                        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_BOT_BOT,data={"bot1": key, "bot2": user2})
             else:
                 self.neo4j.task(Neo4jTypes.CREATE_USER,data={"id": key, "name": "", "username": ""})
                 self.mongo.save('users', {"id": int(key)})
                 for user2 in value:
                     exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"user_id": int(user2)})
-                    if(exists2):
+                    if(not exists2):
                         result = self.policy.lifecycle(msg={
                             "type": PoliciesTypes.REQUEST_FOLLOW_USER,
                             "bot_id": message['bot_id'],
