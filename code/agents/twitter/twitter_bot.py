@@ -5,6 +5,7 @@ import sys
 from typing import List, Dict, Tuple, Union
 
 import tweepy
+import pyrabbit2
 from pyrabbit2 import Client
 
 import settings
@@ -650,11 +651,25 @@ class TwitterBot:
                            routing_key=self.log_routing_key,
                            exchange=self.log_exchange)
 
-    def _send_message(self, data, *, message_type: MessageType, routing_key: str, exchange: str):
-        log.debug(f"Sending <{message_type.name}> to [{exchange}] with {data}")
+    def _send_message(self, data, *, message_type: MessageType, routing_key: str, exchange: str, current_reconnect=0):
+        log.debug(f"Sending <{message_type.name}> to exchange [{exchange}] with routing_key [{routing_key}] with {data}")
         payload = utils.wrap_message(data, bot_id=self._id, message_type=message_type)
-        self.messaging.publish(vhost=self.vhost, xname=exchange, rt_key=routing_key,
+        try:
+            self.messaging.publish(vhost=self.vhost, xname=exchange, rt_key=routing_key,
                                payload=utils.to_json(payload))
+        except pyrabbit2.http.NetworkError as e:
+            log.error("Unable to send a message. Retrying...")
+            # if we reach the maximum number of retries, just end the program
+            # In theory, this shouldn't happen
+            if current_reconnect == settings.MAX_RABBIT_RETRIES:
+                raise e
+            # recreate the instant
+            self.messaging = Client(api_url=os.environ.get("SERVER_HOST", "127.0.0.1"),
+                                    user=settings.RABBIT_USERNAME,
+                                    passwd=settings.RABBIT_PASSWORD)
+            # try to resend the message
+            self._send_message(data, message_type=message_type, routing_key=routing_key, exchange=exchange, current_reconnect=current_reconnect+1)
+
 
 
 def parse_args():
@@ -686,8 +701,8 @@ if __name__ == "__main__":
     log.addHandler(handler)
     # TODO: change password
     messaging_manager = Client(api_url=server,
-                               user='pi_rabbit_admin',
-                               passwd='yPvawEVxks7MLg3lfr3g')
+                               user=settings.RABBIT_USERNAME,
+                               passwd=settings.RABBIT_PASSWORD)
 
     wrapper_api = TweepyWrapper(tor_proxies=proxies, user_agent=user_agent, consumer_key=key,
                                 consumer_secret=secret, token=token, token_secret=token_secret)
