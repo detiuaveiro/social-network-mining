@@ -53,7 +53,7 @@ class Neo4jAPI():
         bot_name = data['name']
         bot_id = data['id']
         bot_username = data['username']
-        result = tx.run("CREATE (:Bot { name: $name, id: $id, username: $username })", id=bot_id, name=bot_name,  username=bot_username)
+        result = tx.run("MERGE (:Bot { name: $name, id: $id, username: $username })", id=bot_id, name=bot_name,  username=bot_username)
 
     @staticmethod
     def create_user(tx, data):
@@ -61,7 +61,7 @@ class Neo4jAPI():
         user_name = data['name']
         user_id = data['id']
         user_username = data['username']
-        result = tx.run("CREATE (:User { name: $name, id: $id, username: $username })", id=user_id, name=user_name, username=user_username)
+        result = tx.run("MERGE (:User { name: $name, id: $id, username: $username })", id=user_id, name=user_name, username=user_username)
     
     
     @staticmethod
@@ -70,7 +70,7 @@ class Neo4jAPI():
         bot_id = data['bot_id']
         user_id = data['user_id']
         result = tx.run("MATCH (u:Bot { id: $bot_id }), (r:User {id:$user_id}) \
-                        CREATE (u)-[:FOLLOWS]->(r)", bot_id=bot_id, user_id=user_id)
+                        MERGE (u)-[:FOLLOWS]->(r)", bot_id=bot_id, user_id=user_id)
 
     @staticmethod
     def create_relationship_user_user(tx, data):
@@ -78,7 +78,7 @@ class Neo4jAPI():
         user1 = data['user1']
         user2 = data['user2']
         result = tx.run("MATCH (u:User { id: $user1 }), (r:User {id:$user2}) \
-                        CREATE (u)-[:FOLLOWS]->(r)", user1=user1, user2=user2)
+                        MERGE (u)-[:FOLLOWS]->(r)", user1=user1, user2=user2)
 
 
     @staticmethod

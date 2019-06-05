@@ -117,6 +117,7 @@ class PoliciesTable extends React.Component {
                                             <Switch
                                                 onChange={(state) => this.handleActivate(policie['id_policy'],state)}
                                                 defaultValue={policie['active']}
+                                                className="bootstrap-switch-brown"
                                             />{" "}
                                         </div>
                                       ),
