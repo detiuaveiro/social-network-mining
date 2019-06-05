@@ -288,7 +288,7 @@ class TwitterBot:
             # To minimize the impact of people changing their screen_names, we're going to try and get their user objects
             user_obj_ids = []
             for param in params["data"]:
-                log.info(f"Getting user object for User by [{arg_type}] with <{i}>")
+                log.info(f"Getting user object for User by [{arg_type}] with <{param}>")
                 arg_param = {
                     arg_type: param,
                 }
@@ -296,7 +296,7 @@ class TwitterBot:
                 try:
                     user = self._api.get_user(**arg_param)
                 except tweepy.error.TweepError as e:
-                    log.error(f"Unable to find user by [{arg_type}] with <{i}>")
+                    log.error(f"Unable to find user by [{arg_type}] with <{param}>")
                	if user:
                		self.send_user(user_obj)
                		user_obj_ids += [user.id]
