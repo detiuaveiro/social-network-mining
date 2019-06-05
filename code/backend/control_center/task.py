@@ -173,7 +173,7 @@ class Task:
         if (result==1):
             log.info("TWEET ACCEPTED TO BE LIKED")
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE LIKED"})
-            send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.RETWEET_TWEETS,
+            send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.LIKE_TWEETS,
                        params=message['data']['id'])
         else:
             log.info("TWEET NOT ACCEPTED TO BE LIKED")
