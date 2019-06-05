@@ -298,7 +298,7 @@ class TwitterBot:
                 except tweepy.error.TweepError as e:
                     log.error(f"Unable to find user by [{arg_type}] with <{param}>")
                	if user:
-               		self.send_user(user_obj)
+               		self.send_user(user)
                		user_obj_ids += [user.id]
             if not user_obj_ids:
             	log.warning("Could not find any of the Users Objects! Not searching for their Followers")
@@ -307,16 +307,14 @@ class TwitterBot:
             for user_id in user_obj_ids:
                 log.info(f"Getting Followers for User with ID <{param}>")
                 try:
-                    response = self._api.followers_ids(id=user_id)
-                    followers = response.get("ids", None)
+                    followers = self._api.followers_ids(id=user_id)
                     if followers:
                         # if they have followers, we need to send the user objects of the followers
                         # and then the followers list
                         # NOTE: Twitter API limits to 100 followers per request
                         for follower_id in range(0, len(followers), 100):
-                            request_users = ",".join(followers[follower_id:follower_id+100])
                             try:
-                                user_objects = self._api.lookup_users(user_ids=request_users)
+                                user_objects = self._api.lookup_users(user_ids=followers[follower_id:follower_id+100])
                                 # sending the users
                                 for user in user_objects:
                                     self.send_user(user)

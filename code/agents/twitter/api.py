@@ -49,8 +49,13 @@ class TweepyWrapper(tweepy.API):
         log.debug(f"Making Request to {fun.__name__}\n")
         # Since we're making our own version of the models,
         # we're going to ignore everything except the json
-        dirty_data = fun(*args, **kwargs)
-
+        try:
+            dirty_data = fun(*args, **kwargs)
+        # we need to do this type error because for some reason, tweepy.lookup_users doesn't accept the header kwargs....
+        except TypeError as e:
+            log.warning(f"Type error found in {fun.__name__}, removing headers! {e}")
+            kwargs.pop("headers", None)
+            dirty_data = fun(*args, **kwargs)
         # Wrapper for User
         data_type = type(dirty_data)
         if data_type == tweepy.models.User:
@@ -122,6 +127,9 @@ class TweepyWrapper(tweepy.API):
         __doc__ = self._tweepy.home_timeline.__doc__
         return self._request(self._tweepy.home_timeline, **kwargs)
 
+    def lookup_users(self, *, user_ids : List[int], **kwargs) -> List[User]:
+        __doc__ = self._tweepy.lookup_users.__doc__
+        return self._request(self._tweepy.lookup_users, user_ids=user_ids, **kwargs)
     def user_timeline(self, **kwargs) -> List[Tweet]:
         __doc__ = self._tweepy.user_timeline.__doc__
         user_id = kwargs.pop("user_id")
