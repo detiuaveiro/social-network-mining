@@ -263,7 +263,7 @@ class PDP:
         Acceptance Threshold: +0.4
         """
         threshold = 0
-        follow = self.neo.search_relationship(msg["user_id"], msg["bot_id"])
+        follow = self.neo.search_relationship(msg["user_id"], str(msg["bot_id"]))
         if follow:
             threshold += BOT_FOLLOWS_USER
         lista = self.policies.getPoliciesByBot(msg["bot_id"])
@@ -354,7 +354,7 @@ class PDP:
         Acceptance Threshold: +0.6
         """
         threshold = 0
-        follow = self.neo.search_relationship(msg["user_id"], msg["bot_id"])
+        follow = self.neo.search_relationship(msg["user_id"], str(msg["bot_id"]))
         if follow:
             threshold += BOT_FOLLOWS_USER
         lista = self.policies.getPoliciesByBot(msg["bot_id"])

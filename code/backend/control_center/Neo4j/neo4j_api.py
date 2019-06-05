@@ -151,7 +151,7 @@ class Neo4jAPI():
     def search_relationship(self,user_id,bot_id):
         with self._driver.session() as session:
             result=session.run("match (b:Bot { id:$bot_id } )-[r:FOLLOWS]->(u:User { id:$user_id } ) return b,u",bot_id=bot_id,user_id=user_id)
-            if (len(result.data())==0):
+            if (len(result.values())==0):
                 return False
             else:
                 return True
