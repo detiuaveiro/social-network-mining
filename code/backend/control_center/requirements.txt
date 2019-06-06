@@ -13,3 +13,4 @@ neo4j==1.7.3
 neobolt==1.7.12
 neotime==1.7.4
 Flask-Cors==3.0.7
+elasticsearch==7.0.2
