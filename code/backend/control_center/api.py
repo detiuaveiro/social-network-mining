@@ -4,6 +4,7 @@ from Mongo.mongo_flask import AppMongo
 from Postgres.postgreSQL import postgreSQL_API
 from Neo4j.neo4j_api import Neo4jAPI
 import ast
+from ElasticSearch.ElasticSearch import getESService
 
 app=Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
@@ -13,6 +14,7 @@ mongo_t = AppMongo(app, "tweets")
 postgres = postgreSQL_API("postgres")
 policy = postgreSQL_API("policies")
 neo = Neo4jAPI()
+elas=getESService()
 '''/
     users
         user
@@ -169,15 +171,9 @@ def tt_tweets():
 
 @app.route("/twitter/tweets/stats")
 def tt_tweet_stats():
-    # agregação de likes, retweets
-    '''pipeline=[{'$project':{
-        'favorite': {'$sum': '$favorite_count'},
-        'retweet': {'$sum': '$retweet_count'}}}]
+    stats = elas.getAllStatsTweets(length=50)
 
-    mapa=mongo_t.aggregate(pipeline)
-    '''
-    stats = postgres.getAllStatsTweets()
-    return jsonify(stats)  # jsonify({"favorite_count":fav,"retweet_count":ret})
+    return jsonify(stats)
 
 
 @app.route("/twitter/tweets/<id>")
