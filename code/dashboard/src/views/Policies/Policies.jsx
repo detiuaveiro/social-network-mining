@@ -14,7 +14,8 @@ class Policies extends React.Component {
         modalAdd: false,
         modalEdit: false,
         policies: [],
-        editData:[]
+        editData:[],
+        bots: [],
     };
     this.toggleModalAdd = this.toggleModalAdd.bind(this);
     this.toggleModalEdit = this.toggleModalEdit.bind(this);
@@ -33,6 +34,15 @@ class Policies extends React.Component {
         const policies = res.data;
         this.setState({ policies });
    });
+   axios.get('http://192.168.85.182:5000/twitter/bots')
+   .then(res => {
+     const data = res.data;
+     const options = []
+     data.forEach(function(bot){
+       options.push({value: bot['id'], label: bot['name']})
+     })
+     this.setState({bots: options});
+   })
   }
 
   toggleModalAdd() {
@@ -154,7 +164,7 @@ class Policies extends React.Component {
         <div className="content">
           <Row>
             <Col xs={12} md={12}>
-              <PoliciesTable dados={this.state.policies} remove={this.removePolicy} edit={this.editPolicy} activate={this.activatePolicy}/>
+              <PoliciesTable dados={this.state.policies} remove={this.removePolicy} edit={this.editPolicy} activate={this.activatePolicy} bots={this.state.bots}/>
             </Col>
             <Col xs={12} md={12} className="text-right">
               <Button icon round color="primary" onClick={this.toggleModalAdd} size="lg">
@@ -162,8 +172,8 @@ class Policies extends React.Component {
               </Button>
             </Col>
           </Row>
-          <AddModal status={this.state.modalAdd} handleClose={this.toggleModalAdd} handleSave={this.savePolicy}></AddModal>
-          <EditModal status={this.state.modalEdit} handleClose={this.toggleModalEdit} handleUpdate={this.updatePolicy} info={this.state.editData}></EditModal>
+          <AddModal status={this.state.modalAdd} handleClose={this.toggleModalAdd} handleSave={this.savePolicy} bots={this.state.bots}></AddModal>
+          <EditModal status={this.state.modalEdit} handleClose={this.toggleModalEdit} handleUpdate={this.updatePolicy} info={this.state.editData} bots={this.state.bots}></EditModal>
         </div>
       </div>
     );

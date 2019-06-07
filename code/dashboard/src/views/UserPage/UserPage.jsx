@@ -10,6 +10,7 @@ class User extends React.Component {
     profile_data: [],
     following: [],
     followers: [],
+    kibana_url: "",
     activeTab: '1',
   };
   
@@ -23,7 +24,9 @@ class User extends React.Component {
 
   componentDidMount() {
     const url = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)
-
+    this.setState({
+      kibana_url: "http://192.168.85.46:5601/app/kibana#/dashboard/b10c6370-886e-11e9-9a93-576733f53835?embed=true&_g=()&_a=(description:'',filters:!(),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),panels:!((embeddableConfig:(vis:(legendOpen:!f)),gridData:(h:17,i:'1',w:16,x:0,y:7),id:'9439b220-886e-11e9-9a93-576733f53835',panelIndex:'1',type:visualization,version:'7.1.1'),(embeddableConfig:(vis:(legendOpen:!f)),gridData:(h:17,i:'3',w:16,x:32,y:7),id:a2de2780-889a-11e9-9a93-576733f53835,panelIndex:'3',type:visualization,version:'7.1.1'),(embeddableConfig:(),gridData:(h:7,i:'4',w:16,x:0,y:0),id:'2b0cac30-889b-11e9-9a93-576733f53835',panelIndex:'4',type:visualization,version:'7.1.1'),(embeddableConfig:(),gridData:(h:7,i:'5',w:16,x:32,y:0),id:'58dae640-889b-11e9-9a93-576733f53835',panelIndex:'5',type:visualization,version:'7.1.1'),(embeddableConfig:(),gridData:(h:7,i:'6',w:16,x:16,y:0),id:'852a2170-889b-11e9-9a93-576733f53835',panelIndex:'6',type:visualization,version:'7.1.1'),(embeddableConfig:(),gridData:(h:17,i:'7',w:16,x:16,y:7),id:f5d66380-889a-11e9-9a93-576733f53835,panelIndex:'7',type:visualization,version:'7.1.1')),query:(language:kuery,query:'id+:+%22"+url+"%22'),timeRestore:!f,title:'Bot+Dashboard',viewMode:view)" 
+    })
     axios.get('http://192.168.85.182:5000/twitter/users/'+url)
       .then(res => {
         const profile_data = res.data[0];
@@ -42,7 +45,6 @@ class User extends React.Component {
     axios.get('http://192.168.85.182:5000/twitter/users/'+url+'/tweets')
       .then(res => {
         const tweets = res.data;
-        console.log(tweets)
         this.setState({ tweets });
       })
   }
@@ -99,6 +101,9 @@ class User extends React.Component {
                   />
                   <p className="description text-center">
                     {this.state.profile_data["description"]}<br />
+                  </p>
+                  <p className="text-center">
+                    <b>Status: </b>{this.state.profile_data["suspended"] ? "Suspended" : "Active"}<br />
                   </p>
                 </CardBody>
                 <hr />
@@ -245,66 +250,62 @@ class User extends React.Component {
                 <CardBody>
                     <TabContent activeTab={this.state.activeTab} className="text-center">
                       <TabPane tabId="1">
-                          <Col xs={12} md={12}>
-                            <h5 className="text-muted text-center">
-                              Not Ready Yet
-                            </h5>
-                          </Col>
-                        </TabPane>
-                        <TabPane tabId="2">
-                          <Row>
-                            {this.anyTweets()
-                              ? this.state.tweets.map(tweet => 
-                                <Col xs={12} md={6}>
-                                  <Tweet info={tweet}/>
-                                </Col>
-                                )
-                              : <Col xs={12} md={12}>
-                                  <h5 className="text-muted text-center">
-                                    No Tweets Available
-                                  </h5>
-                                </Col>
+                        <iframe src={this.state.kibana_url} height="800" width="100%"></iframe>
+                      </TabPane>
+                      <TabPane tabId="2">
+                        <Row>
+                          {this.anyTweets()
+                            ? this.state.tweets.map(tweet => 
+                              <Col xs={12} md={6}>
+                                <Tweet info={tweet}/>
+                              </Col>
+                              )
+                            : <Col xs={12} md={12}>
+                                <h5 className="text-muted text-center">
+                                  No Tweets Available
+                                </h5>
+                              </Col>
+                          }
+                        </Row>
+                      </TabPane>
+                      <TabPane tabId="3">
+                        <Row>
+                        {this.anyFollowers()
+                            ? this.state.followers.map(followers => 
+                              <Col xs={12} md={6}>
+                                <UserInfo userid={followers}/>
+                              </Col>
+                              )
+                            : <Col xs={12} md={12}>
+                                <h5 className="text-muted text-center">
+                                  No Followers Available
+                                </h5>
+                              </Col>
                             }
-                          </Row>
-                        </TabPane>
-                        <TabPane tabId="3">
-                          <Row>
-                          {this.anyFollowers()
-                              ? this.state.followers.map(followers => 
-                                <Col xs={12} md={6}>
-                                  <UserInfo userid={followers}/>
-                                </Col>
-                                )
-                              : <Col xs={12} md={12}>
-                                  <h5 className="text-muted text-center">
-                                    No Followers Available
-                                  </h5>
-                                </Col>
-                              }
-                          </Row>
-                        </TabPane>
-                        <TabPane tabId="4">
-                          <Row>
-                            {this.anyFollowing()
-                              ? this.state.following.map(following => 
-                                <Col xs={12} md={6}>
-                                  <UserInfo userid={following}/>
-                                </Col>
-                                )
-                              : <Col xs={12} md={12}>
-                                  <h5 className="text-muted text-center">
-                                    Not Following Anyone
-                                  </h5>
-                                </Col>
-                              }
-                          </Row>
-                        </TabPane>
-                        <TabPane tabId="5">
-                          <PoliciesTableBot userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
-                        </TabPane>
-                        <TabPane tabId="6">
-                          <LogsTable userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
-                        </TabPane>
+                        </Row>
+                      </TabPane>
+                      <TabPane tabId="4">
+                        <Row>
+                          {this.anyFollowing()
+                            ? this.state.following.map(following => 
+                              <Col xs={12} md={6}>
+                                <UserInfo userid={following}/>
+                              </Col>
+                              )
+                            : <Col xs={12} md={12}>
+                                <h5 className="text-muted text-center">
+                                  Not Following Anyone
+                                </h5>
+                              </Col>
+                            }
+                        </Row>
+                      </TabPane>
+                      <TabPane tabId="5">
+                        <PoliciesTableBot userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
+                      </TabPane>
+                      <TabPane tabId="6">
+                        <LogsTable userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
+                      </TabPane>
                     </TabContent>
                 </CardBody>
             </Card>

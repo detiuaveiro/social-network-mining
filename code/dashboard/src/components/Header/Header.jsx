@@ -1,7 +1,6 @@
 import React from "react";
 import {
   Navbar,
-  NavbarToggler,
   NavbarBrand,
   Container,
 
@@ -13,32 +12,10 @@ class Header extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isOpen: false,
-      dropdownOpen: false,
       color: "transparent"
     };
-    this.toggle = this.toggle.bind(this);
-    this.dropdownToggle = this.dropdownToggle.bind(this);
   }
-  toggle() {
-    if (this.state.isOpen) {
-      this.setState({
-        color: "transparent"
-      });
-    } else {
-      this.setState({
-        color: "white"
-      });
-    }
-    this.setState({
-      isOpen: !this.state.isOpen
-    });
-  }
-  dropdownToggle(e) {
-    this.setState({
-      dropdownOpen: !this.state.dropdownOpen
-    });
-  }
+
   getBrand() {
     var name;
     dashboardRoutes.map((prop, key) => {
@@ -68,21 +45,7 @@ class Header extends React.Component {
     document.documentElement.classList.toggle("nav-open");
     this.refs.sidebarToggle.classList.toggle("toggled");
   }
-  // function that adds color white/transparent to the navbar on resize (this is for the collapse)
-  updateColor() {
-    if (window.innerWidth < 993 && this.state.isOpen) {
-      this.setState({
-        color: "white"
-      });
-    } else {
-      this.setState({
-        color: "transparent"
-      });
-    }
-  }
-  componentDidMount() {
-    window.addEventListener("resize", this.updateColor.bind(this));
-  }
+
   componentDidUpdate(e) {
     if (
       window.innerWidth < 993 &&
@@ -126,11 +89,6 @@ class Header extends React.Component {
             </div>
             <NavbarBrand href="/">{this.getBrand()}</NavbarBrand>
           </div>
-          <NavbarToggler onClick={this.toggle}>
-            <span className="navbar-toggler-bar navbar-kebab" />
-            <span className="navbar-toggler-bar navbar-kebab" />
-            <span className="navbar-toggler-bar navbar-kebab" />
-          </NavbarToggler>
         </Container>
       </Navbar>
     );

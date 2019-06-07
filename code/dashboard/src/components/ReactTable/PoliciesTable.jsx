@@ -12,16 +12,23 @@ import {
 class PoliciesTable extends React.Component {
 
     componentDidMount() {
-        this.setState({policies: this.props.dados})
+        this.setState({
+            policies: this.props.dados,
+            bots: this.props.bots
+        })
     }
 
     componentDidUpdate(prevProps) {
         if (this.props.dados !== prevProps.dados) {
             this.setState({policies: this.props.dados});
         }
+        if (this.props.bots !== prevProps.bots) {
+            this.setState({bots: this.props.bots});
+        }
     }
 
     state = {
+        bots: this.props.bots,
         policies: this.props.dados,
         colums: [
             {
@@ -110,6 +117,14 @@ class PoliciesTable extends React.Component {
                     <ReactTable
                         data={
                             this.state.policies.map(policie => {
+                                const new_bots = []
+                                policie['bots'].forEach(botid => {
+                                    this.state.bots.forEach(bot => {
+                                        if (bot.value == botid){
+                                          new_bots.push(bot.label)
+                                        }
+                                      })
+                                });
                                 return({
                                     id_policy: policie['id_policy'],
                                     status: (
@@ -117,7 +132,7 @@ class PoliciesTable extends React.Component {
                                             <Switch
                                                 onChange={(state) => this.handleActivate(policie['id_policy'],state)}
                                                 defaultValue={policie['active']}
-                                                className="bootstrap-switch-brown"
+                                                onColor="brown"
                                             />{" "}
                                         </div>
                                       ),
@@ -125,7 +140,7 @@ class PoliciesTable extends React.Component {
                                     API_type: policie['API_type'],
                                     filter: policie['filter'],
                                     params: policie['params'].join(", "),
-                                    bots: policie['bots'].join(", "),
+                                    bots: new_bots.join(", "),
                                     actions: (
                                         <div className="actions-center">
                                             <Button

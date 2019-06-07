@@ -24,7 +24,6 @@ class BotsPage extends React.Component {
       .then(res => {
         const twitter_bots = res.data;
         this.setState({ twitter_bots });
-        console.log(this.state.twitter_bots)
       })
 /*     axios.get('/instagram/bots')
       .then(res => {

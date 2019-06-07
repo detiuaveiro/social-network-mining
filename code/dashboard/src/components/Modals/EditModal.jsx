@@ -28,22 +28,17 @@ class EditModal extends React.Component {
   }
   componentDidMount() {
     this.setState({
-      modalTooltips: this.props.status
-    });
-    axios.get('http://192.168.85.182:5000/twitter/bots')
-    .then(res => {
-      const data = res.data;
-      const options = []
-      data.forEach(function(bot){
-        options.push({value: bot['id'], label: bot['name']})
-      })
-      this.setState({ options });
+      modalTooltips: this.props.status,
+      options: this.props.bots
     });
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.status !== prevProps.status) {
       this.setState({modalTooltips: this.props.status});
+    }
+    if (this.props.bots !== prevProps.bots) {
+      this.setState({options: this.props.bots});
     }
     if(this.props.info !== prevProps.info) {
       this.handleData()

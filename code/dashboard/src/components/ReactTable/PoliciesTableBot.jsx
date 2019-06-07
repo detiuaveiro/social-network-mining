@@ -1,6 +1,7 @@
 import React from "react";
 // react component for creating dynamic tables
 import ReactTable from 'react-table'
+import Switch from 'react-bootstrap-switch';
 
 import {
     Card,
@@ -10,8 +11,7 @@ import {
 import axios from 'axios';
 
 class PoliciesTableBot extends React.Component {
-    /*
-     */
+
     state = {
         policies: [],
         colums: [
@@ -21,6 +21,16 @@ class PoliciesTableBot extends React.Component {
                 width: 60,
                 style: {
                     height: "50px",
+                }
+            }, {
+                Header: 'Status',
+                accessor: 'status',
+                sortable: false,
+                filterable: false,
+                width: 90,
+                style: {
+                    textAlign: "center",
+                    height: "50px"
                 }
             }, {
                 Header: 'Name',
@@ -70,11 +80,20 @@ class PoliciesTableBot extends React.Component {
                     <ReactTable
                         data={this.state.policies.map(policie => {
                             return({
-                            id_policy: policie['id_policy'],
-                            name: policie['name'],
-                            API_type: policie['API_type'],
-                            filter: policie['filter'],
-                            params: policie['params'].join(", "),
+                                id_policy: policie['id_policy'],
+                                status: (
+                                    <div className="actions-center">
+                                        <Switch
+                                            disabled
+                                            defaultValue={policie['active']}
+                                            onColor="warning"
+                                        />{" "}
+                                    </div>
+                                  ),
+                                name: policie['name'],
+                                API_type: policie['API_type'],
+                                filter: policie['filter'],
+                                params: policie['params'].join(", "),
                             })
                         })}
                         columns={this.state.colums}
