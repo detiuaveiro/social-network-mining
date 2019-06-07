@@ -154,7 +154,7 @@ class EditModal extends React.Component {
                   <Label check>
                     <Input type="radio" name="filter" value="Target" checked={this.state.filter === 'Target'} onChange={this.handleFilter} />{' '}
                     <span className="form-check-sign" />
-                    Target
+                    Username
                   </Label>
                 </FormGroup>
               </Row>
@@ -174,7 +174,7 @@ class EditModal extends React.Component {
             </FormGroup>
             <FormGroup required>
               <Label>Bots:</Label>
-                <Select
+              <Select
                   value={this.state.bots}
                   onChange={this.handleBots}
                   options={this.state.options}
@@ -200,9 +200,10 @@ class EditModal extends React.Component {
                     }),
                   }}
                   className="primary"
+
                 />
-                <div hidden={!this.state.emptyBots} className="alert-danger mt-2 p-2" style={{borderRadius: 30}}>
-                  Field can't be empty!
+              <div hidden={!this.state.emptyBots} className="alert-danger mt-2 p-2" style={{borderRadius: 30}}>
+                 Field can't be empty!
               </div>
             </FormGroup>
           </Form>

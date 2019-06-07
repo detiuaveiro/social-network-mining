@@ -136,7 +136,7 @@ class AddModal extends React.Component {
                   <Label check>
                     <Input type="radio" name="filter" value="Target" checked={this.state.filter === 'Target'} onChange={this.handleFilter} />{' '}
                     <span className="form-check-sign" />
-                    Target
+                    Username
                   </Label>
                 </FormGroup>
               </Row>
