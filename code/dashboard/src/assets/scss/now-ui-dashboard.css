@@ -2533,6 +2533,17 @@ Created using IcoMoon - icomoon.io
 .table small, .table .small {
   font-weight: 300; }
 
+.card-tasks .card-body .table {
+  margin-bottom: 0; }
+  .card-tasks .card-body .table > thead > tr > th,
+  .card-tasks .card-body .table > tbody > tr > th,
+  .card-tasks .card-body .table > tfoot > tr > th,
+  .card-tasks .card-body .table > thead > tr > td,
+  .card-tasks .card-body .table > tbody > tr > td,
+  .card-tasks .card-body .table > tfoot > tr > td {
+    padding-top: 0;
+    padding-bottom: 0; }
+
 .table > thead > tr > th {
   border-bottom-width: 1px;
   font-size: 1.45em;
@@ -3295,8 +3306,8 @@ Created using IcoMoon - icomoon.io
     height: 200px;
     position: relative; }
   .card .avatar {
-    width: 50px;
-    height: 50px;
+    width: 30px;
+    height: 30px;
     overflow: hidden;
     border-radius: 50%;
     margin-bottom: 15px; }

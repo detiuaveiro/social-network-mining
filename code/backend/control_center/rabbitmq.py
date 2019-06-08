@@ -1,9 +1,36 @@
 import pika
 import json
 from task import Task
+import logging
+import sys
+
+log = logging.getLogger('Rabbit')
+log.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+log.addHandler(handler)
 
 class Rabbitmq():
+    """Class representing Rabbit MQ"""
+
     def __init__(self, host, port, vhost, username, password):
+        """
+        Create a Rabbit MQ instance which represents a connection to a Rabbit MQ server
+
+        Parameters
+        ----------
+        host : str
+            Hostname
+        port : int
+            Port Number
+        vhost : str
+            Virtual host used to avoid conflicts between instances
+        username : str
+            Username for authentication
+        password : str
+            Password for authentication
+        """
+
         self.host = host
         self.port = port
         self.vhost = vhost
@@ -16,10 +43,12 @@ class Rabbitmq():
         
         self.channel = self.connection.channel()
 
+        self.channel.queue_declare(queue='API')
+
         #Declare Exchanges
         self.channel.exchange_declare(exchange='task_deliver', exchange_type='direct', durable=True)
 
-        self.channel.exchange_declare(exchange='data', exchange_type='direct', durable=True)
+        self.channel.exchange_declare(exchange='twitter_data', exchange_type='direct', durable=True)
 
         self.channel.exchange_declare(exchange='logs', exchange_type='direct', durable=True)
 
@@ -27,6 +56,10 @@ class Rabbitmq():
 
         #Create Bindings
         self.channel.queue_bind(exchange="data",
+                   queue="API",
+                   routing_key='data.twitter')
+
+        self.channel.queue_bind(exchange="twitter_data",
                    queue="API",
                    routing_key='data.twitter')
 
@@ -41,32 +74,34 @@ class Rabbitmq():
         #Iniciate Task Manager
         self.task_manager = Task()
 
-        print("Connection to Rabbit Established")
+        log.info("Connection to Rabbit Established")
 
     def receive(self, q):
+        """
+        Receive messages into the queue.
+
+        params:
+        -------
+        q : (string) queue name
+        """
+
         self.queue = q
         self.channel.queue_declare(queue=self.queue)
         
-        print(' [*] Waiting for MESSAGES. To exit press CTRL+C')
+        log.info(' [*] Waiting for MESSAGES. To exit press CTRL+C')
 
         def callback(ch, method, properties, body):
-            print("RABBIT: MESSAGE RECEIVED")            
+            log.info("MESSAGE RECEIVED")            
             message = json.loads(body)
-            print(message)            
             self.task_manager.menu(message['type'], message)
 
-        self.channel.basic_consume(queue=self.queue, on_message_callback=callback, auto_ack=True,)
+        self.channel.basic_consume(queue=self.queue, on_message_callback=callback, auto_ack=True)
         self.channel.start_consuming()
-
-    def send(self, routing_key, message):
-        channel.basic_publish(
-            exchange="task_deliver",
-            routing_key=routing_key,
-            body=message,
-            properties=pika.BasicProperties(
-                delivery_mode=2,  # make message persistent
-            ))
+        
     def close(self):
+        """
+        Close the connection with the Rabbit MQ server
+        """
         self.connection.close()
 
 if __name__ == "__main__":

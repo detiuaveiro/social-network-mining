@@ -12,6 +12,7 @@ class MessageTypes(IntEnum):
     SAVE_USER = 9
     SAVE_TWEET = 10
     ERROR_BOT = 11
+    FIND_FOLLOWERS = 12
 
 class ResponseTypes(IntEnum):
     FOLLOW_USERS = 1
@@ -19,16 +20,18 @@ class ResponseTypes(IntEnum):
     LIKE_TWEETS = 3
     RETWEET_TWEETS = 4
     REPLY_TWEETS = 5
+    FIND_FOLLOWERS = 6
 
 class Neo4jTypes(IntEnum):
     CREATE_BOT = 1
     CREATE_USER = 2
-    CREATE_RELATION = 3
+    CREATE_RELATION_BOT_USER = 3
     SEARCH_USER = 4
     UPDATE_USER = 5
     SEARCH_BOT = 6
     UPDATE_BOT = 7
-
+    CREATE_RELATION_USER_USER = 8
+    CREATE_RELATION_BOT_BOT = 9
 
 class PoliciesTypes(IntEnum):
     REQUEST_TWEET_LIKE = 1

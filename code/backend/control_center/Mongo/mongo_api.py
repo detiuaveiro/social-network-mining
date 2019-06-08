@@ -1,8 +1,16 @@
 from pymongo import MongoClient
+import logging
+import sys
+
+log = logging.getLogger('Mongo')
+log.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+log.addHandler(handler)
 
 class MongoAPI():
     def __init__(self):
-        print("Connecting to MongoDB")
+        log.debug("Connecting to MongoDB")
         self.client = MongoClient('mongodb://192.168.85.46:32769/')
         self.users = self.client.twitter.users
         self.tweets = self.client.twitter.tweets
@@ -12,30 +20,48 @@ class MongoAPI():
         self.data = data
 
         if (self.database=='users'):
-            self.users.insert_one(self.data)
+            try:
+                self.users.insert_one(self.data)
+            except:
+                log.info("ERROR INSERTING USER")
         else:
-            self.tweets.insert_one(self.data)
+            try:
+                self.tweets.insert_one(self.data)
+            except:
+                log.info("ERROR INSERTING TWEET")
 
     def update(self, database, data):
         self.database = database
         self.data = data
-
         if (self.database=='users'):
-            self.users.update_one(self.data)
+            try:
+                self.users.replace_one({"id": self.data['id']},self.data)
+            except Exception as e:
+                log.info("ERROR UPDATING USER ("+str(e)+")")
         else:
-            self.tweets.update_one(self.data)
+            try:
+                self.tweets.replace_one({"id": self.data['id']},self.data)
+            except Exception as e:
+                log.info("ERROR UPDATING TWEET ("+str(e)+")")
 
     def search(self, database, data):
         self.database = database
         self.data = data
-        result
         if (self.database=='users'):
-            result = self.users.find({"id": self.data['id']})
+            try:
+                result = self.users.find_one({"id": self.data['id']})
+                if(result):
+                    return True
+                else:
+                    return False
+            except:
+                log.info("ERROR SEARCHING FOR USER")
         else:
-            result = self.tweets.find({"id": self.data['id']})
-
-        if(len(result)==0):
-            return False
-        else:
-            return True
-
+            try:
+                result = self.tweets.find_one({"id": self.data['id']})
+                if(result):
+                    return True
+                else:
+                    return False
+            except Exception as e:
+                log.info("ERROR SEARCHING FOR TWEET: "+str(e))

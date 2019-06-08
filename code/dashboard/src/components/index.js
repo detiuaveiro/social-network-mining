@@ -24,13 +24,21 @@ import Stats from './Stats/Stats';
 
 import Tasks from './Tasks/Tasks';
 
-import DataTables from './DataTables/DataTables';
-
 import Tweet from './Tweet/Tweet';
 
 import CardBot from './CardElements/CardBot';
 
 import UserInfo from './User/User';
+
+import AddModal from './Modals/AddModal';
+
+import EditModal from './Modals/EditModal';
+
+import LogsTable from './ReactTable/LogsTable';
+
+import PoliciesTable from './ReactTable/PoliciesTable';
+
+import PoliciesTableBot from './ReactTable/PoliciesTableBot';
 
 export {
     // CardElements
@@ -58,8 +66,6 @@ export {
     Stats,
     // Tasks
     Tasks,
-    // DataTables
-    DataTables,
     //Tweet
     Tweet,
     //CardBot
@@ -68,4 +74,14 @@ export {
     CardAuthor2,
     //User
     UserInfo,
+    //AddModal
+    AddModal,
+    //EditModal
+    EditModal,
+    //LogsTables
+    LogsTable,
+    //PoliciesTables
+    PoliciesTable,
+    //PoliciesTablesBot
+    PoliciesTableBot,
 };
