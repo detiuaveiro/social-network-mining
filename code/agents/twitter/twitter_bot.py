@@ -143,16 +143,16 @@ class TwitterBot:
                 if task_type == Task.FIND_BY_KEYWORDS:
                     # self.find_keywords_routine(task_params["keywords"])
                     log.warning(f"Not processing {Task.FIND_BY_KEYWORDS.name} with {task_params}")
-                    pass
                 elif task_type == Task.FOLLOW_USERS:
                     self.follow_users_routine(task_params)
-                    pass
                 elif task_type == Task.LIKE_TWEETS:
                     self.like_tweets_routine(task_params)
                 elif task_type == Task.RETWEET_TWEETS:
                     self.retweet_tweets_routine(task_params)
                 elif task_type == Task.FIND_FOLLOWERS:
                     self.find_followers(task_params)
+                elif task_type == Task.POST_TWEET:
+                    self.post_tweet_routine(task_params)
                 else:
                     log.warning(f"Received unknown task_msg: {task_msg}")
             except NoMessagesInQueue:
@@ -258,6 +258,23 @@ class TwitterBot:
             log.warning(
                 f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
 
+    def post_tweet_routine(self, data : dict):
+        log.debug("Starting Post Tweet Routine")
+        reply_id = data.get("in_reply_to_status_id", None)
+        status = data.get("status", None)
+        if not status:
+            log.warning("No status providing! Ignoring")
+            return
+        tweet_sent = None
+        if reply_id is None:
+            tweet_sent = self._api.update_status(status=status,
+                                                 auto_populate_reply_metadata=True)
+        else:
+            tweet_sent = self._api.update_status(status=status,
+                                                 auto_populate_reply_metadata=True,
+                                                 in_reply_to_status_id=reply_id)
+        if tweet_sent:
+            self.send_data(tweet_sent, MessageType.SAVE_TWEET)
     def find_followers(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
         """
         Routine for the FIND_FOLLOWERS task

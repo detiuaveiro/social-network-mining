@@ -9,7 +9,7 @@ class Task(IntEnum):
     FIND_BY_KEYWORDS = 2
     LIKE_TWEETS = 3
     RETWEET_TWEETS = 4
-    REPLY_TWEETS = 5
+    POST_TWEET = 5
     FIND_FOLLOWERS = 6
 
     def __str__(self):
