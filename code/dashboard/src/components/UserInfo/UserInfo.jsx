@@ -30,8 +30,10 @@ class UserInfo extends React.Component {
               />
             </Col>
             <Col className="text-center my-auto" xs={12} md={6}>
-              <h6 className="title">{this.state.user_info["name"]}</h6>
-              <p className="description">@{this.state.user_info["screen_name"]}</p>
+              <a target="_blank" rel="noopener noreferrer" href={"https://twitter.com/"+this.state.user_info["screen_name"]}>
+                <h6 className="title">{this.state.user_info["name"]}</h6>
+                <p className="description">@{this.state.user_info["screen_name"]}</p>
+              </a>
             </Col>
             <Col xs={12} md={2}>
               <a target="_blank" rel="noopener noreferrer" href={"https://twitter.com/"+this.state.user_info["screen_name"]}>

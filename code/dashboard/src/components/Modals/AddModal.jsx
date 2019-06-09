@@ -4,7 +4,6 @@ import TagsInput from 'react-tagsinput';
 import Select from 'react-select';
 import{ Modal, ModalHeader, ModalBody, ModalFooter, Form, FormText, FormGroup, Label, Input, Row } from 'reactstrap';
 import PropTypes from "prop-types";
-import axios from "axios";
 
 class AddModal extends React.Component {
   constructor(props) {
@@ -27,7 +26,8 @@ class AddModal extends React.Component {
   componentDidMount() {
     this.setState({
       modalTooltips: this.props.status,
-      options: this.props.bots
+      options: this.props.bots,
+      bots: this.props.bots,
     })
   }
 
@@ -36,7 +36,11 @@ class AddModal extends React.Component {
       this.setState({modalTooltips: this.props.status});
     }
     if (this.props.bots !== prevProps.bots) {
-      this.setState({options: this.props.bots});
+      this.setState({
+        options: this.props.bots,
+        bots: this.props.bots,
+      });
+      
     }
   }
 
@@ -152,7 +156,7 @@ class AddModal extends React.Component {
               <div hidden={!this.state.emptyTags} className="alert-danger mt-2 p-2" style={{borderRadius: 30}}>
                   Field can't be empty!
               </div>
-              <FormText>If you choose filter "Target" add one target (username) only.</FormText>
+              <FormText>If you choose filter "Target" add one Username only.</FormText>
             </FormGroup>
             <FormGroup required>
               <Label>Bots:</Label>

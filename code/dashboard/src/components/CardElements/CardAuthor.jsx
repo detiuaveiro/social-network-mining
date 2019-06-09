@@ -6,13 +6,15 @@ class CardAuthor extends React.Component {
   render() {
     return (
       <div className="author">
-        <img
-          className="avatar small border-gray"
-          src={this.props.avatar}
-          alt={this.props.avatarAlt}
-        />
-        <h5 className="title text-decoration-none" style={{color:"#f96332"}}>{this.props.title}</h5>
-        <p className="description text-decoration-none">{this.props.description}</p>
+        <a target="_blank" rel="noopener noreferrer" href={"https://twitter.com/"+this.props.username}>
+          <img
+            className="avatar small border-gray"
+            src={this.props.avatar}
+            alt={this.props.avatarAlt}
+          />
+          <h5 className="title text-decoration-none" style={{color:"#f96332"}}>{this.props.title}</h5>
+        </a>
+        <p className="description text-decoration-none">@{this.props.username}</p>
       </div>
     );
   }
@@ -24,7 +26,7 @@ CardAuthor.propTypes = {
   avatar: PropTypes.string,
   avatarAlt: PropTypes.string,
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
-  description: PropTypes.oneOfType([PropTypes.string, PropTypes.node])
+  username: PropTypes.oneOfType([PropTypes.string, PropTypes.node])
 };
 
 export default CardAuthor;

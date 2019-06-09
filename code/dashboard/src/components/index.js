@@ -28,7 +28,7 @@ import Tweet from './Tweet/Tweet';
 
 import CardBot from './CardElements/CardBot';
 
-import UserInfo from './User/User';
+import UserInfo from './UserInfo/UserInfo';
 
 import AddModal from './Modals/AddModal';
 
@@ -39,6 +39,10 @@ import LogsTable from './ReactTable/LogsTable';
 import PoliciesTable from './ReactTable/PoliciesTable';
 
 import PoliciesTableBot from './ReactTable/PoliciesTableBot';
+
+import Message from './Message/Message';
+
+import CreateTweet from './CreateTweet/CreateTweet';
 
 export {
     // CardElements
@@ -84,4 +88,8 @@ export {
     PoliciesTable,
     //PoliciesTablesBot
     PoliciesTableBot,
+    //Message
+    Message,
+    //CreateTweet
+    CreateTweet,
 };

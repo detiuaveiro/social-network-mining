@@ -32,7 +32,6 @@ class LogsTable extends React.Component {
     };
     
     componentDidMount() {
-        const url = 'http://192.168.85.182:5000/twitter/bots/'+this.state.user_id+'/logs'
         axios.get('http://192.168.85.182:5000/twitter/bots/'+this.state.user_id+'/logs')
         .then(res => {
            const logs = res.data;

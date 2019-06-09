@@ -5,6 +5,7 @@ import { Router, Route, Switch} from "react-router-dom";
 
 import "bootstrap/dist/css/bootstrap.css";
 import "assets/scss/now-ui-dashboard.css";
+import 'react-circular-progressbar/dist/styles.css';
 import "assets/css/demo.css";
 import "jquery/dist/jquery";
 import indexRoutes from "routes/index.jsx";

@@ -120,7 +120,7 @@ class PoliciesTable extends React.Component {
                                 const new_bots = []
                                 policie['bots'].forEach(botid => {
                                     this.state.bots.forEach(bot => {
-                                        if (bot.value == botid){
+                                        if (bot.value === botid){
                                           new_bots.push(bot.label)
                                         }
                                       })
