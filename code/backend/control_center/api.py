@@ -149,7 +149,7 @@ def tt_create():
                                         username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
                 conn.send(routing_key='tasks.twitter.' + bot, message=payload)
                 conn.close()                
-                return jsonify(send)
+                return jsonify({"Message": "Success"})
             except Exception as e:
                 return app.response_class(response=json.dumps({"Message": "Bad Tweet Request"}), status=400,
                                                 mimetype='application/json')
