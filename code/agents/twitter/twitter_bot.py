@@ -204,6 +204,8 @@ class TwitterBot:
 
         def get_and_like_tweet(tweet_id):
             tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
+            read_time = utils.read_text_and_wait(tweet.text)
+            log.debug(f"Read Tweet in {read_time}")
             if tweet.favorited:
                 log.debug(f"Tweet with ID={tweet.id} already liked, no need to like again")
             else:
@@ -238,6 +240,8 @@ class TwitterBot:
         # Helper function so we don't have to repeat code
         def get_and_retweet_tweet(tweet_id):
             tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
+            read_time = utils.read_text_and_wait(tweet.text)
+            log.debug(f"Read Tweet in {read_time}")
             if tweet.retweeted:
                 log.debug(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
             else:
@@ -264,6 +268,12 @@ class TwitterBot:
         if not status:
             log.warning("No status providing! Ignoring")
             return
+        # "Simulating" some kind of posting a tweet by "writing it"
+        # On average, a person reads 2 to 3 times faster than they type
+        # So if we just "read" the text 3 times, we're more or less waiting the same time as
+        # if we were typing it
+        write_time = utils.read_text_and_wait(status * 3)
+        log.debug(f"'Wrote' Tweet in {write_time}")
         tweet_sent = None
         if reply_id is None:
             tweet_sent = self._api.update_status(status=status,
