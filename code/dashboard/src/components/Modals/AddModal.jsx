@@ -156,7 +156,11 @@ class AddModal extends React.Component {
               <div hidden={!this.state.emptyTags} className="alert-danger mt-2 p-2" style={{borderRadius: 30}}>
                   Field can't be empty!
               </div>
+<<<<<<< HEAD
               <FormText>If you choose filter "Username" add one Username only.</FormText>
+=======
+              <FormText>If you choose filter "Target" add one Username only.</FormText>
+>>>>>>> 0443da6ebc89bdcb0545336d3b6e6a94d8489300
             </FormGroup>
             <FormGroup required>
               <Label>Bots:</Label>

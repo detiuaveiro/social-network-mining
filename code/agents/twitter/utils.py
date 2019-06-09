@@ -23,9 +23,9 @@ def random_between(min_val, max_val):
     return random.uniform(min_val, max_val)
 
 
-def snowflake_time(id: int) -> datetime.datetime:
+def snowflake_time(snowflake_id: int) -> datetime.datetime:
     """Returns the creation date in UTC of a Twitter id."""
-    return datetime.datetime.utcfromtimestamp(((id >> 22) + TWITTER_EPOCH) / 1000)
+    return datetime.datetime.utcfromtimestamp(((snowflake_id >> 22) + TWITTER_EPOCH) / 1000)
 
 
 def wait_for(secs):

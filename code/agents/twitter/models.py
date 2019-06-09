@@ -8,7 +8,7 @@ import tweepy
 
 from utils import snowflake_time
 
-__all__ = ["Colour", "Color", "BaseModel", "User", "Tweet"]
+__all__ = ["Colour", "Color", "BaseModel", "User", "Tweet", "DirectMessage"]
 
 
 class Colour:
@@ -81,6 +81,8 @@ class BaseModel(abc.ABC):
     """
     _api: tweepy.API
     _json: Dict[Any]
+    id: int
+    id_str: str
 
     @property
     @abc.abstractmethod
@@ -104,7 +106,6 @@ class User(BaseModel):
     """
 
     """
-    id: int
     name: str
     screen_name: str
     location: str
@@ -162,7 +163,7 @@ class User(BaseModel):
         # copying the
         unclean_json = json
         # removing unused attributes
-        ignore_attributes = ["id_str", "entities", "created_at", "utc_offset", "time_zone",
+        ignore_attributes = ["entities", "created_at", "utc_offset", "time_zone",
                              "geo_enabled", "is_translator", "is_translation_enabled",
                              "needs_phone_verification", "translator_type", "status",
                              "profile_banner_url", "profile_location", "muting"]
@@ -245,7 +246,6 @@ class User(BaseModel):
 
 @dataclass
 class Tweet(BaseModel):
-    id: int
     text: str
 
     @property
@@ -267,8 +267,8 @@ class Tweet(BaseModel):
     in_reply_to_status_id: Optional[int] = None
     in_reply_to_user_id: Optional[int] = None
     in_reply_to_screen_name: Optional[str] = None
-    quoted_status_id : Optional[int] = None
-    retweeted_status_id : Optional[int] = None
+    quoted_status_id: Optional[int] = None
+    retweeted_status_id: Optional[int] = None
 
     def __repr__(self):
         return f"<Tweet id={self.id}, favorites={self.favorite_count}, retweets={self.retweet_count}, favorited={self.favorited}, retweeted={self.retweeted}, text={self.text}, user={self.user}>"
@@ -291,9 +291,9 @@ class Tweet(BaseModel):
         # copying the
         unclean_json = json
         # removing unused attributes
-        ignore_attributes = ["id_str", "created_at", "in_reply_to_status_id_str",
+        ignore_attributes = ["created_at", "in_reply_to_status_id_str",
                              "in_reply_to_user_id_str", "geo", "coordinates", "place",
-                             "contributors", "quoted_status_id_str","quoted_status",
+                             "contributors", "quoted_status_id_str", "quoted_status",
                              "retweeted_status", "retweeted_status_str", "extended_entities",
                              "possibly_sensitive_appealable"]
         for i in ignore_attributes:
@@ -321,3 +321,42 @@ class Tweet(BaseModel):
             return
         self._api.destroy_favorite(self.id)
         self.favorited = False
+
+
+@dataclass
+class DirectMessage(BaseModel):
+    recipient_id: int
+    sender_id: int
+    text: str
+    entities: dict
+
+    @property
+    def created_at(self):
+        """Returns the model's creation time in UTC."""
+        return str(snowflake_time(self.id))
+
+    @staticmethod
+    def from_json(api, json: dict):
+        unclean_json = json
+        if unclean_json["type"] != "message_create":
+            print("new type detected!", unclean_json["type"])
+            raise ValueError("New type detected!", unclean_json["type"])
+        clean_json = {
+            'id'          : int(unclean_json['id']),
+            "recipient_id": int(unclean_json["message_create"]["target"]["recipient_id"]),
+            "sender_id"   : int(unclean_json["message_create"]["sender_id"]),
+            "text"        : unclean_json["message_create"]["message_data"]["text"],
+            "entities"    : unclean_json["message_create"]["message_data"]["entities"]
+        }
+
+        return DirectMessage(_api=api, _json=json, **clean_json)
+    def to_json(self):
+        return {
+            'id'          : self.id,
+            "created_at" : self._json["created_at"]["created_timestamp"],
+            "recipient_id": self.recipient_id,
+            "sender_id"   : self.sender_id,
+            "text"        : self.text,
+            "entities"    : self.entities
+        }
+

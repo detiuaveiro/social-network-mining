@@ -176,3 +176,8 @@ class Neo4jAPI():
         with self._driver.session() as session:
             result=session.run("match (r)-[FOLLOWS]->(b { id:$id } ) return r.id",id=user_id)
             return result.values()
+
+    def export_network(self):
+        with self._driver.session() as session:
+            result=session.run("call apoc.export.csv.all('file.csv',{})")
+            

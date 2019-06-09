@@ -110,6 +110,8 @@ class TwitterBot:
         self._cache.open()
         log.info("Reading Home Timeline")
         self.read_timeline(self.user, jump_users=False)
+        log.info("Checking Direct Messages")
+        self.check_direct_messages()
         # log.debug("Checking last Tweet")
         # self.last_home_tweet = self._cache.get("last_home_tweet", None)
         # log.debug(f"Last Tweet was: <{self.last_home_tweet}>")
@@ -139,18 +141,17 @@ class TwitterBot:
                 task_type, task_params = task_msg["type"], task_msg["params"]
                 log.debug(f"Received task {task_msg} with: {task_params}")
                 if task_type == Task.FIND_BY_KEYWORDS:
-                    # self.find_keywords_routine(task_params["keywords"])
                     log.warning(f"Not processing {Task.FIND_BY_KEYWORDS.name} with {task_params}")
-                    pass
                 elif task_type == Task.FOLLOW_USERS:
                     self.follow_users_routine(task_params)
-                    pass
                 elif task_type == Task.LIKE_TWEETS:
                     self.like_tweets_routine(task_params)
                 elif task_type == Task.RETWEET_TWEETS:
                     self.retweet_tweets_routine(task_params)
                 elif task_type == Task.FIND_FOLLOWERS:
                     self.find_followers(task_params)
+                elif task_type == Task.POST_TWEET:
+                    self.post_tweet_routine(task_params)
                 else:
                     log.warning(f"Received unknown task_msg: {task_msg}")
             except NoMessagesInQueue:
@@ -183,6 +184,10 @@ class TwitterBot:
         log.warning("TODO: Implement Clean up")
         self._cache.close()
 
+    def check_direct_messages(self):
+        messages_list = self._api.direct_messages()
+        self.send_data(messages_list, message_type=MessageType.SAVE_DIRECT_MESSAGES)
+
     def like_tweets_routine(self, tweets_ids: Union[int, List[int]]):
         """
         Routine for the LIKE_TWEETS task
@@ -199,6 +204,8 @@ class TwitterBot:
 
         def get_and_like_tweet(tweet_id):
             tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
+            read_time = utils.read_text_and_wait(tweet.text)
+            log.debug(f"Read Tweet in {read_time}")
             if tweet.favorited:
                 log.debug(f"Tweet with ID={tweet.id} already liked, no need to like again")
             else:
@@ -233,6 +240,8 @@ class TwitterBot:
         # Helper function so we don't have to repeat code
         def get_and_retweet_tweet(tweet_id):
             tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
+            read_time = utils.read_text_and_wait(tweet.text)
+            log.debug(f"Read Tweet in {read_time}")
             if tweet.retweeted:
                 log.debug(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
             else:
@@ -252,6 +261,29 @@ class TwitterBot:
             log.warning(
                 f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
 
+    def post_tweet_routine(self, data : dict):
+        log.debug("Starting Post Tweet Routine")
+        reply_id = data.get("in_reply_to_status_id", None)
+        status = data.get("status", None)
+        if not status:
+            log.warning("No status providing! Ignoring")
+            return
+        # "Simulating" some kind of posting a tweet by "writing it"
+        # On average, a person reads 2 to 3 times faster than they type
+        # So if we just "read" the text 3 times, we're more or less waiting the same time as
+        # if we were typing it
+        write_time = utils.read_text_and_wait(status * 3)
+        log.debug(f"'Wrote' Tweet in {write_time}")
+        tweet_sent = None
+        if reply_id is None:
+            tweet_sent = self._api.update_status(status=status,
+                                                 auto_populate_reply_metadata=True)
+        else:
+            tweet_sent = self._api.update_status(status=status,
+                                                 auto_populate_reply_metadata=True,
+                                                 in_reply_to_status_id=reply_id)
+        if tweet_sent:
+            self.send_data(tweet_sent, MessageType.SAVE_TWEET)
     def find_followers(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
         """
         Routine for the FIND_FOLLOWERS task
@@ -297,16 +329,16 @@ class TwitterBot:
                 try:
                     user = self._api.get_user(**arg_param)
                 except tweepy.error.TweepError as e:
-                    log.error(f"Unable to find user by [{arg_type}] with <{param}>")
-               	if user:
-               		self.send_user(user)
-               		user_obj_ids += [user.id]
+                    log.error(f"Unable to find user by [{arg_type}] with <{param}>, due to {e}")
+                if user:
+                    self.send_user(user)
+                    user_obj_ids += [user.id]
             if not user_obj_ids:
-            	log.warning("Could not find any of the Users Objects! Not searching for their Followers")
+                log.warning("Could not find any of the Users Objects! Not searching for their Followers")
             # will be skipped if warning above is done
             # Since we already got their user objects, might as well send and use IDs all over
             for user_id in user_obj_ids:
-                log.info(f"Getting Followers for User with ID <{param}>")
+                log.info(f"Getting Followers for User with ID <{user_id}>")
                 try:
                     followers = self._api.followers_ids(id=user_id)
                     if followers:
@@ -327,26 +359,6 @@ class TwitterBot:
                 except tweepy.error.TweepError as e:
                     log.error(f"Unable to find Followers for User with ID <{param}> because reason={e.reason}")
         log.info("Exiting Follow Users Routine...")
-
-    def find_keywords_routine(self, keywords: List[str]):
-        """
-        Routine for the FIND_KEYWORDS task
-        Currently implemented as getting tweets from our timeline and "reading them".
-        Whenever a tweet appears, we'll send a request to the control center asking if we should like/retweet them
-
-        Parameters
-        ----------
-        keywords : `List[str]`
-            List of keywords to search in the timeline tweets
-        See Also
-        --------
-        read_timeline
-        get_user_timeline_tweets
-        """
-        log.info("Starting Keywords Routine...")
-        log.info(f"Keywords provided: {keywords}")
-        self.read_timeline(self.user, keywords, jump_users=True)
-        log.info("Exiting Keywords Routine...")
 
     def follow_users_routine(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
         """
@@ -408,7 +420,7 @@ class TwitterBot:
                 try:
                     user = self._api.get_user(**arg_param)
                 except tweepy.error.TweepError as e:
-                    log.error(f"Unable to find user by [{arg_type}] with <{i}>")
+                    log.error(f"Unable to find user by [{arg_type}] with <{i}> due to {e}")
                 if user:
                     log.info(f"Found with: {user}")
                     self.search_in_user(user)
@@ -472,7 +484,7 @@ class TwitterBot:
             return self._api.home_timeline()
         return user_obj.timeline(**kwargs)
 
-    def read_timeline(self, user_obj: User, keywords: List[str] = None, *, jump_users=False,
+    def read_timeline(self, user_obj: User, *, jump_users=False,
                       max_depth=3, max_jumps=5, current_depth=0, total_jumps=0):
         """
         Method for reading a user's timeline.
@@ -482,8 +494,6 @@ class TwitterBot:
         ----------
         user_obj : User
             User object to read the timeline for
-        keywords : List[str]
-            List of Keywords to search in the tweets' content
         jump_users : bool
             Flag to know if we should jump between user's tweets or not
         max_depth : int
@@ -513,28 +523,23 @@ class TwitterBot:
 
             # read it's content
             total_read_time += utils.read_text_and_wait(tweet.text)
-            # If it's our own timeline, we don't really need to do any logic
+            # If it's our own tweet, we don't really need to do any logic
             if self.user.id == tweet.user.id:
                 continue
-            # process the tweet
-            if not keywords:
+            # Processing the tweet regarding liking/retweeting
+            if not tweet.favorited:
                 self.query_like_tweet(tweet)
-                continue
-            else:
-                like_chance, retweet_chance = self._match_keywords(tweet, keywords)
-                if like_chance >= settings.FAVOURITE_CHANCE:
-                    self.query_like_tweet(tweet)
-                if retweet_chance >= settings.RETWEET_CHANCE:
-                    self.query_retweet_tweet(tweet)
+            if not tweet.retweeted:
+                self.query_retweet_tweet(tweet)
             # If the author of the tweet isn't the same user that we're reading the timeline
             # (Because retweets can appear), then jump and do the logic for reading the timeline
-            # (assuming we haven't reach)
+            # (assuming we haven't reached max jumps)
             if (not jump_users) or (total_jumps == max_jumps) or (current_depth == max_depth):
                 continue
             elif tweet.user != user_obj:
                 # save the user
                 self.send_user(tweet.user)
-                self.read_timeline(user_obj, keywords,
+                self.read_timeline(user_obj,
                                    jump_users=jump_users,
                                    total_jumps=total_jumps + 1,
                                    max_jumps=max_jumps,
@@ -564,36 +569,6 @@ class TwitterBot:
         else:
             log.info(f"Asking to Retweet Tweet with ID={tweet.id}")
             self.send_query(MessageType.QUERY_TWEET_RETWEET, tweet)
-
-    def _match_keywords(self, tweet: Tweet, keywords: List[str] = None) -> Tuple[float, float]:
-        """
-
-        Parameters
-        ----------
-        tweet : List[Tweet]
-            List of tweets to match keywords againt
-        keywords :  List[str]
-            List of keywords to search for
-
-        Returns
-        -------
-        results : Tuple[float, float]
-            A tuple with the favourite (liking) and retweet chances.
-
-        """
-        if not keywords:
-            return -1, -1
-        total_keywords = len(keywords)
-        keywords_tweet_matches = sum([1 for i in keywords if i in tweet.text])
-        percentage_matches = keywords_tweet_matches / total_keywords
-        # IF it doesn't match minimum threshold, return the same as if there weren't any keywords
-        if percentage_matches < settings.MIN_KEYWORD_THRESHOLD:
-            return -1, -1
-        favourite_chance = utils.random_between(percentage_matches, 1)
-        log.debug(f"Liking chance of «{favourite_chance}» out of «{settings.FAVOURITE_CHANCE}»")
-        retweet_chance = utils.random_between(percentage_matches, 1)
-        log.debug(f"Retweeting chance of «{retweet_chance}» out of «{settings.RETWEET_CHANCE}»")
-        return favourite_chance, retweet_chance
 
     def send_user(self, user: User) -> None:
         """
