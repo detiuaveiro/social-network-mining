@@ -37,7 +37,7 @@ class Network extends React.Component {
         }
       },
       arrows: true,
-      initial_cypher: "MATCH (bot:Bot)-[follows:FOLLOWS]->(user:User) RETURN bot, follows, user",
+      initial_cypher: "MATCH (bot:Bot)-[follows:FOLLOWS]->(user:User) RETURN bot, follows, user Limit 300",
     },
     config2: {
       container_id: "viz2",
@@ -62,14 +62,13 @@ class Network extends React.Component {
         }
       },
       arrows: true,
-      initial_cypher: "MATCH (users) RETURN users",
+      initial_cypher: "MATCH (user1:User)-[follows:FOLLOWS]->(user2:User) RETURN user1, follows, user2 Limit 300",
     },
   };
   constructor(props) {
     super(props);
     this.toggle = this.toggle.bind(this);
     this.loadGraphFirstTime = this.loadGraphFirstTime.bind(this);
-    this.loadGraph = this.loadGraph.bind(this);
   }
 
   componentDidMount() {
@@ -78,20 +77,9 @@ class Network extends React.Component {
 
   loadGraphFirstTime(){
     this.vis = new window.NeoVis.default(this.state.config1);
+    this.vis2 = new window.NeoVis.default(this.state.config2);
     this.vis.render();
-  }
-
-  loadGraph(graph){
-    if (graph){
-      this.vis.clearNetwork()
-      this.vis.reinit(this.state.config2);
-      this.vis.reload()
-    }
-    else{
-      this.vis.clearNetwork()
-      this.vis.reinit(this.state.config1);
-      this.vis.reload()
-    }
+    this.vis2.render();
   }
 
   toggle(tab) {
@@ -99,7 +87,6 @@ class Network extends React.Component {
         this.setState({
             activeTab: tab
         });
-        this.loadGraph((this.state.activeTab===1) ? true : false)
     }
   }
 
@@ -127,7 +114,7 @@ class Network extends React.Component {
                         className={this.state.activeTab === '2' ? 'active':''}
                         onClick={() => { this.toggle('2'); }}
                     >
-                    All
+                    Users
                     </NavLink>
                 </NavItem>
               </Nav>

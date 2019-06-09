@@ -97,7 +97,7 @@ class User extends React.Component {
                     avatar={this.state.profile_data["profile_image_url_https"]}
                     avatarAlt="..."
                     title={this.state.profile_data["name"]}
-                    description={"@"+this.state.profile_data["screen_name"]}
+                    username={this.state.profile_data["screen_name"]}
                   />
                   <p className="description text-center">
                     {this.state.profile_data["description"]}<br />
@@ -183,7 +183,7 @@ class User extends React.Component {
                             type: "textarea",
                             rows: "4",
                             cols: "80",
-                            defaultValue: this.state.profile_data["description"],
+                            value: this.state.profile_data["description"],
                             disabled: true,
                             }
                         }
@@ -250,7 +250,7 @@ class User extends React.Component {
                 <CardBody>
                     <TabContent activeTab={this.state.activeTab} className="text-center">
                       <TabPane tabId="1">
-                        <iframe src={this.state.kibana_url} height="800" width="100%"></iframe>
+                        <iframe src={this.state.kibana_url} height="800" width="100%" title="Bot Stats"></iframe>
                       </TabPane>
                       <TabPane tabId="2">
                         <Row>

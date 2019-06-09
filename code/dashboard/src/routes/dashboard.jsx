@@ -3,7 +3,7 @@ import Typography from "views/Typography/Typography.jsx";
 import Policies from "views/Policies/Policies.jsx";
 import UserPage from "views/UserPage/UserPage.jsx";
 import BotsPage from "views/BotsPage/BotsPage.jsx";
-import TweetsPage from "views/TweetsPage/TweetsPage.jsx";
+import TweetPage from "views/TweetPage/TweetPage.jsx";
 import Network from "views/Network/Network";
 
 var dashRoutes = [
@@ -36,10 +36,10 @@ var dashRoutes = [
     hide: false,
   },
   {
-    path: "/tweets",
-    name: "Tweets",
-    icon: "fas fa-comments",
-    component: TweetsPage,
+    path: "/tweet",
+    name: "Tweet",
+    icon: "fas fa-quote-right",
+    component: TweetPage,
     hide: false,
   },
   {

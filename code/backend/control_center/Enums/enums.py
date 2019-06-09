@@ -13,13 +13,14 @@ class MessageTypes(IntEnum):
     SAVE_TWEET = 10
     ERROR_BOT = 11
     FIND_FOLLOWERS = 12
+    SAVE_DIRECT_MESSAGES = 13
 
 class ResponseTypes(IntEnum):
     FOLLOW_USERS = 1
     FIND_BY_KEYWORDS = 2
     LIKE_TWEETS = 3
     RETWEET_TWEETS = 4
-    REPLY_TWEETS = 5
+    POST_TWEETS = 5
     FIND_FOLLOWERS = 6
 
 class Neo4jTypes(IntEnum):
