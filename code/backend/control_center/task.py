@@ -33,7 +33,7 @@ def send_reply(*, bot_id, message_type, params):
         "params": params
     }
     try:
-        conn = RabbitSend(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",
+        conn = RabbitSend(host='192.168.85.185', port=5672, vhost="PI",
                                  username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
         conn.send(routing_key='tasks.twitter.' + bot_id, message=payload)
         conn.close()

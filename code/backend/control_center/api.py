@@ -3,6 +3,7 @@ from flask_cors import CORS
 from Mongo.mongo_flask import AppMongo
 from Postgres.postgreSQL import postgreSQL_API
 from Neo4j.neo4j_api import Neo4jAPI
+from send import RabbitSend
 import ast
 from ElasticSearch.ElasticSearch import getESService
 
@@ -118,6 +119,40 @@ def tt_network():
 def tt_policies():
     mapa = policy.getPoliciesByAPI("Twitter")
     return jsonify(mapa)
+
+
+@app.route("/twitter/create", methods=['POST'])
+def tt_create():
+    if request.method == 'POST':
+        mapa = request.data.decode('utf-8')
+        mapa = ast.literal_eval(mapa)
+        print(mapa)
+        for bot in mapa["bots"]:
+            if mapa["timeline"]:
+                payload = {
+                    "type": 5,
+                    "params": {
+                        "status": mapa["status"],
+                    }
+                }
+            else:
+                payload = {
+                    "type": 5,
+                    "params": {
+                        "status": mapa["status"],
+                        "in_reply_to_status_id": mapa["in_reply_to_status_id"],
+
+                    }
+                }
+            try:
+                conn = RabbitSend(host='192.168.85.185', port=5672, vhost="PI",
+                                        username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
+                conn.send(routing_key='tasks.twitter.' + bot, message=payload)
+                conn.close()                
+                return jsonify(send)
+            except Exception as e:
+                return app.response_class(response=json.dumps({"Message": "Bad Tweet Request"}), status=400,
+                                                mimetype='application/json')
 
 
 @app.route("/twitter/stats")

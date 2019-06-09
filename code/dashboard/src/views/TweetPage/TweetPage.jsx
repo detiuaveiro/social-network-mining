@@ -7,8 +7,26 @@ class TweetPage extends React.Component {
 
   constructor(props) {
     super(props);
+    this.state = {
+      bots:[]
+    }
     this.sendTweet = this.sendTweet.bind(this);
+    this.notify = this.notify.bind(this);
+    this.refresh = this.refresh.bind(this);
   }
+
+  componentDidMount(){
+   axios.get('http://192.168.85.182:5000/twitter/bots')
+   .then(res => {
+     const data = res.data;
+     const options = []
+     data.forEach(function(bot){
+       options.push({value: bot['id'], label: bot['name']})
+     })
+     this.setState({bots: options});
+   })
+  }
+
 
   notify = (msg) => {
     var type = "primary";
@@ -45,7 +63,7 @@ class TweetPage extends React.Component {
   }
 
   sendTweet(data) {
-    axios.post('http://192.168.85.182:5000/twitter/tweet', data)
+    axios.post('http://192.168.85.182:5000/twitter/create', data)
     .then((response) => {
       this.refresh(response.status===200 ? "OKAY" : "ERROR",response.data['Message'])
     })
@@ -65,7 +83,7 @@ class TweetPage extends React.Component {
           }
         />
         <div className="content mt-5 pt-4">
-          <CreateTweet send={this.sendTweet}/>
+          <CreateTweet send={this.sendTweet} bots={this.state.bots}/>
         </div>
       </div>
     );
