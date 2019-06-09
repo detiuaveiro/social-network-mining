@@ -394,7 +394,7 @@ class PDP:
                 if val:
                     threshold += POLICY_KEYWORDS_MATCHES
         logs = self.policies.searchLog(msg["bot_id"])
-        for i in range(len(logs - 1)):
+        for i in range(len(logs) - 1):
             action = logs[i]["action"]
             if "TWEET LIKED" in action:
                 sp = action.split("ID: ")
