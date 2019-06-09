@@ -141,7 +141,6 @@ class TwitterBot:
                 task_type, task_params = task_msg["type"], task_msg["params"]
                 log.debug(f"Received task {task_msg} with: {task_params}")
                 if task_type == Task.FIND_BY_KEYWORDS:
-                    # self.find_keywords_routine(task_params["keywords"])
                     log.warning(f"Not processing {Task.FIND_BY_KEYWORDS.name} with {task_params}")
                 elif task_type == Task.FOLLOW_USERS:
                     self.follow_users_routine(task_params)
@@ -351,26 +350,6 @@ class TwitterBot:
                     log.error(f"Unable to find Followers for User with ID <{param}> because reason={e.reason}")
         log.info("Exiting Follow Users Routine...")
 
-    def find_keywords_routine(self, keywords: List[str]):
-        """
-        Routine for the FIND_KEYWORDS task
-        Currently implemented as getting tweets from our timeline and "reading them".
-        Whenever a tweet appears, we'll send a request to the control center asking if we should like/retweet them
-
-        Parameters
-        ----------
-        keywords : `List[str]`
-            List of keywords to search in the timeline tweets
-        See Also
-        --------
-        read_timeline
-        get_user_timeline_tweets
-        """
-        log.info("Starting Keywords Routine...")
-        log.info(f"Keywords provided: {keywords}")
-        self.read_timeline(self.user, keywords, jump_users=True)
-        log.info("Exiting Keywords Routine...")
-
     def follow_users_routine(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
         """
         Routine for the FOLLOW_USERS task
@@ -495,7 +474,7 @@ class TwitterBot:
             return self._api.home_timeline()
         return user_obj.timeline(**kwargs)
 
-    def read_timeline(self, user_obj: User, keywords: List[str] = None, *, jump_users=False,
+    def read_timeline(self, user_obj: User, *, jump_users=False,
                       max_depth=3, max_jumps=5, current_depth=0, total_jumps=0):
         """
         Method for reading a user's timeline.
@@ -505,8 +484,6 @@ class TwitterBot:
         ----------
         user_obj : User
             User object to read the timeline for
-        keywords : List[str]
-            List of Keywords to search in the tweets' content
         jump_users : bool
             Flag to know if we should jump between user's tweets or not
         max_depth : int
@@ -536,28 +513,23 @@ class TwitterBot:
 
             # read it's content
             total_read_time += utils.read_text_and_wait(tweet.text)
-            # If it's our own timeline, we don't really need to do any logic
+            # If it's our own tweet, we don't really need to do any logic
             if self.user.id == tweet.user.id:
                 continue
-            # process the tweet
-            if not keywords:
+            # Processing the tweet regarding liking/retweeting
+            if not tweet.favorited:
                 self.query_like_tweet(tweet)
-                continue
-            else:
-                like_chance, retweet_chance = self._match_keywords(tweet, keywords)
-                if like_chance >= settings.FAVOURITE_CHANCE:
-                    self.query_like_tweet(tweet)
-                if retweet_chance >= settings.RETWEET_CHANCE:
-                    self.query_retweet_tweet(tweet)
+            if not tweet.retweeted:
+                self.query_retweet_tweet(tweet)
             # If the author of the tweet isn't the same user that we're reading the timeline
             # (Because retweets can appear), then jump and do the logic for reading the timeline
-            # (assuming we haven't reach)
+            # (assuming we haven't reached max jumps)
             if (not jump_users) or (total_jumps == max_jumps) or (current_depth == max_depth):
                 continue
             elif tweet.user != user_obj:
                 # save the user
                 self.send_user(tweet.user)
-                self.read_timeline(user_obj, keywords,
+                self.read_timeline(user_obj,
                                    jump_users=jump_users,
                                    total_jumps=total_jumps + 1,
                                    max_jumps=max_jumps,
@@ -587,36 +559,6 @@ class TwitterBot:
         else:
             log.info(f"Asking to Retweet Tweet with ID={tweet.id}")
             self.send_query(MessageType.QUERY_TWEET_RETWEET, tweet)
-
-    def _match_keywords(self, tweet: Tweet, keywords: List[str] = None) -> Tuple[float, float]:
-        """
-
-        Parameters
-        ----------
-        tweet : List[Tweet]
-            List of tweets to match keywords again
-        keywords :  List[str]
-            List of keywords to search for
-
-        Returns
-        -------
-        results : Tuple[float, float]
-            A tuple with the favourite (liking) and retweet chances.
-
-        """
-        if not keywords:
-            return -1, -1
-        total_keywords = len(keywords)
-        keywords_tweet_matches = sum([1 for i in keywords if i in tweet.text])
-        percentage_matches = keywords_tweet_matches / total_keywords
-        # IF it doesn't match minimum threshold, return the same as if there weren't any keywords
-        if percentage_matches < settings.MIN_KEYWORD_THRESHOLD:
-            return -1, -1
-        favourite_chance = utils.random_between(percentage_matches, 1)
-        log.debug(f"Liking chance of «{favourite_chance}» out of «{settings.FAVOURITE_CHANCE}»")
-        retweet_chance = utils.random_between(percentage_matches, 1)
-        log.debug(f"Retweeting chance of «{retweet_chance}» out of «{settings.RETWEET_CHANCE}»")
-        return favourite_chance, retweet_chance
 
     def send_user(self, user: User) -> None:
         """
