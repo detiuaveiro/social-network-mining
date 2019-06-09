@@ -1,29 +1,55 @@
 import React from "react";
-import { Card, CardHeader, CardBody, Row, Col, FormGroup, Label, Input, Form } from 'reactstrap';
-import {FormInputs } from 'components';// used for making the prop types of this component
+import { Card, CardBody, Row, Col, FormGroup, Label, Input, Form } from 'reactstrap';
+import {FormInputs  } from 'components';// used for making the prop types of this component
 import { CircularProgressbar} from 'react-circular-progressbar';
-import 'emoji-mart/css/emoji-mart.css'
+import Select from 'react-select';
 import { Picker } from 'emoji-mart'
 
 class CreateTweet extends React.Component {
-  state = {
-    text: "",
-    nChar: 0,
-    emojiShow: false,
-    in_Reply: "Timeline",
-    tweetid: "",
-    allowTweetID: false,
-  }
+
   constructor(props) {
     super(props);
+    this.state = {
+      text: "",
+      nChar: 0,
+      emojiShow: false,
+      in_Reply: "Timeline",
+      tweetid: "",
+      allowTweetID: false,
+      bots: [],
+      options: [],
+      emptyBots: false,
+      emptyText: false,
+    }
     this.handleSend = this.handleSend.bind(this);
+  }
+
+  componentDidMount() {
+    this.setState({
+      options: this.props.bots,
+      bots: this.props.bots,
+    })
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.bots !== prevProps.bots) {
+      this.setState({
+        options: this.props.bots,
+      });
+      
+    }
   }
 
   handleChange = (event) =>{
     this.setState({
       text: event.target.value,
-      nChar: event.target.value.length
+      nChar: event.target.value.length,
     })
+    if (this.state.text.length===0){
+      this.setState({
+        emptyText: false,
+      })
+    }
   }
 
   addEmoji = (emoji) => {
@@ -40,7 +66,26 @@ class CreateTweet extends React.Component {
   }
 
   handleSend = () => {
-    this.props.send(this.state.text)
+    if (this.state.bots.length===0){
+      this.setState({emptyBots: true})
+    }
+    else if (this.state.text.length===0 || this.state.text.length>280){
+      this.setState({emptyText: true})
+    }
+    else {
+      let data
+      const b = []
+      this.state.bots.forEach(function (bot){
+        b.push(bot['value'])
+      })
+      if (this.state.allowTweetID) {
+        data = {"in_reply_to_status_id": this.state.tweetid, "status": this.state.text, "bots": b, "timeline": "false"}
+      }
+      else {
+        data = {"status": this.state.text, "bots": b, "timeline": "true"}
+      }
+      this.props.send(data)
+    }
   }
 
   handleTweetID = event => {
@@ -52,6 +97,10 @@ class CreateTweet extends React.Component {
       in_Reply: event.target.value,
       allowTweetID: !this.state.allowTweetID,
     });
+  }
+
+  handleBots = (bots) => {
+    this.setState({ bots, emptyBots: false});
   }
 
   render() {
@@ -67,6 +116,40 @@ class CreateTweet extends React.Component {
                   <Row>
                     <Col xs={12} md={12}>
                       <Form>
+                        <FormGroup required>
+                          <Label>Bots:</Label>
+                            <Select
+                              value={this.state.bots}
+                              onChange={this.handleBots}
+                              options={this.state.options}
+                              isMulti
+                              isSearchable
+                              placeholder="Add Bots"
+                              styles={{
+                                control: (provided,state) => ({
+                                  ...provided,
+                                  borderRadius: 30,
+                                  borderColor: state.isFocused ? "#f96332" : "#E3E3E3",
+                                  boxShadow: state.isFocused ? "#f96332" : "#E3E3E3",
+                                  '&:hover': {
+                                    borderColor: state.isFocused ? "#f96332" : "#E3E3E3",
+                                    boxShadow: state.isFocused ? "#f96332" : "#E3E3E3",
+                                  },
+                                }),
+                                multiValue: (provided, state) => ({
+                                  ...provided,
+                                  backgroundColor: "#f96332",
+                                  color: "white",
+                                  borderRadius: 30,
+                                }),
+                              }}
+                              className="primary"
+
+                            />
+                            <div hidden={!this.state.emptyBots} className="alert-danger mt-2 p-2" style={{borderRadius: 30}}>
+                                Field can't be empty!
+                            </div>
+                        </FormGroup>
                         <FormGroup required>
                           <Label for="in_reply_of">Publish Tweet on:</Label>
                           <Row>
@@ -106,6 +189,9 @@ class CreateTweet extends React.Component {
                           }
                         ]}
                       />
+                      <div hidden={!this.state.emptyText} className="alert-danger mt-2 p-2" style={{borderRadius: 30}}>
+                        Field can't be empty or have more than 280 characters!
+                      </div>
                     </Col>
                   </Row>
                   <Row>
@@ -116,7 +202,9 @@ class CreateTweet extends React.Component {
                       <i class="text-muted float-right far fa-3x fa-smile-wink" onClick={this.toogleEmojiState}></i>
                     </Col>
                     <Col xs={4} md={1}>
-                      <i class="text-muted float-right fas fa-3x fa-paper-plane"></i>
+                      <div>
+                        <i class="text-muted float-right far fa-3x fa-paper-plane" onClick={this.handleSend}></i>
+                      </div>
                     </Col>
                   </Row>
                 </CardBody>
@@ -133,13 +221,44 @@ class CreateTweet extends React.Component {
         <Row>
           <Col xs={12} md={12}>
             <Card>
-              <CardHeader>
-                Create Tweet
-              </CardHeader>
               <CardBody>
                 <Row>
                   <Col xs={12} md={12}>
                     <Form>
+                      <FormGroup required>
+                        <Label>Bots:</Label>
+                          <Select
+                            value={this.state.bots}
+                            onChange={this.handleBots}
+                            options={this.state.options}
+                            isMulti
+                            isSearchable
+                            placeholder="Add Bots"
+                            styles={{
+                              control: (provided,state) => ({
+                                ...provided,
+                                borderRadius: 30,
+                                borderColor: state.isFocused ? "#f96332" : "#E3E3E3",
+                                boxShadow: state.isFocused ? "#f96332" : "#E3E3E3",
+                                '&:hover': {
+                                  borderColor: state.isFocused ? "#f96332" : "#E3E3E3",
+                                  boxShadow: state.isFocused ? "#f96332" : "#E3E3E3",
+                                },
+                              }),
+                              multiValue: (provided, state) => ({
+                                ...provided,
+                                backgroundColor: "#f96332",
+                                color: "white",
+                                borderRadius: 30,
+                              }),
+                            }}
+                            className="primary"
+
+                          />
+                          <div hidden={!this.state.emptyBots} className="alert-danger mt-2 p-2" style={{borderRadius: 30}}>
+                              Field can't be empty!
+                          </div>
+                      </FormGroup>
                       <FormGroup required>
                         <Label for="in_reply_of">Publish Tweet on:</Label>
                         <Row>
@@ -179,6 +298,9 @@ class CreateTweet extends React.Component {
                         }
                       ]}
                     />
+                    <div hidden={!this.state.emptyText} className="alert-danger mt-2 p-2" style={{borderRadius: 30}}>
+                      Field can't be empty or have more than 280 characters!
+                    </div>
                   </Col>
                 </Row>
                 <Row>
@@ -189,7 +311,7 @@ class CreateTweet extends React.Component {
                     <i class="text-muted float-right far fa-3x fa-smile-wink" onClick={this.toogleEmojiState}></i>
                   </Col>
                   <Col xs={4} md={1}>
-                    <i class="text-muted float-right fas fa-3x fa-paper-plane"></i>
+                      <i class="text-muted float-right far fa-3x fa-paper-plane" onClick={this.handleSend}></i>
                   </Col>
                 </Row>
               </CardBody>
