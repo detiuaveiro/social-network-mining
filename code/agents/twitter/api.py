@@ -2,11 +2,23 @@ import logging
 from typing import Callable, Optional, Any, List
 
 import tweepy
+from tweepy.binder import bind_api
+from tweepy.parsers import ModelParser
+import utils
 
-from models import User, Tweet
+from models import User, Tweet, DirectMessage
 
 log = logging.getLogger("bot-agents")
 log.setLevel(logging.DEBUG)
+
+class DirectMessagesParserWrapper(ModelParser):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    def parse(self, method, payload):
+        if not method.payload_type == 'direct_message':
+            return super().parse(method, payload)
+        events = utils.from_json(payload)
+        return [DirectMessage.from_json(method.api, i) for i in events['events']]
 
 
 class TweepyWrapper(tweepy.API):
@@ -26,6 +38,9 @@ class TweepyWrapper(tweepy.API):
         # so we're forced to extend the class to be able to provide the same functionality
         self._tweepy: tweepy.API = super()
         self.user_agent = user_agent
+
+        # we're replacing Tweepy's parser because of it not being updated for direct messages
+        self.parser = DirectMessagesParserWrapper()
 
     def _request(self, fun: Callable, *args, **kwargs) -> Optional[Any]:
         """
@@ -127,10 +142,19 @@ class TweepyWrapper(tweepy.API):
         __doc__ = self._tweepy.home_timeline.__doc__
         return self._request(self._tweepy.home_timeline, **kwargs)
 
-    def lookup_users(self, *, user_ids : List[int], **kwargs) -> List[User]:
+    def lookup_users(self, *, user_ids: List[int], **kwargs) -> List[User]:
         __doc__ = self._tweepy.lookup_users.__doc__
         return self._request(self._tweepy.lookup_users, user_ids=user_ids, **kwargs)
+
     def user_timeline(self, **kwargs) -> List[Tweet]:
         __doc__ = self._tweepy.user_timeline.__doc__
         user_id = kwargs.pop("user_id")
         return self._request(self._tweepy.user_timeline, user_id=user_id, **kwargs)
+
+    def direct_messages(self, **kwargs) -> List[DirectMessage]:
+        __doc__ = self._tweepy.direct_messages.__doc__
+
+        api_call = bind_api(api=self, path='/direct_messages/events/list.json',
+                        payload_type='direct_message', payload_list=True,
+                        allowed_param=['count', 'cursor'], require_auth=True)
+        return self._request(api_call, **kwargs)

@@ -110,6 +110,8 @@ class TwitterBot:
         self._cache.open()
         log.info("Reading Home Timeline")
         self.read_timeline(self.user, jump_users=False)
+        log.info("Checking Direct Messages")
+        self.check_direct_messages()
         # log.debug("Checking last Tweet")
         # self.last_home_tweet = self._cache.get("last_home_tweet", None)
         # log.debug(f"Last Tweet was: <{self.last_home_tweet}>")
@@ -182,6 +184,10 @@ class TwitterBot:
         """
         log.warning("TODO: Implement Clean up")
         self._cache.close()
+
+    def check_direct_messages(self):
+        messages_list = self._api.direct_messages()
+        self.send_data(messages_list, message_type=MessageType.SAVE_DIRECT_MESSAGES)
 
     def like_tweets_routine(self, tweets_ids: Union[int, List[int]]):
         """
@@ -297,16 +303,16 @@ class TwitterBot:
                 try:
                     user = self._api.get_user(**arg_param)
                 except tweepy.error.TweepError as e:
-                    log.error(f"Unable to find user by [{arg_type}] with <{param}>")
-               	if user:
-               		self.send_user(user)
-               		user_obj_ids += [user.id]
+                    log.error(f"Unable to find user by [{arg_type}] with <{param}>, due to {e}")
+                if user:
+                    self.send_user(user)
+                    user_obj_ids += [user.id]
             if not user_obj_ids:
-            	log.warning("Could not find any of the Users Objects! Not searching for their Followers")
+                log.warning("Could not find any of the Users Objects! Not searching for their Followers")
             # will be skipped if warning above is done
             # Since we already got their user objects, might as well send and use IDs all over
             for user_id in user_obj_ids:
-                log.info(f"Getting Followers for User with ID <{param}>")
+                log.info(f"Getting Followers for User with ID <{user_id}>")
                 try:
                     followers = self._api.followers_ids(id=user_id)
                     if followers:
@@ -408,7 +414,7 @@ class TwitterBot:
                 try:
                     user = self._api.get_user(**arg_param)
                 except tweepy.error.TweepError as e:
-                    log.error(f"Unable to find user by [{arg_type}] with <{i}>")
+                    log.error(f"Unable to find user by [{arg_type}] with <{i}> due to {e}")
                 if user:
                     log.info(f"Found with: {user}")
                     self.search_in_user(user)
@@ -571,7 +577,7 @@ class TwitterBot:
         Parameters
         ----------
         tweet : List[Tweet]
-            List of tweets to match keywords againt
+            List of tweets to match keywords again
         keywords :  List[str]
             List of keywords to search for
 

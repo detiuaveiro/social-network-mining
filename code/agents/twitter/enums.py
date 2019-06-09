@@ -32,6 +32,7 @@ class MessageType(IntEnum):
     SAVE_TWEET = 10
     EVENT_USER_BLOCKED = 11
     SAVE_FOLLOWERS = 12
+    SAVE_DIRECT_MESSAGES = 13
 
     def __str__(self):
         return self.name
