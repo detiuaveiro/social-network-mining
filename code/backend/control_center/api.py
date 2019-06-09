@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, json, request
+from flask import Flask, jsonify, json, request, send_file
 from flask_cors import CORS
 from Mongo.mongo_flask import AppMongo
 from Postgres.postgreSQL import postgreSQL_API
@@ -113,6 +113,10 @@ twitter paths
 def tt_network():
     return "bolt://192.168.85.187:7687"
 
+@app.route("/twitter/network/export")
+def export_network():
+    neo.export_network()
+    return jsonify({"Message":"Success"})
 
 @app.route("/twitter/policies")
 def tt_policies():
@@ -168,6 +172,13 @@ def tt_tweets():
         i["id"] = str(i["id"])
     return jsonify(mapa)
 
+@app.route("/twitter/tweets/export")
+def export_tweets():
+    a=mongo_t.exportTweets(fields={"entities":True,"favorite_count":True},export_type="csv")
+    if type(a)==dict:
+        return jsonify(a)
+    else:
+        return send_file("/home/user/Documents/proj_PI/social-network-mining/code/backend/control_center/data.csv",attachment_filename="data.csv")
 
 @app.route("/twitter/tweets/stats")
 def tt_tweet_stats():
