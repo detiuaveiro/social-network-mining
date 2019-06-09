@@ -104,6 +104,39 @@ def user_stats(id):
     stats = postgres.getStatsUserID(id)
     return jsonify(stats)
 
+@app.route("/twitter/users/export",methods=['GET'])
+def export_users():
+
+    if request.method == 'GET':
+        exportype=request.args.get('type')
+        export_fields=request.args.get('fields')
+        if exportype is None:
+            if export_fields is None:
+                a=mongo.exportData("users")
+            else:
+                try:
+                    export=export_fields.split(",")
+                except TypeError:
+                    return app.response_class(response={"Error":"Wrong field specified"}, status=400, mimetype='application/json')
+                a=mongo.exportData("users",fields=export)
+        else:
+            if export_fields is None:
+                a=mongo.exportData("users",export_type=exportype)
+            else:
+                try:
+                    export=export_fields.split(",")
+                except TypeError:
+                    return app.response_class(response={"Error":"Wrong field specified"}, status=400, mimetype='application/json')
+                a=mongo.exportData("users",fields=export,export_type=exportype)
+        if type(a)==dict:
+            return app.response_class(response=json.dumps(a), status=400, mimetype='application/json')
+        else:
+            if exportype is None or exportype=="json":
+                return send_file("/data.json",as_attachment=True,attachment_filename="data.json")
+            else:
+                return send_file("/data.csv",attachment_filename="data.csv")
+    else:
+        return app.response_class(response=json.dumps({"Error":"Method not allowed"}),status=405,mimetype='application/json')
 
 '''
 twitter paths
@@ -114,10 +147,10 @@ twitter paths
 def tt_network():
     return "bolt://192.168.85.187:7687"
 
-@app.route("/twitter/network/export")
+@app.route("/twitter/network/export", methods=['GET'])
 def export_network():
-    neo.export_network()
-    return jsonify({"Message":"Success"})
+    a=neo.export_network()
+    return jsonify(a)
 
 @app.route("/twitter/policies")
 def tt_policies():
@@ -207,14 +240,39 @@ def tt_tweets():
         i["id"] = str(i["id"])
     return jsonify(mapa)
 
-@app.route("/twitter/tweets/export")
+@app.route("/twitter/tweets/export",methods=['GET'])
 def export_tweets():
-    a=mongo_t.exportTweets(fields={"entities":True,"favorite_count":True},export_type="csv")
-    if type(a)==dict:
-        return jsonify(a)
+    if request.method == 'GET':
+        exportype=request.args.get('type')
+        export_fields=request.args.get('fields')
+        if exportype is None:
+            if export_fields is None:
+                a=mongo_t.exportData("tweets")
+            else:
+                try:
+                    export=export_fields.split(",")
+                except TypeError:
+                    return app.response_class(response={"Error":"Wrong field specified"}, status=400, mimetype='application/json')
+                a=mongo_t.exportData("tweets",fields=export)
+        else:
+            if export_fields is None:
+                a=mongo_t.exportData("tweets",export_type=exportype)
+            else:
+                try:
+                    export=export_fields.split(",")
+                except TypeError:
+                    return app.response_class(response={"Error":"Wrong field specified"}, status=400, mimetype='application/json')
+                a=mongo_t.exportData("tweets",fields=export,export_type=exportype)
+                
+        if type(a)==dict:
+            return app.response_class(response=json.dumps(a), status=400, mimetype='application/json')
+        else:
+            if exportype is None or exportype=="json":
+                return send_file("/home/user/Documents/proj_PI/social-network-mining/code/backend/control_center/data.json",as_attachment=True,attachment_filename="data.json")
+            else:
+                return send_file("/home/user/Documents/proj_PI/social-network-mining/code/backend/control_center/data.csv",attachment_filename="data.csv")
     else:
-        return send_file("/home/user/Documents/proj_PI/social-network-mining/code/backend/control_center/data.csv",attachment_filename="data.csv")
-
+        return app.response_class(response=json.dumps({"Error":"Method not allowed"}),status=405,mimetype='application/json')
 @app.route("/twitter/tweets/stats")
 def tt_tweet_stats():
     stats = elas.getAllStatsTweets(length=50)
@@ -236,7 +294,6 @@ def tt_tweet_by_id(id):
 
 @app.route("/twitter/tweets/<id>/stats")
 def tt_tweet_stats_by_id(id):
-    # mapa=mongo_t.getOneFilteredDoc(findText={"id":int(id)},projection={"created_at":True,"entities.hashtags":True,"entities.user_mentions.name":True,"entities.user_mentions.screen_name":True,"favorited":True,"in_reply_to_screen_name":True,"in_reply_to_status_id_str":True,"in_reply_to_user_id_str":True,"is_quote_status":True,"place":True,"favorite_count":True,"retweet_count":True,"retweeted":True,'user.id_str':True,'user.name':True,'user.screen_name':True,'_id':False})
     stats = postgres.getStatsTweetID(id)
     return jsonify(stats)
 

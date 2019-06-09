@@ -180,4 +180,5 @@ class Neo4jAPI():
     def export_network(self):
         with self._driver.session() as session:
             result=session.run("call apoc.export.csv.all('file.csv',{})")
+            return result
             

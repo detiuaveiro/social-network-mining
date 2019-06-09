@@ -24,58 +24,84 @@ class AppMongo:
 	def getCount(self, findText={}):
 		return self.app.db.users.count_documents(findText)		
 
-	def exportTweets(self,fields=None,export_type="json"):
-		if export_type == "json":			
+	def exportData(self,collection,fields=None,export_type="json"):
+		if export_type == "json":
 			with open("data.json","w") as f:
+				keys={}
 				if fields is None:
-					data=list(self.app.db.tweets.find({},projection={'_id':False}))
+					if collection=="tweets":
+						data=list(self.app.db.tweets.find({},projection={'_id':False}))
+					else:
+						data=list(self.app.db.users.find({},projection={'_id':False}))
 				else:
-					fields.update({'_id':False})
-					data=list(self.app.db.tweets.find({},projection=fields))
+					for i in fields:
+						keys[i]=True
+					keys.update({'_id':False})
+					if collection=="tweets":
+						data=list(self.app.db.tweets.find({},projection=keys))
+					else:
+						data=list(self.app.db.users.find({},projection=keys))
 				json.dump(data,f)
-			fil=open("data.json","r+")
 
 		elif export_type == "csv":
 			entities_updated={}
 			with open("data.csv","w") as f:
+				keys={}
 				if fields is None:
-					data=list(self.app.db.tweets.find({},projection={'_id':False,"possibly_sensitive":False}))
+					if collection=="tweets":
+						data=list(self.app.db.tweets.find({},projection={'_id':False}))
+					else:
+						data=list(self.app.db.users.find({},projection={'_id':False}))
 					fields=list(data[0].keys())
-					fields.append("quoted_status_id");fields.append("hashtags");fields.append("urls");fields.append("user_mentions");fields.append("symbols");fields.append("media");fields.append("polls");fields.remove("entities")
+					if "entities" in fields:
+						fields.append("id_str");fields.append("possibly_sensitive");fields.append("quoted_status_id");fields.append("hashtags");fields.append("urls");fields.append("user_mentions");fields.append("symbols");fields.append("media");fields.append("polls");fields.remove("entities")
 					writer=csv.DictWriter(f,fields)
 					writer.writeheader()
-					for document in data:
-						entities=document["entities"]
-						del document["entities"]
-						for i in entities:
-							try:
-								entities_updated[i]=entities[i]
-							except KeyError:
-								pass
-						document.update(entities_updated)
-						writer.writerow(document)
+					if "hashtags" in fields:
+						for document in data:
+							entities=document["entities"]
+							del document["entities"]
+							for i in entities:
+								try:
+									entities_updated[i]=entities[i]
+								except KeyError:
+									pass
+							document.update(entities_updated)
+							writer.writerow(document)
+					else:
+						for document in data:
+							writer.writerow(document)
 					
 				else:
-					fields.update({'_id':False})
-					data=list(self.app.db.tweets.find({},projection=fields))
-					field=list(fields.keys())
+					for i in fields:
+						keys[i]=True
+					keys.update({'_id':False})
+					if collection=="tweets":
+						data=list(self.app.db.tweets.find({},projection=keys))
+					else:
+						data=list(self.app.db.users.find({},projection=keys))
+					field=list(keys.keys())
 					field.remove('_id')
 					if "entities" in field:
 						field.append("hashtags");field.append("urls");field.append("user_mentions");field.append("symbols");field.append("media");field.append("polls");field.remove("entities")
-					writer=csv.DictWriter(f,field)
-					writer.writeheader()
-					for document in data:
-						entities=document["entities"]
-						del document["entities"]
-						for i in entities:
-							try:
-								entities_updated[i]=entities[i]
-							except KeyError:
-								pass
-						document.update(entities_updated)
-						writer.writerow(document)
-			fil=open("data.csv","r+")
+						writer=csv.DictWriter(f,field)
+						writer.writeheader()
+						for document in data:
+							entities=document["entities"]
+							del document["entities"]
+							for i in entities:
+								try:
+									entities_updated[i]=entities[i]
+								except KeyError:
+									pass
+							document.update(entities_updated)
+							writer.writerow(document)
+					else:
+						writer=csv.DictWriter(f,field)
+						writer.writeheader()
+						for document in data:
+							writer.writerow(document)
 
 		else:
 			return {"NotImplementedError":"Not implemented yet!"}
-		return fil
+		return "OK"
