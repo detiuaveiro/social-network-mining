@@ -4,6 +4,7 @@ COPY . /
 
 RUN apt-get update \
   && apt -y install software-properties-common \
+  && apt -y install python3-distutils \
   && add-apt-repository -y ppa:deadsnakes/ppa \
   && apt -y install python3.7 \
   && apt -y install curl \
