@@ -433,6 +433,7 @@ class Task:
         """
         log.info("TASK: SAVE DIRECT MESSAGE")
         for msg in message['data']:
+            msg["bot_id"]  = message['bot_id']
             message_exists = self.mongo.search('messages', msg)
             if (message_exists):
                 log.info("MESSAGE EXISTS")
