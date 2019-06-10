@@ -4,6 +4,8 @@ import Policies from "views/Policies/Policies.jsx";
 import UserPage from "views/UserPage/UserPage.jsx";
 import BotsPage from "views/BotsPage/BotsPage.jsx";
 import TweetPage from "views/TweetPage/TweetPage.jsx";
+import Tweets from "views/Tweets/Tweets.jsx";
+import ExportData from "views/ExportData/ExportData.jsx";
 import Network from "views/Network/Network";
 
 var dashRoutes = [
@@ -36,9 +38,23 @@ var dashRoutes = [
     hide: false,
   },
   {
-    path: "/tweet",
-    name: "Tweet",
+    path: "/tweets",
+    name: "Tweets",
+    icon: "fab fa-twitter",
+    component: Tweets,
+    hide: false,
+  },
+  {
+    path: "/create_tweet",
+    name: "Create Tweet",
     icon: "fas fa-quote-right",
+    component: TweetPage,
+    hide: false,
+  },
+  {
+    path: "/messages",
+    name: "Messages",
+    icon: "fas fa-comments",
     component: TweetPage,
     hide: false,
   },
@@ -47,6 +63,13 @@ var dashRoutes = [
     name: "Policies",
     icon: "fas fa-list-alt",
     component: Policies,
+    hide: false,
+  },
+  {
+    path: "/download",
+    name: "Export Data",
+    icon: "fas fa-save",
+    component: ExportData,
     hide: false,
   },
   {

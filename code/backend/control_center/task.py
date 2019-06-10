@@ -101,6 +101,9 @@ class Task:
         elif(message_type == MessageTypes.FIND_FOLLOWERS):
             self.Find_Followers(message=message)
 
+        elif(message_type == MessageTypes.SAVE_DIRECT_MESSAGES):
+            self.Save_Direct_Messages(message=message)
+
     def User_Followed(self, message):
         """
         Stores information about a bot following a user.
@@ -419,3 +422,23 @@ class Task:
                     else:
                         continue
 
+    def Save_Direct_Messages(self, message):
+        """
+        Stores the information about direct messages sent to a bot.
+
+        Parameters
+        ----------
+        message : dict
+            A dictionary containing the id of the bot and the tweet object as the data
+        """
+        log.info("TASK: SAVE DIRECT MESSAGE")
+        for msg in message['data']:
+            message_exists = self.mongo.search('messages', msg)
+            if (message_exists):
+                log.info("MESSAGE EXISTS")
+                self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "UPDATING MESSAGE"})
+                self.mongo.update('messages', msg)
+            else:
+                log.info("NEW MESSAGE")
+                self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "SAVING MESSAGE"})
+                self.mongo.save('messages', msg)

@@ -1,4 +1,5 @@
 import React from "react";
+import NotificationAlert from "react-notification-alert";
 import axios from 'axios';
 
 import {PanelHeader, CreateTweet} from "components";
@@ -72,6 +73,7 @@ class TweetPage extends React.Component {
   render() {
     return (
       <div>
+        <NotificationAlert ref="notificationAlert" />
         <PanelHeader
           size="sm"
           content={
