@@ -279,9 +279,9 @@ def export_tweets():
             return app.response_class(response=json.dumps(a), status=400, mimetype='application/json')
         else:
             if exportype is None or exportype=="json":
-                return send_file("/home/user/Documents/proj_PI/social-network-mining/code/backend/control_center/data.json",as_attachment=True,attachment_filename="data.json")
+                return send_file("/data.json",as_attachment=True,attachment_filename="data.json")
             else:
-                return send_file("/home/user/Documents/proj_PI/social-network-mining/code/backend/control_center/data.csv",attachment_filename="data.csv")
+                return send_file("/data.csv",attachment_filename="data.csv")
     else:
         return app.response_class(response=json.dumps({"Error":"Method not allowed"}),status=405,mimetype='application/json')
 @app.route("/twitter/tweets/stats")
