@@ -85,6 +85,15 @@ class CreateTweet extends React.Component {
         data = {"status": this.state.text, "bots": b, "timeline": "true"}
       }
       this.props.send(data)
+      this.setState({
+        text: "",
+        nChar: 0,
+        emojiShow: false,
+        in_Reply: "Timeline",
+        tweetid: "",
+        allowTweetID: false,
+        bots: [],
+      })
     }
   }
 

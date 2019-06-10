@@ -5,6 +5,7 @@ import UserPage from "views/UserPage/UserPage.jsx";
 import BotsPage from "views/BotsPage/BotsPage.jsx";
 import TweetPage from "views/TweetPage/TweetPage.jsx";
 import Tweets from "views/Tweets/Tweets.jsx";
+import ExportData from "views/ExportData/ExportData.jsx";
 import Network from "views/Network/Network";
 
 var dashRoutes = [
@@ -68,7 +69,7 @@ var dashRoutes = [
     path: "/download",
     name: "Export Data",
     icon: "fas fa-save",
-    component: TweetPage,
+    component: ExportData,
     hide: false,
   },
   {
