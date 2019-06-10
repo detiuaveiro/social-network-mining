@@ -116,6 +116,7 @@ def export_users():
                 a=mongo.exportData("users")
             else:
                 try:
+                    export_fields=export_fields.strip('[]')
                     export=export_fields.split(",")
                 except TypeError:
                     return app.response_class(response={"Error":"Wrong field specified"}, status=400, mimetype='application/json')
@@ -125,6 +126,7 @@ def export_users():
                 a=mongo.exportData("users",export_type=exportype)
             else:
                 try:
+                    export_fields=export_fields.strip('[]')
                     export=export_fields.split(",")
                 except TypeError:
                     return app.response_class(response={"Error":"Wrong field specified"}, status=400, mimetype='application/json')
@@ -252,6 +254,7 @@ def export_tweets():
                 a=mongo_t.exportData("tweets")
             else:
                 try:
+                    export_fields=export_fields.strip('[]')
                     export=export_fields.split(",")
                 except TypeError:
                     return app.response_class(response={"Error":"Wrong field specified"}, status=400, mimetype='application/json')
@@ -261,6 +264,7 @@ def export_tweets():
                 a=mongo_t.exportData("tweets",export_type=exportype)
             else:
                 try:
+                    export_fields=export_fields.strip('[]')
                     export=export_fields.split(",")
                 except TypeError:
                     return app.response_class(response={"Error":"Wrong field specified"}, status=400, mimetype='application/json')
