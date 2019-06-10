@@ -63,9 +63,10 @@ def user_by_id(id):
 
 @app.route("/twitter/users/<id>/tweets")
 def user_tweets(id):
-    mapa = mongo_t.twitterCollection(findText={"user": id})
+    mapa = mongo_t.twitterCollection(findText={"user": int(id)})
     for i in mapa:
         i["id"]=str(i["id"])
+        i["user"]=str(i["user"])
     return jsonify(mapa)
 
 
@@ -238,6 +239,7 @@ def tt_tweets():
     mapa = mongo_t.twitterCollection()
     for i in mapa:
         i["id"] = str(i["id"])
+        i["user"] = str(i["user"])
     return jsonify(mapa)
 
 @app.route("/twitter/tweets/export",methods=['GET'])
@@ -286,6 +288,7 @@ def tt_tweet_by_id(id):
         mapa = mongo_t.twitterCollection(findText={"id": int(id)})
         for i in mapa:
             i["id"] = str(i["id"])
+            i["user"] = str(i["user"])
         return jsonify(mapa)
     except TypeError:
         return app.response_class(response=json.dumps({"Error": "invalid"}), status=400,
