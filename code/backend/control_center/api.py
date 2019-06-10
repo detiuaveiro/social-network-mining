@@ -95,7 +95,12 @@ The most significant of these is in_reply_to_status_id, which supports finding t
 @app.route("/twitter/users/<id>/replies")
 def user_replies(id):
     mapa = mongo_t.twitterCollection(
-        findText={ "$or": [ {"in_reply_to_user_id_str": str(id)}, {"in_reply_to_screen_name": str(id)}, {"in_reply_to_status_id_str":str(id)} ]})
+        findText={ "$or": [ {"in_reply_to_user_id": int(id)}, {"in_reply_to_screen_name": str(id)}, {"in_reply_to_status_id":int(id)} ]})
+    for i in mapa:
+        i["id"]=str(i["id"])
+        i["in_reply_to_user_id"]=str(i["in_reply_to_user_id"])
+        i["in_reply_to_status_id"]=str(i["in_reply_to_status_id"])
+        i["user"]=str(i["user"])
     return jsonify(mapa)
 
 
