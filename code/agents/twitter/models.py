@@ -354,7 +354,7 @@ class DirectMessage(BaseModel):
     def to_json(self):
         return {
             'id'          : self.id,
-            "created_at" : self._json["created_at"]["created_timestamp"],
+            "created_at" : self._json["created_timestamp"],
             "recipient_id": self.recipient_id,
             "sender_id"   : self.sender_id,
             "text"        : self.text,
