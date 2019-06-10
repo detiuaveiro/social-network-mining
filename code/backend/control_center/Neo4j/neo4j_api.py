@@ -180,6 +180,6 @@ class Neo4jAPI():
     def export_network(self):
         with self._driver.session() as session:
             result=session.run("call apoc.export.csv.query('match (b)-[r:FOLLOWS]->(u) return b,r,u;','file.csv',{})")
-        data=open("import/file.csv","r+")
+        data=open("neo4j/import/file.csv","r+")
         return data
             
