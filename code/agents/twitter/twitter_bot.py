@@ -2,10 +2,10 @@ import argparse
 import logging
 import os
 import sys
-from typing import List, Dict, Tuple, Union
+from typing import List, Dict, Union
 
-import tweepy
 import pyrabbit2
+import tweepy
 from pyrabbit2 import Client
 
 import settings
@@ -261,7 +261,7 @@ class TwitterBot:
             log.warning(
                 f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
 
-    def post_tweet_routine(self, data : dict):
+    def post_tweet_routine(self, data: dict):
         log.debug("Starting Post Tweet Routine")
         reply_id = data.get("in_reply_to_status_id", None)
         status = data.get("status", None)
@@ -283,7 +283,8 @@ class TwitterBot:
                                                  auto_populate_reply_metadata=True,
                                                  in_reply_to_status_id=reply_id)
         if tweet_sent:
-            self.send_data(tweet_sent, MessageType.SAVE_TWEET)
+            self.send_tweet(tweet_sent)
+
     def find_followers(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
         """
         Routine for the FIND_FOLLOWERS task
@@ -334,7 +335,8 @@ class TwitterBot:
                     self.send_user(user)
                     user_obj_ids += [user.id]
             if not user_obj_ids:
-                log.warning("Could not find any of the Users Objects! Not searching for their Followers")
+                log.warning(
+                    "Could not find any of the Users Objects! Not searching for their Followers")
             # will be skipped if warning above is done
             # Since we already got their user objects, might as well send and use IDs all over
             for user_id in user_obj_ids:
@@ -347,17 +349,20 @@ class TwitterBot:
                         # NOTE: Twitter API limits to 100 followers per request
                         for follower_id in range(0, len(followers), 100):
                             try:
-                                user_objects = self._api.lookup_users(user_ids=followers[follower_id:follower_id+100])
+                                user_objects = self._api.lookup_users(
+                                    user_ids=followers[follower_id:follower_id + 100])
                                 # sending the users
                                 for user in user_objects:
                                     self.send_user(user)
                             except tweepy.error.TweepError as e:
-                                log.error(f"Unable to get follower[{follower_id}:{follower_id+100}]' objects for User {user_id}, with reason {e.reason}")
-                                #utils.wait_for(5)
+                                log.error(
+                                    f"Unable to get follower[{follower_id}:{follower_id + 100}]' objects for User {user_id}, with reason {e.reason}")
+                                # utils.wait_for(5)
                         # after sending each user object (hopefully), send the followers
                         self.send_data({user_id: followers}, MessageType.SAVE_FOLLOWERS)
                 except tweepy.error.TweepError as e:
-                    log.error(f"Unable to find Followers for User with ID <{param}> because reason={e.reason}")
+                    log.error(
+                        f"Unable to find Followers for User with ID <{param}> because reason={e.reason}")
         log.info("Exiting Follow Users Routine...")
 
     def follow_users_routine(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
@@ -626,12 +631,14 @@ class TwitterBot:
                            routing_key=self.log_routing_key,
                            exchange=self.log_exchange)
 
-    def _send_message(self, data, *, message_type: MessageType, routing_key: str, exchange: str, current_reconnect=0):
-        log.debug(f"Sending <{message_type.name}> to exchange [{exchange}] with routing_key [{routing_key}] with {data}")
+    def _send_message(self, data, *, message_type: MessageType, routing_key: str, exchange: str,
+                      current_reconnect=0):
+        log.debug(
+            f"Sending <{message_type.name}> to exchange [{exchange}] with routing_key [{routing_key}] with {data}")
         payload = utils.wrap_message(data, bot_id=self._id, message_type=message_type)
         try:
             self.messaging.publish(vhost=self.vhost, xname=exchange, rt_key=routing_key,
-                               payload=utils.to_json(payload))
+                                   payload=utils.to_json(payload))
         except pyrabbit2.http.NetworkError as e:
             log.error("Unable to send a message. Retrying...")
             # if we reach the maximum number of retries, just end the program
@@ -643,8 +650,8 @@ class TwitterBot:
                                     user=settings.RABBIT_USERNAME,
                                     passwd=settings.RABBIT_PASSWORD)
             # try to resend the message
-            self._send_message(data, message_type=message_type, routing_key=routing_key, exchange=exchange, current_reconnect=current_reconnect+1)
-
+            self._send_message(data, message_type=message_type, routing_key=routing_key,
+                               exchange=exchange, current_reconnect=current_reconnect + 1)
 
 
 def parse_args():

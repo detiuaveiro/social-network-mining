@@ -158,3 +158,7 @@ class TweepyWrapper(tweepy.API):
                         payload_type='direct_message', payload_list=True,
                         allowed_param=['count', 'cursor'], require_auth=True)
         return self._request(api_call, **kwargs)
+
+    def update_status(self, **kwargs) -> Tweet:
+        __doc__ = self._tweepy.update_status.__doc__
+        return self._request(self._tweepy.update_status, **kwargs)
