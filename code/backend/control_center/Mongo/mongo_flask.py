@@ -17,6 +17,8 @@ class AppMongo:
 	def getOneFilteredDoc(self, findText={},projection={'_id':False}):
 		return list(self.app.db.users.find(findText,projection))
 
+	def getMessagesForUser(self, findText={}):
+		return list(self.app.db.messages.find(findText,projection={'_id':False}))
 
 	def aggregate(self,pipeline):
 		return list(self.app.db.users.aggregate(pipeline))

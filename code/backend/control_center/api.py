@@ -240,6 +240,15 @@ def tt_bot_logs(id):
     val = policy.searchLog(id)
     return jsonify(val)
 
+@app.route("/twitter/bots/<id>/messages")
+def tt_bot_messages(id):
+    val = mongo.getMessagesForUser({"bot_id":str(id)})
+    for i in val:
+        i["id"]=str(i["id"])
+        i["recipient_id"]=str(i["recipient_id"])
+        i["sender_id"]=str(i["sender_id"])
+    return jsonify(val)
+
 
 @app.route("/twitter/tweets")
 def tt_tweets():
