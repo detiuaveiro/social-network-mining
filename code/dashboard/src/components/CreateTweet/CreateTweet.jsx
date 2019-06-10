@@ -55,7 +55,7 @@ class CreateTweet extends React.Component {
   addEmoji = (emoji) => {
     this.setState({
       text: this.state.text+emoji.native,
-      nChar: this.state.nChar+1
+      nChar: this.state.nChar+2
     })
   }
 
@@ -151,7 +151,7 @@ class CreateTweet extends React.Component {
                             </div>
                         </FormGroup>
                         <FormGroup required>
-                          <Label for="in_reply_of">Publish Tweet on:</Label>
+                          <Label for="in_reply_of">Method:</Label>
                           <Row>
                             <FormGroup check className="form-check-radio"> 
                               <Label check>
@@ -162,9 +162,9 @@ class CreateTweet extends React.Component {
                             </FormGroup>
                             <FormGroup check className="form-check-radio"> 
                               <Label check>
-                                <Input type="radio" name="in_reply" value="Tweet" checked={this.state.in_Reply === 'Tweet'} onChange={this.handleInReply} />{' '}
+                                <Input type="radio" name="in_reply" value="Reply" checked={this.state.in_Reply === 'Reply'} onChange={this.handleInReply} />{' '}
                                 <span className="form-check-sign" />
-                                Tweet
+                                Reply
                               </Label>
                             </FormGroup>
                           </Row>
@@ -178,6 +178,7 @@ class CreateTweet extends React.Component {
                         ncols={["col-md-12"]}
                         proprieties={[
                           {
+                            label: "Text:",
                             inputProps: {
                               type: "textarea",
                               rows: "5",
@@ -260,7 +261,7 @@ class CreateTweet extends React.Component {
                           </div>
                       </FormGroup>
                       <FormGroup required>
-                        <Label for="in_reply_of">Publish Tweet on:</Label>
+                        <Label for="in_reply_of">Method:</Label>
                         <Row>
                           <FormGroup check className="form-check-radio"> 
                             <Label check>
@@ -271,9 +272,9 @@ class CreateTweet extends React.Component {
                           </FormGroup>
                           <FormGroup check className="form-check-radio"> 
                             <Label check>
-                              <Input type="radio" name="in_reply" value="Tweet" checked={this.state.in_Reply === 'Tweet'} onChange={this.handleInReply} />{' '}
+                              <Input type="radio" name="in_reply" value="Reply" checked={this.state.in_Reply === 'Reply'} onChange={this.handleInReply} />{' '}
                               <span className="form-check-sign" />
-                              Tweet
+                              Reply
                             </Label>
                           </FormGroup>
                         </Row>
@@ -287,6 +288,7 @@ class CreateTweet extends React.Component {
                       ncols={["col-md-12"]}
                       proprieties={[
                         {
+                          label: "Text:",
                           inputProps: {
                             type: "textarea",
                             rows: "4",
