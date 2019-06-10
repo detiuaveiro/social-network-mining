@@ -82,7 +82,6 @@ class BaseModel(abc.ABC):
     _api: tweepy.API
     _json: Dict[Any]
     id: int
-    id_str: str
 
     @property
     @abc.abstractmethod
@@ -106,6 +105,7 @@ class User(BaseModel):
     """
 
     """
+    id_str : str
     name: str
     screen_name: str
     location: str
@@ -246,6 +246,7 @@ class User(BaseModel):
 
 @dataclass
 class Tweet(BaseModel):
+    id_str : str
     text: str
 
     @property
