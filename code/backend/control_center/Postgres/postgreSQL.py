@@ -193,6 +193,9 @@ class postgreSQL_API():
         if data is None:
             #add user
             cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
+        else:
+            #update user
+            cur.execute("update users set followers=%s, following=%s where user_id=%s;", (mapa["followers"], mapa["following"], mapa["user_id"]))
         return
 
     ##################################################################################################################################
