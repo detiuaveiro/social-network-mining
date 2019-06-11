@@ -181,7 +181,7 @@ class Neo4jAPI():
     def export_network(self):
         with self._driver.session() as session:
             result=session.run("call apoc.export.csv.query('match (b)-[r:FOLLOWS]->(u) return b.id,b.name,b.username,type(r),u.id,u.name,u.username;','file.csv',{})")
-        os.system("scp alunos@192.168.85.187:/var/lib/neo4j/import/file.csv /")
-        #data=open("/file.csv","r+")
-        return #data
+        os.system("scp alunos@192.168.85.187:/home/alunos/neo4j/import/file.csv /home/alunos/")
+        data="/home/alunos/file.csv"
+        return data
             
