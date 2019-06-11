@@ -44,7 +44,7 @@ class Rabbitmq():
         
         credentials = pika.PlainCredentials(self.username, self.password)
 
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port, virtual_host=self.vhost , credentials=credentials))
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port, virtual_host=self.vhost , credentials=credentials,heartbeat=600, blocked_connection_timeout=300))
         
         self.channel = self.connection.channel()
 
