@@ -157,8 +157,8 @@ def tt_network():
 
 @app.route("/twitter/network/export", methods=['GET'])
 def export_network():
-    fich=neo.export_network()
-    return send_file(fich,attachment_filename="file.csv")
+    neo.export_network()
+    return send_file("/file.csv",attachment_filename="file.csv")
 
 @app.route("/twitter/policies")
 def tt_policies():
