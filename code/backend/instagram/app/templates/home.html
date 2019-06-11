@@ -9,7 +9,7 @@
     <div class="row col-12 d-flex justify-content-around">
       <h1>Esta imagem é de comida portuguesa?</h1>
     </div>
-    <form class="row" action="{% url 'rate_image' image.id %}" method="post">
+    <form class="row" action="{% url 'app:rate_image' image.id %}" method="post">
       {% csrf_token %}
       <div class="col-12 d-flex justify-content-around">
         <img style="height:500px;" alt="{{ image.file.url }}" src="{{ image.file.url }}" />
