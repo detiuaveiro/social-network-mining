@@ -3,6 +3,7 @@ import json
 from task import Task
 import logging
 import sys
+import time
 
 log = logging.getLogger('Rabbit')
 log.setLevel(logging.INFO)
@@ -10,6 +11,7 @@ handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
 
+WAIT_TIME = 10
 class Rabbitmq():
     """Class representing Rabbit MQ"""
 
@@ -36,7 +38,10 @@ class Rabbitmq():
         self.vhost = vhost
         self.username = username
         self.password = password
-
+        self.reconnection_attempt = 0
+        self.MAX_RECONNECTIONS = 10
+    def _setup(self):
+        
         credentials = pika.PlainCredentials(self.username, self.password)
 
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port, virtual_host=self.vhost , credentials=credentials))
@@ -84,19 +89,26 @@ class Rabbitmq():
         -------
         q : (string) queue name
         """
+        try:
+            self.queue = q
+            self.channel.queue_declare(queue=self.queue)
+            
+            log.info(' [*] Waiting for MESSAGES. To exit press CTRL+C')
 
-        self.queue = q
-        self.channel.queue_declare(queue=self.queue)
-        
-        log.info(' [*] Waiting for MESSAGES. To exit press CTRL+C')
+            def callback(ch, method, properties, body):
+                log.info("MESSAGE RECEIVED")            
+                message = json.loads(body)
+                self.task_manager.menu(message['type'], message)
 
-        def callback(ch, method, properties, body):
-            log.info("MESSAGE RECEIVED")            
-            message = json.loads(body)
-            self.task_manager.menu(message['type'], message)
-
-        self.channel.basic_consume(queue=self.queue, on_message_callback=callback, auto_ack=True)
-        self.channel.start_consuming()
+            self.channel.basic_consume(queue=self.queue, on_message_callback=callback, auto_ack=True)
+            self.channel.start_consuming()
+        except Exception as e:
+            log.warning("Exception detected: {0}".format(e))
+            log.warning("Attempting reconnection after waiting time...")
+            time.sleep(WAIT_TIME)
+            self._setup()
+            log.debug("Setup completed")
+            self.receive(q)
         
     def close(self):
         """
@@ -106,5 +118,6 @@ class Rabbitmq():
 
 if __name__ == "__main__":
     rabbit = Rabbitmq(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
+    rabbit._setup()
     rabbit.receive(q='API')
     rabbit.close()
