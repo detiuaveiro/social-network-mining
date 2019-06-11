@@ -584,6 +584,7 @@ class TwitterBot:
         user : User
             The User Object to send
         """
+        log.debug(f"Sending {user}")
         self.send_data(user.to_json(), MessageType.SAVE_USER)
 
     def send_tweet(self, tweet: Tweet):
@@ -595,6 +596,7 @@ class TwitterBot:
         tweet : Tweet
             The Tweet Object to send
         """
+        log.debug(f"Sending {tweet}")
         self.send_data(tweet.to_json(), MessageType.SAVE_TWEET)
 
     def send_data(self, data, message_type: MessageType):
@@ -613,6 +615,7 @@ class TwitterBot:
         data: BaseModel
             the data associated with the event (usually the object)
         """
+        log.debug(f"Sending {data}")
         self._send_message(data.to_json(), message_type=message_type,
                            routing_key=self.query_routing_key,
                            exchange=self.query_exchange)
@@ -627,6 +630,7 @@ class TwitterBot:
         data: BaseModel
             the data associated with the event (usually the object)
         """
+        log.debug(f"Sending {data}")
         self._send_message(data.to_json(), message_type=message_type,
                            routing_key=self.log_routing_key,
                            exchange=self.log_exchange)
@@ -634,7 +638,7 @@ class TwitterBot:
     def _send_message(self, data, *, message_type: MessageType, routing_key: str, exchange: str,
                       current_reconnect=0):
         log.debug(
-            f"Sending <{message_type.name}> to exchange [{exchange}] with routing_key [{routing_key}] with {data}")
+            f"Sending <{message_type.name}> to exchange [{exchange}] with routing_key [{routing_key}]")
         payload = utils.wrap_message(data, bot_id=self._id, message_type=message_type)
         try:
             self.messaging.publish(vhost=self.vhost, xname=exchange, rt_key=routing_key,
