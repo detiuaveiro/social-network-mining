@@ -358,7 +358,7 @@ class Task:
         for key, value in message['data'].items():
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "SAVE LIST OF USERS FOLLOWED BY USER WITH ID: "+str(key)})
             exists = self.neo4j.task(Neo4jTypes.SEARCH_USER,data={"user_id": int(key)})
-            isBot = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": int(key)})
+            isBot = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": key})
             if (exists):
                 for user2 in value:
                     exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": int(user2)})
