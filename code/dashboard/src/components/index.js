@@ -40,7 +40,9 @@ import PoliciesTable from './ReactTable/PoliciesTable';
 
 import PoliciesTableBot from './ReactTable/PoliciesTableBot';
 
-import Message from './Message/Message';
+import MessageIn from './Message/MessageIn';
+
+import MessageOut from './Message/MessageOut';
 
 import CreateTweet from './CreateTweet/CreateTweet';
 
@@ -88,8 +90,10 @@ export {
     PoliciesTable,
     //PoliciesTablesBot
     PoliciesTableBot,
-    //Message
-    Message,
+    //MessageIn
+    MessageIn,
+    //MessageIn
+    MessageOut,
     //CreateTweet
     CreateTweet,
 };

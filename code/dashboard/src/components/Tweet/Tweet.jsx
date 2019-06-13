@@ -1,33 +1,36 @@
 import React from "react";
-import { Card, CardHeader, CardBody, Nav, NavItem, NavLink, Row, Col, Badge } from 'reactstrap';
+import { Card, CardBody, Row, Col, Badge } from 'reactstrap';
 import {CardInteractions } from 'components';// used for making the prop types of this component
+import axios from 'axios';
 
 class Tweet extends React.Component {
+  state ={
+    user_info: {}
+  }
+
+  componentDidMount() {
+      axios.get('http://192.168.85.182:5000/twitter/users/'+this.props.info["user"])
+      .then(res => {
+        const user_info = res.data[0];
+        this.setState({user_info});
+      })
+  }
+
   render() {
     return (
-        <Card style={{minHeight:"350px",maxHeight:"350px"}}>
-          <CardHeader>
-              <Nav tabs>
-                  <NavItem>
-                      <NavLink href="#" active>Tweet</NavLink>
-                  </NavItem>
-                  <NavItem>
-                      <NavLink href="#">Stats</NavLink>
-                  </NavItem>
-              </Nav>
-          </CardHeader>
+        <Card style={{minHeight:"250px",maxHeight:"250px"}}>
           <CardBody>
             <Row>
               <Col xs={12} md={2}>
                 <img
                   className="avatar border-gray"
-                  src={this.props.info["profile_image_url_https"]}
+                  src={this.state.user_info["profile_image_url_https"]}
                   alt=""
                 />
               </Col>
               <Col className="text-left my-auto" xs={12} md={4}>
-                <h6 className="title">{this.props.info["name"]}</h6>
-                <p className="description">{"@"+this.props.info["screen_name"]}</p>
+                <h6 className="title">{this.state.user_info["name"]}</h6>
+                <p className="description">{"@"+this.state.user_info["screen_name"]}</p>
               </Col>
               <Col xs={12} md={3}>
                 <p className="description text-left">
@@ -35,7 +38,7 @@ class Tweet extends React.Component {
                 </p>
               </Col>
               <Col xs={12} md={2}>
-                <a href={this.props.info["entities"]["urls"]["url"]}>
+              <a target="_blank" rel="noopener noreferrer" href={"https://twitter.com/statuses/"+this.props.info["id"]}>
                   <Badge color="light">
                     <i class="fas fa-2x fa-external-link-alt"></i>
                   </Badge>
@@ -67,10 +70,8 @@ class Tweet extends React.Component {
                   ]}
                 />
               </Col>
-              <Col className="text-center my-auto" xs={12} md={5}>
-                <a href="www.google.pt">
-                  <i class="fas fa-map-marker-alt"></i> {this.props.info["geo"]}
-                </a>
+              <Col className="text-left my-auto" xs={12} md={5}>
+                <p className="description">{"ID: "+this.props.info["id"]}</p>
               </Col>
             </Row>
           </CardBody>

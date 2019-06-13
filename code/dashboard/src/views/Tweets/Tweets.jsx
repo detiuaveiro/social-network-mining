@@ -1,19 +1,29 @@
 import React from "react";
 import axios from 'axios';
-
+import { PacmanLoader } from 'react-spinners';
+import { css } from '@emotion/core';
 import { Tweet, PanelHeader} from "components";
 import {Row, Col} from 'reactstrap';
+
+const override = css`
+    text-align: center;
+    margin: 0 auto;
+`;
 
 class Tweets extends React.Component {
   state = {
     tweets: [],
+    loading: true,
   };
 
   componentDidMount() {
     axios.get(process.env.API_URL+'twitter/tweets')
       .then(res => {
         const tweets = res.data;
-        this.setState({ tweets });
+        this.setState({
+          tweets: tweets,
+          loading: false
+         });
       })
   }
 
@@ -52,11 +62,21 @@ class Tweets extends React.Component {
                   <Tweet info={tweet}/>
                 </Col>
                 )
-              : <Col xs={12} md={12}>
-                  <h5 className="text-muted text-center">
-                    No Tweets Available
-                  </h5>
-                </Col>
+              : (this.state.loading)
+                ? <Col xs={12} md={12} className='text-center'>
+                    <PacmanLoader	
+                      sizeUnit={"px"}
+                      size={50}
+                      color={'#6c757d'}
+                      loading={this.state.loading}
+                      css={override}
+                    />
+                  </Col>
+                : <Col xs={12} md={12}>
+                    <h5 className="text-muted text-center">
+                      No Tweets Available
+                    </h5>
+                  </Col>
             }
           </Row>
         </div>

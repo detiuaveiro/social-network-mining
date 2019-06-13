@@ -1,7 +1,7 @@
 import React from "react";
 import axios from 'axios';
 
-import {FormInputs, CardAuthor, CardNumbers, Tweet, UserInfo, PanelHeader, LogsTable, PoliciesTableBot} from "components";
+import {FormInputs, CardAuthor, CardNumbers, Tweet, UserInfo, PanelHeader, LogsTable, PoliciesTableBot, MessageIn, MessageOut} from "components";
 import {Nav, NavItem, NavLink, Card, CardHeader, CardBody, TabPane, TabContent, Row, Col, Badge } from 'reactstrap';
 
 class User extends React.Component {
@@ -10,6 +10,7 @@ class User extends React.Component {
     profile_data: [],
     following: [],
     followers: [],
+    messages: [],
     kibana_url: "",
     activeTab: '1',
   };
@@ -20,6 +21,7 @@ class User extends React.Component {
     this.anyTweets = this.anyTweets.bind(this);
     this.anyFollowers = this.anyFollowers.bind(this);
     this.anyFollowing = this.anyFollowing.bind(this);
+    this.anyDirectMessages = this.anyDirectMessages.bind(this);
   }
 
   componentDidMount() {
@@ -47,10 +49,24 @@ class User extends React.Component {
         const tweets = res.data;
         this.setState({ tweets });
       })
+    axios.get('http://192.168.85.182:5000/twitter/bots/'+url+'/messages')
+      .then(res => {
+        const messages = res.data;
+        this.setState({ messages });
+      })
   }
 
   anyTweets() {
     if (this.state.tweets.length===0){
+      return false
+    }
+    else{
+      return true
+    }
+  }
+
+  anyDirectMessages() {
+    if (this.state.messages.length===0){
       return false
     }
     else{
@@ -210,7 +226,7 @@ class User extends React.Component {
                                 className={this.state.activeTab === '2' ? 'active':''}
                                 onClick={() => { this.toggle('2'); }}
                             >
-                              Replies
+                              Tweets
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -218,7 +234,7 @@ class User extends React.Component {
                                 className={this.state.activeTab === '3' ? 'active':''}
                                 onClick={() => { this.toggle('3'); }}
                             >
-                              Followers
+                              Direct Messages
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -226,7 +242,7 @@ class User extends React.Component {
                                 className={this.state.activeTab === '4' ? 'active':''}
                                 onClick={() => { this.toggle('4'); }}
                             >
-                              Following
+                              Followers
                             </NavLink>
                         </NavItem>
                         <NavItem>
@@ -234,13 +250,21 @@ class User extends React.Component {
                                 className={this.state.activeTab === '5' ? 'active':''}
                                 onClick={() => { this.toggle('5'); }}
                             >
-                              Policies
+                              Following
                             </NavLink>
                         </NavItem>
                         <NavItem>
                             <NavLink
                                 className={this.state.activeTab === '6' ? 'active':''}
                                 onClick={() => { this.toggle('6'); }}
+                            >
+                              Policies
+                            </NavLink>
+                        </NavItem>
+                        <NavItem>
+                            <NavLink
+                                className={this.state.activeTab === '7' ? 'active':''}
+                                onClick={() => { this.toggle('7'); }}
                             >
                               Logs
                             </NavLink>
@@ -270,6 +294,35 @@ class User extends React.Component {
                       </TabPane>
                       <TabPane tabId="3">
                         <Row>
+                        {this.anyDirectMessages()
+                            ? this.state.messages.map(msg => 
+                              (msg["sender_id"]===this.state.profile_data["id"]) ?
+                              <>
+                                <Col xs={12} md={6}>
+                                </Col>
+                                <Col xs={12} md={6}>
+                                <MessageOut message={msg} bot={this.state.profile_data}/>
+                                </Col>
+                              </>
+                              :
+                              <>
+                                <Col xs={12} md={6}>
+                                <MessageIn message={msg}/>
+                                </Col>
+                                <Col xs={12} md={6}>
+                                </Col>
+                              </>
+                              )
+                            : <Col xs={12} md={12}>
+                                <h5 className="text-muted text-center">
+                                  No Direct Messages Available
+                                </h5>
+                              </Col>
+                            }
+                        </Row>
+                      </TabPane>
+                      <TabPane tabId="4">
+                        <Row>
                         {this.anyFollowers()
                             ? this.state.followers.map(followers => 
                               <Col xs={12} md={6}>
@@ -284,7 +337,7 @@ class User extends React.Component {
                             }
                         </Row>
                       </TabPane>
-                      <TabPane tabId="4">
+                      <TabPane tabId="5">
                         <Row>
                           {this.anyFollowing()
                             ? this.state.following.map(following => 
@@ -300,10 +353,10 @@ class User extends React.Component {
                             }
                         </Row>
                       </TabPane>
-                      <TabPane tabId="5">
+                      <TabPane tabId="6">
                         <PoliciesTableBot userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
                       </TabPane>
-                      <TabPane tabId="6">
+                      <TabPane tabId="7">
                         <LogsTable userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
                       </TabPane>
                     </TabContent>

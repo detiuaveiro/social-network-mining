@@ -52,13 +52,6 @@ var dashRoutes = [
     hide: false,
   },
   {
-    path: "/messages",
-    name: "Messages",
-    icon: "fas fa-comments",
-    component: TweetPage,
-    hide: false,
-  },
-  {
     path: "/policies",
     name: "Policies",
     icon: "fas fa-list-alt",
