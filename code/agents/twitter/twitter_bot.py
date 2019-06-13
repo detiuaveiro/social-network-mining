@@ -58,7 +58,7 @@ class TwitterBot:
         log.debug(f"Connecting to exchange {self.tasks_exchange}")
         self.messaging.create_exchange(vhost=self.vhost, name=self.tasks_exchange, xtype="direct")
         log.debug(f"Creating queue {self.tasks_queue}")
-        self.messaging.create_queue(vhost=self.vhost, name=self.tasks_queue)
+        self.messaging.create_queue(vhost=self.vhost, name=self.tasks_queue, durable=True)
         log.debug(f"Binding exchange to queue {self.tasks_queue} with key {self.tasks_routing_key}")
         self.messaging.create_binding(vhost=self.vhost, exchange=self.tasks_exchange,
                                       queue=self.tasks_queue, rt_key=self.tasks_routing_key)
