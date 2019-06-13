@@ -1,164 +1,77 @@
 import os
 import sys
-
+import argparse
 import Enums.enums as enums
 from send import RabbitSend
 
-TASKS_EXCHANGE = "tasks_deliver"
-TASKS_ROUTING_KEY_PREFIX = "tasks.twitter"
 
-rabbit_host = os.environ.get("RABBIT_HOST", "mqtt-redesfis.5g.cn.atnog.av.it.pt")
-rabbit_port = os.environ.get("RABBIT_PORT", 5672)
-rabbit_vhost = os.environ.get("RABBIT_VIRTUALHOST", "PI")
-rabbit_username = os.environ.get("RABBIT_USER", "pi_rabbit_admin")
-rabbit_pass = os.environ.get("RABBIT_PASS", "yPvawEVxks7MLg3lfr3g")
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host",
+                        help="Location of the Rabbit host. Defaults to localhost",
+                        default="127.0.0.1")
+    parser.add_argument("-p","--port",
+                        help="Port of the Rabbit Host. Defaults to 5672",
+                        default=5672, type=int)
+    parser.add_argument("-v","--vhost",
+                        help="Rabbit Virtual Host. Defaults to PI",
+                        default="PI")
+    parser.add_argument("-U","--user",
+                    help="Username for rabbit", required=True)
+    parser.add_argument("-P","--password",
+                    help="Password for rabbit", required=True)
+    parser.add_argument("-x","--xchange",
+                help="Name of the exchange to send to", required=True)
+    parser.add_argument("-r","--rt_key",
+                help="Prefix for the routing key", required=True)
+    parser.add_argument("-t","--task",
+                help="Task to send", required=True, type=int)
+    parser.add_argument("-at","--arg_type",
+            help="DEPRECATED. Only used for 2 of the tasks (find followers and follow users)")
+    parser.add_argument("-a","--args",
+            help="Arguments for the task", required=True, nargs="+")
+    return parser.parse_args()
 
-RABBIT_CONNECTION = RabbitSend(host=rabbit_host, port=rabbit_port, vhost=rabbit_vhost,
-                               username=rabbit_username,
-                               password=rabbit_pass)
+if __name__ == "__main__":
 
-BOT_ID_SESSION_KEY = "bot_id"
+    args = parse_args()
 
-current_session = {
-    BOT_ID_SESSION_KEY: None,
-}
+    # trying to get the enum, for validation purposes
+    task_type = args.task
+    enum_value_map = { enums.ResponseTypes.__members__[m].value : enums.ResponseTypes.__members__[m] for m in enums.ResponseTypes.__members__}
 
+    try:
+        task_type = enum_value_map[task_type]
+    except KeyError:
+        print("Unknown Task value provided!")
+        print("List of available tasks: ")
+        for i in enums.ResponseTypes:
+            print(i)
+        sys.exit(1)
 
-def print_divider():
-    print("=" * 30)
-
-
-def print_current_session():
-    print("Currently using the following variables:")
-    for k, v in current_session.items():
-        print("{}={}".format(k,v))
-
-
-def cleanup():
-    RABBIT_CONNECTION.close()
-
-
-def setup_current_session():
-    while True:
-        print("You currently have the BOT ID set to: {0}".format(current_session.get(BOT_ID_SESSION_KEY, None)))
-        print("Would you like to change it? (Y/N)")
-        option = input("> ").strip().lower()
-        if option == "n":
-            break
-        elif option == "y":
-            while True:
-                try:
-                    new_bot_id = int(input("New Bot ID Value? ").strip())
-                    current_session[BOT_ID_SESSION_KEY] = new_bot_id
-                    break
-                except ValueError:
-                    print("The Bot ID must be a number!")
-        else:
-            print("Incorrect option! Try again")
-
-
-def read_users_list():
-    # reading the users
-    print("Type the Screen Names of the users (type /exit to end)")
-    users = []
-    while not users:
-        user = input("> ").strip()
-        if user == "/exit":
-            if not users:
-                print("You must at least add 1 user!")
-            else:
-                break
-        else:
-            users += [user]
-    return users
-
-def find_followers_task():
-    users = read_users_list()
-    print("User currently has: ")
-    print(users)
-    print("Do you want to send? (press Enter to confirm, N to cancel)")
-    option = input("> ").strip().lower()
-    if option == "n":
-        print("Canceled")
-        return
-    print("Sending to bot with ID={}...".format(current_session.get(BOT_ID_SESSION_KEY)))
+    # Creating the rabbit connection
+    conn = RabbitSend(host=args.host, port=args.port, vhost=args.vhost,
+                               username=args.user,
+                               password=args.password)
+    print("Data read with arg_type <{}> and args <{}>".format(args.arg_type, args.args))
+    print("Sending to Exchange <{}> with routing_key <{}>...".format(args.xchange, args.rt_key))
     payload = {
-        "type" : enums.ResponseTypes.FIND_FOLLOWERS,
-        "params" : {
-            "type" : "screen_name",
-            "data" : users
-        }
+        "type" : task_type,
     }
-    RABBIT_CONNECTION.send(
-        routing_key="{0}.{1}".format(TASKS_ROUTING_KEY_PREFIX,current_session.get(BOT_ID_SESSION_KEY)),
-        message=payload
-    )
-
-def follow_users_task():
-    users = read_users_list()
-    print("User currently has: ")
-    print(users)
-    print("Do you want to send? (press Enter to confirm, N to cancel)")
-    option = input("> ").strip().lower()
-    if option == "n":
-        print("Canceled")
-        return
-    print("Sending to bot with ID={}...".format(current_session.get(BOT_ID_SESSION_KEY)))
-    payload = {
-        "type" : enums.ResponseTypes.FOLLOW_USERS,
-        "params" : {
-            "type" : "screen_name",
-            "data" : users
+    if args.arg_type:
+        params = {
+            "type" : args.arg_type,
+            "data" : args.args
         }
-    }
-    RABBIT_CONNECTION.send(
-        routing_key="{0}.{1}".format(TASKS_ROUTING_KEY_PREFIX,current_session.get(BOT_ID_SESSION_KEY)),
-        message=payload
-    )
-    print("Sent")
-
-
-def send_task_loop():
-    while True:
-        print("Select a task (type /exit to exit):")
-        for val in enums.ResponseTypes:
-            print("{0} - {0.name}".format(val))
-        option = input("> ")
-        if option == "/exit":
-            return  
-        try:
-            choice = enums.ResponseTypes(int(option))
-            if choice is enums.ResponseTypes.FOLLOW_USERS:
-                follow_users_task()
-            elif choice is enums.ResponseTypes.FIND_FOLLOWERS:
-                find_followers_task()
-            else:
-                print("Not implemented, try again!")
-        except ValueError:
-            print("Invalid option, try again!")
-
-
-print("{0} Twitter Bots Helper Scripts {0}".format('-' * 5))
-while True:
-    print_divider()
-    print_current_session()
-    print_divider()
-    print("Select an option:")
-    print("1 - Setup current session")
-    print("2 - Send a Task to a Bot")
-    print("0 - Exit")
-    option = input("> ").strip()
-
-    if option == "0":
-        print("Exiting...")
-        cleanup()
-        sys.exit(0)
-    elif option == "1":
-        setup_current_session()
-    elif option == "2":
-        if current_session.get(BOT_ID_SESSION_KEY, None) is None:
-            print("Bot id is none! You need to setup first!")
-            continue
-        send_task_loop()
     else:
-        print("Incorrect option! Try again")
+        params = args.args[0]
+        # handling Ids being passed
+        try:
+            params = int(params)
+        except ValueError:
+            # ignore if string (though generally shouldn't happen)
+            pass
+
+    payload["params"] = params
+    conn.send(routing_key=args.rt_key, message=payload)
+    conn.close()
