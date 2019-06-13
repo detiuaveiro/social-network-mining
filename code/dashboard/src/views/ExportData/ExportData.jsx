@@ -24,7 +24,7 @@ class ExportData extends React.Component {
   }
 
   downloadUsers() {
-    axios.get('http://192.168.85.182:5000/twitter/users/export?type='+this.state.formatUsers, {
+    axios.get(process.env.API_URL+'twitter/users/export?type='+this.state.formatUsers, {
         responseType: 'blob',
         timeout: 30000,
       })
@@ -35,7 +35,7 @@ class ExportData extends React.Component {
   }
 
   downloadTweets() {
-    axios.get('http://192.168.85.182:5000/twitter/tweets/export?type='+this.state.formatTweets, {
+    axios.get(process.env.API_URL+'twitter/tweets/export?type='+this.state.formatTweets, {
         responseType: 'blob',
         timeout: 30000,
       })
@@ -46,7 +46,7 @@ class ExportData extends React.Component {
   }
 
   downloadNetwork() {
-    axios.get('http://192.168.85.182:5000/twitter/network/export', {
+    axios.get(process.env.API_URL+'twitter/network/export', {
         responseType: 'blob',
         timeout: 30000,
       })

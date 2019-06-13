@@ -77,7 +77,7 @@ class Tweets extends React.Component {
                       No Tweets Available
                     </h5>
                   </Col>
-            }
+}
           </Row>
         </div>
       </div>
