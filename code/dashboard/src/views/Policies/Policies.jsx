@@ -29,12 +29,12 @@ class Policies extends React.Component {
   }
 
   componentDidMount(){
-    axios.get('http://192.168.85.182:5000/policies')
+    axios.get(process.env.API_URL+'policies')
     .then(res => {
         const policies = res.data;
         this.setState({ policies });
    });
-   axios.get('http://192.168.85.182:5000/twitter/bots')
+   axios.get(process.env.API_URL+'twitter/bots')
    .then(res => {
      const data = res.data;
      const options = []
@@ -109,14 +109,14 @@ class Policies extends React.Component {
   }
 
   savePolicy(data) {
-    axios.post('http://192.168.85.182:5000/policies/add', data)
+    axios.post(process.env.API_URL+'policies/add', data)
       .then((response) => {
         this.refresh(response.status===200 ? "ADD" : "ERROR",response.data['Message'])
       })
   }
 
   removePolicy(id) {
-    axios.delete('http://192.168.85.182:5000/policies/remove/'+id)
+    axios.delete(process.env.API_URL+'policies/remove/'+id)
         .then(response => {
           this.refresh(response.status===200 ? "REMOVE" : "ERROR",response.data['Message'])
         });
@@ -126,7 +126,7 @@ class Policies extends React.Component {
     this.setState({
       modalEdit: !this.state.modalEdit
     });
-    axios.get('http://192.168.85.182:5000/policies/'+id)
+    axios.get(process.env.API_URL+'policies/'+id)
     .then(res => {
         const editData = res.data;
         this.setState({ editData });
@@ -135,7 +135,7 @@ class Policies extends React.Component {
 
 
   updatePolicy(data) {
-    axios.post('http://192.168.85.182:5000/policies/update', data)
+    axios.post(process.env.API_URL+'policies/update', data)
         .then(response => {
           this.refresh(response.status===200 ? "EDIT" : "ERROR",response.data['Message'])
         });
@@ -143,7 +143,7 @@ class Policies extends React.Component {
 
   activatePolicy(id,state) {
     const data = {id_policy: id, active: ""+state.state.value}
-    axios.post('http://192.168.85.182:5000/policies/update', data)
+    axios.post(process.env.API_URL+'policies/update', data)
         .then(response => {
           this.refresh(response.status===200 ? state.state.value ? "ACTIVE" : "DEACTIVE" : "ERROR",response.data['Message'])
         });

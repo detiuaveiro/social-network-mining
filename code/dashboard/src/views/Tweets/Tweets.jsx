@@ -10,7 +10,7 @@ class Tweets extends React.Component {
   };
 
   componentDidMount() {
-    axios.get('http://192.168.85.182:5000/twitter/tweets')
+    axios.get(process.env.API_URL+'twitter/tweets')
       .then(res => {
         const tweets = res.data;
         this.setState({ tweets });

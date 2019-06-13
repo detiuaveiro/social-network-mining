@@ -1,8 +1,8 @@
 from Mongo.mongo_api import MongoAPI
+from Neo4j.neo4j_api import Neo4jAPI
 from Postgres.postgreSQL import postgreSQL_API
 from send import RabbitSend
 from policy_api import PolicyAPI
-from Neo4j.neo4j_api import Neo4jAPI
 from Enums.enums import MessageTypes, Neo4jTypes, PoliciesTypes, ResponseTypes
 import logging
 import sys
