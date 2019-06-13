@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 import logging
 import sys
+import settings
 
 log = logging.getLogger('Mongo')
 log.setLevel(logging.INFO)
@@ -11,7 +12,7 @@ log.addHandler(handler)
 class MongoAPI():
     def __init__(self):
         log.debug("Connecting to MongoDB")
-        self.client = MongoClient('mongodb://192.168.85.46:32769/')
+        self.client = MongoClient('mongodb://'+settings.MONGO_FULL_URL)
         self.users = self.client.twitter.users
         self.tweets = self.client.twitter.tweets
         self.messages = self.client.twitter.messages

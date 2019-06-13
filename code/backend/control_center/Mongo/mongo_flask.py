@@ -2,10 +2,11 @@ from flask import Flask
 from flask_pymongo import PyMongo
 import json
 import csv
+import settings
 
 class AppMongo:
 	def __init__(self, appFlask, db):
-		appFlask.config["MONGO_URI"] = "mongodb://192.168.85.46:32769/twitter."+db
+		appFlask.config["MONGO_URI"] = "mongodb://"+settings.MONGO_FULL_URL+"/twitter."+db
 		self.app = PyMongo(appFlask)
 	
 	def dataCollection(self, findText={}):

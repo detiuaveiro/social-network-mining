@@ -4,6 +4,7 @@ from task import Task
 import logging
 import sys
 import time
+import settings
 
 log = logging.getLogger('Rabbit')
 log.setLevel(logging.INFO)
@@ -48,7 +49,7 @@ class Rabbitmq():
         
         self.channel = self.connection.channel()
 
-        self.channel.queue_declare(queue='API')
+        self.channel.queue_declare(queue='API',durable=True)
 
         #Declare Exchanges
         self.channel.exchange_declare(exchange='task_deliver', exchange_type='direct', durable=True)
@@ -81,7 +82,7 @@ class Rabbitmq():
 
         log.info("Connection to Rabbit Established")
 
-    def receive(self, q):
+    def receive(self, queue):
         """
         Receive messages into the queue.
 
@@ -90,8 +91,8 @@ class Rabbitmq():
         q : (string) queue name
         """
         try:
-            self.queue = q
-            self.channel.queue_declare(queue=self.queue)
+            self.queue = queue
+            self.channel.queue_declare(queue=self.queue,durable=True)
             
             log.info(' [*] Waiting for MESSAGES. To exit press CTRL+C')
 
@@ -108,7 +109,7 @@ class Rabbitmq():
             time.sleep(WAIT_TIME)
             self._setup()
             log.debug("Setup completed")
-            self.receive(q)
+            self.receive(queue)
         
     def close(self):
         """
@@ -117,7 +118,7 @@ class Rabbitmq():
         self.connection.close()
 
 if __name__ == "__main__":
-    rabbit = Rabbitmq(host='mqtt-redesfis.5g.cn.atnog.av.it.pt', port=5672, vhost="PI",username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
+    rabbit = Rabbitmq(host=settings.RABBITMQ_URL, port=settings.RABBITMQ_PORT, vhost=settings.RABBITMQ_VHOST, username=settings.RABBITMQ_USERNAME, password=settings.RABBITMQ_PASSWORD)
     rabbit._setup()
-    rabbit.receive(q='API')
+    rabbit.receive(queue='API')
     rabbit.close()

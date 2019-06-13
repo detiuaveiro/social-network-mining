@@ -1,8 +1,0 @@
-<xacml-ctx:Response xmlns:xacml-ctx="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
-    <xacml-ctx:Result>
-        <xacml-ctx:Decision>Permit</xacml-ctx:Decision>
-        <xacml-ctx:Status>
-            <xacml-ctx:StatusCode Value="urn:oasis:names:tc:xacml:1.0:status:ok"/>
-        </xacml-ctx:Status>
-    </xacml-ctx:Result>
-</xacml-ctx:Response>

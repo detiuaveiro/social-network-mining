@@ -2,7 +2,7 @@ import datetime
 import json
 import random
 import sys
-
+import settings
 from pymongo import MongoClient
 
 sys.path.append('../')
@@ -46,7 +46,7 @@ class PDP:
         self.PoliciesTypes = PoliciesTypes(4)
         self.neo = Neo4jAPI()
         self.policies = postgreSQL_API("policies")
-        self.client = MongoClient('mongodb://192.168.85.46:32769/')
+        self.client = MongoClient('mongodb://'+settings.MONGO_FULL_URL)
         self.users = self.client.twitter.users
         self.tweets = self.client.twitter.tweets
 

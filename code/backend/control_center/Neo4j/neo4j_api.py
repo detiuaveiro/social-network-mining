@@ -3,6 +3,7 @@ from enum import IntEnum
 import logging
 import sys
 import os
+import settings
 
 class Neo4jTypes(IntEnum):
     CREATE_BOT = 1
@@ -23,7 +24,7 @@ log.addHandler(handler)
 
 class Neo4jAPI():
     def __init__(self):
-        self._driver = GraphDatabase.driver("bolt://192.168.85.187:7687",auth=("neo4j","neo4jPI"))
+        self._driver = GraphDatabase.driver("bolt://"+settings.NEO4J_FULL_URL,auth=(settings.NEO4J_USERNAME,settings.NEO4J_PASSWORD))
 
     def close(self):
         self._driver.close()
@@ -57,7 +58,7 @@ class Neo4jAPI():
         bot_name = data['name']
         bot_id = data['id']
         bot_username = data['username']
-        result = tx.run("MERGE (:Bot { name: $name, id: $id, username: $username })", id=bot_id, name=bot_name,  username=bot_username)
+        tx.run("MERGE (:Bot { name: $name, id: $id, username: $username })", id=bot_id, name=bot_name,  username=bot_username)
 
     @staticmethod
     def create_user(tx, data):
@@ -65,7 +66,7 @@ class Neo4jAPI():
         user_name = data['name']
         user_id = data['id']
         user_username = data['username']
-        result = tx.run("MERGE (:User { name: $name, id: $id, username: $username })", id=user_id, name=user_name, username=user_username)
+        tx.run("MERGE (:User { name: $name, id: $id, username: $username })", id=user_id, name=user_name, username=user_username)
     
     
     @staticmethod
@@ -73,24 +74,24 @@ class Neo4jAPI():
         log.info("NEO4J TASK: CREATE RELATION BOT - USER")
         bot_id = data['bot_id']
         user_id = data['user_id']
-        result = tx.run("MATCH (u:Bot { id: $bot_id }), (r:User {id:$user_id}) \
-                        MERGE (u)-[:FOLLOWS]->(r)", bot_id=bot_id, user_id=user_id)
+        tx.run("MATCH (u:Bot { id: $bot_id }), (r:User {id:$user_id}) \
+                MERGE (u)-[:FOLLOWS]->(r)", bot_id=bot_id, user_id=user_id)
 
     @staticmethod
     def create_relationship_bot_bot(tx, data):
         log.info("NEO4J TASK: CREATE RELATION BOT - BOT")
         bot1 = data['bot1']
         bot2 = data['bot2']
-        result = tx.run("MATCH (u:Bot { id: $bot1 }), (r:Bot {id:$bot2}) \
-                        MERGE (u)<-[:FOLLOWS]-(r)", bot1=bot1, bot2=bot2)
+        tx.run("MATCH (u:Bot { id: $bot1 }), (r:Bot {id:$bot2}) \
+                MERGE (u)<-[:FOLLOWS]-(r)", bot1=bot1, bot2=bot2)
 
     @staticmethod
     def create_relationship_user_user(tx, data):
         log.info("NEO4J TASK: CREATE RELATION USER - USER")
         user1 = data['user1']
         user2 = data['user2']
-        result = tx.run("MATCH (u:User { id: $user1 }), (r:User { id:$user2 }) \
-                        MERGE (u)<-[:FOLLOWS]-(r)", user1=user1, user2=user2)
+        tx.run("MATCH (u:User { id: $user1 }), (r:User { id:$user2 }) \
+                MERGE (u)<-[:FOLLOWS]-(r)", user1=user1, user2=user2)
 
 
     @staticmethod
@@ -121,9 +122,9 @@ class Neo4jAPI():
         user_id = data['user_id']
         user_name = data['user_name']
         user_username = data['user_username']
-        result = tx.run("MATCH (r:User { id:$id }) \
-                        SET r = { id: $id, name: $name, username: $username } \
-                        RETURN r", id=user_id, name=user_name, username=user_username)
+        tx.run("MATCH (r:User { id:$id }) \
+                SET r = { id: $id, name: $name, username: $username } \
+                RETURN r", id=user_id, name=user_name, username=user_username)
 
     @staticmethod
     def update_bot(tx, data):
@@ -131,9 +132,9 @@ class Neo4jAPI():
         bot_id = data['bot_id']
         bot_name = data['bot_name']
         bot_username = data['bot_username']
-        result = tx.run("MATCH (r:Bot { id:$id }) \
-                        SET r = { id: $id, name: $name, username: $username } \
-                        RETURN r", id=bot_id, name=bot_name, username=bot_username)
+        tx.run("MATCH (r:Bot { id:$id }) \
+                SET r = { id: $id, name: $name, username: $username } \
+                RETURN r", id=bot_id, name=bot_name, username=bot_username)
 
     def search_all_bots(self):
         with self._driver.session() as session:
@@ -180,7 +181,7 @@ class Neo4jAPI():
 
     def export_network(self):
         with self._driver.session() as session:
-            result=session.run("call apoc.export.csv.query('match (b)-[r:FOLLOWS]->(u) return b.id,b.name,b.username,type(r),u.id,u.name,u.username;','file.csv',{})")
+            session.run("call apoc.export.csv.query('match (b)-[r:FOLLOWS]->(u) return b.id,b.name,b.username,type(r),u.id,u.name,u.username;','file.csv',{})")
         os.system("scp alunos@192.168.85.187:/home/alunos/neo4j/import/file.csv /home/alunos/")
         data="/home/alunos/file.csv"
         return data

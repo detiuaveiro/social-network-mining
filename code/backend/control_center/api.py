@@ -195,7 +195,7 @@ def tt_create():
                 conn.send(routing_key='tasks.twitter.' + bot, message=payload)
                 conn.close()                
                 return jsonify({"Message": "Success"})
-            except Exception as e:
+            except:
                 return app.response_class(response=json.dumps({"Message": "Bad Tweet Request"}), status=400,
                                                 mimetype='application/json')
 

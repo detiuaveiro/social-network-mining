@@ -37,8 +37,8 @@ def send_reply(*, bot_id, message_type, params):
                                  username='pi_rabbit_admin', password='yPvawEVxks7MLg3lfr3g')
         conn.send(routing_key='tasks.twitter.' + bot_id, message=payload)
         conn.close()
-    except Exception as e:
-        log.error("FAILED TO SEND MESSAGE")
+    except:
+        log.error("FAILED TO SEND MESSAGE:")
 
 class Task:
     """Class which represents a Task for a bot to perform."""
@@ -235,7 +235,7 @@ class Task:
         if (result==1):
             log.info("TWEET ALLOWED TO BE REPLIED")
             self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "TWEET (ID: "+str(message['data']['id'])+" ) ALLOWED TO BE REPLIED"})
-            send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.REPLY_TWEETS,
+            send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.POST_TWEETS,
                        params=message['data']['id'])
         else:
             log.info("TWEET NOT ALLOWED TO BE REPLIED")

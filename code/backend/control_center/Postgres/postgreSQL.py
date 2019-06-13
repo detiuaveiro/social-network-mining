@@ -1,6 +1,6 @@
 import psycopg2
 from datetime import datetime
-
+import settings
 
 class postgreSQL_API():
     '''
@@ -17,7 +17,7 @@ class postgreSQL_API():
         try:
             # connect to the PostgreSQL server
             self.databaseName=databaseName
-            self.conn = psycopg2.connect(host="192.168.85.46", database=databaseName,user="postgres",password="password")
+            self.conn = psycopg2.connect(host=settings.POSTGRES_FULL_URL, database=databaseName, user=settings.POSTGRES_USERNAME, password=settings.POSTGRES_PASSWORD)
 
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
