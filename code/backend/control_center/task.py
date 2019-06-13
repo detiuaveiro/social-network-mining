@@ -282,7 +282,7 @@ class Task:
             log.info("USER IS BOT")
             is_bot = True
         if (is_bot):
-            exists = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": message['bot_id']})
+            exists = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": str(message['bot_id'])})
             if (exists):
                 log.info("BOT ALREADY EXISTS")
                 self.mongo.update('users', message['data'])
@@ -361,7 +361,7 @@ class Task:
             isBot = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": key})
             if (exists):
                 for user2 in value:
-                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": int(user2)})
+                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": user2})
                     if (not exists2):
                         result = self.policy.lifecycle(msg={
                             "type": PoliciesTypes.REQUEST_FOLLOW_USER,
@@ -381,7 +381,7 @@ class Task:
                         continue
             elif (isBot):
                 for user2 in value:
-                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": int(user2)})
+                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": user2})
                     if (not exists2):
                         result = self.policy.lifecycle(msg={
                             "type": PoliciesTypes.REQUEST_FOLLOW_USER,
@@ -403,7 +403,7 @@ class Task:
                 self.neo4j.task(Neo4jTypes.CREATE_USER,data={"id": key, "name": "", "username": ""})
                 self.mongo.save('users', {"id": int(key)})
                 for user2 in value:
-                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": int(user2)})
+                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": user2})
                     if(not exists2):
                         result = self.policy.lifecycle(msg={
                             "type": PoliciesTypes.REQUEST_FOLLOW_USER,
