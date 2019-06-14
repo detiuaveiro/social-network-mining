@@ -9,17 +9,35 @@ class CardInteractions extends React.Component {
     return (
       <div className="button-container">
         {this.props.socials.map((prop, key) => {
-          return (
-            <Button
-              color="neutral"
-              size={this.props.size}
-              key={key}
-            >
-              <i className={prop.icon}/>
-              <h6 className="text-muted">
-                {prop.number}
-              </h6>              
-            </Button>
+          return(
+            <>
+            {
+              (prop.tipo==="icon") 
+            ?
+              <Button
+                color="neutral"
+                size={this.props.size}
+                key={key}
+              >
+                <i className={prop.icon}/>
+                <h6 className="text-muted">
+                  {prop.number}
+                </h6>              
+              </Button>
+
+            :
+              <Button
+                color="neutral"
+                size={this.props.size}
+                key={key}
+              >
+                {prop.text}
+                <h6 className="text-muted">
+                  {prop.number}
+                </h6>
+              </Button>
+            }
+            </>
           );
         })}
       </div>

@@ -2,7 +2,7 @@ import React from "react";
 
 import {PanelHeader} from "components";
 
-class Typography extends React.Component {
+class Instagram extends React.Component {
 
   render() {
     return (
@@ -19,7 +19,7 @@ class Typography extends React.Component {
         />
         <div className="content mt-5 pt-4">
           <a target="_blank" rel="noopener noreferrer" href={"http://192.168.85.142:8080"}>
-            <h5 className="title">Link</h5>
+            <h5 className="title text-center">Link</h5>
           </a>
         </div>
       </div>
@@ -27,4 +27,4 @@ class Typography extends React.Component {
   }
 }
 
-export default Typography;
+export default Instagram;

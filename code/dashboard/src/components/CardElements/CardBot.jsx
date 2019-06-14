@@ -38,12 +38,19 @@ class CardBot extends React.Component {
             size="xs"
             socials={[
               {
-                icon: "fas fa-2x fa-heart",
+                tipo: "text",
+                text: "Favourites",
                 number: this.state.favorites,
               },
               {
-                icon: "fas fa-2x fa-user",
+                tipo: "text",
+                text: "Followers",
                 number: this.state.followers,
+              },
+              {
+                tipo: "text",
+                text: "Friends",
+                number: this.state.following,
               },
             ]}
           />

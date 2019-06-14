@@ -1,5 +1,5 @@
 import Dashboard from "views/Dashboard/Dashboard.jsx";
-import Typography from "views/Typography/Typography.jsx";
+import Instagram from "views/Instagram/Instagram.jsx";
 import Policies from "views/Policies/Policies.jsx";
 import UserPage from "views/UserPage/UserPage.jsx";
 import BotsPage from "views/BotsPage/BotsPage.jsx";
@@ -69,7 +69,7 @@ var dashRoutes = [
     path: "/instagram",
     name: "Instagram",
     icon: "fab fa-instagram",
-    component: Typography,
+    component: Instagram,
     hide: false,
   },
   { redirect: true, path: "/", pathTo: "/dashboard", name: "Dashboard" }
