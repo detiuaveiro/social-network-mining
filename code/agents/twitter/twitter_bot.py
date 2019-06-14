@@ -161,6 +161,7 @@ class TwitterBot:
                 utils.wait_for(5)
                 retries -= 1
             except tweepy.error.TweepError as e:
+                # if it was an error code of account suspended, send a log
                 if e.api_code == 63 or e.api_code == 64:
                     payload = {
                         "type"     : MessageType.EVENT_USER_SUSPENDED,
@@ -174,6 +175,8 @@ class TwitterBot:
                     self.messaging.publish(vhost=self.vhost, xname=self.log_exchange,
                                            rt_key=self.log_routing_key,
                                            payload=utils.to_json(payload))
+                # Log the error
+                log.warning(f"TweepyError with code=<{e.api_code}> and reason=<{e.reason}>, {e}")
         self.cleanup()
 
     def cleanup(self):
@@ -541,7 +544,7 @@ class TwitterBot:
             # (assuming we haven't reached max jumps)
             if (not jump_users) or (total_jumps == max_jumps) or (current_depth == max_depth):
                 continue
-            elif tweet.user != user_obj:
+            elif tweet.user.id != user_obj.id:
                 # save the user
                 self.send_user(tweet.user)
                 self.read_timeline(user_obj,

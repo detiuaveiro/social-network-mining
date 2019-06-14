@@ -1,18 +1,4 @@
-SHELL=/bin/bash
-
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
-
-MAILTO=root
-
-HOME=/
-
-KEY=lYa4VucwdoUUTQLC2utgtg
-SECRET=NfnIALNRMcrvC844yypUubWp2xmuiL3zbLN8osjWntM
-TOKEN=1131301906679324672-9BVsG9IyN7ay9oug11bjC4HZ4hOqhn
-TOKEN_SECRET=sUnskrb4jLHgHnr0GQ6XsoTgJyEI4GSqNMXinSEjxDZjR
-SERVER_HOST=mqtt-redesfis.ws.atnog.av.it.pt
-SERVER_PORT=80
-TOR_PROXY=18.130.65.85:8118
 
 # ┌───────────── minute (0 - 59)
 # │ ┌───────────── hour (0 - 23)
@@ -23,5 +9,5 @@ TOR_PROXY=18.130.65.85:8118
 # │ │ │ │ │
 # │ │ │ │ │
 # * * * * *  command to execute
-59 7,9,13,17,20,22 * * * root python3.7 -u twitter_bot.py > /dev/stdout
+59 7,9,13,17,20,22 * * * python3.7 -u /twitter_bots/twitter_bot.py > /dev/stdout
 #

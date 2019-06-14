@@ -61,7 +61,11 @@ class TweepyWrapper(tweepy.API):
         kwargs["headers"] = {
             'User-Agent': self.user_agent,
         }
-        log.debug(f"Making Request to {fun.__name__}\n")
+        # Normally, just logging fun.__name__ would be a reasonable enough description
+        # for which api method we're calling
+        # but since Tweepy makes things ugly (despite dynamic), we're forced to do something equally
+        # ugly to get decent information of which function we're calling
+        log.debug(f"Making Request to {fun.__closure__[0].cell_contents.path}\n")
         # Since we're making our own version of the models,
         # we're going to ignore everything except the json
         try:
