@@ -1,17 +1,9 @@
 from pymongo import MongoClient
-import logging
-import sys
-import settings
 
-log = logging.getLogger('Mongo')
-log.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
-log.addHandler(handler)
+import settings
 
 class MongoAPI():
     def __init__(self):
-        log.debug("Connecting to MongoDB")
         self.client = MongoClient('mongodb://'+settings.MONGO_FULL_URL)
         self.users = self.client.twitter.users
         self.tweets = self.client.twitter.tweets
@@ -25,17 +17,17 @@ class MongoAPI():
             try:
                 self.users.insert_one(self.data)
             except:
-                log.info("ERROR INSERTING USER")
-        elif (self.database=='messages'):
+                print("ERROR INSERTING USER")
+        if (self.database=='messages'):
             try:
                 self.messages.insert_one(self.data)
             except:
-                log.info("ERROR INSERTING MESSAGE")
+                print("ERROR INSERTING MESSAGE")
         else:
             try:
                 self.tweets.insert_one(self.data)
             except:
-                log.info("ERROR INSERTING TWEET")
+                print("ERROR INSERTING TWEET")
 
     def update(self, database, data):
         self.database = database
@@ -44,17 +36,17 @@ class MongoAPI():
             try:
                 self.users.replace_one({"id": self.data['id']},self.data)
             except Exception as e:
-                log.info("ERROR UPDATING USER ("+str(e)+")")
-        elif (self.database=='messages'):
+                print("ERROR UPDATING USER ("+str(e)+")")
+        if (self.database=='messages'):
             try:
                 self.messages.replace_one({"id": self.data['id']},self.data)
             except Exception as e:
-                log.info("ERROR UPDATING MESSAGE ("+str(e)+")")
+                print("ERROR UPDATING MESSAGE ("+str(e)+")")
         else:
             try:
                 self.tweets.replace_one({"id": self.data['id']},self.data)
             except Exception as e:
-                log.info("ERROR UPDATING TWEET ("+str(e)+")")
+                print("ERROR UPDATING TWEET ("+str(e)+")")
 
     def search(self, database, data):
         self.database = database
@@ -67,8 +59,8 @@ class MongoAPI():
                 else:
                     return False
             except:
-                log.info("ERROR SEARCHING FOR USER")
-        elif (self.database=='messages'):
+                print("ERROR SEARCHING FOR USER")
+        if (self.database=='messages'):
             try:
                 result = self.messages.find_one({"id": self.data['id']})
                 if(result):
@@ -76,7 +68,7 @@ class MongoAPI():
                 else:
                     return False
             except:
-                log.info("ERROR SEARCHING FOR MESSAGE")
+                print("ERROR SEARCHING FOR MESSAGE")
         else:
             try:
                 result = self.tweets.find_one({"id": self.data['id']})
@@ -85,4 +77,10 @@ class MongoAPI():
                 else:
                     return False
             except Exception as e:
-                log.info("ERROR SEARCHING FOR TWEET: "+str(e))
+                print("ERROR SEARCHING FOR TWEET: "+str(e))
+    
+    def getUsers(self):
+        return self.users.find({})
+
+    def getTweets(self):
+        return self.tweets.find({})
