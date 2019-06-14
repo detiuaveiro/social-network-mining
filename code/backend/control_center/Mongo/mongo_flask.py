@@ -12,8 +12,11 @@ class AppMongo:
 	def dataCollection(self, findText={}):
 		return list(self.app.db.users.find(findText,projection={'_id':False}))
 
-	def twitterCollection(self, findText={}):
-		return list(self.app.db.tweets.find(findText,projection={'_id':False}))
+	def twitterCollection(self, findText={}, limite=None):
+		if limite is None:
+			return list(self.app.db.tweets.find(findText,projection={'_id':False}))
+		else:
+			return list(self.app.db.tweets.find(findText,projection={'_id':False}).limit(limite))
 
 	def getOneFilteredDoc(self, findText={},projection={'_id':False}):
 		return list(self.app.db.users.find(findText,projection))

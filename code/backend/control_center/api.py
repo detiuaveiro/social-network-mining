@@ -229,6 +229,8 @@ def tt_bots_by_id(id):
 @app.route("/twitter/bots/<id>/logs")
 def tt_bot_logs(id):
     lim=request.args.get("limit")
+    if lim is None:
+        val=policy.searchLog(id)
     try:
         if int(lim) > 50000:
             lim=50000
@@ -252,7 +254,15 @@ def tt_bot_messages(id):
 
 @app.route("/twitter/tweets")
 def tt_tweets():
-    mapa = mongo_t.twitterCollection()
+    lim=request.args.get("limit")
+    if lim is None:
+        mapa = mongo_t.twitterCollection()
+    else:
+        try:
+            lim=int(lim)
+            mapa = mongo_t.twitterCollection(limite=lim)
+        except TypeError:
+            return app.response_class(json.dumps({"Error":"Limit must be an integer!"}),status=400,mimetype="application/json")
     for i in mapa:
         i["id"] = str(i["id"])
         i["user"] = str(i["user"])
