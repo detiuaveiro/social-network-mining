@@ -203,11 +203,12 @@ class postgreSQL_API():
     These methods belong to the "policies" database
     '''
     
-    def searchLog(self, id_bot):
+    def searchLog(self, id_bot,limit=100):
         '''
         This function gets all logs from a specific a bot, starting with the most recent actions.
             Parameters:
                 id_bot- ID of the bot
+                limit (OPTIONAL)- maximum number of logs to be retrieved
             Can return:
                 result- List of dictionaries with all actions made by the specific bot
                     Keys:
@@ -219,7 +220,7 @@ class postgreSQL_API():
         '''
         try:
             cur = self.conn.cursor()
-            cur.execute("select * from logs where id_bot=%s order by timestamp DESC;", (id_bot,))
+            cur.execute("select * from logs where id_bot=%s order by timestamp DESC limit %s;", (id_bot,limit))
             data = cur.fetchall()
             self.conn.commit()
             result=self.getClearLogs(data,["id","timestamp","action"])
@@ -242,7 +243,7 @@ class postgreSQL_API():
         '''
         try:
             cur = self.conn.cursor()
-            cur.execute("select * from logs order by timestamp DESC;")
+            cur.execute("select * from logs order by timestamp DESC limit 100;")
             data = cur.fetchall()
             self.conn.commit()
 

@@ -67,6 +67,14 @@ def user_tweets(id):
     for i in mapa:
         i["id"]=str(i["id"])
         i["user"]=str(i["user"])
+        if i["is_quote_status"]:
+            try:
+                i["quoted_status_id"]=str(i["quoted_status_id"])
+            except KeyError:
+                pass
+        if type(i["in_reply_to_screen_name"]) is str:
+            i["in_reply_to_user_id"]=str(i["in_reply_to_user_id"])
+            i["in_reply_to_status_id"]=str(i["in_reply_to_status_id"])
     return jsonify(mapa)
 
 
@@ -107,7 +115,7 @@ def export_users():
                     export_fields=export_fields.strip('[]')
                     export=export_fields.split(",")
                 except TypeError:
-                    return app.response_class(response={"Error":"Wrong field specified"}, status=400, mimetype='application/json')
+                    return app.response_class(response=json.dumps({"Error":"Wrong field specified"}), status=400, mimetype='application/json')
                 a=mongo.exportData("users",fields=export)
         else:
             if export_fields is None:
@@ -117,7 +125,7 @@ def export_users():
                     export_fields=export_fields.strip('[]')
                     export=export_fields.split(",")
                 except TypeError:
-                    return app.response_class(response={"Error":"Wrong field specified"}, status=400, mimetype='application/json')
+                    return app.response_class(response=json.dumps({"Error":"Wrong field specified"}), status=400, mimetype='application/json')
                 a=mongo.exportData("users",fields=export,export_type=exportype)
         if type(a)==dict:
             return app.response_class(response=json.dumps(a), status=400, mimetype='application/json')
@@ -220,7 +228,15 @@ def tt_bots_by_id(id):
 
 @app.route("/twitter/bots/<id>/logs")
 def tt_bot_logs(id):
-    val = policy.searchLog(id)
+    lim=request.args.get("limit")
+    try:
+        if int(lim) > 50000:
+            lim=50000
+        val=policy.searchLog(id,limit=lim)
+    except TypeError:
+        return app.response_class(json.dumps({"Error":"Limit must be an integer!"}),status=400,mimetype="application/json")
+    if "ERROR" in val.keys():
+        return app.response_class(json.dumps(val),status=400,mimetype="application/json")
     return jsonify(val)
 
 @app.route("/twitter/bots/<id>/messages")
@@ -239,6 +255,14 @@ def tt_tweets():
     for i in mapa:
         i["id"] = str(i["id"])
         i["user"] = str(i["user"])
+        if i["is_quote_status"]:
+            try:
+                i["quoted_status_id"]=str(i["quoted_status_id"])
+            except KeyError:
+                pass
+        if type(i["in_reply_to_screen_name"]) is str:
+            i["in_reply_to_user_id"]=str(i["in_reply_to_user_id"])
+            i["in_reply_to_status_id"]=str(i["in_reply_to_status_id"])
     return jsonify(mapa)
 
 @app.route("/twitter/tweets/export",methods=['GET'])
@@ -254,7 +278,7 @@ def export_tweets():
                     export_fields=export_fields.strip('[]')
                     export=export_fields.split(",")
                 except TypeError:
-                    return app.response_class(response={"Error":"Wrong field specified"}, status=400, mimetype='application/json')
+                    return app.response_class(response=json.dumps({"Error":"Wrong field specified"}), status=400, mimetype='application/json')
                 a=mongo_t.exportData("tweets",fields=export)
         else:
             if export_fields is None:
@@ -264,7 +288,7 @@ def export_tweets():
                     export_fields=export_fields.strip('[]')
                     export=export_fields.split(",")
                 except TypeError:
-                    return app.response_class(response={"Error":"Wrong field specified"}, status=400, mimetype='application/json')
+                    return app.response_class(response=json.dumps({"Error":"Wrong field specified"}), status=400, mimetype='application/json')
                 a=mongo_t.exportData("tweets",fields=export,export_type=exportype)
                 
         if type(a)==dict:
@@ -290,6 +314,14 @@ def tt_tweet_by_id(id):
         for i in mapa:
             i["id"] = str(i["id"])
             i["user"] = str(i["user"])
+            if i["is_quote_status"]:
+                try:
+                    i["quoted_status_id"]=str(i["quoted_status_id"])
+                except KeyError:
+                    pass
+        if type(i["in_reply_to_screen_name"]) is str:
+            i["in_reply_to_user_id"]=str(i["in_reply_to_user_id"])
+            i["in_reply_to_status_id"]=str(i["in_reply_to_status_id"])
         return jsonify(mapa)
     except TypeError:
         return app.response_class(response=json.dumps({"Error": "invalid"}), status=400,
@@ -409,26 +441,6 @@ instagram paths
 def ig_policies():
     mapa = policy.getPoliciesByAPI("Instagram")
     return jsonify(mapa)
-
-
-@app.route("/instagram/stats")
-def ig_stats():
-    return "instagram stats"
-
-
-@app.route("/instagram/bots")
-def ig_bots_general():
-    return "bots"
-
-
-@app.route("/instagram/bots/<int:id>/")
-def bot_by_id(id):
-    return "bot by id"
-
-
-@app.route("/instagram/bots/<int:id>/logs")
-def bot_logs(id):
-    return "bot logs"
 
 
 if __name__ == "__main__":
