@@ -20,24 +20,6 @@ RUN pip install -r requirements.txt
 # Removing the virtual package created
 RUN apk del .build-dependencies
 
-# Env variables used
-
-ENV KEY
-
-ENV SECRET
-
-ENV TOKEN
-
-ENV TOKEN_SECRET
-
-ENV SERVER_HOST
-
-ENV SERVER_PORT
-
-# Don't use a proxy by default
-ENV TOR_PROXY ""
-
-
 # Add crontab file in the cron directory
 COPY crontab /etc/crontab
 
