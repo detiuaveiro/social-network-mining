@@ -64,8 +64,13 @@ class TweepyWrapper(tweepy.API):
         # Normally, just logging fun.__name__ would be a reasonable enough description
         # for which api method we're calling
         # but since Tweepy makes things ugly (despite dynamic), we're forced to do something equally
-        # ugly to get decent information of which function we're calling
-        log.debug(f"Making Request to {fun.__closure__[0].cell_contents.path}\n")
+        # ugly to get decent information of which function we're calling, in the case
+        # the method's body is literally just the `return bind_api(...`
+        if fun.__closure__ is not None:
+            log.debug(f"Making Request to {fun.__closure__[0].cell_contents.path}\n")
+        # logging the function's name otherwise
+        else:
+            log.debug(f"Making Request to {fun.__name__}")
         # Since we're making our own version of the models,
         # we're going to ignore everything except the json
         try:
