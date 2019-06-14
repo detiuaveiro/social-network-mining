@@ -235,8 +235,9 @@ def tt_bot_logs(id):
         val=policy.searchLog(id,limit=lim)
     except TypeError:
         return app.response_class(json.dumps({"Error":"Limit must be an integer!"}),status=400,mimetype="application/json")
-    if "ERROR" in val.keys():
-        return app.response_class(json.dumps(val),status=400,mimetype="application/json")
+    if type(val) is dict:
+        if "ERROR" in val.keys():
+            return app.response_class(json.dumps(val),status=400,mimetype="application/json")
     return jsonify(val)
 
 @app.route("/twitter/bots/<id>/messages")
