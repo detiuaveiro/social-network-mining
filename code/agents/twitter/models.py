@@ -99,13 +99,21 @@ class BaseModel(abc.ABC):
     def to_json(self):
         raise NotImplementedError
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, BaseModel):
+            return self.id == other.id
+        return False
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
 
 @dataclass
 class User(BaseModel):
     """
 
     """
-    id_str : str
+    id_str: str
     name: str
     screen_name: str
     location: str
@@ -246,7 +254,7 @@ class User(BaseModel):
 
 @dataclass
 class Tweet(BaseModel):
-    id_str : str
+    id_str: str
     text: str
 
     @property
@@ -351,13 +359,13 @@ class DirectMessage(BaseModel):
         }
 
         return DirectMessage(_api=api, _json=json, **clean_json)
+
     def to_json(self):
         return {
             'id'          : self.id,
-            "created_at" : self._json["created_timestamp"],
+            "created_at"  : self._json["created_timestamp"],
             "recipient_id": self.recipient_id,
             "sender_id"   : self.sender_id,
             "text"        : self.text,
             "entities"    : self.entities
         }
-
