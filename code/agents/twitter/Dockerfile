@@ -1,20 +1,42 @@
-FROM ubuntu:latest
+FROM python:3.7.3-alpine3.9
 
-COPY . /
+RUN mkdir -p /twitter_bots
 
-RUN apt-get update \
-  && apt -y install software-properties-common \
-  && apt -y install python3-distutils \
-  && add-apt-repository -y ppa:deadsnakes/ppa \
-  && apt -y install python3.7 \
-  && apt -y install curl \
-  && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
-  && python3.7 get-pip.py \
-  && apt-get -y install cron 
+WORKDIR /twitter_bots
 
-RUN apt-get install -y rsyslog
+COPY . /twitter_bots
+
+RUN apk add rsyslog
+
+# build dependencies, stored in a virtual package
+RUN apk add --update --no-cache --virtual .build-dependencies \ 
+	g++ python-dev libxslt-dev
+
+# Runtime dependencies
+RUN apk add --update --no-cache libxslt 
 
 RUN pip install -r requirements.txt
+
+# Removing the virtual package created
+RUN apk del .build-dependencies
+
+# Env variables used
+
+ENV KEY
+
+ENV SECRET
+
+ENV TOKEN
+
+ENV TOKEN_SECRET
+
+ENV SERVER_HOST
+
+ENV SERVER_PORT
+
+# Don't use a proxy by default
+ENV TOR_PROXY ""
+
 
 # Add crontab file in the cron directory
 COPY crontab /etc/crontab
@@ -26,4 +48,4 @@ RUN chmod 0644 /etc/crontab
 RUN crontab /etc/crontab
 
 # Run the command on container startup
-CMD cron && tail -f /dev/stdout
+CMD crond -f && tail
