@@ -29,12 +29,12 @@ class Policies extends React.Component {
   }
 
   componentDidMount(){
-    axios.get(process.env.API_URL+'policies')
+    axios.get('http://192.168.85.182:5000/policies')
     .then(res => {
         const policies = res.data;
         this.setState({ policies });
    });
-   axios.get(process.env.API_URL+'twitter/bots')
+   axios.get('http://192.168.85.182:5000/twitter/bots')
    .then(res => {
      const data = res.data;
      const options = []
@@ -116,7 +116,7 @@ class Policies extends React.Component {
   }
 
   removePolicy(id) {
-    axios.delete(process.env.API_URL+'policies/remove/'+id)
+    axios.delete('http://192.168.85.182:5000/policies/remove/'+id)
         .then(response => {
           this.refresh(response.status===200 ? "REMOVE" : "ERROR",response.data['Message'])
         });
@@ -126,7 +126,7 @@ class Policies extends React.Component {
     this.setState({
       modalEdit: !this.state.modalEdit
     });
-    axios.get(process.env.API_URL+'policies/'+id)
+    axios.get('http://192.168.85.182:5000/policies/'+id)
     .then(res => {
         const editData = res.data;
         this.setState({ editData });
@@ -135,7 +135,7 @@ class Policies extends React.Component {
 
 
   updatePolicy(data) {
-    axios.post(process.env.API_URL+'policies/update', data)
+    axios.post('http://192.168.85.182:5000/policies/update', data)
         .then(response => {
           this.refresh(response.status===200 ? "EDIT" : "ERROR",response.data['Message'])
         });
@@ -143,7 +143,7 @@ class Policies extends React.Component {
 
   activatePolicy(id,state) {
     const data = {id_policy: id, active: ""+state.state.value}
-    axios.post(process.env.API_URL+'policies/update', data)
+    axios.post('http://192.168.85.182:5000/policies/update', data)
         .then(response => {
           this.refresh(response.status===200 ? state.state.value ? "ACTIVE" : "DEACTIVE" : "ERROR",response.data['Message'])
         });

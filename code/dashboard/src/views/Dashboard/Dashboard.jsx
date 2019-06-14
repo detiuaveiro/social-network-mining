@@ -19,7 +19,7 @@ class Dashboard extends React.Component {
           }
         />
         <div>
-          <iframe src={process.env.KIBANA_URL+"app/kibana#/dashboard/caea1060-87ad-11e9-9a93-576733f53835?embed=true&_g=(refreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3Anow-10d%2Cto%3Anow))"} title="Dash Stats" height="800" width="100%"></iframe>
+          <iframe src={"http://192.168.85.142:5601/app/kibana#/dashboard/c375c770-8e29-11e9-8700-cf895ecb2cb4?embed=true&_g=(refreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3Anow%2FM%2Cto%3Anow))"} title="Dash Stats" height="800" width="100%"></iframe>
         </div>
       </div>
     );

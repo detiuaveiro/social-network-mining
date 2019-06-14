@@ -9,7 +9,7 @@ class Tweet extends React.Component {
   }
 
   componentDidMount() {
-      axios.get(process.env.API_URL+'twitter/users/'+this.props.info["user"])
+      axios.get('http://192.168.85.182:5000/twitter/users/'+this.props.info["user"])
       .then(res => {
         const user_info = res.data[0];
         this.setState({user_info});

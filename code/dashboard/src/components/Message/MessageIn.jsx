@@ -11,7 +11,7 @@ class MessageIn extends React.Component {
 
   componentDidMount() {
     console.log(this.props.message)
-    axios.get(process.env.API_URL+'twitter/users/'+this.props.message["sender_id"])
+    axios.get('http://192.168.85.182:5000/twitter/users/'+this.props.message["sender_id"])
       .then(res => {
         const sender_info = res.data[0];
         this.setState({ sender_info });

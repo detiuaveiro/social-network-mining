@@ -17,7 +17,7 @@ class TweetPage extends React.Component {
   }
 
   componentDidMount(){
-   axios.get(process.env.API_URL+'twitter/bots')
+   axios.get('http://192.168.85.182:5000/twitter/bots')
    .then(res => {
      const data = res.data;
      const options = []
@@ -64,7 +64,7 @@ class TweetPage extends React.Component {
   }
 
   sendTweet(data) {
-    axios.post(process.env.API_URL+'twitter/create', data)
+    axios.post('http://192.168.85.182:5000/twitter/create', data)
     .then((response) => {
       this.refresh(response.status===200 ? "OKAY" : "ERROR",response.data['Message'])
     })
