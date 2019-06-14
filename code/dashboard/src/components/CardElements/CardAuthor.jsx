@@ -3,13 +3,29 @@ import React from "react";
 import PropTypes from "prop-types";
 
 class CardAuthor extends React.Component {
+  state = {
+    avatar: ""
+  }
+
+  componentDidMount(){
+    this.setState({
+      avatar: this.props.avatar
+    })
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.avatar !== prevProps.avatar) {
+        this.setState({avatar: this.props.avatar.replace("_normal", "")});
+    }
+}
+
   render() {
     return (
       <div className="author">
         <a target="_blank" rel="noopener noreferrer" href={"https://twitter.com/"+this.props.username}>
           <img
             className="avatar small border-gray"
-            src={this.props.avatar}
+            src={this.state.avatar}
             alt={this.props.avatarAlt}
           />
           <h5 className="title text-decoration-none" style={{color:"#f96332"}}>{this.props.title}</h5>

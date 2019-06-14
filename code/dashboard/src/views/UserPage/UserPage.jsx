@@ -1,27 +1,29 @@
 import React from "react";
 import axios from 'axios';
 
-import {FormInputs, CardAuthor, CardNumbers, Tweet, UserInfo, PanelHeader, LogsTable, PoliciesTableBot, MessageIn, MessageOut} from "components";
+import {FormInputs, CardAuthor, CardNumbers, Tweet, UserInfo, PanelHeader, LogsTable, PoliciesTableBot, MessageIn, MessageOut, Button} from "components";
 import {Nav, NavItem, NavLink, Card, CardHeader, CardBody, TabPane, TabContent, Row, Col, Badge } from 'reactstrap';
 
 class User extends React.Component {
-  state = {
-    tweets: [],
-    profile_data: [],
-    following: [],
-    followers: [],
-    messages: [],
-    kibana_url: "",
-    activeTab: '1',
-  };
   
   constructor(props) {
     super(props);
+    this.state = {
+      tweets: [],
+      profile_data: [],
+      following: [],
+      followers: [],
+      messages: [],
+      kibana_url: "",
+      activeTab: '1',
+      limit: 100,
+    };
     this.toggle = this.toggle.bind(this);
     this.anyTweets = this.anyTweets.bind(this);
     this.anyFollowers = this.anyFollowers.bind(this);
     this.anyFollowing = this.anyFollowing.bind(this);
     this.anyDirectMessages = this.anyDirectMessages.bind(this);
+    this.handleMoreLogs = this.handleMoreLogs.bind(this);
   }
 
   componentDidMount() {
@@ -91,6 +93,13 @@ class User extends React.Component {
       return true
     }
   }
+
+  handleMoreLogs() {
+    this.setState({
+      limit: this.state.limit+500
+    })
+  }
+
   toggle(tab) {
     if (this.state.activeTab !== tab) {
         this.setState({
@@ -357,7 +366,8 @@ class User extends React.Component {
                         <PoliciesTableBot userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
                       </TabPane>
                       <TabPane tabId="7">
-                        <LogsTable userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)}/>
+                        <LogsTable userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)} limit={this.state.limit}/>
+                        <Button color="primary" onClick={this.handleMoreLogs}>Load More</Button>
                       </TabPane>
                     </TabContent>
                 </CardBody>

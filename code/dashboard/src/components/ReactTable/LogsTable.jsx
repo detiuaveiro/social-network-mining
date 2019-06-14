@@ -28,11 +28,26 @@ class LogsTable extends React.Component {
                 height: "50px"
             }
           }],
-        user_id: this.props.userid
+        user_id: this.props.userid,
+        limit: this.props.limit
     };
     
     componentDidMount() {
-        axios.get('http://192.168.85.182:5000/twitter/bots/'+this.state.user_id+'/logs')
+       this.setState({
+           limit: this.props.limit
+       })
+       this.loadLogs()
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.limit !== prevProps.limit) {
+            this.setState({limit: this.props.limit});
+            this.loadLogs()
+        }
+    }
+
+    loadLogs() {
+        axios.get('http://192.168.85.182:5000/twitter/bots/'+this.state.user_id+'/logs?limit='+this.props.limit)
         .then(res => {
            const logs = res.data;
            const logger = []

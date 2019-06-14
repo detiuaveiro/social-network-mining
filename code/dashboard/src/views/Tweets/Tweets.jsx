@@ -2,7 +2,7 @@ import React from "react";
 import axios from 'axios';
 import { PacmanLoader } from 'react-spinners';
 import { css } from '@emotion/core';
-import { Tweet, PanelHeader} from "components";
+import { Tweet, PanelHeader, Button} from "components";
 import {Row, Col} from 'reactstrap';
 
 const override = css`
@@ -11,13 +11,23 @@ const override = css`
 `;
 
 class Tweets extends React.Component {
-  state = {
-    tweets: [],
-    loading: true,
-  };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      tweets: [],
+      loading: true,
+      limit: 100,
+    };
+    this.anyTweets = this.anyTweets.bind(this);
+  }
 
   componentDidMount() {
-    axios.get('http://192.168.85.182:5000/twitter/tweets')
+    this.loadTweets()
+  }
+
+  loadTweets(){
+    axios.get('http://192.168.85.182:5000/twitter/tweets?limit='+this.state.limit)
       .then(res => {
         const tweets = res.data;
         this.setState({
@@ -27,11 +37,6 @@ class Tweets extends React.Component {
       })
   }
 
-  constructor(props) {
-    super(props);
-    this.anyTweets = this.anyTweets.bind(this);
-  }
-
   anyTweets() {
     if (this.state.tweets.length===0){
       return false
@@ -39,6 +44,13 @@ class Tweets extends React.Component {
     else{
       return true
     }
+  }
+
+  handleMoreTweets() {
+    this.setState({
+      limit: this.state.limit+100
+    })
+    this.loadTweets()
   }
 
   render() {
@@ -57,11 +69,19 @@ class Tweets extends React.Component {
         <div className="content mt-5 pt-4">
           <Row>
             {this.anyTweets()
-              ? this.state.tweets.map(tweet => 
-                <Col xs={12} md={6}>
-                  <Tweet info={tweet}/>
-                </Col>
+              ? 
+                <>
+                {
+                this.state.tweets.map(tweet => 
+                  <Col xs={12} md={6}>
+                    <Tweet info={tweet}/>
+                  </Col>
                 )
+                }
+                <Col xs={12} md={12}>
+                  <Button color="primary" onClick={this.handleMoreTweets}>Load More Tweets</Button>
+                </Col>
+                </>
               : (this.state.loading)
                 ? <Col xs={12} md={12} className='text-center'>
                     <PacmanLoader	
