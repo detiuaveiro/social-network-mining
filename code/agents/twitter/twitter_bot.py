@@ -20,7 +20,7 @@ log = logging.getLogger("bot-agents")
 log.setLevel(logging.DEBUG)
 
 
-def reconnect_messagging(_func=None,*, max_times=5):
+def reconnect_messagging(_func=None, *, max_times=5):
     def decorator(func):
         def wrapper(self, *args, **kwargs):
             for current_reconnect in range(max_times):
@@ -36,6 +36,7 @@ def reconnect_messagging(_func=None,*, max_times=5):
                     self.messaging = Client(api_url=os.environ.get("SERVER_HOST", "127.0.0.1"),
                                             user=settings.RABBIT_USERNAME,
                                             passwd=settings.RABBIT_PASSWORD)
+
         wrapper.__name__ = func.__name__
         wrapper.__doc__ = func.__doc__
         return wrapper
@@ -45,10 +46,11 @@ def reconnect_messagging(_func=None,*, max_times=5):
     else:
         return decorator(_func)
 
-def log_account_suspended(_func=None,**d_kwargs):
+
+def log_account_suspended(_func=None, **d_kwargs):
     def decorator(func):
         def wrapper(self, *args, **kwargs):
-            try: 
+            try:
                 return func(self, *args, **kwargs)
             except tweepy.error.TweepError as e:
                 # Log the error
@@ -67,14 +69,16 @@ def log_account_suspended(_func=None,**d_kwargs):
                     self.messaging.publish(vhost=self.vhost, xname=self.log_exchange,
                                            rt_key=self.log_routing_key,
                                            payload=utils.to_json(payload))
-                raise e
+
         wrapper.__name__ = func.__name__
         wrapper.__doc__ = func.__doc__
         return wrapper
+
     if _func is None:
         return decorator
     else:
         return decorator(_func)
+
 
 class TwitterBot:
     def __init__(self, bot_id, messaging_manager: Client, api: tweepy.API):
@@ -150,6 +154,7 @@ class TwitterBot:
         log.info(
             f"Connected to Messaging Service using: exchange={self.data_exchange}")
         log.info("Ready to: Upload Data")
+
     @log_account_suspended
     def _setup(self):
         """
@@ -172,6 +177,7 @@ class TwitterBot:
         # log.debug("Checking last Tweet")
         # self.last_home_tweet = self._cache.get("last_home_tweet", None)
         # log.debug(f"Last Tweet was: <{self.last_home_tweet}>")
+
     @reconnect_messagging(max_times=settings.MAX_RABBIT_RETRIES)
     def get_new_message(self):
         """
@@ -588,7 +594,16 @@ class TwitterBot:
             elif tweet.user.id != user_obj.id:
                 # save the user
                 self.send_user(tweet.user)
-                self.read_timeline(user_obj,
+                if tweet.user.protected and not tweet.user.following:
+                    log.warning(
+                        f"Found user with ID={tweet.user.id} but he's protected and we're not following him, so can't read his timeline")
+                    continue
+                elif tweet.user.suspended:
+                    log.warning(
+                        f"Found user with ID={tweet.user.id} but his account was suspended, so can't read his timeline")
+                    continue
+                else:
+                    self.read_timeline(user_obj,
                                    jump_users=jump_users,
                                    total_jumps=total_jumps + 1,
                                    max_jumps=max_jumps,
@@ -678,6 +693,7 @@ class TwitterBot:
         self._send_message(data.to_json(), message_type=message_type,
                            routing_key=self.log_routing_key,
                            exchange=self.log_exchange)
+
     @reconnect_messagging(max_times=settings.MAX_RABBIT_RETRIES)
     def _send_message(self, data, *, message_type: MessageType, routing_key: str, exchange: str):
         log.debug(
