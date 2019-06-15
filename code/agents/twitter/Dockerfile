@@ -4,30 +4,32 @@ RUN mkdir -p /twitter_bots
 
 WORKDIR /twitter_bots
 
-COPY . /twitter_bots
-
+# Cron dependency
 RUN apk add rsyslog
+
+COPY requirements.txt /twitter_bots
 
 # build dependencies, stored in a virtual package
 RUN apk add --update --no-cache --virtual .build-dependencies \ 
-	g++ python-dev libxslt-dev
-
-# Runtime dependencies
-RUN apk add --update --no-cache libxslt 
-
-RUN pip install -r requirements.txt
-
-# Removing the virtual package created
-RUN apk del .build-dependencies
+	g++ \ 
+	python-dev \ 
+	libxslt-dev \
+	# Runtime dependencies
+	&& apk add --update --no-cache libxslt \
+	&& pip install -r requirements.txt \
+	&& apk del .build-dependencies
 
 # Add crontab file in the cron directory
 COPY crontab /etc/crontab
 
-# Give execution rights on the cron job
-RUN chmod 0644 /etc/crontab
+COPY *.py /twitter_bots/
 
-#Apply cron job
-RUN crontab /etc/crontab
+COPY ./user_agents.json /twitter_bots/
+
+# Give execution rights on the cron job
+RUN chmod 0644 /etc/crontab \
+	#Apply cron job
+	&& crontab /etc/crontab
 
 # Run the command on container startup
 CMD crond -f && tail
