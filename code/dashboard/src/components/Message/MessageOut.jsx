@@ -13,7 +13,7 @@ class MessageOut extends React.Component {
 
   render() {
     return (
-      <Card style={{minHeight:"250px",maxHeight:"250px"}}>
+      <Card style={{minHeight:"230px",maxHeight:"230px",borderRadius:"50px",backgroundColor: "#c0deed"}}>
         <CardBody>
           <Row>
               <Col xs={12} md={6}>

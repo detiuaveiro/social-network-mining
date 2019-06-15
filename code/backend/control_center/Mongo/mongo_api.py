@@ -31,7 +31,7 @@ class MongoAPI():
                 self.messages.insert_one(self.data)
             except:
                 log.info("ERROR INSERTING MESSAGE")
-        else:
+        elif (self.database=='tweets'):
             try:
                 self.tweets.insert_one(self.data)
             except:
@@ -50,7 +50,7 @@ class MongoAPI():
                 self.messages.replace_one({"id": self.data['id']},self.data)
             except Exception as e:
                 log.info("ERROR UPDATING MESSAGE ("+str(e)+")")
-        else:
+        elif (self.database=='tweets'):
             try:
                 self.tweets.replace_one({"id": self.data['id']},self.data)
             except Exception as e:
@@ -77,7 +77,7 @@ class MongoAPI():
                     return False
             except:
                 log.info("ERROR SEARCHING FOR MESSAGE")
-        else:
+        elif (self.database=='tweets'):
             try:
                 result = self.tweets.find_one({"id": self.data['id']})
                 if(result):

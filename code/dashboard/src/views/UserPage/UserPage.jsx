@@ -367,7 +367,7 @@ class User extends React.Component {
                       </TabPane>
                       <TabPane tabId="7">
                         <LogsTable userid={ window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)} limit={this.state.limit}/>
-                        <Button color="primary" onClick={this.handleMoreLogs}>Load More</Button>
+                        <Button color="primary" onClick={this.handleMoreLogs}>Load More Logs</Button>
                       </TabPane>
                     </TabContent>
                 </CardBody>

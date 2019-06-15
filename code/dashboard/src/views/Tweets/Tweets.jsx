@@ -20,14 +20,22 @@ class Tweets extends React.Component {
       limit: 100,
     };
     this.anyTweets = this.anyTweets.bind(this);
+    this.loadTweets = this.loadTweets.bind(this);
+    this.handleMoreTweets = this.handleMoreTweets.bind(this);
   }
 
   componentDidMount() {
-    this.loadTweets()
-  }
+    axios.get('http://192.168.85.182:5000/twitter/tweets?limit='+this.state.limit)
+      .then(res => {
+        const tweets = res.data;
+        this.setState({
+          tweets: tweets,
+          loading: false
+         });
+      })  }
 
   loadTweets(){
-    axios.get('http://192.168.85.182:5000/twitter/tweets?limit='+this.state.limit)
+    axios.get('http://192.168.85.182:5000/twitter/tweets?limit='+(this.state.limit+100))
       .then(res => {
         const tweets = res.data;
         this.setState({
@@ -78,9 +86,6 @@ class Tweets extends React.Component {
                   </Col>
                 )
                 }
-                <Col xs={12} md={12}>
-                  <Button color="primary" onClick={this.handleMoreTweets}>Load More Tweets</Button>
-                </Col>
                 </>
               : (this.state.loading)
                 ? <Col xs={12} md={12} className='text-center'>
@@ -97,7 +102,16 @@ class Tweets extends React.Component {
                       No Tweets Available
                     </h5>
                   </Col>
-}
+              }
+          </Row>
+          <Row>
+            {(this.anyTweets())
+                ? 
+                <Col xs={12} md={12} className="text-center">
+                  <Button color="primary" onClick={this.handleMoreTweets} size="lg">Load More Tweets</Button>
+                </Col>
+                : ""
+              }
           </Row>
         </div>
       </div>

@@ -18,7 +18,7 @@ class Tweet extends React.Component {
 
   render() {
     return (
-        <Card style={{minHeight:"250px",maxHeight:"250px"}}>
+        <Card style={{minHeight:"280px",maxHeight:"280px"}}>
           <CardBody>
             <Row>
               <Col xs={12} md={2}>
@@ -28,14 +28,9 @@ class Tweet extends React.Component {
                   alt=""
                 />
               </Col>
-              <Col className="text-left my-auto" xs={12} md={4}>
+              <Col className="text-left my-auto" xs={12} md={7}>
                 <h6 className="title">{this.state.user_info["name"]}</h6>
                 <p className="description">{"@"+this.state.user_info["screen_name"]}</p>
-              </Col>
-              <Col xs={12} md={3}>
-                <p className="description text-left">
-                  {this.props.info["created_at"]}
-                </p>
               </Col>
               <Col xs={12} md={2}>
               <a target="_blank" rel="noopener noreferrer" href={"https://twitter.com/statuses/"+this.props.info["id"]}>
@@ -48,29 +43,31 @@ class Tweet extends React.Component {
             <Row>
               <Col xs={12} md={2}>
               </Col>
-              <Col xs={12} md={10}>
+              <Col xs={12} md={10} style={{minHeight:"70",maxHeight:"70"}}>
                 <p className="text-left">{this.props.info["text"]}</p>
               </Col>
             </Row>
             <Row>
               <Col xs={12} md={2}>
               </Col>
-              <Col className="text-left my-auto" xs={12} md={5}>
+              <Col className="text-left my-auto" xs={12} md={4}>
                 <CardInteractions
                   size="sm"
                   socials={[
                     {
+                      tipo: "icon",
                       icon: "fas fa-heart",
                       number: this.props.info["favorite_count"],
                     },
                     {
+                      tipo: "icon",
                       icon: "fas fa-retweet",
                       number: this.props.info["retweet_count"],
                     },
                   ]}
                 />
               </Col>
-              <Col className="text-left my-auto" xs={12} md={5}>
+              <Col className="text-left my-auto" xs={12} md={6}>
                 <p className="description">{"ID: "+this.props.info["id"]}</p>
               </Col>
             </Row>
