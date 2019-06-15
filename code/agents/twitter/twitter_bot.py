@@ -726,10 +726,18 @@ if __name__ == "__main__":
     secret = os.environ["SECRET"]
     token = os.environ["TOKEN"]
     token_secret = os.environ["TOKEN_SECRET"]
+
+    bot_id = token.split('-')[0]
+    formatter = logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s")
+    # Logging to stdout
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(
-        logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+    handler.setFormatter(formatter)
     log.addHandler(handler)
+    # And to a timestamped file
+    file_handler = logging.FileHandler(f"{bot_id}_{int(utils.current_time())}.log", encoding='utf-8')
+    file_handler.setFormatter(formatter)
+    log.addHandler(file_handler)
+
     # TODO: change password
     messaging_manager = Client(api_url=server,
                                user=settings.RABBIT_USERNAME,
@@ -738,7 +746,8 @@ if __name__ == "__main__":
     wrapper_api = TweepyWrapper(tor_proxies=proxies, user_agent=user_agent, consumer_key=key,
                                 consumer_secret=secret, token=token, token_secret=token_secret)
 
-    bot = TwitterBot(bot_id=token.split('-')[0], messaging_manager=messaging_manager,
+    bot = TwitterBot(bot_id=bot_id, messaging_manager=messaging_manager,
                      api=wrapper_api)
+
     bot.run()
     exit(0)
