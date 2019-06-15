@@ -61,6 +61,8 @@ class AppMongo:
 					fields=list(data[0].keys())
 					if "entities" in fields:
 						fields.append("id_str");fields.append("possibly_sensitive");fields.append("quoted_status_id");fields.append("hashtags");fields.append("urls");fields.append("user_mentions");fields.append("symbols");fields.append("media");fields.append("polls");fields.remove("entities")
+					else:
+						fields.append("suspended")
 					writer=csv.DictWriter(f,fields)
 					writer.writeheader()
 					if "hashtags" in fields:
