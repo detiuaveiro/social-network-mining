@@ -20,7 +20,7 @@ log = logging.getLogger("bot-agents")
 log.setLevel(logging.DEBUG)
 
 
-def reconnect_messagging(_func=None,*, max_times=5):
+def reconnect_messagging(_func=None, *, max_times=5):
     def decorator(func):
         def wrapper(self, *args, **kwargs):
             for current_reconnect in range(max_times):
@@ -36,6 +36,7 @@ def reconnect_messagging(_func=None,*, max_times=5):
                     self.messaging = Client(api_url=os.environ.get("SERVER_HOST", "127.0.0.1"),
                                             user=settings.RABBIT_USERNAME,
                                             passwd=settings.RABBIT_PASSWORD)
+
         wrapper.__name__ = func.__name__
         wrapper.__doc__ = func.__doc__
         return wrapper
@@ -45,10 +46,11 @@ def reconnect_messagging(_func=None,*, max_times=5):
     else:
         return decorator(_func)
 
-def log_account_suspended(_func=None,**d_kwargs):
+
+def log_account_suspended(_func=None, **d_kwargs):
     def decorator(func):
         def wrapper(self, *args, **kwargs):
-            try: 
+            try:
                 return func(self, *args, **kwargs)
             except tweepy.error.TweepError as e:
                 # Log the error
@@ -67,14 +69,16 @@ def log_account_suspended(_func=None,**d_kwargs):
                     self.messaging.publish(vhost=self.vhost, xname=self.log_exchange,
                                            rt_key=self.log_routing_key,
                                            payload=utils.to_json(payload))
-                raise e
+
         wrapper.__name__ = func.__name__
         wrapper.__doc__ = func.__doc__
         return wrapper
+
     if _func is None:
         return decorator
     else:
         return decorator(_func)
+
 
 class TwitterBot:
     def __init__(self, bot_id, messaging_manager: Client, api: tweepy.API):
@@ -150,6 +154,7 @@ class TwitterBot:
         log.info(
             f"Connected to Messaging Service using: exchange={self.data_exchange}")
         log.info("Ready to: Upload Data")
+
     @log_account_suspended
     def _setup(self):
         """
@@ -160,18 +165,18 @@ class TwitterBot:
         self._setup_messaging()
         log.debug("Verifying credentials")
         self.user: User = self._api.verify_credentials()
-        log.debug(f"Logged in as:{self.user}")
+        log.info(f"Logged in as:{self.user}")
         log.debug(f"Sending our user to {self.data_exchange}")
         self.send_user(user=self.user)
         log.debug("Opening Cache")
         self._cache.open()
         log.info("Reading Home Timeline")
         self.read_timeline(self.user, jump_users=False)
-        log.info("Checking Direct Messages")
         self.check_direct_messages()
         # log.debug("Checking last Tweet")
         # self.last_home_tweet = self._cache.get("last_home_tweet", None)
         # log.debug(f"Last Tweet was: <{self.last_home_tweet}>")
+
     @reconnect_messagging(max_times=settings.MAX_RABBIT_RETRIES)
     def get_new_message(self):
         """
@@ -194,7 +199,7 @@ class TwitterBot:
         log.debug("Starting to get tasks...")
         while True:
             try:
-                log.debug(f"Getting next task from {self.tasks_queue}")
+                log.info(f"Getting next task from {self.tasks_queue}")
                 task_msg = self.get_new_message()
                 task_type, task_params = task_msg["type"], task_msg["params"]
                 log.debug(f"Received task {task_msg} with: {task_params}")
@@ -215,7 +220,7 @@ class TwitterBot:
             except NoMessagesInQueue:
                 if retries == 0:
                     break
-                log.debug("No Messages found. Waiting...")
+                log.info("No Messages found. Waiting...")
                 utils.wait_for(5)
                 retries -= 1
         self.cleanup()
@@ -229,6 +234,7 @@ class TwitterBot:
         self._cache.close()
 
     def check_direct_messages(self):
+        log.info("Checking Direct Messages")
         messages_list = self._api.direct_messages()
         self.send_data(messages_list, message_type=MessageType.SAVE_DIRECT_MESSAGES)
 
@@ -242,7 +248,7 @@ class TwitterBot:
         tweets_ids: `Union[int, List[int]]`
             Either 1 tweet ID or a list of tweet Ids
         """
-        log.debug("Starting 'Like Tweets' routine...")
+        log.info("Starting 'Like Tweets' routine...")
 
         # Helper function so we don't have to repeat code
 
@@ -251,9 +257,9 @@ class TwitterBot:
             read_time = utils.read_text_and_wait(tweet.text)
             log.debug(f"Read Tweet in {read_time}")
             if tweet.favorited:
-                log.debug(f"Tweet with ID={tweet.id} already liked, no need to like again")
+                log.info(f"Tweet with ID={tweet.id} already liked, no need to like again")
             else:
-                log.debug(f"Liking Tweet with ID={tweet.id}")
+                log.info(f"Liking Tweet with ID={tweet.id}")
                 tweet.like()
                 self.send_event(MessageType.EVENT_TWEET_LIKED, tweet)
 
@@ -279,7 +285,7 @@ class TwitterBot:
         tweets_ids: `Union[int, List[int]]`
             Either 1 tweet ID or a list of tweet Ids
         """
-        log.debug("Starting 'Retweet Tweets' routine...")
+        log.info("Starting 'Retweet Tweets' routine...")
 
         # Helper function so we don't have to repeat code
         def get_and_retweet_tweet(tweet_id):
@@ -287,9 +293,9 @@ class TwitterBot:
             read_time = utils.read_text_and_wait(tweet.text)
             log.debug(f"Read Tweet in {read_time}")
             if tweet.retweeted:
-                log.debug(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
+                log.info(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
             else:
-                log.debug(f"Retweeting Tweet with ID={tweet.id}")
+                log.info(f"Retweeting Tweet with ID={tweet.id}")
                 tweet.retweet()
                 self.send_event(MessageType.EVENT_TWEET_RETWEETED, tweet)
 
@@ -306,7 +312,7 @@ class TwitterBot:
                 f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
 
     def post_tweet_routine(self, data: dict):
-        log.debug("Starting Post Tweet Routine")
+        log.info("Starting Post Tweet Routine")
         reply_id = data.get("in_reply_to_status_id", None)
         status = data.get("status", None)
         if not status:
@@ -439,7 +445,7 @@ class TwitterBot:
         log.info("Starting 'Follow Users' routine...")
 
         if not params["data"]:
-            log.info("No users provided!")
+            log.warning("No users provided!")
         else:
             # To avoid having to write 2 loops, or making an if check on every loop,
             # we'll just take advantage of python's dict as params
@@ -554,13 +560,13 @@ class TwitterBot:
         total_jumps : int
             Internal variable for recursive return
         """
-        log.debug(f"Reading User {user_obj}'s timeline")
+        log.info(f"Reading User {user_obj}'s timeline")
         tweets_to_get = utils.random_between(settings.MIN_USER_TIMELINE_TWEETS,
                                              settings.MAX_USER_TIMELINE_TWEETS)
         # get the user's timeline tweets
         tweets = self.get_user_timeline_tweets(user_obj, count=tweets_to_get)
         if not tweets:
-            log.debug("No Tweets to read!")
+            log.warning("No Tweets to read!")
             return
 
         total_read_time = 0
@@ -588,7 +594,16 @@ class TwitterBot:
             elif tweet.user.id != user_obj.id:
                 # save the user
                 self.send_user(tweet.user)
-                self.read_timeline(user_obj,
+                if tweet.user.protected and not tweet.user.following:
+                    log.warning(
+                        f"Found user with ID={tweet.user.id} but he's protected and we're not following him, so can't read his timeline")
+                    continue
+                elif tweet.user.suspended:
+                    log.warning(
+                        f"Found user with ID={tweet.user.id} but his account was suspended, so can't read his timeline")
+                    continue
+                else:
+                    self.read_timeline(user_obj,
                                    jump_users=jump_users,
                                    total_jumps=total_jumps + 1,
                                    max_jumps=max_jumps,
@@ -678,6 +693,7 @@ class TwitterBot:
         self._send_message(data.to_json(), message_type=message_type,
                            routing_key=self.log_routing_key,
                            exchange=self.log_exchange)
+
     @reconnect_messagging(max_times=settings.MAX_RABBIT_RETRIES)
     def _send_message(self, data, *, message_type: MessageType, routing_key: str, exchange: str):
         log.debug(
@@ -710,10 +726,18 @@ if __name__ == "__main__":
     secret = os.environ["SECRET"]
     token = os.environ["TOKEN"]
     token_secret = os.environ["TOKEN_SECRET"]
+
+    bot_id = token.split('-')[0]
+    formatter = logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s")
+    # Logging to stdout
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(
-        logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+    handler.setFormatter(formatter)
     log.addHandler(handler)
+    # And to a timestamped file
+    file_handler = logging.FileHandler(f"{bot_id}_{int(utils.current_time())}.log", encoding='utf-8')
+    file_handler.setFormatter(formatter)
+    log.addHandler(file_handler)
+
     # TODO: change password
     messaging_manager = Client(api_url=server,
                                user=settings.RABBIT_USERNAME,
@@ -722,7 +746,8 @@ if __name__ == "__main__":
     wrapper_api = TweepyWrapper(tor_proxies=proxies, user_agent=user_agent, consumer_key=key,
                                 consumer_secret=secret, token=token, token_secret=token_secret)
 
-    bot = TwitterBot(bot_id=token.split('-')[0], messaging_manager=messaging_manager,
+    bot = TwitterBot(bot_id=bot_id, messaging_manager=messaging_manager,
                      api=wrapper_api)
+
     bot.run()
     exit(0)

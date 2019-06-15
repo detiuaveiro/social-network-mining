@@ -51,7 +51,7 @@ class postgreSQL_API():
         try:
             #check if user exists
             cur=self.conn.cursor()
-            self.checkUserExistence(cur,mapa)
+            cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
             self.conn.commit()
             cur.close()
         except psycopg2.Error as e:
@@ -178,25 +178,6 @@ class postgreSQL_API():
         '''
         return self.getAllStatsTweets()+self.getAllStatsUsers()
 
-    def checkUserExistence(self,cur, mapa):
-        '''
-        This function is a helper function. It checks if a specific user exists. If it doesn't exist, it creates that user.
-            Parameters:
-                cur- Cursor to query the database
-                mapa- Dictionary with keys: 
-                    - user_id
-                    - followers
-                    - following
-        '''
-        cur.execute("select * from users where user_id=%s;",(mapa["user_id"],))
-        data=cur.fetchone()
-        if data is None:
-            #add user
-            cur.execute("insert into users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",(mapa["user_id"],mapa["followers"],mapa["following"]))
-        else:
-            #update user
-            cur.execute("update users set followers=%s, following=%s where user_id=%s;", (mapa["followers"], mapa["following"], mapa["user_id"]))
-        return
 
     ##################################################################################################################################
     '''
