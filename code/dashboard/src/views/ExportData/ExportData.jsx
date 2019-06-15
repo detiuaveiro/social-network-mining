@@ -1,7 +1,5 @@
 import React from "react";
 import {Row, Col, Form, FormGroup, Label, Input, Card, CardHeader } from 'reactstrap';
-import axios from 'axios';
-import download from 'downloadjs'
 import Select from 'react-select';
 import {PanelHeader, Button} from "components";
 
@@ -169,7 +167,7 @@ class ExportData extends React.Component {
     else if (this.state.fieldT==="all"){
       window.open('http://192.168.85.182:5000/twitter/tweets/export?type='+this.state.formatTweets, "_blank");
     }
-    else if (this.state.fieldT==="all"){
+    else if (this.state.fieldT==="not_all"){
       const b = []
       this.state.fieldsTweets.forEach(function (field){
         b.push(field['value'])

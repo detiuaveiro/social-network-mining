@@ -1,11 +1,16 @@
 import React from "react";
-import { Card, CardBody, Row, Col, Badge } from 'reactstrap';
-import {CardInteractions } from 'components';// used for making the prop types of this component
+import { Card, CardBody, CardFooter, Row, Col, Badge } from 'reactstrap';
+import {CardInteractions, Button, RepliesModal } from 'components';// used for making the prop types of this component
 import axios from 'axios';
 
 class Tweet extends React.Component {
-  state ={
-    user_info: {}
+  constructor(props) {
+    super(props);
+    this.state ={
+      user_info: {},
+      modalReply: false,
+    }
+    this.toggleModalReply = this.toggleModalReply.bind(this);
   }
 
   componentDidMount() {
@@ -16,9 +21,15 @@ class Tweet extends React.Component {
       })
   }
 
+  toggleModalReply() {
+    this.setState({
+        modalReply: !this.state.modalReply
+    });
+  }
+
   render() {
     return (
-        <Card style={{minHeight:"280px",maxHeight:"280px"}}>
+        <Card style={{minHeight:"300px",maxHeight:"300px"}}>
           <CardBody>
             <Row>
               <Col xs={12} md={2}>
@@ -72,6 +83,12 @@ class Tweet extends React.Component {
               </Col>
             </Row>
           </CardBody>
+          <CardFooter style={{position: "absolute",bottom: 0}}>
+            <Button color="primary" onClick={this.toggleModalReply}>
+              Replies
+            </Button>
+          </CardFooter>
+          <RepliesModal status={this.state.modalReply} handleClose={this.toggleModalReply} tweetID={this.props.info["id"]}></RepliesModal>
         </Card>
     );
   }

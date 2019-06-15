@@ -46,6 +46,8 @@ import MessageOut from './Message/MessageOut';
 
 import CreateTweet from './CreateTweet/CreateTweet';
 
+import RepliesModal from './Modals/RepliesModal';
+
 export {
     // CardElements
     CardAuthor,
@@ -96,4 +98,6 @@ export {
     MessageOut,
     //CreateTweet
     CreateTweet,
+    //RepliesModal
+    RepliesModal,
 };
