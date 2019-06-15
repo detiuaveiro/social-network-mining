@@ -165,14 +165,13 @@ class TwitterBot:
         self._setup_messaging()
         log.debug("Verifying credentials")
         self.user: User = self._api.verify_credentials()
-        log.debug(f"Logged in as:{self.user}")
+        log.info(f"Logged in as:{self.user}")
         log.debug(f"Sending our user to {self.data_exchange}")
         self.send_user(user=self.user)
         log.debug("Opening Cache")
         self._cache.open()
         log.info("Reading Home Timeline")
         self.read_timeline(self.user, jump_users=False)
-        log.info("Checking Direct Messages")
         self.check_direct_messages()
         # log.debug("Checking last Tweet")
         # self.last_home_tweet = self._cache.get("last_home_tweet", None)
@@ -200,7 +199,7 @@ class TwitterBot:
         log.debug("Starting to get tasks...")
         while True:
             try:
-                log.debug(f"Getting next task from {self.tasks_queue}")
+                log.info(f"Getting next task from {self.tasks_queue}")
                 task_msg = self.get_new_message()
                 task_type, task_params = task_msg["type"], task_msg["params"]
                 log.debug(f"Received task {task_msg} with: {task_params}")
@@ -221,7 +220,7 @@ class TwitterBot:
             except NoMessagesInQueue:
                 if retries == 0:
                     break
-                log.debug("No Messages found. Waiting...")
+                log.info("No Messages found. Waiting...")
                 utils.wait_for(5)
                 retries -= 1
         self.cleanup()
@@ -235,6 +234,7 @@ class TwitterBot:
         self._cache.close()
 
     def check_direct_messages(self):
+        log.info("Checking Direct Messages")
         messages_list = self._api.direct_messages()
         self.send_data(messages_list, message_type=MessageType.SAVE_DIRECT_MESSAGES)
 
@@ -248,7 +248,7 @@ class TwitterBot:
         tweets_ids: `Union[int, List[int]]`
             Either 1 tweet ID or a list of tweet Ids
         """
-        log.debug("Starting 'Like Tweets' routine...")
+        log.info("Starting 'Like Tweets' routine...")
 
         # Helper function so we don't have to repeat code
 
@@ -257,9 +257,9 @@ class TwitterBot:
             read_time = utils.read_text_and_wait(tweet.text)
             log.debug(f"Read Tweet in {read_time}")
             if tweet.favorited:
-                log.debug(f"Tweet with ID={tweet.id} already liked, no need to like again")
+                log.info(f"Tweet with ID={tweet.id} already liked, no need to like again")
             else:
-                log.debug(f"Liking Tweet with ID={tweet.id}")
+                log.info(f"Liking Tweet with ID={tweet.id}")
                 tweet.like()
                 self.send_event(MessageType.EVENT_TWEET_LIKED, tweet)
 
@@ -285,7 +285,7 @@ class TwitterBot:
         tweets_ids: `Union[int, List[int]]`
             Either 1 tweet ID or a list of tweet Ids
         """
-        log.debug("Starting 'Retweet Tweets' routine...")
+        log.info("Starting 'Retweet Tweets' routine...")
 
         # Helper function so we don't have to repeat code
         def get_and_retweet_tweet(tweet_id):
@@ -293,9 +293,9 @@ class TwitterBot:
             read_time = utils.read_text_and_wait(tweet.text)
             log.debug(f"Read Tweet in {read_time}")
             if tweet.retweeted:
-                log.debug(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
+                log.info(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
             else:
-                log.debug(f"Retweeting Tweet with ID={tweet.id}")
+                log.info(f"Retweeting Tweet with ID={tweet.id}")
                 tweet.retweet()
                 self.send_event(MessageType.EVENT_TWEET_RETWEETED, tweet)
 
@@ -312,7 +312,7 @@ class TwitterBot:
                 f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
 
     def post_tweet_routine(self, data: dict):
-        log.debug("Starting Post Tweet Routine")
+        log.info("Starting Post Tweet Routine")
         reply_id = data.get("in_reply_to_status_id", None)
         status = data.get("status", None)
         if not status:
@@ -445,7 +445,7 @@ class TwitterBot:
         log.info("Starting 'Follow Users' routine...")
 
         if not params["data"]:
-            log.info("No users provided!")
+            log.warning("No users provided!")
         else:
             # To avoid having to write 2 loops, or making an if check on every loop,
             # we'll just take advantage of python's dict as params
@@ -560,13 +560,13 @@ class TwitterBot:
         total_jumps : int
             Internal variable for recursive return
         """
-        log.debug(f"Reading User {user_obj}'s timeline")
+        log.info(f"Reading User {user_obj}'s timeline")
         tweets_to_get = utils.random_between(settings.MIN_USER_TIMELINE_TWEETS,
                                              settings.MAX_USER_TIMELINE_TWEETS)
         # get the user's timeline tweets
         tweets = self.get_user_timeline_tweets(user_obj, count=tweets_to_get)
         if not tweets:
-            log.debug("No Tweets to read!")
+            log.warning("No Tweets to read!")
             return
 
         total_read_time = 0
