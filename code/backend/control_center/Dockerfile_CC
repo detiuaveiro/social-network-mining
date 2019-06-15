@@ -1,7 +1,19 @@
 FROM python:latest
 
-COPY . /
+COPY requirements_CC.txt /
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements_CC.txt
+
+COPY send.py /
+COPY ./Enums /Enums
+COPY ./Mongo /Mongo
+COPY ./Postgres /Postgres
+COPY ./Neo4j /Neo4j
+COPY ./PDP /PDP
+COPY ./PEP /PEP
+COPY policy_api.py /
+COPY settings.py /
+COPY task.py /
+COPY rabbitmq.py /
 
 CMD [ "python", "-u", "rabbitmq.py" ]
