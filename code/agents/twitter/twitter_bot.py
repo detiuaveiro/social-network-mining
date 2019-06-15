@@ -20,6 +20,62 @@ log = logging.getLogger("bot-agents")
 log.setLevel(logging.DEBUG)
 
 
+def reconnect_messagging(_func=None,*, max_times=5):
+    def decorator(func):
+        def wrapper(self, *args, **kwargs):
+            for current_reconnect in range(max_times):
+                try:
+                    return func(self, *args, **kwargs)
+                except pyrabbit2.http.NetworkError as e:
+                    log.error("Unable to retrieve a message. Retrying...")
+                    # if we reach the maximum number of retries, just end the program
+                    # In theory, this shouldn't happen
+                    if current_reconnect == max_times:
+                        raise e
+                    # recreate the instance
+                    self.messaging = Client(api_url=os.environ.get("SERVER_HOST", "127.0.0.1"),
+                                            user=settings.RABBIT_USERNAME,
+                                            passwd=settings.RABBIT_PASSWORD)
+        wrapper.__name__ = func.__name__
+        wrapper.__doc__ = func.__doc__
+        return wrapper
+
+    if _func is None:
+        return decorator
+    else:
+        return decorator(_func)
+
+def log_account_suspended(_func=None,**d_kwargs):
+    def decorator(func):
+        def wrapper(self, *args, **kwargs):
+            try: 
+                return func(self, *args, **kwargs)
+            except tweepy.error.TweepError as e:
+                # Log the error
+                log.warning(f"TweepyError with code=<{e.api_code}> and reason=<{e.reason}>, {e}")
+                # if it was an error code of account suspended, send a log
+                if e.api_code == 63 or e.api_code == 64 or e.api_code == 326:
+                    payload = {
+                        "type"     : MessageType.EVENT_USER_SUSPENDED,
+                        "bot_id"   : self._id,
+                        "timestamp": utils.current_time(),
+                        "data"     : {
+                            "code": e.api_code,
+                            "msg" : e.reason
+                        },
+                    }
+                    self.messaging.publish(vhost=self.vhost, xname=self.log_exchange,
+                                           rt_key=self.log_routing_key,
+                                           payload=utils.to_json(payload))
+                raise e
+        wrapper.__name__ = func.__name__
+        wrapper.__doc__ = func.__doc__
+        return wrapper
+    if _func is None:
+        return decorator
+    else:
+        return decorator(_func)
+
 class TwitterBot:
     def __init__(self, bot_id, messaging_manager: Client, api: tweepy.API):
         self._id = bot_id
@@ -50,6 +106,7 @@ class TwitterBot:
     def __repr__(self):
         return f"<TwitterBot id={self._id}, messaging_manager={self.messaging}, api={self._api}>"
 
+    @reconnect_messagging(max_times=settings.MAX_RABBIT_RETRIES)
     def _setup_messaging(self):
         """
             Private method for setuping the messaging connections
@@ -93,7 +150,7 @@ class TwitterBot:
         log.info(
             f"Connected to Messaging Service using: exchange={self.data_exchange}")
         log.info("Ready to: Upload Data")
-
+    @log_account_suspended
     def _setup(self):
         """
             Private method for setting up. Includes setting the messagging queues, checking if the credentials are valid
@@ -115,7 +172,7 @@ class TwitterBot:
         # log.debug("Checking last Tweet")
         # self.last_home_tweet = self._cache.get("last_home_tweet", None)
         # log.debug(f"Last Tweet was: <{self.last_home_tweet}>")
-
+    @reconnect_messagging(max_times=settings.MAX_RABBIT_RETRIES)
     def get_new_message(self):
         """
             Helper message to get a new message from the tasks queue
@@ -126,6 +183,7 @@ class TwitterBot:
             return utils.from_json(msg[0]["payload"])
         raise NoMessagesInQueue("Queue has no messages left!")
 
+    @log_account_suspended
     def run(self):
         """
         Loop of the bot.
@@ -160,23 +218,6 @@ class TwitterBot:
                 log.debug("No Messages found. Waiting...")
                 utils.wait_for(5)
                 retries -= 1
-            except tweepy.error.TweepError as e:
-                # if it was an error code of account suspended, send a log
-                if e.api_code == 63 or e.api_code == 64:
-                    payload = {
-                        "type"     : MessageType.EVENT_USER_SUSPENDED,
-                        "bot_id"   : self._id,
-                        "timestamp": utils.current_time(),
-                        "data"     : {
-                            "code": e.api_code,
-                            "msg" : e.reason
-                        },
-                    }
-                    self.messaging.publish(vhost=self.vhost, xname=self.log_exchange,
-                                           rt_key=self.log_routing_key,
-                                           payload=utils.to_json(payload))
-                # Log the error
-                log.warning(f"TweepyError with code=<{e.api_code}> and reason=<{e.reason}>, {e}")
         self.cleanup()
 
     def cleanup(self):
@@ -637,28 +678,13 @@ class TwitterBot:
         self._send_message(data.to_json(), message_type=message_type,
                            routing_key=self.log_routing_key,
                            exchange=self.log_exchange)
-
-    def _send_message(self, data, *, message_type: MessageType, routing_key: str, exchange: str,
-                      current_reconnect=0):
+    @reconnect_messagging(max_times=settings.MAX_RABBIT_RETRIES)
+    def _send_message(self, data, *, message_type: MessageType, routing_key: str, exchange: str):
         log.debug(
             f"Sending <{message_type.name}> to exchange [{exchange}] with routing_key [{routing_key}]")
         payload = utils.wrap_message(data, bot_id=self._id, message_type=message_type)
-        try:
-            self.messaging.publish(vhost=self.vhost, xname=exchange, rt_key=routing_key,
-                                   payload=utils.to_json(payload))
-        except pyrabbit2.http.NetworkError as e:
-            log.error("Unable to send a message. Retrying...")
-            # if we reach the maximum number of retries, just end the program
-            # In theory, this shouldn't happen
-            if current_reconnect == settings.MAX_RABBIT_RETRIES:
-                raise e
-            # recreate the instant
-            self.messaging = Client(api_url=os.environ.get("SERVER_HOST", "127.0.0.1"),
-                                    user=settings.RABBIT_USERNAME,
-                                    passwd=settings.RABBIT_PASSWORD)
-            # try to resend the message
-            self._send_message(data, message_type=message_type, routing_key=routing_key,
-                               exchange=exchange, current_reconnect=current_reconnect + 1)
+        self.messaging.publish(vhost=self.vhost, xname=exchange, rt_key=routing_key,
+                               payload=utils.to_json(payload))
 
 
 def parse_args():
