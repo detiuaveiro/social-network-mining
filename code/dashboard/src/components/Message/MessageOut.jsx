@@ -8,7 +8,6 @@ class MessageOut extends React.Component {
   }
 
   componentDidMount() {
-    console.log(this.props.message)
   }
 
   render() {

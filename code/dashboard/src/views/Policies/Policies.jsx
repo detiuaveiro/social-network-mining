@@ -109,7 +109,7 @@ class Policies extends React.Component {
   }
 
   savePolicy(data) {
-    axios.post(process.env.API_URL+'policies/add', data)
+    axios.post('http://192.168.85.182:5000/policies/add', data)
       .then((response) => {
         this.refresh(response.status===200 ? "ADD" : "ERROR",response.data['Message'])
       })
