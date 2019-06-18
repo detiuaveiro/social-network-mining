@@ -1,0 +1,18 @@
+#Stop and remove previous elasticsearch instances
+docker stop elasticsearch
+docker rm elasticsearch
+
+#Pull elasticsearch image for docker
+docker pull docker.elastic.co/elasticsearch/elasticsearch:7.1.1
+
+#Create a running container for Elasticsearch
+docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:7.1.1
+
+#Stop and remove previous logstash containers plus any previous custom built images of the logstash
+docker stop logstash
+docker rm logstash
+docker image rm logstash:latest
+
+#Build the custom image with the provided Dockerfile and run it in a container
+docker build --tag logstash ../
+docker run -d --name logstash logstash:latest

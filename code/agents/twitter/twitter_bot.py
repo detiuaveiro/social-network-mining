@@ -47,39 +47,6 @@ def reconnect_messagging(_func=None, *, max_times=5):
         return decorator(_func)
 
 
-def log_account_suspended(_func=None, **d_kwargs):
-    def decorator(func):
-        def wrapper(self, *args, **kwargs):
-            try:
-                return func(self, *args, **kwargs)
-            except tweepy.error.TweepError as e:
-                # Log the error
-                log.warning(f"TweepyError with code=<{e.api_code}> and reason=<{e.reason}>, {e}")
-                # if it was an error code of account suspended, send a log
-                if e.api_code == 63 or e.api_code == 64 or e.api_code == 326:
-                    payload = {
-                        "type"     : MessageType.EVENT_USER_SUSPENDED,
-                        "bot_id"   : self._id,
-                        "timestamp": utils.current_time(),
-                        "data"     : {
-                            "code": e.api_code,
-                            "msg" : e.reason
-                        },
-                    }
-                    self.messaging.publish(vhost=self.vhost, xname=self.log_exchange,
-                                           rt_key=self.log_routing_key,
-                                           payload=utils.to_json(payload))
-
-        wrapper.__name__ = func.__name__
-        wrapper.__doc__ = func.__doc__
-        return wrapper
-
-    if _func is None:
-        return decorator
-    else:
-        return decorator(_func)
-
-
 class TwitterBot:
     def __init__(self, bot_id, messaging_manager: Client, api: tweepy.API):
         self._id = bot_id
@@ -109,6 +76,27 @@ class TwitterBot:
 
     def __repr__(self):
         return f"<TwitterBot id={self._id}, messaging_manager={self.messaging}, api={self._api}>"
+
+    def _send_error_log(self,e):
+        # Log the error
+        log.warning(f"TweepyError with code=<{e.api_code}> and reason=<{e.reason}>, {e}")
+        # if it was an error code of account suspended, send a log
+        if e.api_code == 63 or e.api_code == 64 or e.api_code == 326:
+            payload = {
+                "type"     : MessageType.EVENT_USER_SUSPENDED,
+                "bot_id"   : self._id,
+                "timestamp": utils.current_time(),
+                "data"     : {
+                    "code": e.api_code,
+                    "msg" : e.reason
+                },
+            }
+            self.messaging.publish(vhost=self.vhost, xname=self.log_exchange,
+                                   rt_key=self.log_routing_key,
+                                   payload=utils.to_json(payload))
+
+
+
 
     @reconnect_messagging(max_times=settings.MAX_RABBIT_RETRIES)
     def _setup_messaging(self):
@@ -188,7 +176,6 @@ class TwitterBot:
             return utils.from_json(msg[0]["payload"])
         raise NoMessagesInQueue("Queue has no messages left!")
 
-    @log_account_suspended
     def run(self):
         """
         Loop of the bot.
@@ -223,6 +210,8 @@ class TwitterBot:
                 log.info("No Messages found. Waiting...")
                 utils.wait_for(5)
                 retries -= 1
+            except tweepy.error.TweepError as e:
+                self._send_error_log(e)
         self.cleanup()
 
     def cleanup(self):
