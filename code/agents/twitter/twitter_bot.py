@@ -143,7 +143,6 @@ class TwitterBot:
             f"Connected to Messaging Service using: exchange={self.data_exchange}")
         log.info("Ready to: Upload Data")
 
-    @log_account_suspended
     def _setup(self):
         """
             Private method for setting up. Includes setting the messagging queues, checking if the credentials are valid
