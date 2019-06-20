@@ -330,6 +330,8 @@ class PDP:
                         threshold += PENALTY_LIKED_RECENTLY_LARGE
                     elif (now - date).seconds < PENALTY_LIKED_RECENTLY_SMALL_INTERVAL:
                         threshold += PENALTY_LIKED_RECENTLY_SMALL
+        if threshold<0:
+            threshold=0
         print(threshold)
         return threshold
 
@@ -421,6 +423,8 @@ class PDP:
                     # 12h -> 43200s
                     if (now - date).seconds < PENALTY_RETWEETED_USER_RECENTLY_INTERVAL:
                         threshold += PENALTY_RETWEETED_USER_RECENTLY
+        if threshold<0:
+            threshold=0
         print(threshold)
         return threshold
 

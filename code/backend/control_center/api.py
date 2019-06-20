@@ -148,8 +148,17 @@ def tt_network():
 
 @app.route("/twitter/network/export", methods=['GET'])
 def export_network():
-    fi=neo.export_network()
-    return send_file(fi,attachment_filename="file.csv")
+    if request.method=="GET":
+        exportype=request.args.get('type')
+        if exportype is None:
+            fi=neo.export_network()
+        elif exportype=="csv":
+            fi=neo.export_network()
+        else:
+            fi=neo.export_network(export=exportype)
+    else:
+        return app.response_class(response=json.dumps({"Error":"Method not allowed"}),status=405,mimetype='application/json')
+    return str(fi)#send_file(fi,attachment_filename="file.csv")
 
 @app.route("/twitter/policies")
 def tt_policies():

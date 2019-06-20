@@ -179,10 +179,10 @@ class Neo4jAPI():
             result=session.run("match (r)-[FOLLOWS]->(b { id:$id } ) return r.id",id=user_id)
             return result.values()
 
-    def export_network(self):
+    def export_network(self,export="csv"):
         with self._driver.session() as session:
-            session.run("call apoc.export.csv.query('match (b)-[r:FOLLOWS]->(u) return b.id,b.name,b.username,type(r),u.id,u.name,u.username;','file.csv',{})")
-        os.system("scp alunos@192.168.85.187:/home/alunos/neo4j/import/file.csv /home/alunos/")
-        data="/home/alunos/file.csv"
-        return data
-            
+            if export=="csv":
+                val=session.run("call apoc.export.csv.query('match (b)-[r:FOLLOWS]->(u) return b.id,b.name,b.username,type(r),u.id,u.name,u.username;','file.csv',{})")
+            else:
+                val=session.run("CALL apoc.export.graphml.all('complete-graph.graphml', {useTypes:true, storeNodeIds:false})")
+        return val.values()
