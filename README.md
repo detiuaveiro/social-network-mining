@@ -29,9 +29,12 @@ Créditos da template: https://www.creative-tim.com/product/now-ui-dashboard-rea
 
 
 # Control Center
+## Postgresql
+### Istallation
+
 | Arch Linux | Debian |
 | ---------- | ------ |
-| sudo pacman -S postgresql | sudo apt update; sudo apt install postgresql postgresql-contrib
+| `sudo pacman -S postgresql` | `sudo apt update; sudo apt install postgresql postgresql-contrib`
  |
 
  ```bash
@@ -42,14 +45,28 @@ Créditos da template: https://www.creative-tim.com/product/now-ui-dashboard-rea
  $ sudo systemctl enamble postgresql   
  ```
 
-
+### Run database server and create credentials
  ```bash
  $ sudo su postgres -c psql
  ```
-
- (depois no servidor mudar isto obviamente)
  ```postgres
- # CREATE USER admin WITH PASSWORD 'admin';
- # ALTER ROLE admin WITH CREATEDB; 
- # CREATE DATABASE control;
+ # CREATE USER postgres WITH PASSWORD 'password';
+ # ALTER ROLE postgres WITH CREATEDB; 
+ # CREATE DATABASE policies;
+ # CREATE DATABASE postgres;
+ ```
+
+## Mongo
+### Installation
+| Arch Linux | Debian |
+| ---------- | ------ |
+| `yay mongo` | [tutorial](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
+
+```bash
+ $ sudo systemctl enable mongodb
+```
+
+### Run database server and create credentials
+ ```bash
+ $ mongo
  ```
