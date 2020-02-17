@@ -26,3 +26,30 @@ Créditos da template: https://www.creative-tim.com/product/now-ui-dashboard-rea
 ### Usage
 
 ` python3 insta.py `
+
+
+# Control Center
+| Arch Linux | Debian |
+| ---------- | ------ |
+| sudo pacman -S postgresql | sudo apt update; sudo apt install postgresql postgresql-contrib
+ |
+
+ ```bash
+ $ sudo mkdir /var/lib/postgres/data
+ $ sudo chown postgres /var/lib/postgres/data
+ $ sudo -i -u postgres
+ $ initdb  -D '/var/lib/postgres/data'
+ $ sudo systemctl enamble postgresql   
+ ```
+
+
+ ```bash
+ $ sudo su postgres -c psql
+ ```
+
+ (depois no servidor mudar isto obviamente)
+ ```postgres
+ # CREATE USER admin WITH PASSWORD 'admin';
+ # ALTER ROLE admin WITH CREATEDB; 
+ # CREATE DATABASE control;
+ ```
