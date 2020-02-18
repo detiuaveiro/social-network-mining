@@ -70,3 +70,25 @@ Créditos da template: https://www.creative-tim.com/product/now-ui-dashboard-rea
  ```bash
  $ mongo
  ```
+
+## Neo4j
+### Installation
+| Arch Linux | Debian |
+| ---------- | ------ |
+| [tutorial](https://neo4j.com/developer/docker-run-neo4j/) | [tutorial](https://neo4j.com/docs/operations-manual/current/installation/linux/)
+
+ - On Debian:
+```bash
+ $ sudo systemctl enable neo4j
+```
+
+ - On Arch Linux:
+ ```bash
+ $ docker run neo4j
+ ```
+
+### Run database server and create credentials
+ ```bash
+ $ neo4j console 
+ $ cypher-shell            # to set new password
+ ```
