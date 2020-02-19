@@ -4,6 +4,8 @@ from elasticsearch_dsl import Search
 class _ElasticSearchService:
 
     def __init__(self):
+        #The Search object represents the entire search request. From this object we'll be able to query and perform aggregations.
+        # The index parameter allows you to choose how the data is indexed
         self.__tweets = Search(index='tweets')
         self.__users = Search(index='users')
         self.__tweetstats = Search(index='tweetstats')

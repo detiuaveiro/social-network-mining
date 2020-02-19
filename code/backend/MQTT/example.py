@@ -24,7 +24,8 @@ body={
         "id": 1122,
         "text": "texto 12345",
     },
-    }
+}
+
 #send message
 cl.publish('PI', 'BOTS_MESSAGES', 'API', payload=json.dumps(body),payload_enc='string')
 
@@ -43,6 +44,8 @@ class MessagingWrapper:
         cl.create_vhost(self.vhost)
     
     def get_messages(self, queue):
+        #Omfg
+        pass
         
 
     def publish(self, queue, exchange, data):
