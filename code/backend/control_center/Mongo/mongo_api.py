@@ -9,6 +9,9 @@ handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
 
+### Mongo API
+# Class used to establish connection to a Mongo Server
+# Does all basic CRUD methods
 class MongoAPI():
     def __init__(self):
         log.debug("Connecting to MongoDB")

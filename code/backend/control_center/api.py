@@ -263,7 +263,7 @@ def tt_bots_by_id(id):
     val = neo.search_bot_by_id(id)
     return jsonify(val)
 
-
+## Like, if lim is None, goes for the TypeError, he has an if but never actually changes, and when establishing the lim, RIP
 @app.route("/twitter/bots/<id>/logs")
 def tt_bot_logs(id):
     lim = request.args.get("limit")
