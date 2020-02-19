@@ -1,6 +1,6 @@
 beautifulsoup4==4.7.1
 certifi==2019.3.9
-chardet==3.0.4
+chardet, tu agora á tarde
 cssselect==1.0.3
 idna==2.8
 lxml==4.3.3
