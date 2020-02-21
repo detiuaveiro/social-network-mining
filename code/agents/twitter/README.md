@@ -109,9 +109,41 @@ Existem 4 sistemas de mensagens
 <a name="models"></a>
 ## models.py
 <a name="timeline"></a>
+ - Onde se encontram definidas algumas das entidades do twitter:
+   - User
+     - é um bocado estranho, mas este user é criado usando uma API, que vem do tweepy, e que contém o nosso utilizador (o nosso bot, ou seja, o utilizador autenticado). Depois, há campos como user_id, que são sobre o utilizador que estamos a analisar.
+     - `timeline`: permite obter a lista com os tweets do user que se está a analisar, da sua timeline do twitter 
+     - `friends`: permite obter uma lista de objetos User, que são os amigos do user que estamos a analisar (quem é que este segue)
+     - `followers`: permite obter uma lista de objetos User, que seguem o user que estamos a analisar
+     - `follow`: seguir alguém 
+     - `unfollow`: deixar de seguir alguém (dado o user id desse alguém)
+   - Tweet
+   - DirectMessage
+
+
 - timeline():
     1. Obter a timeline de um user (user id passado por argumennto a uma função da API do twitter)
 
+
+<a name="models"></a>
+## api.py
+<a name="timeline"></a>
+ - É apenas um wrapper para o Tweepy
+ - Métodos:
+   - user_timeline
+   - followers
+   - create_friendship
+   - destroy_friendship
+   - retweet
+   - create_favourite
+   - destroy_favorite
+   - verify_credentials
+   - get_status
+   - get_user
+   - home_timeline
+   - lookup_users
+   - direct_messages
+   - update_status
 
 
 <a name="cache"></a>

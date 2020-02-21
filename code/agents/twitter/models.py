@@ -154,7 +154,7 @@ class User(BaseModel):
 	suspended: bool = False
 
 	def __repr__(self):
-		return f"<User id={self.id}, screen_name={self.screen_name}, name={self.name}, followers={self.followers_count}, following={self.following}>"
+		return f"<User id={self.id}, screen_name={self.screen_name}, name={self.name}, followers={self.followers_count}, following={self.following}> "
 
 	def __str__(self):
 		return f"<User id={self.id}, screen_name={self.screen_name}, name={self.name}, followers={self.followers_count}, following={self.following}>"
