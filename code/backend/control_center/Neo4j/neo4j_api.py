@@ -5,6 +5,8 @@ import sys
 import settings
 
 
+#OMFG TOU MAD Q FODE, estes fdps criaram a classe Neo4jTypes no ficheiro enums.py e depois em vez de a importarem VOLTARAM A CRIA-LA AQUI
+#FODASSE
 class Neo4jTypes(IntEnum):
 	CREATE_BOT = 1
 	CREATE_USER = 2
@@ -32,6 +34,9 @@ class Neo4jAPI:
 	def close(self):
 		self._driver.close()
 
+	#Basically o q eles fizeram aqui foi criar uma wrapper function - task - que vai receber o tipo da query que queremos fazer
+	# e os dados necessarios, e vai chamar a funçao apropriada.
+	# Sooo tipo algumas task são marcadas como transactions mas outras não...agora why idfk. A minha guess é que as Tasks são as ações que os Bots podem realizar
 	def task(self, query_type, data):
 		with self._driver.session() as session:
 			if query_type == Neo4jTypes.CREATE_BOT:

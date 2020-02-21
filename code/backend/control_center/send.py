@@ -1,6 +1,8 @@
 import pika
 import json
-
+## Excuse me what?
+# Did they deadass make a class just to send shit?
+# Literally why tho
 class RabbitSend():
     def __init__(self, host, port, vhost, username, password):
         self.host = host
