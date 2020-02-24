@@ -194,7 +194,7 @@ def tt_policies():
     mapa = policy.getPoliciesByAPI("Twitter")
     return jsonify(mapa)
 
-# Used to create a new
+# Used to create a new tweeter post
 
 @app.route("/twitter/create", methods=['POST'])
 def tt_create():
