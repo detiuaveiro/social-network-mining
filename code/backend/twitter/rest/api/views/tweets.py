@@ -6,7 +6,14 @@ import api.queries as queries
 
 
 @api_view(["GET"])
-def twitter_tweets(request, limit):
+def twitter_tweets(request, limit=None):
+	"""
+	Function to return all tweets within a given limit (if no limit is given, it returns all saved tweets)
+
+	Keyword arguments:
+	limit: defines how many tweets to return
+	"""
+
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
