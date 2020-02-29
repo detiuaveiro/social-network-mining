@@ -32,6 +32,12 @@ def twitter_tweets_stats(request):
 
 @api_view(["GET"])
 def twitter_tweet(request, id):
+	"""
+	Returns a list of all tweetes with the given id
+
+	Keyword arguments
+	id: tweet id (in terms of the Tweet objects saved on the mongo db, it corresponds to str_id)
+	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
