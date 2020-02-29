@@ -30,8 +30,21 @@ def twitter_tweets_stats(request):
 	return None
 
 
+@api_view(["GET"])
 def twitter_tweet(request, id):
-	return None
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.twitter_tweet(int(id))
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages,
+						   success_messages=success_messages, status=status)
 
 
 def twitter_tweet_stats(request, id):

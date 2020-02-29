@@ -2,7 +2,8 @@ from django.db import models
 
 
 class Tweet(models.Model):
-	id = models.IntegerField(primary_key=True)
+	id = models.IntegerField(primary_key=True, db_column="_id")
+	tweet_id = models.IntegerField(db_column="id")
 	user = models.TextField()
 	is_quote_status = models.BooleanField()
 	quoted_status_id = models.IntegerField(null=True, blank=True)
