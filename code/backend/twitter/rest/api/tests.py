@@ -8,3 +8,6 @@ postgres = TestPostgres.objects.create(x=2, y=2)
 
 assert mongo == TestMongo.objects.get(x=2, y=2)
 assert postgres == TestPostgres.objects.get(x=2, y=2)
+
+mongo.delete()
+postgres.delete()
