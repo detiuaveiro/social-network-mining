@@ -11,7 +11,7 @@ def twitter_tweets(request, limit):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_tweets(int(limit) if limit.isdigit() else None)
+	success, data, message = queries.twitter_tweets(int(limit) if limit and limit.isdigit() else None)
 	if success:
 		success_messages.append(message)
 	else:
