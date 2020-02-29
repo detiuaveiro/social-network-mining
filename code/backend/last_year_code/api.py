@@ -14,7 +14,7 @@ mongo = AppMongo(app, "users")  # Mongo App for users
 mongo_t = AppMongo(app, "tweets")  # Mongo App for tweets
 postgres = postgreSQL_API("postgres")  # Postgres App (db name - postgres)
 policy = postgreSQL_API("policies")  # Postgres App (db name - policies)
-neo = Neo4jAPI()  # Neo4j App
+# neo = Neo4jAPI()  # Neo4j App
 elas = getESService()  # ElasticSearch App
 """/
     users
@@ -305,6 +305,7 @@ def tt_tweets():
             return app.response_class(json.dumps({"Error": "Limit must be an integer!"}), status=400,
                                       mimetype="application/json")
     for i in mapa:
+        print(i)
         i["id"] = str(i["id"])
         i["user"] = str(i["user"])
         if i["is_quote_status"]:
