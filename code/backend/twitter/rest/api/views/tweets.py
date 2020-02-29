@@ -1,28 +1,25 @@
-from ..
+from rest_framework.decorators import api_view
+from rest_framework.status import *
 
-def twitter_tweets(request):
-	lim = request.args.get("limit")
-	if lim is None:
-		mapa = mongo_t.twitterCollection()
+from api.views.utils import create_response
+import api.queries as queries
+
+
+@api_view(["GET"])
+def twitter_tweets(request, limit):
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.twitter_tweets(int(limit) if limit.isdigit() else None)
+	if success:
+		success_messages.append(message)
 	else:
-		try:
-			lim = int(lim)
-			mapa = mongo_t.twitterCollection(limite=lim)
-		except TypeError:
-			return app.response_class(json.dumps({"Error": "Limit must be an integer!"}), status=400,
-									  mimetype="application/json")
-	for i in mapa:
-		i["id"] = str(i["id"])
-		i["user"] = str(i["user"])
-		if i["is_quote_status"]:
-			try:
-				i["quoted_status_id"] = str(i["quoted_status_id"])
-			except KeyError:
-				pass
-		if type(i["in_reply_to_screen_name"]) is str:
-			i["in_reply_to_user_id"] = str(i["in_reply_to_user_id"])
-			i["in_reply_to_status_id"] = str(i["in_reply_to_status_id"])
-	return jsonify(mapa)
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages,
+						   success_messages=success_messages, status=status)
 
 
 def twitter_tweets_export(request):
