@@ -1,6 +1,9 @@
 from pymongo import MongoClient
 import logging
 import sys
+import json
+import csv
+import datetime
 
 sys.path.append("..")
 import credentials
@@ -28,7 +31,7 @@ class MongoAPI:
         self.tweets = self.client.snm_mongo.tweets
         self.messages = self.client.snm_mongo.messages
 
-    #TODO - IMPLEMENT ME PLEASE!
+    # TODO - IMPLEMENT ME PLEASE!
     def verify_integrity(self, collection, document):
         """Verifies if the document to be inserted has the same structure as the other documents in the collection
         
@@ -39,7 +42,7 @@ class MongoAPI:
         pass
 
     def get_count(self, collection, data={}):
-        """Gets the totl number of documents in a given collection
+        """Gets the total number of documents in a given collection
         
         @param collection: The collection we want to count the documents in
         @param data: The params we want the counted documents to have. By default it counts all documents
@@ -47,7 +50,9 @@ class MongoAPI:
         """
         if collection not in ["users", "tweets", "messages"]:
             log.info("ERROR GETTING DOCUMENT COUNT")
-            log.debug("Error: ", "Unknown Collection. Please use users, tweets or messages")
+            log.debug(
+                "Error: ", "Unknown Collection. Please use users, tweets or messages"
+            )
         else:
             try:
                 if collection == "users":
@@ -72,24 +77,6 @@ class MongoAPI:
             log.info("ERROR INSERTING DOCUMENT")
             log.debug("Error: ", e)
 
-    def search_users(self, query={}, single=False):
-        """Searches the Users collection by a given search query
-        
-        @param query: The search query we're using. By default it finds all documents
-        @param single: Whether we want to search only for one document or for all that match the query. By default we search for all
-        @return: The search result
-        """
-        try:
-            if single:
-                result = self.users.find_one(query)
-            else:
-                result = list(self.users.find(query))
-
-            return result
-        except Exception as e:
-            log.info("ERROR SEARCHING FOR DOCUMENT")
-            log.debug("Error: ", e)
-
     def insert_tweets(self, data):
         """Inserts a new single document into our Tweets Collection
         
@@ -100,24 +87,6 @@ class MongoAPI:
             log.debug("INSERT SUCCESFUL")
         except Exception as e:
             log.info("ERROR INSERTING DOCUMENT")
-            log.debug("Error: ", e)
-
-    def search_tweets(self, query={}, single=False):
-        """Searches the Tweets collection by a given search query
-        
-        @param query: The search query we're using. By default it finds all documents
-        @param single: Whether we want to search only for one document or for all that match the query. By default we search for all
-        @return: The search result
-        """
-        try:
-            if single:
-                result = self.tweets.find_one(query)
-            else:
-                result = list(self.tweets.find(query))
-
-            return result
-        except Exception as e:
-            log.info("ERROR SEARCHING FOR DOCUMENT")
             log.debug("Error: ", e)
 
     def insert_messages(self, data):
@@ -132,66 +101,142 @@ class MongoAPI:
             log.info("ERROR INSERTING DOCUMENT")
             log.debug("Error: ", e)
 
-    def search_messages(self, query={}, single=False):
-        """Searches the Messages collection by a given search query
+    def search(
+        self,
+        collection,
+        query={},
+        fields=None,
+        single=False,
+        export_type=None,
+        export_name=None,
+    ):
+        """Searches the a collection by a given search query. Can also export to a json or csv
         
+        @param collection: Specifies the collection we want to query
         @param query: The search query we're using. By default it finds all documents
+        @param fields: Specifies the fields we want to show on the query result
         @param single: Whether we want to search only for one document or for all that match the query. By default we search for all
+        @param export_type: Specifies whether or not to export the result. Can either be None, json or csv
+        @param export_name: Specifies the path where to export to.
         @return: The search result
         """
+        if collection not in ["users", "tweets", "messages"]:
+            log.info("ERROR SEARCHING FOR DOCUMENTS")
+            log.debug(
+                "Error: ", "Unknown Collection. Please use users, tweets or messages"
+            )
+
+            return
+
         try:
-            if single:
-                result = self.tweets.find_one(query)
+            if fields is not None:
+                projection = {"_id": False}
+                for i in fields:
+                    projection[i] = True
             else:
-                result = list(self.tweets.find(query))
+                projection = None
+
+            if single:
+                if collection == "tweets":
+                    result = list(self.tweets.find_one(query, projection))
+                if collection == "messages":
+                    result = list(self.messages.find_one(query, projection))
+                if collection == "users":
+                    result = list(self.users.find_one(query, projection))
+            else:
+                if collection == "tweets":
+                    result = list(self.tweets.find(query, projection))
+                if collection == "messages":
+                    result = list(self.messages.find(query, projection))
+                if collection == "users":
+                    result = list(self.users.find(query, projection))
+
+            # Optionally export result
+            if export_type is not None:
+                if export_name is None:
+                    export_name = (
+                        "../export_results/"
+                        + export_type
+                        + "/mongo_"
+                        + collection
+                        + "_"
+                        + str(datetime.datetime.now()).replace(" ", "_")
+                    )
+                    export_name = (
+                        export_name + ".json"
+                        if export_type == "json"
+                        else export_name + ".csv"
+                    )
+
+                self.__export_data(result, export_name, export_type)
 
             return result
         except Exception as e:
             log.info("ERROR SEARCHING FOR DOCUMENT")
             log.debug("Error: ", e)
 
+    def __export_data(self, data, export_name, export_type):
+        """Exports a given array of documents into a csv or json
+        
+        @param data: An array of documents to export
+        @param export_name: The file path we want to export to
+        @param export_type: The type of the file we want to export to
+        """
+        if export_type == "json":
+            with open(export_name, "w") as writer:
+                json.dump(data, writer, default=str)
+
+        elif export_type == "csv":
+            # Get the values
+            if len(data) != 0:
+                field_names = list(data[0].keys())
+            else:
+                field_names = []
+
+            with open(export_name, "w") as csv_file:
+                writer = csv.DictWriter(csv_file, fieldnames=field_names)
+
+                writer.writeheader()
+
+                for row in data:
+                    writer.writerow(row)
+
+        else:
+            log.info("ERROR EXPORTING RESULT")
+            log.debug(
+                "Error: ", "Specified export type not supported. Please use json or csv"
+            )
 
 
-#if __name__ == "__main__":
-#    mongo = MongoAPI()
-#
-#    #Inserting a document
-#    mongo.insert_tweets({"name": "ds"})
-#    mongo.insert_users({"name": "ds"})
-#    mongo.insert_messages({"name": "ds"})
-#
-#    #Verifying the document was inserted
-#    print(mongo.search_messages())
-#    print(mongo.search_tweets())
-#    print(mongo.search_users())
-#
-#    #Inserting a duplicate document
-#    mongo.insert_tweets({"name": "ds"})
-#    mongo.insert_users({"name": "ds"})
-#    mongo.insert_messages({"name": "ds"})
-#
-#    #Inserting a new document
-#    mongo.insert_tweets({"name": "escal"})
-#    mongo.insert_users({"name": "escal"})
-#    mongo.insert_messages({"name": "escal"})
-#
-#    #Verifying the documents were inserted
-#    print(mongo.search_messages())
-#    print(mongo.search_tweets())
-#    print(mongo.search_users())
-#
-#    #Verifying the Search functions
-#    print(mongo.search_messages({"name":"ds"}))
-#    print(mongo.search_tweets({"name":"escal"}))
-#    print(mongo.search_users({"name":"ds"}))
-#
-#    print(mongo.search_messages({"name":"ds"}, True))
-#    print(mongo.search_tweets({"name":"escal"}, True))
-#    print(mongo.search_users({"name":"ds"}, True))
-#
-#    print(mongo.get_count("users"))
-#    print(mongo.get_count("tweets"))
-#    print(mongo.get_count("messages", {"name": "ds"}))
+if __name__ == "__main__":
+    mongo = MongoAPI()
+    #
+    #    #Inserting a document
+    #    mongo.insert_tweets({"name": "ds"})
+    #    mongo.insert_users({"name": "ds"})
+    #    mongo.insert_messages({"name": "ds"})
+    #
+    #    #Inserting a duplicate document
+    #    mongo.insert_tweets({"name": "ds"})
+    #    mongo.insert_users({"name": "ds"})
+    #    mongo.insert_messages({"name": "ds"})
+    #
+    #    #Inserting a new document
+    #    mongo.insert_tweets({"name": "escal"})
+    #    mongo.insert_users({"name": "escal"})
+    #    mongo.insert_messages({"name": "escal"})
+    #
+    #    print(mongo.get_count("users"))
+    #    print(mongo.get_count("tweets"))
+    #    print(mongo.get_count("messages", {"name": "ds"}))
 
+    # print(mongo.search(collection="messages",fields=["name"]))
 
+    # mongo.search(collection="messages",fields=["name"], export_type="json")
+    # mongo.search(collection="tweets",export_type="json")
+    # mongo.search(collection="users",query={"name": "ds"}, export_type="json")
+
+    mongo.search(collection="messages", fields=["name"], export_type="csv")
+    mongo.search(collection="tweets", export_type="csv")
+    mongo.search(collection="users", query={"name": "ds"}, export_type="csv")
 
