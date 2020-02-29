@@ -60,3 +60,8 @@ $ GRANT ALL PRIVILEGES ON DATABASE twitter_postgre TO admin;
 ```
 $ psql -d twitter_postgre -U admin -W 
 ```
+
+docker run -p 80:80 \
+    -e 'PGADMIN_DEFAULT_EMAIL=rafaeljsimoes@gmail.com' \
+    -e 'PGADMIN_DEFAULT_PASSWORD=admin' \
+    -d dpage/pgadmin4
