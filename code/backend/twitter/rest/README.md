@@ -58,5 +58,5 @@ $ GRANT ALL PRIVILEGES ON DATABASE twitter_postgre TO admin;
 
 - Access DB (after user creation)
 ```
-$psql -d twitter_postgre -U admin -W 
+$ psql -d twitter_postgre -U admin -W 
 ```

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -72,7 +73,7 @@ WSGI_APPLICATION = 'rest.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-
+DATABASE_ROUTERS = ["rest.db_router.DB_Router"]
 # Change Database names, if necessary
 DATABASES = {
     'default': {},
@@ -88,7 +89,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'twitter_postgre',
         'USER': 'admin',
-        'PASSWORD': 'admin',
+        'PASSWORD': 'admin2',
         'HOST': 'localhost',
         'PORT': '5432',
     }
