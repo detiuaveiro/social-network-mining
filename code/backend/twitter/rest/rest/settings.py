@@ -75,17 +75,22 @@ WSGI_APPLICATION = 'rest.wsgi.application'
 
 # Change Database names, if necessary
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    # },
-    'default': {
+    'default': {},
+    'mongo': {
         'ENGINE': 'djongo',
         'NAME': 'twitter',
         'HOST': '127.0.0.1',
         'PORT': 27017,
         'USER': 'admin',
         'PASSWORD': 'admin',
+    },
+    'postgres': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'twitter_postgre',
+        'USER': 'admin',
+        'PASSWORD': 'admin',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
