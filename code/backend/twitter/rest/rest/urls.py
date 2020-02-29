@@ -42,7 +42,7 @@ urlpatterns = [
     url(r"^twitter/bots/(?P<id>[0-9]+)/logs", bots.twitter_bot_logs, name="twitter_bot_logs"),
     url(r"^twitter/bots/(?P<id>[0-9]+)/messages", bots.twitter_bot_messages, name="twitter_bot_messages"),
 
-    url(r"^twitter/tweets(/limit=(?P<limit>[0-9]+))?", tweets.twitter_tweets, name="twitter_tweets"),
+    url(r"^twitter/tweets/all/(?P<limit>[0-9]*)", tweets.twitter_tweets, name="twitter_tweets"),
     path("twitter/tweets/export", tweets.twitter_tweets_export, name="twitter_tweets_export"),
     path("twitter/tweets/stats", tweets.twitter_tweets_stats, name="twitter_tweets_stats"),
     url(r"^twitter/tweets/(?P<id>[0-9]+)", tweets.twitter_tweet, name="twitter_tweet"),
