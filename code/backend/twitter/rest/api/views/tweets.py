@@ -13,7 +13,6 @@ def twitter_tweets(request, limit=None):
 	Keyword arguments:
 	limit: defines how many tweets to return
 	"""
-
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
