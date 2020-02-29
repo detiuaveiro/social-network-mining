@@ -378,9 +378,9 @@ def tt_tweet_by_id(id):
                     i["quoted_status_id"] = str(i["quoted_status_id"])
                 except KeyError:
                     pass
-        if type(i["in_reply_to_screen_name"]) is str:
-            i["in_reply_to_user_id"] = str(i["in_reply_to_user_id"])
-            i["in_reply_to_status_id"] = str(i["in_reply_to_status_id"])
+            if type(i["in_reply_to_screen_name"]) is str:
+                i["in_reply_to_user_id"] = str(i["in_reply_to_user_id"])
+                i["in_reply_to_status_id"] = str(i["in_reply_to_status_id"])
         return jsonify(mapa)
     except TypeError:
         return app.response_class(response=json.dumps({"Error": "invalid"}), status=400,
