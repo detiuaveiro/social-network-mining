@@ -54,7 +54,7 @@ urlpatterns = [
     url(r"^policies/bots/(?P<id>[0-9]+)", policies.bot_policies, name="bot_policies"),
     path("policies/add", policies.add_policy, name="add_policy"),
     url(r"^policies/remove/(?P<id>[0-9]+)", policies.remove_policy, name="remove_policy"),
-    url(r"^policies/update", policies.update_policy, name="update_policy"),
+    url(r"^policies/update/(?P<id>[0-9]+)", policies.update_policy, name="update_policy"),
     url(r"^policies/instagram", policies.instagram_policies, name="instagram_policies"),
     path("policies/twitter", policies.twitter_policies, name="twitter_policies"),
 ]
