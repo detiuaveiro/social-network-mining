@@ -1,4 +1,4 @@
-# All lower case !!!!
+
 """
     key: db name (defined on settings.py - DATABASES)
     value: List of model name you want to assign to a db (name of classes in models.py)
@@ -10,8 +10,9 @@
     'test' model object will be assigned to mongo database
     Whenever you write or read a test model object , this will be saved or read on mongo db
 """
+# All lower case !!!!
 DB_mapping = {
-    'mongo': [],
+    'mongo': ['tweet'],
     'postgres': []
 }
 
