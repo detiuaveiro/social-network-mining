@@ -19,6 +19,17 @@
 ## Useful Link
 - https://docs.djangoproject.com/en/3.0/topics/db/multi-db/
 
+## Makemigrations and migrate operations
+- Now its necessary define which db you want to do migrate operation, because default DB it is not defined
+- DB Names are defined on DATABASES dictionary (keys) on settings.py 
+
+```
+$ rm -rf api/migrations
+$ python3 manage.py makemigration api
+$ python3 manage.py migrate --database postgres <or>  python3 manage.py migrate --database mongo 
+```
+
+
 ## Mongo
 - Create user (for development)
 1. Create a user admin (to manage other users)
@@ -64,4 +75,18 @@ $ GRANT ALL PRIVILEGES ON DATABASE twitter_postgres TO admin;
 - Access DB (after user creation)
 ```
 $ psql -d twitter_postgres -U admin -W 
+```
+
+
+# Policies Object
+- Items:
+    - id : int
+    - API_type : str (TWITTER OR INSTAGRAM)
+    - filter : str (USERNAME OR KEYWORDS)
+    - name : str
+    - tags : str[]
+    - bots : int[]
+- Example in dictionary
+```
+{ 'id' : 1, 'API_type': 'TWITTER', 'filter': 'USERNAME', 'name': 'Politica', 'tags': ['PSD', 'CDS'], 'bots': [1, 2] }
 ```
