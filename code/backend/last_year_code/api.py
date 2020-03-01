@@ -12,7 +12,8 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 mongo = AppMongo(app, "users")  # Mongo App for users
 mongo_t = AppMongo(app, "tweets")  # Mongo App for tweets
-postgres = postgreSQL_API("postgres")  # Postgres App (db name - postgres)
+#postgres = postgreSQL_API("postgres")  # Postgres App (db name - postgres)
+postgres = postgreSQL_API("twitter_postgre")
 policy = postgreSQL_API("policies")  # Postgres App (db name - policies)
 # neo = Neo4jAPI()  # Neo4j App
 elas = getESService()  # ElasticSearch App
@@ -440,7 +441,6 @@ def add_policy():
     if request.method == 'POST':
         mapa = request.data.decode('utf-8')
         mapa = ast.literal_eval(mapa)
-        print(mapa)
         send = policy.addPolicy(mapa)
         if "Message" not in send.keys():
             return app.response_class(response=json.dumps(send), status=400,

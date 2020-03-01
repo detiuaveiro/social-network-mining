@@ -65,10 +65,11 @@ class AddModal extends React.Component {
   }
 
   handleSave() {
-    if (this.state.name===""){
+
+    if (this.state.name==="" ) {  
       this.setState({emptyName: true})
     }
-    else if (this.state.params.length===0){
+    else if (this.state.params.length===0 ){
       this.setState({emptyTags: true})
     }
     else if (this.state.bots.length===0){
@@ -80,6 +81,7 @@ class AddModal extends React.Component {
         b.push(bot['value'])
       })
       const data = {API_type: this.state.social, name: this.state.name, filter: this.state.filter, params: this.state.params, bots: b}
+      
       this.props.handleSave(data)
       this.setState({
         name: "",

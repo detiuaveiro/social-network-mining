@@ -1,4 +1,3 @@
-
 """
     key: db name (defined on settings.py - DATABASES)
     value: List of model name you want to assign to a db (name of classes in models.py)
@@ -13,9 +12,8 @@
 # All lower case !!!!
 DB_mapping = {
     'mongo': ['tweet'],
-    'postgres': []
+    'postgres': ['policy']
 }
-
 
 
 def get_db(model_name):
@@ -79,4 +77,7 @@ class DB_Router:
         :param hints: used by certain operations to communicate additional information to the router
         :return: Boolean or None
         """
-        return app_label != 'api' or db == get_db(model_name)
+        # return app_label != 'api' or db == get_db(model_name)
+        if db is None:
+            return False
+        return model_name is not None and db == get_db(model_name)
