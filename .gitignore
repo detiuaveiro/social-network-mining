@@ -82,3 +82,7 @@ doc_generator/
 *.vsdx
 
 cache_*.json
+
+
+# Django
+migrations/
