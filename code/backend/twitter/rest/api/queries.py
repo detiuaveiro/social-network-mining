@@ -101,7 +101,7 @@ def add_policy(data):
             - name : str
             - tags : str[]
             - bots : int[]
-        Ex: { 'id': 1, 'API_type': 'TWITTER', 'filter': 'USERNAME', 'name': 'Politica', 'tags': ['PSD', 'CDS'], 'bots': [1, 2] }
+        Ex: { "API_type": "TWITTER", "filter": "USERNAME", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
     :return: status(boolean), data, message(string)
     """
     try:
@@ -145,7 +145,7 @@ def update_policy(data, id):
     """
     try:
         policy = Policy.objects.get(id=id)
-        data = dict([(key, value) for key, value in data.items()])
+        data = dict([(key, value) for key, value in data.items() if key != 'id' ])
         policy.__dict__.update(data)
         policy.save()
         return True, serializers.Policy(policy).data, f"Sucesso a editar a politica com ID {id}"
