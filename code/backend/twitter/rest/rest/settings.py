@@ -76,8 +76,8 @@ WSGI_APPLICATION = 'rest.wsgi.application'
 DATABASE_ROUTERS = ["rest.db_router.DB_Router"]
 # Change Database names, if necessary
 DATABASES = {
-    #'default': {},
-    'default': {
+    'default': {},
+    'mongo': {
         'ENGINE': 'djongo',
         'NAME': 'twitter',
         'HOST': '127.0.0.1',
@@ -85,14 +85,14 @@ DATABASES = {
         'USER': 'admin',
         'PASSWORD': 'admin',
     },
-    #'postgres': {
-    #    'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #    'NAME': 'twitter_postgre',
-    #    'USER': 'admin',
-    #    'PASSWORD': 'admin',
-    #    'HOST': 'localhost',
-    #    'PORT': '5432',
-    #}
+    'postgres': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'twitter_postgre',
+        'USER': 'admin',
+        'PASSWORD': 'admin',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
 }
 
 # Password validation
