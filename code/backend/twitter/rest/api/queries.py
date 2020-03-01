@@ -40,6 +40,18 @@ def twitter_tweet(id):
         return False, None, f"Erro a obter todos os tweets do id {id}"
 
 
+def twitter_tweet_replies(id):
+    try:
+        Tweet.objects.get(in_reply_to_status_id=id)
+        all_tweets = Tweet.objects.filter(in_reply_to_status_id=id)
+        return True, [serializers.Tweet(tweet).data for tweet in all_tweets], "Sucesso a obter todas as replies ao tweet"
+    except Tweet.DoesNotExist:
+        return False, None, f"Não existem replies ao teet de id {id}"
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        return False, None, f"Erro a obter todas as replies do tweet de id {id}"
+
+
 ### Policy queries
 
 def policy(id):
