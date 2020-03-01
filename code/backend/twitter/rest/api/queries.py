@@ -101,7 +101,7 @@ def add_policy(data):
             - name : str
             - tags : str[]
             - bots : int[]
-        Ex: { 'id': 1, 'API_type': 'TWITTER', 'filter': 'USERNAME', 'name': 'Politica', 'tags': ['PSD', 'CDS'], 'bots': [1, 2] }
+        Ex: {"API_type": "TWITTER", "filter": "USERNAME", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2]}
     :return: status(boolean), data, message(string)
     """
     try:
@@ -113,7 +113,6 @@ def add_policy(data):
         policy = Policy.objects.create(id=next_id(Policy), **policy_serializer.data)
 
         return True, serializers.Policy(policy).data, "Sucesso a adicionar uma nova politica"
-
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, "Erro ao adicionar uma nova politica"
