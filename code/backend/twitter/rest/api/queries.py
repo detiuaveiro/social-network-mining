@@ -112,7 +112,7 @@ def add_policy(data):
         # TODO -> Verificar se os ids dos bots são validos
         policy = Policy.objects.create(id=next_id(Policy), **policy_serializer.data)
 
-        return True, serializers.Policy(policy).data, "Sucesso a adicionar uma nova politica"
+        return True, {'id': policy.id}, "Sucesso a adicionar uma nova politica"
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, "Erro ao adicionar uma nova politica"
@@ -144,10 +144,10 @@ def update_policy(data, id):
     """
     try:
         policy = Policy.objects.get(id=id)
-        data = dict([(key, value) for key, value in data.items() if key != 'id' ])
+        data = dict([(key, value) for key, value in data.items() if key != 'id'])
         policy.__dict__.update(data)
         policy.save()
-        return True, serializers.Policy(policy).data, f"Sucesso a editar a politica com ID {id}"
+        return True, None, f"Sucesso a editar a politica com ID {id}"
 
     except Policy.DoesNotExist:
         return False, None, f"O id {id} não existe na base de dados"
