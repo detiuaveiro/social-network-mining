@@ -1,15 +1,9 @@
 # Requirements
 
-##Useful Link
+## Useful Link
 - https://docs.djangoproject.com/en/3.0/topics/db/multi-db/
 
 ## Mongo
-- djongo (mongo's API)
-
-```
-$ pip install djongo
-```
-
 - Create user (for development)
 1. Create a user admin (to manage other users)
 ```
@@ -43,11 +37,6 @@ $     db.createUser(
 
 ##Postgres
 
-- psycopg2 (postgresql's API)
-```
-pip install django psycopg2
-```
-
 - Create user (for development)
 ```
 $ sudo su postgres -c psql
@@ -60,8 +49,3 @@ $ GRANT ALL PRIVILEGES ON DATABASE twitter_postgre TO admin;
 ```
 $ psql -d twitter_postgre -U admin -W 
 ```
-
-docker run -p 80:80 \
-    -e 'PGADMIN_DEFAULT_EMAIL=rafaeljsimoes@gmail.com' \
-    -e 'PGADMIN_DEFAULT_PASSWORD=admin' \
-    -d dpage/pgadmin4
