@@ -88,5 +88,5 @@ $ psql -d twitter_postgres -U admin -W
     - bots : int[]
 - Example in dictionary
 ```
-{ 'id' : 1, 'API_type': 'TWITTER', 'filter': 'USERNAME', 'name': 'Politica', 'tags': ['PSD', 'CDS'], 'bots': [1, 2] }
+{ "id" : 1, "API_type": "TWITTER", "filter": "USERNAME", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
 ```
