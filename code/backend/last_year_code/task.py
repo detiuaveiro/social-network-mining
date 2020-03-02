@@ -16,7 +16,6 @@ log.addHandler(handler)
 
 def send_reply(*, bot_id, message_type, params):
     """
-
     Parameters
     ----------
     bot_id :

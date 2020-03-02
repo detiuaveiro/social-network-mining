@@ -8,17 +8,18 @@ import sys
 sys.path.append("..")
 from enums import *
 
-log = logging.getLogger('Task')
+log = logging.getLogger('Database Writer')
 log.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
 
-class Task:
-"""
-Class to simulate the behaviour of a bot:
-On receiving a message from a message broker, this class will act accordingly
-"""
+class DBWriter:
+    """
+    Class to simulate the behaviour of a bot:
+    On receiving a message from a message broker, this class will act accordingly
+    """
+    
     def __init__(self):
         """
         This will start instaces for all the DB's API
@@ -30,43 +31,43 @@ On receiving a message from a message broker, this class will act accordingly
     def action(self, message):
         message_type = message['type']
 
-        if (message_type == MessageTypes.USER_FOLLOWED):
+        if message_type == MessageTypes.USER_FOLLOWED:
             self.follow_user(message)
 
-        elif (message_type == MessageTypes.TWEET_LIKED):
+        elif message_type == MessageTypes.TWEET_LIKED:
             self.like_tweet(message)
 
-        elif (message_type == MessageTypes.TWEET_RETWEETDED):
+        elif message_type == MessageTypes.TWEET_RETWEETDED:
             self.retweet(message)
 
-        elif (message_type == MessageTypes.TWEET_REPLIED):
+        elif message_type == MessageTypes.TWEET_REPLIED:
             self.reply_tweet(message)
 
-        elif (message_type == MessageTypes.REQUEST_TWEET_LIKE):
+        elif message_type == MessageTypes.REQUEST_TWEET_LIKE:
             self.request_tweet_like(message)
 
-        elif(message_type == MessageTypes.REQUEST_TWEET_RETWEET):
+        elif message_type == MessageTypes.REQUEST_TWEET_RETWEET:
             self.request_retweet(message)
 
-        elif(message_type == MessageTypes.REQUEST_TWEET_REPLY):
+        elif message_type == MessageTypes.REQUEST_TWEET_REPLY:
             self.request_tweet_reply(message)
 
-        elif(message_type == MessageTypes.REQUEST_FOLLOW_USER):
+        elif message_type == MessageTypes.REQUEST_FOLLOW_USER:
             self.request_follow_user(message)
 
-        elif(message_type == MessageTypes.SAVE_USER):
+        elif message_type == MessageTypes.SAVE_USER:
             self.save_user(message)
 
-        elif(message_type == MessageTypes.SAVE_TWEET):
+        elif message_type == MessageTypes.SAVE_TWEET:
             self.save_tweet(message)
 
-        elif(message_type == MessageTypes.SAVE_DIRECT_MESSAGES):
+        elif message_type == MessageTypes.SAVE_DIRECT_MESSAGES:
             self.save_dm(message)
     
-        elif(message_type == MessageTypes.ERROR_BOT):
+        elif message_type == MessageTypes.ERROR_BOT:
             self.error(message)
 
-        elif(message_type == MessageTypes.FIND_FOLLOWERS):
+        elif message_type == MessageTypes.FIND_FOLLOWERS:
             self.find_followers(message)
 
 
@@ -171,7 +172,7 @@ On receiving a message from a message broker, this class will act accordingly
     def save_user(self, message):
         """
         Stores info about a user:
-            Calls the neo4j and the mongo object to update or store the user (be it a bot or a user)
+            Calls the neo4j and the mongo object to update or store the user be it a bot r a user)
             Adds the log of the operation to postgress_stats
             If the user is a bot, must also call the Policy API object
         params:
