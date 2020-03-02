@@ -12,9 +12,10 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 mongo = AppMongo(app, "users")  # Mongo App for users
 mongo_t = AppMongo(app, "tweets")  # Mongo App for tweets
-postgres = postgreSQL_API("postgres")  # Postgres App (db name - postgres)
+#postgres = postgreSQL_API("postgres")  # Postgres App (db name - postgres)
+postgres = postgreSQL_API("twitter_postgre")
 policy = postgreSQL_API("policies")  # Postgres App (db name - policies)
-neo = Neo4jAPI()  # Neo4j App
+# neo = Neo4jAPI()  # Neo4j App
 elas = getESService()  # ElasticSearch App
 """/
     users
@@ -305,6 +306,7 @@ def tt_tweets():
             return app.response_class(json.dumps({"Error": "Limit must be an integer!"}), status=400,
                                       mimetype="application/json")
     for i in mapa:
+        print(i)
         i["id"] = str(i["id"])
         i["user"] = str(i["user"])
         if i["is_quote_status"]:
@@ -377,9 +379,9 @@ def tt_tweet_by_id(id):
                     i["quoted_status_id"] = str(i["quoted_status_id"])
                 except KeyError:
                     pass
-        if type(i["in_reply_to_screen_name"]) is str:
-            i["in_reply_to_user_id"] = str(i["in_reply_to_user_id"])
-            i["in_reply_to_status_id"] = str(i["in_reply_to_status_id"])
+            if type(i["in_reply_to_screen_name"]) is str:
+                i["in_reply_to_user_id"] = str(i["in_reply_to_user_id"])
+                i["in_reply_to_status_id"] = str(i["in_reply_to_status_id"])
         return jsonify(mapa)
     except TypeError:
         return app.response_class(response=json.dumps({"Error": "invalid"}), status=400,
@@ -439,7 +441,6 @@ def add_policy():
     if request.method == 'POST':
         mapa = request.data.decode('utf-8')
         mapa = ast.literal_eval(mapa)
-        print(mapa)
         send = policy.addPolicy(mapa)
         if "Message" not in send.keys():
             return app.response_class(response=json.dumps(send), status=400,
