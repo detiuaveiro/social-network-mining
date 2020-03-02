@@ -3,6 +3,22 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
+class User(djongo_models.Model):
+    id = djongo_models.IntegerField(primary_key=True, db_column="_id")
+    user_id = djongo_models.IntegerField(db_column="id")
+    description = djongo_models.TextField()
+    location = djongo_models.TextField()
+    name = djongo_models.TextField()
+    screen_name = djongo_models.TextField()
+    followers_count = djongo_models.IntegerField()
+    friends_count = djongo_models.IntegerField()
+    profile_image_url_https = djongo_models.TextField()
+
+    class Meta:
+        managed = True
+        db_table = "users"
+
+
 class Tweet(djongo_models.Model):
     id = djongo_models.IntegerField(primary_key=True, db_column="_id")
     tweet_id = djongo_models.IntegerField(db_column="id")
