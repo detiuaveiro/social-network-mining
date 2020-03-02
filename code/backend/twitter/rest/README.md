@@ -10,7 +10,7 @@
  > db.tweets.insert([<content on backend/twitter/examples/tweet_object.json>])
  ```
 
-## Tweet object
+## User object
 
  - On backend/twitter/examples/user_object.json
  - How to add to mongo:
