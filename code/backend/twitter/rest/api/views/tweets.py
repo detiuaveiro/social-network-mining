@@ -39,9 +39,9 @@ def twitter_tweets_stats(request):
 @api_view(["GET"])
 def twitter_tweet(request, id):
 	"""
-	Returns a list of all tweetes with the given id
+	Returns a list of all tweets with the given id
 
-	Keyword arguments
+	Keyword arguments:
 	id: tweet id (in terms of the Tweet objects saved on the mongo db, it corresponds to str_id)
 	"""
 	error_messages = []
@@ -65,6 +65,12 @@ def twitter_tweet_stats(request, id):
 
 @api_view(["GET"])
 def twitter_tweet_replies(request, id):
+	"""
+	Returns a list of all tweets which are replies to the tweet with the given id
+
+	Keyword arguments:
+	id: tweet id in relation to which we want the replies
+	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
