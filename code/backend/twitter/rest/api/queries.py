@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from django.db.models import Max
-from api.models import Tweet, Policy
+from api.models import Tweet, Policy, User
 import api.serializers as serializers
 
 logger = logging.getLogger('queries')
@@ -17,14 +17,12 @@ def next_id(model):
 
 def twitter_user(id):
     try:
-        Tweet.objects.get(tweet_id=id)
-        all_tweets = Tweet.objects.filter(tweet_id=id)
-        return True, [serializers.Tweet(tweet).data for tweet in all_tweets], "Sucesso a obter todos os tweets"
-    except Tweet.DoesNotExist:
-        return False, None, f"O id {id} não existe na base de dados"
+        return True, User.objects.get(user_id=id), "Sucesso o utilizador pedido"
+    except User.DoesNotExist:
+        return False, None, f"O utilizador de id {id} não existe na base de dados"
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
-        return False, None, f"Erro a obter todos os tweets do id {id}"
+        return False, None, f"Erro a obter o utilizador de id {id}"
 
 
 def twitter_tweets(limit=None):
