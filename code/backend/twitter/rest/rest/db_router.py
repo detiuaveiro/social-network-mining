@@ -11,7 +11,7 @@
 """
 # All lower case !!!!
 DB_mapping = {
-    'mongo': ['tweet'],
+    'mongo': ['tweet', 'user'],
     'postgres': ['policy']
 }
 

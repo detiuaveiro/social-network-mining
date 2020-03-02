@@ -17,7 +17,7 @@
  ```mongo
  > use twitter
  > db.createCollection("users")
- > db.tweets.insert([<content on backend/twitter/examples/users_object.json>])
+ > db.users.insert([<content on backend/twitter/examples/users_object.json>])
  ```
 
  ## ATENTION!
