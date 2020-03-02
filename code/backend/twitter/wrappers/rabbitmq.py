@@ -3,6 +3,7 @@ import json
 import logging
 import sys
 import time
+from dbwriter import DBWriter
 sys.path.append('..')
 from credentials import *
 
@@ -96,7 +97,7 @@ class Rabbitmq():
                                 routing_key='queries.twitter')
         
         ## Implement a task manager
-        self.task_manager = None
+        self.database_writer = DBWriter()
 
         log.info("Connection to Rabbit Established")
 
@@ -133,7 +134,7 @@ class Rabbitmq():
             def callback(channel, method, properties, body):
                 log.info("MESSAGE RECEIVED")            
                 message = json.loads(body)
-                #self.task_manager.menu(message['type'], message)
+                self.database_writer.menu(message['type'], message)
 
             self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
             self.channel.start_consuming()
