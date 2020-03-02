@@ -3,11 +3,21 @@
 ## Tweet object
 
  - On backend/twitter/examples/tweet_object.json
- - How to add to mongo
+ - How to add to mongo:
  ```mongo
  > use twitter
  > db.createCollection("tweets")
  > db.tweets.insert([<content on backend/twitter/examples/tweet_object.json>])
+ ```
+
+## Tweet object
+
+ - On backend/twitter/examples/user_object.json
+ - How to add to mongo:
+ ```mongo
+ > use twitter
+ > db.createCollection("users")
+ > db.tweets.insert([<content on backend/twitter/examples/users_object.json>])
  ```
 
  ## ATENTION!
