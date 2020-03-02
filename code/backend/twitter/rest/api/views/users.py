@@ -15,6 +15,12 @@ def twitter_users_stats(request):
 
 @api_view(["GET"])
 def twitter_user(request, id):
+	"""
+	Returns the user with the requested id
+
+	Keyword arguments:
+	id: id of the user wanted
+	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
