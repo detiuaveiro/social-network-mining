@@ -96,7 +96,7 @@ class Neo4jAPI:
         """
         if (
             "id_1" not in data.keys()
-            or "id_1" not in data.keys()
+            or "id_2" not in data.keys()
             or "type_1" not in data.keys()
             or "type_2" not in data.keys()
         ):
@@ -248,7 +248,7 @@ class Neo4jAPI:
         tx.run(query)
 
     def search_bots(self, data={}):
-        """Method used to update a given bot
+        """Method used to search for a given bot
 
         @param data: The params of the bot we want to look for. By default we look for all bots
         """
@@ -277,7 +277,7 @@ class Neo4jAPI:
         return result
 
     def search_users(self, data={}):
-        """Method used to update a given user
+        """Method used to search for a given user
 
         @param data: The params of the user we want to look for. By default we look for all users
         """
@@ -312,7 +312,7 @@ class Neo4jAPI:
         """
         if (
             "id_1" not in data.keys()
-            or "id_1" not in data.keys()
+            or "id_2" not in data.keys()
             or "type_1" not in data.keys()
             or "type_2" not in data.keys()
         ):
