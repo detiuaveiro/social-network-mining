@@ -12,8 +12,6 @@ class Tweet(serializers.Serializer):
     in_reply_to_status_id = serializers.IntegerField()
 
 
-
-
 class Policy(serializers.Serializer):
     id = serializers.IntegerField(required=False)
     API_type = serializers.ChoiceField(choices=enum_policy.api_types())
@@ -22,9 +20,3 @@ class Policy(serializers.Serializer):
     tags = serializers.ListField(child=serializers.CharField())
     bots = serializers.ListField(child=serializers.IntegerField(validators=[]))
     active = serializers.BooleanField(required=False)
-
-
-
-
-
-
