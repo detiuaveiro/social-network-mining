@@ -38,6 +38,12 @@ def twitter_user(request, id):
 
 @api_view(["GET"])
 def twitter_user_tweets(request, id):
+	"""
+	Returns the tweets of the user with the requested id
+
+	Keyword arguments:
+	id: id of the user in relation which we want his tweets
+	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
