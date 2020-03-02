@@ -3,6 +3,7 @@ import json
 import logging
 import sys
 import time
+from task import Task
 sys.path.append('..')
 from credentials import *
 
@@ -14,7 +15,7 @@ log.addHandler(handler)
 
 WAIT_TIME = 10
 
-class Rabbitmq():
+class Rabbitmq:
     """Class representing Rabbit MQ"""
 
     def __init__(self, host=RABBITMQ_URL, port=RABBITMQ_PORT, vhost=RABBITMQ_VHOST, username=RABBITMQ_USERNAME, password=RABBITMQ_PASSWORD):
@@ -96,7 +97,7 @@ class Rabbitmq():
                                 routing_key='queries.twitter')
         
         ## Implement a task manager
-        self.task_manager = None
+        self.task_manager = Task()
 
         log.info("Connection to Rabbit Established")
 
@@ -130,12 +131,7 @@ class Rabbitmq():
             
             log.info(" [*] Waiting for Messages. To exit press CTRL+C")
             
-            def callback(channel, method, properties, body):
-                log.info("MESSAGE RECEIVED")            
-                message = json.loads(body)
-                #self.task_manager.menu(message['type'], message)
-
-            self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+            self.channel.basic_consume(queue=queue_name, on_message_callback=self.__callback, auto_ack=True)
             self.channel.start_consuming()
 
         except Exception as e:
@@ -146,6 +142,12 @@ class Rabbitmq():
             log.debug("Setup completed")
             self.receive(queue_name)
     
+    def __callback(self, channel, method, properties, body):
+        log.info("MESSAGE RECEIVED")            
+        message = json.loads(body)
+        self.task_manager.action(message)
+
+
     def close(self):
         """
         Close the connection with the Rabbit MQ server
