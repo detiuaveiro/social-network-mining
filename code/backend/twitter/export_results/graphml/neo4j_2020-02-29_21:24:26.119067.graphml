@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+<key id="name" for="node" attr.name="name" attr.type="string"/>
+<key id="label" for="node" attr.name="label" attr.type="string"/>
+<key id="id" for="node" attr.name="id" attr.type="long"/>
+<key id="username" for="node" attr.name="username" attr.type="string"/>
+<key id="label" for="edge" attr.name="label" attr.type="string"/>
+<graph id="G" edgedefault="directed">
+<node id="n0" labels=":BOT"><data key="labels">:BOT</data><data key="username">Jonas_Pistolas</data><data key="name">Jonas</data><data key="id">0</data></node>
+<node id="n20" labels=":USER"><data key="labels">:USER</data><data key="name">DS</data><data key="id">0</data><data key="username">FenixDickSucker</data></node>
+<node id="n21" labels=":BOT"><data key="labels">:BOT</data><data key="username">Beautiful_sorriso</data><data key="name">DG</data><data key="id">1</data></node>
+<edge id="e0" source="n0" target="n20" label="FOLLOWS"><data key="label">FOLLOWS</data></edge>
+</graph>
+</graphml>
