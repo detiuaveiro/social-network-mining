@@ -7,6 +7,9 @@ from api.views.utils import create_response
 
 @api_view(["GET"])
 def twitter_users(request):
+	"""
+	Returns all the users saved on the mongo database
+	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
