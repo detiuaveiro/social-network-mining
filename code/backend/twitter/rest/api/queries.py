@@ -17,7 +17,7 @@ def next_id(model):
 
 def twitter_user(id):
     try:
-        return True, User.objects.get(user_id=id), "Sucesso o utilizador pedido"
+        return True, serializers.User(User.objects.get(user_id=id)).data, "Sucesso o utilizador pedido"
     except User.DoesNotExist:
         return False, None, f"O utilizador de id {id} não existe na base de dados"
     except Exception as e:

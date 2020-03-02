@@ -2,6 +2,17 @@ from rest_framework import serializers
 from api.enums import Policy as enum_policy
 
 
+class User(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    description = serializers.CharField()
+    location = serializers.CharField()
+    name = serializers.CharField()
+    screen_name = serializers.CharField()
+    followers_count = serializers.IntegerField()
+    friends_count = serializers.IntegerField()
+    profile_image_url_https = serializers.CharField()
+
+
 class Tweet(serializers.Serializer):
     tweet_id = serializers.IntegerField(required=True)
     user = serializers.CharField(required=True)
@@ -12,8 +23,6 @@ class Tweet(serializers.Serializer):
     in_reply_to_status_id = serializers.IntegerField()
 
 
-
-
 class Policy(serializers.Serializer):
     id = serializers.IntegerField(required=False)
     API_type = serializers.ChoiceField(choices=enum_policy.api_types())
@@ -22,9 +31,3 @@ class Policy(serializers.Serializer):
     tags = serializers.ListField(child=serializers.CharField())
     bots = serializers.ListField(child=serializers.IntegerField(validators=[]))
     active = serializers.BooleanField(required=False)
-
-
-
-
-
-
