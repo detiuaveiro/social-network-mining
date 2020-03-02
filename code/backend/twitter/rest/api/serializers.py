@@ -3,15 +3,13 @@ from api.enums import Policy as enum_policy
 
 
 class Tweet(serializers.Serializer):
-    tweet_id = serializers.IntegerField(required=True)
-    user = serializers.CharField(required=True)
-    is_quote_status = serializers.BooleanField(required=True)
-    quoted_status_id = serializers.IntegerField()
-    in_reply_to_screen_name = serializers.CharField()
-    in_reply_to_user_id = serializers.IntegerField()
-    in_reply_to_status_id = serializers.IntegerField()
-
-
+    tweet_id = serializers.IntegerField()
+    user = serializers.CharField()
+    is_quote_status = serializers.BooleanField()
+    quoted_status_id = serializers.IntegerField(required=False)
+    in_reply_to_screen_name = serializers.CharField(required=False)
+    in_reply_to_user_id = serializers.IntegerField(required=False)
+    in_reply_to_status_id = serializers.IntegerField(required=False)
 
 
 class Policy(serializers.Serializer):
@@ -22,9 +20,3 @@ class Policy(serializers.Serializer):
     tags = serializers.ListField(child=serializers.CharField())
     bots = serializers.ListField(child=serializers.IntegerField(validators=[]))
     active = serializers.BooleanField(required=False)
-
-
-
-
-
-
