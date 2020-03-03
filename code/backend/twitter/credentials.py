@@ -3,14 +3,16 @@
 MONGO_URL = "localhost"
 MONGO_PORT = 27017
 MONGO_FULL_URL = f"{MONGO_URL}:{MONGO_PORT}"
+MONGO_DB = "snm_mongo"
 
 ############### POSTGRES ###############
 # POSTGRES_URL = "192.168.85.46"
 POSTGRES_URL = "localhost"
 POSTGRES_PORT = 5432
 POSTGRES_FULL_URL = f"{POSTGRES_URL}:{POSTGRES_PORT}"
-POSTGRES_USERNAME = "postgres"
-POSTGRES_PASSWORD = "password"
+POSTGRES_DB = "snm_pg"
+POSTGRES_USERNAME = "snm"
+POSTGRES_PASSWORD = "pg_snm"
 
 ############### RABBITMQ ###############
 # RABBITMQ_URL = "192.168.85.185"
@@ -27,4 +29,4 @@ NEO4J_URL = "localhost"
 NEO4J_PORT = 7687
 NEO4J_FULL_URL = f"{NEO4J_URL}:{NEO4J_PORT}"
 NEO4J_USERNAME = "neo4j"
-NEO4J_PASSWORD = "neo4j"
+NEO4J_PASSWORD = "neo_snm"
