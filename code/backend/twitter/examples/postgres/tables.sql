@@ -8,12 +8,15 @@ create table tweets(
     retweets
 )
 
-create table users(
-    [timestamp] timestamp,
-    user_id integer,
-    followers integer,
-    following integer
-)
+CREATE TABLE "users"(
+    "user_id" integer NOT NULL PRIMARY KEY, 
+    "timestamp" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP, 
+    "followers" integer NOT NULL, 
+    "following" integer NOT NULL
+);
+
+insert into users values(6253282, DEFAULT, 10000, 1234);
+
 
 
 // Policies DB
@@ -25,12 +28,10 @@ create table logs(
 
 create table policies(
     id integer,
-    API_type choice("Twitter","Instagram"),
-    filter choice("Keywords","Username"),
+    API_type choice("Twitter", "Instagram"),
+    filter choice("Keywords", "Username"),
     name string,
     tags String[],
     bots Integer[],
     active boolean
 )
-
-
