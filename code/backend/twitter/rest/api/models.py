@@ -19,7 +19,7 @@ class User(djongo_models.Model):
         db_table = "users"
 
 
-class TweetStats(djongo_models.Model):
+class TweetStats(models.Model):
     tweet_id = models.IntegerField(primary_key=True)
     user_id = models.IntegerField()
     likes = models.IntegerField()
