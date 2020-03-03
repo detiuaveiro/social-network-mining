@@ -19,6 +19,18 @@ class User(djongo_models.Model):
         db_table = "users"
 
 
+class TweetStats(djongo_models.Model):
+    tweet_id = models.IntegerField(primary_key=True)
+    user_id = models.IntegerField()
+    likes = models.IntegerField()
+    retweets = models.IntegerField()
+    timestamp = models.DateTimeField()
+
+    class Meta:
+        managed = True
+        db_table = "tweets"
+
+
 class Tweet(djongo_models.Model):
     id = djongo_models.IntegerField(primary_key=True, db_column="_id")
     tweet_id = djongo_models.IntegerField(db_column="id")
