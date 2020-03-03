@@ -75,11 +75,15 @@ mongo --port 27017 -u "admin" -p "admin" --authenticationDatabase "twitter"
 ## Postgres
 
 - Create user (for development)
-```
+```postgresql
 $ sudo su postgres -c psql
-$ create database twitter_postgres;
-$ create user admin with password 'admin';
-$ GRANT ALL PRIVILEGES ON DATABASE twitter_postgres TO admin;
+# create database twitter_postgres;
+# create user admin with password 'admin';
+# GRANT ALL PRIVILEGES ON DATABASE twitter_postgres TO admin;
+# \c twitter_postgres
+# GRANT ALL ON ALL TABLES IN SCHEMA public to admin;
+# GRANT ALL ON ALL SEQUENCES IN SCHEMA public to admin;
+# GRANT ALL ON ALL FUNCTIONS IN SCHEMA public to admin;
 ```
 
 - Access DB (after user creation)
