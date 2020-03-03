@@ -49,6 +49,7 @@ class Rabbitmq():
         self.MAX_RECONNECTIONS = 10
         self.connection = None
         self.channel = None
+        self._setup()
     
     def _setup(self):
         """
@@ -134,7 +135,7 @@ class Rabbitmq():
             def callback(channel, method, properties, body):
                 log.info("MESSAGE RECEIVED")            
                 message = json.loads(body)
-                self.database_writer.menu(message['type'], message)
+                self.database_writer.action(message)
 
             self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
             self.channel.start_consuming()
@@ -155,6 +156,5 @@ class Rabbitmq():
 
 if __name__ == "__main__":
     rabbit = Rabbitmq()
-    rabbit._setup()
     rabbit.receive()
     rabbit.close()
