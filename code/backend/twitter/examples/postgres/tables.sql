@@ -8,15 +8,15 @@ create table tweets(
     retweets
 )
 
-create table user(
-    timestamp,
-    user_id,
-    followers,
-    following
+create table users(
+    [timestamp] timestamp,
+    user_id integer,
+    followers integer,
+    following integer
 )
 
-// Policies DB
 
+// Policies DB
 create table logs(
     id_bot,
     timestamp,
