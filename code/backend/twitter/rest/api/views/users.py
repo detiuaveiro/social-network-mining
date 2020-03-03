@@ -11,6 +11,8 @@ def twitter_users(request):
 
 @api_view(["GET"])
 def twitter_users_stats(request):
+	"""Get all users status saved on postgres
+	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
