@@ -35,7 +35,7 @@
 
 ```
 $ rm -rf api/migrations
-$ python3 manage.py makemigration api
+$ python3 manage.py makemigrations api
 $ python3 manage.py migrate --database postgres <or>  python3 manage.py migrate --database mongo 
 ```
 
@@ -54,7 +54,7 @@ $     db.createUser(
       }
     )
 ```
-2. Using admin user , create another user (django user)
+2. Using admin user, create another user (django user)
 ```
 $ mongo --port 27017 -u "admin" -p "admin" --authenticationDatabase "admin"
 $ use twitter;
