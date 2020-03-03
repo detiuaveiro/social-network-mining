@@ -65,6 +65,9 @@ def twitter_user_following(request, id):
 
 @api_view(["GET"])
 def twitter_user_stats(request, id):
+	"""Function to get all stats of a requested user
+	:param id: user's id whom we want the stats
+	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
