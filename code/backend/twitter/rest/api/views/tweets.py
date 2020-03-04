@@ -32,8 +32,23 @@ def twitter_tweets_export(request):
 	return None
 
 
+@api_view(["GET"])
 def twitter_tweets_stats(request):
-	return None
+	"""Function to obtain all the tweets stats saved on postgres
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.twitter_tweets_stats()
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages,
+						   success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
@@ -59,8 +74,24 @@ def twitter_tweet(request, id):
 						   success_messages=success_messages, status=status)
 
 
+@api_view(["GET"])
 def twitter_tweet_stats(request, id):
-	return None
+	"""Function to obtain the stats of a determined tweet
+	:param id: id of the tweet whom we want the stats
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.twitter_tweet_stats(int(id))
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages,
+						   success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
