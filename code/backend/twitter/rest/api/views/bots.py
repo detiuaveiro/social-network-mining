@@ -1,3 +1,10 @@
+from rest_framework.decorators import api_view
+from rest_framework.status import HTTP_200_OK, HTTP_403_FORBIDDEN
+
+from api import queries
+from api.views.utils import create_response
+
+
 def twitter_create(request):
 	return None
 
@@ -9,9 +16,26 @@ def twitter_stats(request):
 def twitter_bots(request):
 	return None
 
+@api_view(["GET"])
+def twitter_bot(_, id):
+	"""
+	Returns a info associated to a bot saved on neo4j
+	:param id: bot's id
+	:return: response Object
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
 
-def twitter_bot(request, id):
-	return None
+	success, data, message = queries.twitter_bot(int(id))
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages,
+						   success_messages=success_messages, status=status)
 
 
 def twitter_bot_logs(request, id):
