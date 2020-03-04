@@ -9,7 +9,7 @@ create table tweets(
 )
 
 CREATE TABLE "users"(
-    "user_id" integer NOT NULL PRIMARY KEY, 
+    "user_id" numeric NOT NULL PRIMARY KEY, 
     "timestamp" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP, 
     "followers" integer NOT NULL, 
     "following" integer NOT NULL
