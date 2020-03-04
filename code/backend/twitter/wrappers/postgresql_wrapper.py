@@ -4,6 +4,7 @@ import sys
 
 sys.path.append("..")
 import credentials
+import datetime
 
 log = logging.getLogger("PostgreSQL")
 log.setLevel(logging.DEBUG)
@@ -81,11 +82,107 @@ class PostgresAnalysisAPI:
 
         return {"success": True}
 
-    def search_tweet(self, data):
-        pass
+    def search_tweet(self, params=None):
+        """
+        Searches and returns all Tweets if no data is specified, or the specific tweet matching the given parameters
 
-    def search_user(self, data):
-        pass
+        @param params: The parameters we want to query
+        @return The query's result or error
+        """
+
+        try:
+            cursor = self.conn.cursor()
+
+            query = "select timestamp, tweet_id, likes, retweets from tweets "
+            if params == None:
+                query += ";"
+            else:
+                query += "WHERE "
+                control = 0
+                if "tweet_id" in params.keys():
+                    query += "tweet_id = " + params["tweet_id"]
+                    control = 1
+                if "likes" in params.keys():
+                    if control == 1:
+                        query += " AND "
+                    query += "likes = " + params["likes"]
+                    control = 1
+                if "retweets" in params.keys():
+                    if control == 1:
+                        query += " AND "
+                    query += "retweets = " + params["retweets"]
+
+                query += ";"
+
+            cursor.execute(query)
+
+            data = cursor.fetchall()
+
+            self.conn.commit()
+            cursor.close()
+
+            # result = self.postProcessResults(data, ['timestamp', 'tweet_id', 'likes', 'retweets'])
+            result = []  # Array of jsons
+            for tuple in data:
+                result.append({"timestamp": tuple[0], "tweet_id": tuple[1], "likes": tuple[2], "retweets": tuple[3]})
+
+            return {"success": True, "data": result}
+        except psycopg2.Error as e:
+            self.conn.rollback()
+            return {"success": False, "error": error}
+
+    def search_user(self, params=None):
+        """
+        Searches and returns all Users if no data is specified, or the specific tweet matching the given parameters
+
+        @param params: The parameters we want to query
+        @return The query's result or error
+        """
+
+        try:
+            cursor = self.conn.cursor()
+
+            query = "select timestamp, user_id, followers, following from users "
+            if params == None:
+                query += ";"
+            else:
+                query += "WHERE "
+                control = 0
+                if "user_id" in params.keys():
+                    query += "user_id = " + params["user_id"]
+                    control = 1
+                if "user_id" in params.keys():
+                    query += "user_id = " + params["user_id"]
+                    control = 1
+                if "followers" in params.keys():
+                    if control == 1:
+                        query += " AND "
+                    query += "followers = " + params["followers"]
+                    control = 1
+                if "following" in params.keys():
+                    if control == 1:
+                        query += " AND "
+                    query += "following = " + params["following"]
+
+                query += ";"
+
+            cursor.execute(query)
+
+            data = cursor.fetchall()
+
+            self.conn.commit()
+            cursor.close()
+
+            # result = self.postProcessResults(data, ['timestamp', 'tweet_id', 'likes', 'retweets'])
+            result = []  # Array of jsons
+            for tuple in data:
+                result.append(
+                    {"timestamp": tuple[0], "user_id": tuple[1], "followers": tuple[2], "following": tuple[3]})
+
+            return {"success": True, "data": result}
+        except psycopg2.Error as e:
+            self.conn.rollback()
+            return {"success": False, "error": error}
 
 
 class PostgresPoliciesAPI:
@@ -107,6 +204,13 @@ class PostgresPoliciesAPI:
 
 
 if __name__ == "__main__":
+    # TODO: Test and implement searching by timestamp ; Policies API
     anal = PostgresAnalysisAPI()
     # anal.insert_tweet({"tweet_id": 831606548300517377, "user_id": 6253282, "likes": 100, "retweets": 2})
-    anal.insert_user({"user_id": 6253283, "followers": 10000, "following": 1234})
+    # anal.insert_user({"user_id": 6253283, "followers": 10000, "following": 1234})
+    for i in anal.search_tweet()["data"]:
+        print(i)
+    for i in anal.search_user()["data"]:
+        print(i)
+
+    # print(datetime.datetime.now())
