@@ -40,7 +40,7 @@ def twitter_user(id):
 def twitter_users_stats():
 	try:
 		return True, [serializers.UserStats(us).data for us in UserStats.objects.all()], \
-			   "Sucesso a obter as estatisticas do utilizador pedido"
+			   "Sucesso a obter as estatisticas de todos os utilizadores"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
 		return False, None, f"Erro as estatisticas de todos os utilizadores"
