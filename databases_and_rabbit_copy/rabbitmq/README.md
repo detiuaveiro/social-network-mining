@@ -2,20 +2,20 @@
 
 
 1. Enabale web interface rabbitmq plugin
-```
-    rabbitmq-plugins enable rabbitmq_management
-```
+ ```bash
+ $ sudo rabbitmq-plugins enable rabbitmq_management
+ ```
 
 2. Run rabbitmq-server
 
-```
-    sudo rabbitmq-server
-```
+ ```bash
+ $ sudo rabbitmq-server
+ ```
 
 
-3. Access to http://localhost:15672
-- Username : admin
-- Password : admin
+3. Access to the [link](http://localhost:15672)
+ - Username : `admin` or `guest`
+ - Password : `admin` or `guest`
 
 
 4. Create a Virtual host called "PI"
