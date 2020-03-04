@@ -66,3 +66,7 @@ class Policy(models.Model):
     tags = ArrayField(models.TextField())
     bots = ArrayField(models.IntegerField())
     active = models.BooleanField(default=False)
+
+    class Meta:
+        managed = True
+        db_table = "policies"
