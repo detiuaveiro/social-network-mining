@@ -24,14 +24,15 @@ BOT_FOLLOWS_USER = 0.3
 BOT_RETWEETED_TWEET = 0.2
 BOT_LIKED_TWEET = 0.3
 
+
 class PDP:
 	def __init__(self):
 		'''
 		Here starts the connections with the other DB wrappers
 		'''
 		self.mongo = MongoAPI()
-		#self.neo4j = Neo4jAPI()
-		#self.postgres_policies = PostgresAPI("policies")
+		self.neo4j = Neo4jAPI()
+		# self.postgres_policies = PostgresAPI("policies")
 		pass
 
 	def receive_request(self, data):
@@ -178,14 +179,34 @@ class PDP:
 
 		return bot_list
 
-	def analyze_tweet_like(self, msg):
+	def analyze_tweet_like(self, data):
+		'''
+		Algorithm to analyse if a bot should like a Tweet
+		Takes the current statistics and turns them into a real value
+
+		@param: data - dictionary containing the data of the bot and the tweet it wants to like
+		@returns: float that will then be compared to the threshold previously defined
+		'''
+
+		heuristic_value = 0
+		# Verify if there's a relation between the bot and the user
+		type1 = "BOT" if self.neo4j.check_bot_exists(data["bot_id"]) else "USER"
+		type2 = "BOT" if self.neo4j.check_bot_exists(data["user_id"]) else "USER"
+		relation_exists = self.neo4j.check_relationship_exists({"id_1": data["bot_id"],
+																"type1": type1,
+																"id_2": data["user_id"],
+																"type2": type2})
+		if relation_exists:
+			heuristic_value += BOT_FOLLOWS_USER
+
+		# Next we check if 
 		return 0
 
-	def analyze_tweet_retweet(self, msg):
+	def analyze_tweet_retweet(self, data):
 		return 0
 
-	def analyze_tweet_reply(self, msg):
+	def analyze_tweet_reply(self, data):
 		return 0
 
-	def analyze_follow_user(self, msg):
+	def analyze_follow_user(self, data):
 		return False
