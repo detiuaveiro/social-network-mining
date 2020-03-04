@@ -18,7 +18,8 @@ jobs:
         python-version: 3.8
     - name: Install all dependencies
       run: |
-          for r in $(find . | grep requirements.txt); do
+          for r in $(find . | grep requirements.txt | grep -v last_year_code); do
+            echo $r
             pip install --user -r $r
           done
     - name: Lint with flake8
