@@ -21,7 +21,7 @@ class User(djongo_models.Model):
 
 
 class UserStats(models.Model):
-    user_id = models.IntegerField(primary_key=True)
+    user_id = models.BigIntegerField(primary_key=True)
     timestamp = models.DateTimeField(default=now)
     followers = models.IntegerField()
     following = models.IntegerField()
