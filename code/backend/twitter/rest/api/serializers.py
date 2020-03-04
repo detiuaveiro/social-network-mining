@@ -13,6 +13,14 @@ class User(serializers.Serializer):
     profile_image_url_https = serializers.CharField()
 
 
+class TweetStats(serializers.Serializer):
+    tweet_id = serializers.IntegerField()
+    user_id = serializers.IntegerField()
+    likes = serializers.IntegerField()
+    retweets = serializers.IntegerField()
+    timestamp = serializers.DateTimeField()
+
+
 class Tweet(serializers.Serializer):
     tweet_id = serializers.IntegerField(required=True)
     user = serializers.IntegerField(required=True)
