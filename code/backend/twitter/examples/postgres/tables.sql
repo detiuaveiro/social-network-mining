@@ -1,12 +1,14 @@
 // User DB
 
-create table tweets(
-    timestamp,
-    tweet_id,
-    user_id,
-    likes,
-    retweets
-)
+CREATE TABLE "tweets"(
+    "tweet_id" numeric NOT NULL PRIMARY KEY, 
+    "user_id" numeric NOT NULL, 
+    "likes" integer NOT NULL, 
+    "retweets" integer NOT NULL, 
+    "timestamp" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+insert into tweets values(831606548300517376, 6253282, 100, 2);
+
 
 CREATE TABLE "users"(
     "user_id" numeric NOT NULL PRIMARY KEY, 
