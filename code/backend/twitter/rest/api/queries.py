@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from django.db.models import Max
-from api.models import Tweet, Policy, User
+from api.models import Tweet, Policy, User, TweetStats
 import api.serializers as serializers
 
 logger = logging.getLogger('queries')
@@ -40,6 +40,14 @@ def twitter_tweets(limit=None):
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
 		return False, None, "Erro a obter todos os tweets"
+
+
+def twitter_tweets_stats():
+	try:
+		return True, [serializers.TweetStats(tweet) for tweet in TweetStats.objects.all()], "Sucesso a obter as estatisticas de todos os tweets"
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+		return False, None, "Erro a obter as estatisticas de todos os tweets"
 
 
 def twitter_tweet(id):
