@@ -76,6 +76,9 @@ def twitter_tweet(request, id):
 
 @api_view(["GET"])
 def twitter_tweet_stats(request, id):
+	"""Function to obtain the stats of a determined tweet
+	:param id: id of the tweet whom we want the stats
+	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
@@ -89,6 +92,7 @@ def twitter_tweet_stats(request, id):
 
 	return create_response(data=data, error_messages=error_messages,
 						   success_messages=success_messages, status=status)
+
 
 @api_view(["GET"])
 def twitter_tweet_replies(request, id):
