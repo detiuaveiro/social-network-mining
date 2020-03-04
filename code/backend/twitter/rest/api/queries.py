@@ -37,6 +37,17 @@ def twitter_user(id):
         return False, None, f"Erro a obter o utilizador de id {id}"
 
 
+def twitter_user_tweets(id):
+	try:
+		user_tweets = Tweet.objects.filter(user=id)
+		print(id)
+		print(Tweet.objects.filter(user=id))
+		return True, [serializers.Tweet(tweet).data for tweet in user_tweets], "Sucesso a obter todos os tweets do utilizador pedido"
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+		return False, None, f"Erro a obter os tweets do utilizador de id {id}"
+
+
 ################# tweets #################
 
 def twitter_tweets(limit=None):
