@@ -29,6 +29,11 @@ class Policies extends React.Component {
   }
 
   componentDidMount(){
+    const options = []
+
+    options.push( {value: 1 , label : 'bot_1'})
+    this.setState({bots: options});
+
     axios.get('http://192.168.85.182:5000/policies')
     .then(res => {
         const policies = res.data;
@@ -109,6 +114,7 @@ class Policies extends React.Component {
   }
 
   savePolicy(data) {
+    console.log(data)
     axios.post('http://192.168.85.182:5000/policies/add', data)
       .then((response) => {
         this.refresh(response.status===200 ? "ADD" : "ERROR",response.data['Message'])
