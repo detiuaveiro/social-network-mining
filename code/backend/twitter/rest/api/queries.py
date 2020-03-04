@@ -44,7 +44,7 @@ def twitter_tweets(limit=None):
 
 def twitter_tweets_stats():
 	try:
-		return True, [serializers.TweetStats(tweet) for tweet in TweetStats.objects.all()], "Sucesso a obter as estatisticas de todos os tweets"
+		return True, [serializers.TweetStats(tweet).data for tweet in TweetStats.objects.all()], "Sucesso a obter as estatisticas de todos os tweets"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
 		return False, None, "Erro a obter as estatisticas de todos os tweets"
