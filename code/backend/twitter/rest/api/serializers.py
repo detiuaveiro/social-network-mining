@@ -13,12 +13,11 @@ class User(serializers.Serializer):
     profile_image_url_https = serializers.CharField()
 
 
-class TweetStats(serializers.Serializer):
-    tweet_id = serializers.IntegerField()
+class UserStats(serializers.Serializer):
     user_id = serializers.IntegerField()
-    likes = serializers.IntegerField()
-    retweets = serializers.IntegerField()
     timestamp = serializers.DateTimeField()
+    followers = serializers.IntegerField()
+    following = serializers.IntegerField()
 
 
 class Tweet(serializers.Serializer):
@@ -29,6 +28,14 @@ class Tweet(serializers.Serializer):
     in_reply_to_screen_name = serializers.CharField()
     in_reply_to_user_id = serializers.IntegerField()
     in_reply_to_status_id = serializers.IntegerField()
+
+
+class TweetStats(serializers.Serializer):
+    tweet_id = serializers.IntegerField()
+    user_id = serializers.IntegerField()
+    likes = serializers.IntegerField()
+    retweets = serializers.IntegerField()
+    timestamp = serializers.DateTimeField()
 
 
 class Policy(serializers.Serializer):

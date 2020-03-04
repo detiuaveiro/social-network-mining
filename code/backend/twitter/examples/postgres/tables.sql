@@ -10,15 +10,18 @@ CREATE TABLE "tweets"(
 insert into tweets values(831606548300517376, 6253282, 100, 2);
 
 
-create table user(
-    timestamp,
-    user_id,
-    followers,
-    following
-)
+CREATE TABLE "users"(
+    "user_id" integer NOT NULL PRIMARY KEY, 
+    "timestamp" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP, 
+    "followers" integer NOT NULL, 
+    "following" integer NOT NULL
+);
+
+insert into users values(6253282, DEFAULT, 10000, 1234);
+
+
 
 // Policies DB
-
 create table logs(
     id_bot,
     timestamp,
