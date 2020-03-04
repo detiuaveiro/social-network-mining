@@ -17,9 +17,19 @@ def next_id(model):
 
 ################# users #################
 
+
+def twitter_users():
+	try:
+		all_users = User.objects.filter()
+		return True, [serializers.User(user).data for user in all_users], "Sucesso a obter todos os utilizadores"
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+		return False, None, f"Erro a obter todos os utilizadores"
+
+
 def twitter_user(id):
     try:
-        return True, serializers.User(User.objects.get(user_id=id)).data, "Sucesso o utilizador pedido"
+        return True, serializers.User(User.objects.get(user_id=id)).data, "Sucesso a obter o utilizador pedido"
     except User.DoesNotExist:
         return False, None, f"O utilizador de id {id} não existe na base de dados"
     except Exception as e:
