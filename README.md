@@ -42,7 +42,7 @@ Créditos da template: https://www.creative-tim.com/product/now-ui-dashboard-rea
  $ sudo chown postgres /var/lib/postgres/data
  $ sudo -i -u postgres
  $ initdb  -D '/var/lib/postgres/data'
- $ sudo systemctl enamble postgresql
+ $ sudo systemctl start postgresql
  ```
 
 ### Run database server and create credentials

@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from django.db.models import Max
-from api.models import Tweet, Policy, User, TweetStats
+from api.models import *
 import api.serializers as serializers
 
 logger = logging.getLogger('queries')
@@ -17,6 +17,16 @@ def next_id(model):
 
 ################# users #################
 
+
+def twitter_users():
+	try:
+		all_users = User.objects.filter()
+		return True, [serializers.User(user).data for user in all_users], "Sucesso a obter todos os utilizadores"
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+		return False, None, f"Erro a obter todos os utilizadores"
+
+
 def twitter_user(id):
 	try:
 		return True, serializers.User(User.objects.get(user_id=id)).data, "Sucesso o utilizador pedido"
@@ -25,6 +35,37 @@ def twitter_user(id):
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
 		return False, None, f"Erro a obter o utilizador de id {id}"
+
+
+def twitter_users_stats():
+	try:
+		return True, [serializers.UserStats(us).data for us in UserStats.objects.all()], \
+			   "Sucesso a obter as estatisticas de todos os utilizadores"
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+		return False, None, f"Erro as estatisticas de todos os utilizadores"
+
+
+def twitter_user_stats(id):
+	try:
+		return True, serializers.UserStats(UserStats.objects.get(user_id=id)).data, \
+			   "Sucesso a obter as estatisticas do utilizador pedido"
+	except UserStats.DoesNotExist:
+		return False, None, f"Não existe nenhum utilizador com o id {id} na base de dados de estatisticas"
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+		return False, None, f"Erro as estatisticas do utilizador de id {id}"
+
+
+def twitter_user_tweets(id):
+	try:
+		user_tweets = Tweet.objects.filter(user=id)
+		print(id)
+		print(Tweet.objects.filter(user=id))
+		return True, [serializers.Tweet(tweet).data for tweet in user_tweets], "Sucesso a obter todos os tweets do utilizador pedido"
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+		return False, None, f"Erro a obter os tweets do utilizador de id {id}"
 
 
 ################# tweets #################

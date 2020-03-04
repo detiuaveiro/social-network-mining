@@ -87,7 +87,7 @@ DATABASES = {
     },
     'postgres': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'twitter_postgres',
+        'NAME': 'postgres',
         'USER': 'admin',
         'PASSWORD': 'admin',
         'HOST': 'localhost',

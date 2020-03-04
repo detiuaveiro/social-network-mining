@@ -35,7 +35,7 @@
 
 ```
 $ rm -rf api/migrations
-$ python3 manage.py makemigration api
+$ python3 manage.py makemigrations api
 $ python3 manage.py migrate --database postgres <or>  python3 manage.py migrate --database mongo 
 ```
 
@@ -54,7 +54,7 @@ $     db.createUser(
       }
     )
 ```
-2. Using admin user , create another user (django user)
+2. Using admin user, create another user (django user)
 ```
 $ mongo --port 27017 -u "admin" -p "admin" --authenticationDatabase "admin"
 $ use twitter;
@@ -75,11 +75,15 @@ mongo --port 27017 -u "admin" -p "admin" --authenticationDatabase "twitter"
 ## Postgres
 
 - Create user (for development)
-```
+```postgresql
 $ sudo su postgres -c psql
-$ create database twitter_postgres;
-$ create user admin with password 'admin';
-$ GRANT ALL PRIVILEGES ON DATABASE twitter_postgres TO admin;
+# create database postgres;
+# create user admin with password 'admin';
+# GRANT ALL PRIVILEGES ON DATABASE postgres TO admin;
+# \c postgres
+# GRANT ALL ON ALL TABLES IN SCHEMA public to admin;
+# GRANT ALL ON ALL SEQUENCES IN SCHEMA public to admin;
+# GRANT ALL ON ALL FUNCTIONS IN SCHEMA public to admin;
 ```
 
 - Access DB (after user creation)
