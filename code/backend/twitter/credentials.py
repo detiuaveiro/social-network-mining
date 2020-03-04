@@ -10,7 +10,8 @@ MONGO_DB = "snm_mongo"
 POSTGRES_URL = "localhost"
 POSTGRES_PORT = 5432
 POSTGRES_FULL_URL = f"{POSTGRES_URL}:{POSTGRES_PORT}"
-POSTGRES_DB = "snm_pg"
+POSTGRES_POLICIES_DB = "snm_policies_pg"
+POSTGRES_ANALYSIS_DB = "snm_analysis_pg"
 POSTGRES_USERNAME = "snm"
 POSTGRES_PASSWORD = "pg_snm"
 
