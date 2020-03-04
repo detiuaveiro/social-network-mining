@@ -16,6 +16,11 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - name: Install all dependencies
+      run: |
+          for r in $(find . | grep requirements.txt); do
+            pip install --user -r $r
+          done
     - name: Lint with flake8
       run: |
         pip install flake8
