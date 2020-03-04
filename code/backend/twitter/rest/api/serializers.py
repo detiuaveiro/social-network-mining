@@ -22,12 +22,20 @@ class UserStats(serializers.Serializer):
 
 class Tweet(serializers.Serializer):
     tweet_id = serializers.IntegerField(required=True)
-    user = serializers.CharField(required=True)
+    user = serializers.IntegerField(required=True)
     is_quote_status = serializers.BooleanField(required=True)
     quoted_status_id = serializers.IntegerField()
     in_reply_to_screen_name = serializers.CharField()
     in_reply_to_user_id = serializers.IntegerField()
     in_reply_to_status_id = serializers.IntegerField()
+
+
+class TweetStats(serializers.Serializer):
+    tweet_id = serializers.IntegerField()
+    user_id = serializers.IntegerField()
+    likes = serializers.IntegerField()
+    retweets = serializers.IntegerField()
+    timestamp = serializers.DateTimeField()
 
 
 class Policy(serializers.Serializer):
