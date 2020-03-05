@@ -3,6 +3,7 @@ from datetime import datetime
 from django.db.models import Max
 from api.models import *
 import api.serializers as serializers
+from api import neo4j
 
 logger = logging.getLogger('queries')
 
@@ -60,8 +61,6 @@ def twitter_user_stats(id):
 def twitter_user_tweets(id):
     try:
         user_tweets = Tweet.objects.filter(user=id)
-        print(id)
-        print(Tweet.objects.filter(user=id))
         return True, [serializers.Tweet(tweet).data for tweet in user_tweets], "Sucesso a obter todos os tweets do utilizador pedido"
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
@@ -69,7 +68,14 @@ def twitter_user_tweets(id):
 
 
 def twitter_user_followers(id):
-	return False, None, ""
+    try:
+        followers = neo4j.get_followers({'id': id})
+        if not followers:
+            return False, None, f"Não existem followers do utilizador de id {id} na base de dados"
+        return True, followers, "Sucesso a obter todos os followers do utilizador pedido"
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        return False, None, f"Erro a obter os followers do utilizador de id {id}"
 
 
 ################# tweets #################

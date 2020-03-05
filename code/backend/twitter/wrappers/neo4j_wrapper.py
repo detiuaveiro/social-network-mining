@@ -410,7 +410,7 @@ class Neo4jAPI:
 
             return
 
-        if "type" not in data and data["type"] not in ["BOT", "USER"]:
+        if "type" in data and data["type"] not in ["BOT", "USER"]:
             log.error("ERROR RETRIEVING FOLLOWINGS")
             log.error("Error: Unaceptable specified types. Types must be BOT or USER")
 
