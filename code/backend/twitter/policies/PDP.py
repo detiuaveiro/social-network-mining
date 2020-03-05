@@ -199,14 +199,58 @@ class PDP:
 		if relation_exists:
 			heuristic_value += BOT_FOLLOWS_USER
 
-		# Next we check if 
-		return 0
+		# Next we check if the bot and the user have some policies in common
+		# Need the postgres database for this one
+
+		# We then check if the bot has retweeted the tweet
+
+		# Then we check if the policy has the word "Keyword"... for some reason
+
+		# After that we check if the bot has been liking too many tweets in a row, applying a penalty if such is the case
+
+		return heuristic_value
 
 	def analyze_tweet_retweet(self, data):
+
+		'''
+		Algorithm to analyse if a bot should retweet a Tweet
+		Takes the current statistics and turns them into a real value
+
+		@param: data - dictionary containing the data of the bot and the tweet it wants to like
+		@returns: float that will then be compared to the threshold previously defined
+		'''
+
+		heuristic_value = 0
+		# Verify if there's a relation between the bot and the user
+		type1 = "BOT" if self.neo4j.check_bot_exists(data["bot_id"]) else "USER"
+		type2 = "BOT" if self.neo4j.check_bot_exists(data["user_id"]) else "USER"
+		relation_exists = self.neo4j.check_relationship_exists({"id_1": data["bot_id"],
+																"type1": type1,
+																"id_2": data["user_id"],
+																"type2": type2})
+		if relation_exists:
+			heuristic_value += BOT_FOLLOWS_USER
+
+		# Next we check if the bot and the user have some policies in common
+		# Need the postgres database for this one
+
+		# Then we check if the policy has the word "Keyword"... for some reason
+
+		# After that we check if the bot has been liking too many tweets in a row, applying a penalty if such is the case
+
 		return 0
 
 	def analyze_tweet_reply(self, data):
+		'''
+		Algorithm to analyse if a bot should reply
+		Takes the current statistics and turns them into a real value
+
+		@param: data - dictionary containing the data of the bot and the tweet it wants to like
+		@returns: float that will then be compared to the threshold previously defined
+		'''
+		#This was not implemented last year
 		return 0
 
 	def analyze_follow_user(self, data):
+		#This was not implemeneted last year
 		return False
