@@ -112,6 +112,9 @@ def twitter_user_followers(request, id):
 
 @api_view(["GET"])
 def twitter_user_following(request, id):
+    """Function to retrieve all the following users of some requested user
+    :param id: id of the user whom we want the following users
+    """
     error_messages = []
     success_messages = []
     status = HTTP_200_OK
