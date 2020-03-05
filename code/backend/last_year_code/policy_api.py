@@ -16,6 +16,6 @@ class PolicyAPI():
         beta = self.pdp.receive_request(alfa)
 
         #enforce
-        resp= self.pep.receive_response(beta)
+        resp = self.pep.receive_response(beta)
 
         return resp
