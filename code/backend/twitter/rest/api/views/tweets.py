@@ -7,11 +7,8 @@ import api.queries as queries
 
 @api_view(["GET"])
 def twitter_tweets(request, limit=None):
-    """
-    Function to return all tweets within a given limit (if no limit is given, it returns all saved tweets)
-
-    Keyword arguments:
-    limit: defines how many tweets to return
+    """Function to return all tweets within a given limit (if no limit is given, it returns all saved tweets)
+    :param limit: defines how many tweets to return
     """
     error_messages = []
     success_messages = []
@@ -54,11 +51,8 @@ def twitter_tweets_stats(request):
 
 @api_view(["GET"])
 def twitter_tweet(request, id):
-    """
-    Returns a list of all tweets with the given id
-
-    Keyword arguments:
-    id: tweet id (in terms of the Tweet objects saved on the mongo db, it corresponds to str_id)
+    """Returns a list of all tweets with the given id
+    :param id: tweet id (in terms of the Tweet objects saved on the mongo db, it corresponds to str_id)
     """
     error_messages = []
     success_messages = []
@@ -97,11 +91,8 @@ def twitter_tweet_stats(request, id):
 
 @api_view(["GET"])
 def twitter_tweet_replies(request, id):
-    """
-    Returns a list of all tweets which are replies to the tweet with the given id
-
-    Keyword arguments:
-    id: tweet id in relation to which we want the replies
+    """Returns a list of all tweets which are replies to the tweet with the given id
+    :param id: tweet id in relation to which we want the replies
     """
     error_messages = []
     success_messages = []
