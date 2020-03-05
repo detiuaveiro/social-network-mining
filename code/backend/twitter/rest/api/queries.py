@@ -275,4 +275,3 @@ def twitter_bot_messages(id):
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, f"Erro a obter as mensagens privadas dos bot com id {id}"
-##
