@@ -45,7 +45,7 @@ class Tweet(djongo_models.Model):
         managed = True
         db_table = "tweets"
 
-    
+
 class TweetStats(models.Model):
     tweet_id = models.BigIntegerField(primary_key=True)
     user_id = models.IntegerField()
