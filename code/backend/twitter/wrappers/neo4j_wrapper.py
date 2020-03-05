@@ -402,7 +402,7 @@ class Neo4jAPI:
 
         @param data: The specification of who we want to get the followings of. Should include a id and type
         """
-        if "id" not in data.keys() or "type" not in data.keys():
+        if "id" not in data.keys():
             log.error("ERROR RETRIEVING FOLLOWERS")
             log.debug(
                 "Error: Specified data doesn't contain necessary fields - type, id"
@@ -410,7 +410,7 @@ class Neo4jAPI:
 
             return
 
-        if data["type"] not in ["BOT", "USER"]:
+        if "type" not in data and data["type"] not in ["BOT", "USER"]:
             log.error("ERROR RETRIEVING FOLLOWINGS")
             log.error("Error: Unaceptable specified types. Types must be BOT or USER")
 
@@ -424,8 +424,7 @@ class Neo4jAPI:
         log.debug("GETTING FOLLOWERS")
         query = (
             "MATCH (b)-[r:FOLLOWS]->"
-            + "(a:"
-            + data["type"]
+            + f"(a {': ' + data['type'] if 'type' in data else ''}"
             + " {id: "
             + str(data["id"])
             + " }) RETURN b"
