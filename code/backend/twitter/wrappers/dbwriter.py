@@ -4,10 +4,11 @@ import logging
 import sys
 
 from mongo_wrapper import MongoAPI
-from neo4j import Neo4jAPI
+from neo4j_wrapper import Neo4jAPI
 
 sys.path.append("..")
 from enums import *
+from policies.PEP import PEP
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.INFO)
@@ -29,7 +30,7 @@ class DBWriter:
         #...
         self.mongo_client = MongoAPI()
         self.neo4j_client = Neo4jAPI()
-        self
+        self.pep = PEP()
 
     def action(self, message):
         message_type = message['type']
@@ -130,7 +131,25 @@ class DBWriter:
         
         @param data: dict containing the bot id and the tweet id
         """
-        pass
+        log.info("Request a like to a tweet")
+        #add log to postgres
+        request_accepted = self.pep.receive_message({
+                "type": PoliciesTypes.REQUEST_TWEET_LIKE,
+                "bot_id": data['bot_id'],
+                "user_id": data['data']['user'],
+                "tweet_id": data['data']['id'],
+                "tweet_text": data['data']['text'],
+                "tweet_entities": data['data']['entities']
+            })
+
+        if request_accepted:
+            log.info("Like request accepted")
+            #add log
+            self.send(data['bot_id'], ResponseTypes.LIKE_TWEETS, data['data']['id'])
+        else:
+            log.warning("Like request denied")
+            #add log
+
 
     def request_retweet(self, data):
         """
@@ -141,7 +160,24 @@ class DBWriter:
         
         2param data: dict containing the bot id and the tweet id
         """
-        pass
+        log.info("Request a retweeting a tweet")
+        #add log to postgres
+        request_accepted = self.pep.receive_message({
+                "type": PoliciesTypes.REQUEST_TWEET_RETWEET,
+                "bot_id": data['bot_id'],
+                "user_id": data['data']['user'],
+                "tweet_id": data['data']['id'],
+                "tweet_text": data['data']['text'],
+                "tweet_entities": data['data']['entities']
+            })
+
+        if request_accepted:
+            log.info("Retweet request accepted")
+            #add log
+            self.send(data['bot_id'], ResponseTypes.RETWEET_TWEETS, data['data']['id'])
+        else:
+            log.warning("Retweet request denied")
+            #add log
 
     def request_tweet_reply(self, data):
         """
@@ -152,7 +188,27 @@ class DBWriter:
         
         @param data: dict containing the bot id and the tweet id
         """
-        pass
+        log.info("Request a reply to a tweet")
+        #add log to postgres
+        request_accepted = self.pep.receive_message({
+                "type": PoliciesTypes.REQUEST_TWEET_REPLY,
+                "bot_id": data['bot_id'],
+                "tweet_id": data['data']['id'],
+                "user_id": data['data']['user'],
+                "tweet_text": data['data']['text'],
+                "tweet_entities": data['data']['entities'],
+                "tweet_in_reply_to_status_id_str": data['data']['in_reply_to_status_id_str'],
+                "tweet_in_reply_to_user_id_str": data['data']['in_reply_to_user_id_str'],
+                "tweet_in_reply_to_screen_name": data['data']['in_reply_to_screen_name']
+            })
+
+        if request_accepted:
+            log.info("Like request accepted")
+            #add log
+            self.send(data['bot_id'], ResponseTypes.POST_TWEETS, data['data']['id'])
+        else:
+            log.warning("Like request denied")
+            #add log
 
     def request_follow_user(self, data):
         """
@@ -163,7 +219,21 @@ class DBWriter:
         
         @param data: dict containing the bot id and the tweet id
         """
-        pass
+        log.info("Request a like to a tweet")
+        #add log to postgres
+        request_accepted = self.pep.receive_message({
+                "type": PoliciesTypes.REQUEST_FOLLOW_USER,
+                "bot_id": data['bot_id'],
+                "user_id": data['data']['id']
+            })
+
+        if request_accepted:
+            log.info("Like request accepted")
+            #add log
+            self.send(data['bot_id'], ResponseTypes.FOLLOW_USERS, data['data']['id'])
+        else:
+            log.warning("Like request denied")
+            #add log
 
     def save_user(self, data):
         """
