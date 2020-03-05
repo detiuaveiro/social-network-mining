@@ -115,7 +115,7 @@ class Neo4jAPI:
             USER_LABEL,
         ]:
             log.error("ERROR CREATING A RELATIONSHIP")
-            log.error("Error: Unaceptable specified types. Types must be BOT or USER")
+            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
             return
 
@@ -318,7 +318,7 @@ class Neo4jAPI:
             USER_LABEL,
         ]:
             log.error("ERROR CHECKING RELATIONSHIP")
-            log.error("Error: Unaceptable specified types. Types must be BOT or USER")
+            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
             return
 
@@ -354,7 +354,7 @@ class Neo4jAPI:
 
         if data["type"] not in [BOT_LABEL, USER_LABEL]:
             log.error("ERROR RETRIEVING FOLLOWINGS")
-            log.error("Error: Unaceptable specified types. Types must be BOT or USER")
+            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
             return
 
@@ -388,7 +388,7 @@ class Neo4jAPI:
 
         if data["type"] not in [BOT_LABEL, USER_LABEL]:
             log.error("ERROR RETRIEVING FOLLOWINGS")
-            log.error("Error: Unaceptable specified types. Types must be BOT or USER")
+            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
             return
 
