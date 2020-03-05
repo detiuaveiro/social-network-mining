@@ -92,6 +92,9 @@ id: id of the user in relation which we want his tweets
 
 @api_view(["GET"])
 def twitter_user_followers(request, id):
+    """Function to retrieve all the followers of some requested user
+    :param id: id of the user whom we want the followers
+    """
     error_messages = []
     success_messages = []
     status = HTTP_200_OK
