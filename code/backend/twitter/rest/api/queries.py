@@ -40,7 +40,7 @@ def twitter_user(id):
 def twitter_users_stats():
     try:
         return True, [serializers.UserStats(us).data for us in UserStats.objects.all()], \
-               "Sucesso a obter as estatisticas de todos os utilizadores"
+            "Sucesso a obter as estatisticas de todos os utilizadores"
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, f"Erro as estatisticas de todos os utilizadores"
@@ -49,7 +49,7 @@ def twitter_users_stats():
 def twitter_user_stats(id):
     try:
         return True, serializers.UserStats(UserStats.objects.get(user_id=id)).data, \
-               "Sucesso a obter as estatisticas do utilizador pedido"
+            "Sucesso a obter as estatisticas do utilizador pedido"
     except UserStats.DoesNotExist:
         return False, None, f"Não existe nenhum utilizador com o id {id} na base de dados de estatisticas"
     except Exception as e:
@@ -62,8 +62,7 @@ def twitter_user_tweets(id):
         user_tweets = Tweet.objects.filter(user=id)
         print(id)
         print(Tweet.objects.filter(user=id))
-        return True, [serializers.Tweet(tweet).data for tweet in
-                      user_tweets], "Sucesso a obter todos os tweets do utilizador pedido"
+        return True, [serializers.Tweet(tweet).data for tweet in user_tweets], "Sucesso a obter todos os tweets do utilizador pedido"
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, f"Erro a obter os tweets do utilizador de id {id}"
@@ -86,8 +85,7 @@ def twitter_tweets(limit=None):
 
 def twitter_tweets_stats():
     try:
-        return True, [serializers.TweetStats(tweet).data for tweet in
-                      TweetStats.objects.all()], "Sucesso a obter as estatisticas de todos os tweets"
+        return True, [serializers.TweetStats(tweet).data for tweet in TweetStats.objects.all()], "Sucesso a obter as estatisticas de todos os tweets"
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, "Erro a obter as estatisticas de todos os tweets"
@@ -108,7 +106,7 @@ def twitter_tweet(id):
 def twitter_tweet_stats(id):
     try:
         return True, serializers.TweetStats(TweetStats.objects.get(tweet_id=id)).data, \
-               "Sucesso a obter as estatisticas do tweet de id pedido"
+            "Sucesso a obter as estatisticas do tweet de id pedido"
     except TweetStats.DoesNotExist:
         return False, None, f"Não existem estatísticas do tweet de id {id} na base de dados"
     except Exception as e:
@@ -120,8 +118,7 @@ def twitter_tweet_replies(id):
     try:
         Tweet.objects.get(in_reply_to_status_id=id)
         all_tweets = Tweet.objects.filter(in_reply_to_status_id=id)
-        return True, [serializers.Tweet(tweet).data for tweet in
-                      all_tweets], "Sucesso a obter todas as replies ao tweet"
+        return True, [serializers.Tweet(tweet).data for tweet in all_tweets], "Sucesso a obter todas as replies ao tweet"
     except Tweet.DoesNotExist:
         return False, None, f"Não existem replies ao tweet de id {id}"
     except Exception as e:
@@ -183,14 +180,14 @@ def add_policy(data):
     """
     Add new policy to DB
     :param data: Dictionary with data to be inserted
-        Items:
-            - id : int
-            - API_type : str
-            - filter : str
-            - name : str
-            - tags : str[]
-            - bots : int[]
-        Ex: { "API_type": "TWITTER", "filter": "USERNAME", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
+            Items:
+                    - id : int
+                    - API_type : str
+                    - filter : str
+                    - name : str
+                    - tags : str[]
+                    - bots : int[]
+            Ex: { "API_type": "TWITTER", "filter": "USERNAME", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
     :return: status(boolean), data, message(string)
     """
     try:
@@ -199,7 +196,8 @@ def add_policy(data):
             return False, policy_serializer.errors, "Dados invalidos!"
 
         # TODO -> Verificar se os ids dos bots são validos
-        policy = Policy.objects.create(id=next_id(Policy), **policy_serializer.data)
+        policy = Policy.objects.create(
+            id=next_id(Policy), **policy_serializer.data)
 
         return True, {'id': policy.id}, "Sucesso a adicionar uma nova politica"
     except Exception as e:
@@ -233,7 +231,8 @@ def update_policy(data, id):
     """
     try:
         policy = Policy.objects.get(id=id)
-        data = dict([(key, value) for key, value in data.items() if key != 'id'])
+        data = dict([(key, value)
+                     for key, value in data.items() if key != 'id'])
         policy.__dict__.update(data)
         policy.save()
         return True, None, f"Sucesso a editar a politica com ID {id}"
@@ -253,7 +252,8 @@ def policy_by_service(service):
     :return: status(boolean), data, message(string)
     """
     try:
-        data = [serializers.Policy(policy).data for policy in Policy.objects.filter(API_type=service)]
+        data = [serializers.Policy(
+            policy).data for policy in Policy.objects.filter(API_type=service)]
         return True, data, f"Sucesso a obter as politicas do instagram"
 
     except Exception as e:
