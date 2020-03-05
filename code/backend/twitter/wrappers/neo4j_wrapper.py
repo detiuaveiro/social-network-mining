@@ -32,9 +32,9 @@ class Neo4jAPI:
         @param data: The params of the new bot we want to create. Should include an id, name and username
         """
         if (
-            "id" not in data.keys()
-            or "name" not in data.keys()
-            or "username" not in data.keys()
+                "id" not in data.keys()
+                or "name" not in data.keys()
+                or "username" not in data.keys()
         ):
             log.error("ERROR CREATING A BOT")
             log.error(
@@ -64,9 +64,9 @@ class Neo4jAPI:
         @param data: The params of the new bot we want to create. Should include an id, name and username
         """
         if (
-            "id" not in data.keys()
-            or "name" not in data.keys()
-            or "username" not in data.keys()
+                "id" not in data.keys()
+                or "name" not in data.keys()
+                or "username" not in data.keys()
         ):
             log.error("ERROR CREATING A USER")
             log.debug(
@@ -95,10 +95,10 @@ class Neo4jAPI:
         @param data: The params of the new relationship we want to create. Should include a type_1, type_2, id_1, id_2
         """
         if (
-            "id_1" not in data.keys()
-            or "id_2" not in data.keys()
-            or "type_1" not in data.keys()
-            or "type_2" not in data.keys()
+                "id_1" not in data.keys()
+                or "id_2" not in data.keys()
+                or "type_1" not in data.keys()
+                or "type_2" not in data.keys()
         ):
             log.error("ERROR CREATING A RELATIONSHIP")
             log.error(
@@ -124,15 +124,15 @@ class Neo4jAPI:
         log.debug("CREATING RELATIONSHIP")
 
         query = (
-            "MATCH (u:"
-            + data["type_1"]
-            + " {id: "
-            + str(data["id_1"])
-            + " }), (r:"
-            + data["type_2"]
-            + " {id: "
-            + str(data["id_2"])
-            + "}) MERGE (u)-[:FOLLOWS]->(r)"
+                "MATCH (u:"
+                + data["type_1"]
+                + " {id: "
+                + str(data["id_1"])
+                + " }), (r:"
+                + data["type_2"]
+                + " {id: "
+                + str(data["id_2"])
+                + "}) MERGE (u)-[:FOLLOWS]->(r)"
         )
 
         tx.run(query)
@@ -205,11 +205,11 @@ class Neo4jAPI:
             set_query += "r.name = '" + data["name"] + "',"
 
         query = (
-            "MATCH (r:USER {id:"
-            + str(data["id"])
-            + "}) "
-            + set_query[:-1]
-            + " RETURN r"
+                "MATCH (r:USER {id:"
+                + str(data["id"])
+                + "}) "
+                + set_query[:-1]
+                + " RETURN r"
         )  # Note we use set_query[:-1] in order to remove the final comma (,)
 
         tx.run(query)
@@ -242,7 +242,7 @@ class Neo4jAPI:
             set_query += "r.name = '" + data["name"] + "',"
 
         query = (
-            "MATCH (r:BOT {id:" + str(data["id"]) + "}) " + set_query[:-1] + " RETURN r"
+                "MATCH (r:BOT {id:" + str(data["id"]) + "}) " + set_query[:-1] + " RETURN r"
         )  # Note we use set_query[:-1] in order to remove the final comma (,)
 
         tx.run(query)
@@ -311,10 +311,10 @@ class Neo4jAPI:
         @param data: The params of the entities involved in the relationshi+ we want to look for. Should include a type_1, type_2, id_1, id_2
         """
         if (
-            "id_1" not in data.keys()
-            or "id_2" not in data.keys()
-            or "type_1" not in data.keys()
-            or "type_2" not in data.keys()
+                "id_1" not in data.keys()
+                or "id_2" not in data.keys()
+                or "type_1" not in data.keys()
+                or "type_2" not in data.keys()
         ):
             log.error("ERROR CHECKING RELATIONSHIP")
             log.debug(
@@ -340,15 +340,15 @@ class Neo4jAPI:
         log.debug("VERIFYING RELATIONSHIP EXISTANCE")
 
         query = (
-            "MATCH (a:"
-            + data["type_1"]
-            + " {id: "
-            + str(data["id_1"])
-            + " })-[r:FOLLOWS]->(b:"
-            + data["type_2"]
-            + " {id: "
-            + str(data["id_2"])
-            + "}) RETURN a, b"
+                "MATCH (a:"
+                + data["type_1"]
+                + " {id: "
+                + str(data["id_1"])
+                + " })-[r:FOLLOWS]->(b:"
+                + data["type_2"]
+                + " {id: "
+                + str(data["id_2"])
+                + "}) RETURN a, b"
         )
 
         result = tx.run(query)
@@ -384,11 +384,11 @@ class Neo4jAPI:
     def __get_following(self, tx, data):
         log.debug("GETTING FOLLOWINGS")
         query = (
-            "MATCH (a:"
-            + data["type"]
-            + " {id: "
-            + str(data["id"])
-            + " })-[r:FOLLOWS]->(b) RETURN b"
+                "MATCH (a:"
+                + data["type"]
+                + " {id: "
+                + str(data["id"])
+                + " })-[r:FOLLOWS]->(b) RETURN b"
         )
 
         result = []
@@ -423,12 +423,12 @@ class Neo4jAPI:
     def __get_followers(self, tx, data):
         log.debug("GETTING FOLLOWERS")
         query = (
-            "MATCH (b)-[r:FOLLOWS]->"
-            + "(a:"
-            + data["type"]
-            + " {id: "
-            + str(data["id"])
-            + " }) RETURN b"
+                "MATCH (b)-[r:FOLLOWS]->"
+                + "(a:"
+                + data["type"]
+                + " {id: "
+                + str(data["id"])
+                + " }) RETURN b"
         )
 
         result = []
@@ -437,14 +437,14 @@ class Neo4jAPI:
 
         return result
 
-    def export_network(self, export_type="graphml", export_name=None):
+    def export_network(self, export_type="graphml"):
         """Method used to export the entire database
 
         @param export_type: What type we want to export to. Graphml by default
         @param export_name: The path we want to export to
         """
 
-        if export_type not in ["json","csv","graphml"]:
+        if export_type not in ["json", "csv", "graphml"]:
             log.error("ERROR EXPORTING RESULT")
             log.error(
                 "Error: ",
@@ -452,34 +452,30 @@ class Neo4jAPI:
             )
 
             return
-        
-        if export_name is None:
-            export_name = (
-                "../export_results/"
-                + export_type
-                + "/neo4j"
-                + "_"
-                + str(datetime.datetime.now()).replace(" ", "_")
-            )
-            
-            export_name = export_name + "." + export_type
-        
-        with self.driver.session() as session:
-            return session.write_transaction(self.__export_network, {"type":export_type,"name":export_name})
 
-    def __export_network(self,tx,data):
+
+        with self.driver.session() as session:
+            result = session.write_transaction(self.__export_network, export_type)
+
+            result = result.data()[0]["data"]
+
+            return result
+
+    def __export_network(self, tx, export_type):
         log.debug("EXPORTING NETWORK")
 
-        if data["type"] == "json":
-            tx.run(
-                "CALL apoc.export.json.all('" + data["name"]  + "',{useTypes:true})"
+        if export_type == "json":
+            result = tx.run(
+                "CALL apoc.export.json.all(null,{useTypes:true, stream:true})"
             )
-        elif data["type"]  == "csv":
-            tx.run(
-                "CALL apoc.export.csv.all('" + data["name"] + "', {useTypes:true})"
+        elif export_type == "csv":
+            result = tx.run(
+                "CALL apoc.export.csv.all(null,{useTypes:true, stream:true})"
             )
         else:
-            tx.run("CALL apoc.export.graphml.all('"+data["name"]+"', {useTypes:true})")
+            result = tx.run("CALL apoc.export.graphml.all(null,{useTypes:true, stream:true})")
+
+        return result
 
 
 if __name__ == "__main__":
@@ -498,12 +494,14 @@ if __name__ == "__main__":
     # print(neo.search_users({"id":0}))
     # print(neo.check_relationship_exists({"id_1": 0, "id_2": 0, "type_1": "BOT", "type_2": "USER"}))
 
-    #print(neo.get_following({"type": "BOT", "id": 0}))
-    #print(neo.get_followers({"type": "USER", "id": 0}))
-    
-    #neo.export_network()
-    #neo.export_network("csv")
-    neo.export_network("json")
+    # print(neo.get_following({"type": "BOT", "id": 0}))
+    # print(neo.get_followers({"type": "USER", "id": 0}))
 
+    # neo.export_network()
+    #print(neo.export_network("csv"))
+    #print()
+    print(neo.export_network("json"))
+    #print()
+    #print(neo.export_network())
 
     neo.close()
