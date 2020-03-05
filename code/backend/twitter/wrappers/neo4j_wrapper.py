@@ -1,10 +1,8 @@
 import logging
 import sys
 from neo4j import GraphDatabase
-
-sys.path.append("..")
-import credentials
 import datetime
+from twitter import credentials
 
 log = logging.getLogger("Neo4j")
 log.setLevel(logging.DEBUG)
@@ -308,7 +306,8 @@ class Neo4jAPI:
     def check_relationship_exists(self, data):
         """Method used to check whether a relationship exists between two IDs
 
-        @param data: The params of the entities involved in the relationshi+ we want to look for. Should include a type_1, type_2, id_1, id_2
+        @param data: The params of the entities involved in the relationshi+ we want to look for. Should include
+            a type_1, type_2, id_1, id_2
         """
         if (
             "id_1" not in data.keys()
@@ -444,7 +443,7 @@ class Neo4jAPI:
         @param export_name: The path we want to export to
         """
 
-        if export_type not in ["json","csv","graphml"]:
+        if export_type not in ["json", "csv", "graphml"]:
             log.error("ERROR EXPORTING RESULT")
             log.error(
                 "Error: ",
@@ -465,21 +464,21 @@ class Neo4jAPI:
             export_name = export_name + "." + export_type
         
         with self.driver.session() as session:
-            return session.write_transaction(self.__export_network, {"type":export_type,"name":export_name})
+            return session.write_transaction(self.__export_network, {"type": export_type, "name": export_name})
 
-    def __export_network(self,tx,data):
+    def __export_network(self, tx, data):
         log.debug("EXPORTING NETWORK")
 
         if data["type"] == "json":
             tx.run(
-                "CALL apoc.export.json.all('" + data["name"]  + "',{useTypes:true})"
+                "CALL apoc.export.json.all('" + data["name"] + "',{useTypes:true})"
             )
-        elif data["type"]  == "csv":
+        elif data["type"] == "csv":
             tx.run(
                 "CALL apoc.export.csv.all('" + data["name"] + "', {useTypes:true})"
             )
         else:
-            tx.run("CALL apoc.export.graphml.all('"+data["name"]+"', {useTypes:true})")
+            tx.run("CALL apoc.export.graphml.all('" + data["name"] + "', {useTypes:true})")
 
 
 if __name__ == "__main__":
@@ -498,12 +497,11 @@ if __name__ == "__main__":
     # print(neo.search_users({"id":0}))
     # print(neo.check_relationship_exists({"id_1": 0, "id_2": 0, "type_1": "BOT", "type_2": "USER"}))
 
-    #print(neo.get_following({"type": "BOT", "id": 0}))
-    #print(neo.get_followers({"type": "USER", "id": 0}))
+    # print(neo.get_following({"type": "BOT", "id": 0}))
+    # print(neo.get_followers({"type": "USER", "id": 0}))
     
-    #neo.export_network()
-    #neo.export_network("csv")
+    # neo.export_network()
+    # neo.export_network("csv")
     neo.export_network("json")
-
 
     neo.close()
