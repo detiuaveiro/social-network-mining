@@ -89,7 +89,7 @@ class MongoAPI:
             log.error("ERROR INSERTING DOCUMENT")
             log.error("Error: ", e)
 
-    def insert_messages(self, data):
+        def insert_messages(self, data):
         """Inserts a new single document into our Messages Collection
 
         @param data: The document to be inserted. Should be in the form of a dictionary

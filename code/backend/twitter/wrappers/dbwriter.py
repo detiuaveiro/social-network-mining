@@ -244,9 +244,37 @@ class DBWriter:
         
         @param data: dict containing the id of the bot and the user object
         """
-
         log.info("Saving User")
-        pass
+        log.info("First we check if the bot sending the message has been in the database")
+        exists = self.neo4j_client.check_bot_exists(data["bot_id"])
+        if not exists:
+            log.info("Bot is new to the party")
+            follow_list = self.pep.first_time_policy()
+            self.send(data["bot_id"], ResponseType.FOLLOW_USERS, {"type": "screen_name", "data": follow_list})
+            self.mongo_client.insert_users(data["data"])
+            self.neo4j_client.add_bot({"id": data['bot_id'], "name": data['data']['name'], "username": data['data']['screen_name']})
+        else:
+
+            is_bot = self.neo4j_client.check_bot_exists(data["data"]["id"])
+            if is_bot:
+                log.info("It's a bot that's already been registered in the database")
+                #Update the info of the bot
+                self.mongo_client.update_users(data["data"])
+                self.neo4j_client.update_bot({"id": data["data"]['id'], "name": data['data']['name'], "username": data['data']['screen_name']})
+
+            else:
+                if self.neo4j_client.check_user_exists(data["data"]["id"]):
+                    log.info("It's a user that's already been registered in the database")
+                    self.mongo_client.update_users(data["data"])
+                    self.neo4j_client.update_user({"id": data["data"["id"], "name": data['data']['name'], "username": data['data']['screen_name']]})
+
+                else:
+                    log.info("User is new to the party")
+                    self.mongo_client.insert_users(data["data"])
+                    self.neo4j_client.add_user({"id": data["data"["id"], "name": data['data']['name'],
+                                                         "username": data['data']['screen_name']]})
+
+        #missing log
 
     def save_tweet(self, data):
         """
@@ -256,17 +284,39 @@ class DBWriter:
         
         @param data: dict containing the id of the tweet to bee saved
         """
-        pass
+        tweet_exists = self.mongo_client.search(
+            collection="tweets",
+            query={"id": data["data"]["id"]},
+            single=True
+        )
+        if tweet_exists:
+            log.info("Updating tweet")
+            self.mongo_client.update_tweets(data['data'])
+            #missing log
+        else:
+            log.info("Inserting tweet")
+            self.mongo_client.insert_tweets(data['data'])
+            #missing log
 
     def save_dm(self, data):
         """
-        Stores the info about a direct message:
+        Stores the info about a bot's direct messages:
             Calls the mongo object to save or update a dm
             Adds the operation log to postgress_stats
         
-        @param data: dict containignt the id of the bot and the dm
+        @param data: dict containignt the id of the bot and the DMs
         """
-        pass
+        for message in data['data']:
+            message["bot_id"] = data["bot_id"]
+            message_exists = self.mongo_client.search(
+                collection="messages",
+                query={"id": message["bot_id"]},
+                single=True
+            )
+            if not message_exists:
+                log.info("NEW MESSAGE")
+                #missing log
+                self.mongo_client.insert_messages(message)
 
     def error(self, data):
         """
@@ -308,3 +358,7 @@ class DBWriter:
             conn.close()
         except:
             log.error("FAILED TO SEND MESSAGE:")
+
+
+if __name__ == "__main__":
+    dbwriter = DBWriter()
