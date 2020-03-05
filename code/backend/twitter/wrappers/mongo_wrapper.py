@@ -4,7 +4,8 @@ import sys
 import json
 import csv
 import datetime
-from twitter import credentials
+sys.path.append('..')
+import credentials
 
 
 log = logging.getLogger("Mongo")

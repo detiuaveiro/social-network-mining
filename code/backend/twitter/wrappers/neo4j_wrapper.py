@@ -2,7 +2,8 @@ import logging
 import sys
 from neo4j import GraphDatabase
 import datetime
-from twitter import credentials
+sys.path.append('..')
+import credentials
 
 log = logging.getLogger("Neo4j")
 log.setLevel(logging.DEBUG)

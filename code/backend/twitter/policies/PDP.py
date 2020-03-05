@@ -3,9 +3,9 @@ import json
 import random
 import sys
 
-sys.path.append('..')
-from wrappers.mongo_wrapper import *
-from wrappers.neo4j import *
+sys.path.append('../wrappers')
+from mongo_wrapper import *
+from neo4j import *
 from enums import *
 from credentials import *
 
