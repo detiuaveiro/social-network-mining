@@ -63,7 +63,7 @@ class MongoAPI:
                     return self.messages.count_documents(data)
             except Exception as e:
                 log.error("ERROR GETTING DOCUMENT COUNT")
-                log.error("Error: ", e)
+                log.error("Error: " + str(e))
 
     def insert_users(self, data):
         """Inserts a new single document into our Users Collection
@@ -75,7 +75,7 @@ class MongoAPI:
             log.debug("INSERT SUCCESFUL")
         except Exception as e:
             log.error("ERROR INSERTING DOCUMENT")
-            log.error("Error: ", e)
+            log.error("Error: " + str(e))
 
     def insert_tweets(self, data):
         """Inserts a new single document into our Tweets Collection
@@ -87,7 +87,7 @@ class MongoAPI:
             log.debug("INSERT SUCCESFUL")
         except Exception as e:
             log.error("ERROR INSERTING DOCUMENT")
-            log.error("Error: ", e)
+            log.error("Error: " + str(e))
 
     def insert_messages(self, data):
         """Inserts a new single document into our Messages Collection
@@ -99,16 +99,15 @@ class MongoAPI:
             log.debug("INSERT SUCCESFUL")
         except Exception as e:
             log.error("ERROR INSERTING DOCUMENT")
-            log.error("Error: ", e)
+            log.error("Error: " + str(e))
 
     def search(
-        self,
-        collection,
-        query={},
-        fields=None,
-        single=False,
-        export_type=None,
-        export_name=None,
+            self,
+            collection,
+            query={},
+            fields=None,
+            single=False,
+            export_type=None,
     ):
         """Searches the a collection by a given search query. Can also export to a json or csv
         
@@ -117,7 +116,6 @@ class MongoAPI:
         @param fields: Specifies the fields we want to show on the query result
         @param single: Whether we want to search only for one document or for all that match the query. By default we search for all
         @param export_type: Specifies whether or not to export the result. Can either be None, json or csv
-        @param export_name: Specifies the path where to export to.
         @return: The search result
         """
         if collection not in ["users", "tweets", "messages"]:
@@ -153,53 +151,41 @@ class MongoAPI:
 
             # Optionally export result
             if export_type is not None:
-                if export_name is None:
-                    export_name = (
-                        "../export_results/"
-                        + export_type
-                        + "/mongo_"
-                        + collection
-                        + "_"
-                        + str(datetime.datetime.now()).replace(" ", "_")
-                    )
-                    export_name = (
-                        export_name + ".json"
-                        if export_type == "json"
-                        else export_name + ".csv"
-                    )
-
-                self.__export_data(result, export_name, export_type)
+                return self.__export_data(result, export_type)
 
             return result
         except Exception as e:
             log.error("ERROR SEARCHING FOR DOCUMENT")
-            log.error("Error: ", e)
+            log.error("Error: " + str(e))
 
-    def __export_data(self, data, export_name, export_type):
+    def __export_data(self, data, export_type):
         """Exports a given array of documents into a csv or json
         
         @param data: An array of documents to export
-        @param export_name: The file path we want to export to
         @param export_type: The type of the file we want to export to
         """
         if export_type == "json":
-            with open(export_name, "w") as writer:
-                json.dump(data, writer, default=str)
+            return json.dumps(data, default=str)
 
         elif export_type == "csv":
-            # Get the values
+            csv_content = ""
+
+            # Get the header
             if len(data) != 0:
                 field_names = list(data[0].keys())
+                for field in field_names:
+                    csv_content += field + ","
+                csv_content = csv_content[:-1] + "\n"
             else:
                 field_names = []
 
-            with open(export_name, "w") as csv_file:
-                writer = csv.DictWriter(csv_file, fieldnames=field_names)
+            #Get the values
+            for row in data:
+                for field in row:
+                    csv_content += row[field] + ","
+                csv_content = csv_content[:-1] + "\n"
 
-                writer.writeheader()
-
-                for row in data:
-                    writer.writerow(row)
+            return csv_content[:-1]
 
         else:
             log.error("ERROR EXPORTING RESULT")
@@ -236,7 +222,6 @@ if __name__ == "__main__":
     # mongo.search(collection="tweets",export_type="json")
     # mongo.search(collection="users",query={"name": "ds"}, export_type="json")
 
-    mongo.search(collection="messages", fields=["name"], export_type="csv")
-    mongo.search(collection="tweets", export_type="csv")
-    mongo.search(collection="users", query={"name": "ds"}, export_type="csv")
-
+    print(mongo.search(collection="messages", fields=["name"], export_type="csv"))
+    # mongo.search(collection="tweets", export_type="csv")
+    # mongo.search(collection="users", query={"name": "ds"}, export_type="csv")
