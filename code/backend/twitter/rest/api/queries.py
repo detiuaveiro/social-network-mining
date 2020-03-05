@@ -68,6 +68,10 @@ def twitter_user_tweets(id):
 		return False, None, f"Erro a obter os tweets do utilizador de id {id}"
 
 
+def twitter_user_followers(id):
+	return False, None, ""
+
+
 ################# tweets #################
 
 def twitter_tweets(limit=None):
