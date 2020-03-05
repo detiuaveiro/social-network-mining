@@ -45,7 +45,7 @@ class Tweet(djongo_models.Model):
         managed = True
         db_table = "tweets"
 
-    
+
 class TweetStats(models.Model):
     tweet_id = models.BigIntegerField(primary_key=True)
     user_id = models.IntegerField()
@@ -70,3 +70,13 @@ class Policy(models.Model):
     class Meta:
         managed = True
         db_table = "policies"
+
+
+class Log(models.Model):
+    id_bot = models.IntegerField(primary_key=True)
+    timestamp = models.DateTimeField()
+    action = models.TextField()
+
+    class Meta:
+        managed = True
+        db_table = 'logs'
