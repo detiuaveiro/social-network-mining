@@ -13,7 +13,7 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 mongo = AppMongo(app, "users")  # Mongo App for users
 mongo_t = AppMongo(app, "tweets")  # Mongo App for tweets
 #postgres = postgreSQL_API("postgres")  # Postgres App (db name - postgres)
-postgres = postgreSQL_API("twitter_postgre")
+postgres = postgreSQL_API("twitter_postgres")
 policy = postgreSQL_API("policies")  # Postgres App (db name - policies)
 # neo = Neo4jAPI()  # Neo4j App
 elas = getESService()  # ElasticSearch App

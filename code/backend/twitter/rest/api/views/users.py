@@ -7,8 +7,7 @@ from api.views.utils import create_response
 
 @api_view(["GET"])
 def twitter_users(request):
-    """
-    Returns all the users saved on the mongo database
+    """Returns all the users saved on the mongo database
     """
     error_messages = []
     success_messages = []
@@ -46,11 +45,8 @@ def twitter_users_stats(request):
 
 @api_view(["GET"])
 def twitter_user(request, id):
-    """
-    Returns the user with the requested id
-
-    Keyword arguments:
-    id: id of the user wanted
+    """Returns the user with the requested id
+    :param id: id of the user wanted
     """
     error_messages = []
     success_messages = []
@@ -69,11 +65,8 @@ def twitter_user(request, id):
 
 @api_view(["GET"])
 def twitter_user_tweets(request, id):
-    """
-    Returns the tweets of the user with the requested id
-
-    Keyword arguments:
-    id: id of the user in relation which we want his tweets
+    """Returns the tweets of the user with the requested id
+    :param id: id of the user in relation which we want his tweets
     """
     error_messages = []
     success_messages = []
