@@ -79,7 +79,14 @@ def twitter_user_followers(id):
 
 
 def twitter_user_following(id):
-    return None
+    try:
+        following = neo4j.get_followers({'id': id})
+        if not following:
+            return False, None, f"Não existem  utilizadores a serem seguidos pelo utilizador de id {id} na base de dados"
+        return True, following, "Sucesso a obter todos os utilizadores que o utilizador pedido segue"
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        return False, None, f"Erro a obter os utilizadores que o utilizador de id {id} segue"
 
 
 ################# tweets #################
