@@ -46,3 +46,9 @@ class Policy(serializers.Serializer):
     tags = serializers.ListField(child=serializers.CharField())
     bots = serializers.ListField(child=serializers.IntegerField(validators=[]))
     active = serializers.BooleanField(required=False)
+
+
+class Log(serializers.Serializer):
+    id_bot = serializers.IntegerField()
+    timestamp = serializers.DateTimeField()
+    action = serializers.CharField()

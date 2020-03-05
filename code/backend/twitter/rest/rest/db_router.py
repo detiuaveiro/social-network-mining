@@ -12,7 +12,7 @@
 # All lower case !!!!
 DB_mapping = {
     'mongo': ['tweet', 'user'],
-    'postgres': ['policy', 'userstats', 'tweetstats']
+    'postgres': ['policy', 'userstats', 'tweetstats','log']
 }
 
 
