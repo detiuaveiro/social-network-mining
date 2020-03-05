@@ -260,3 +260,18 @@ def policy_by_service(service):
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, "Erro a obter as politicas do instagram"
+
+
+def twitter_bot_messages(id):
+    """
+    Return all privates messages from a bot
+    :param id: id's bot
+    :return: status(boolean), data, message(string)
+    """
+    try:
+        data = [serializers.Message(msg).data for msg in Message.objects.filter(bot_id=id)]
+        return True, data, f"Sucesso a obter as mensagens privadas dos bot com id {id}"
+
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        return False, None, f"Erro a obter as mensagens privadas dos bot com id {id}"
