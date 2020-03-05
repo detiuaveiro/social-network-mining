@@ -16,8 +16,9 @@ def next_id(model):
     return max_id + 1
 
 
-################# users #################
-
+# -----------------------------------------------------------
+# users
+# -----------------------------------------------------------
 
 def twitter_users():
     try:
@@ -61,7 +62,8 @@ def twitter_user_stats(id):
 def twitter_user_tweets(id):
     try:
         user_tweets = Tweet.objects.filter(user=id)
-        return True, [serializers.Tweet(tweet).data for tweet in user_tweets], "Sucesso a obter todos os tweets do utilizador pedido"
+        return True, [serializers.Tweet(tweet).data for tweet in
+                      user_tweets], "Sucesso a obter todos os tweets do utilizador pedido"
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, f"Erro a obter os tweets do utilizador de id {id}"
@@ -89,7 +91,9 @@ def twitter_user_following(id):
         return False, None, f"Erro a obter os utilizadores que o utilizador de id {id} segue"
 
 
-################# tweets #################
+# -----------------------------------------------------------
+# tweets
+# -----------------------------------------------------------
 
 def twitter_tweets(limit=None):
     try:
@@ -106,7 +110,8 @@ def twitter_tweets(limit=None):
 
 def twitter_tweets_stats():
     try:
-        return True, [serializers.TweetStats(tweet).data for tweet in TweetStats.objects.all()], "Sucesso a obter as estatisticas de todos os tweets"
+        return True, [serializers.TweetStats(tweet).data for tweet in
+                      TweetStats.objects.all()], "Sucesso a obter as estatisticas de todos os tweets"
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, "Erro a obter as estatisticas de todos os tweets"
@@ -139,7 +144,8 @@ def twitter_tweet_replies(id):
     try:
         Tweet.objects.get(in_reply_to_status_id=id)
         all_tweets = Tweet.objects.filter(in_reply_to_status_id=id)
-        return True, [serializers.Tweet(tweet).data for tweet in all_tweets], "Sucesso a obter todas as replies ao tweet"
+        return True, [serializers.Tweet(tweet).data for tweet in
+                      all_tweets], "Sucesso a obter todas as replies ao tweet"
     except Tweet.DoesNotExist:
         return False, None, f"Não existem replies ao tweet de id {id}"
     except Exception as e:
@@ -147,11 +153,12 @@ def twitter_tweet_replies(id):
         return False, None, f"Erro a obter todas as replies do tweet de id {id}"
 
 
-################# policies #################
+# -----------------------------------------------------------
+# policies
+# -----------------------------------------------------------
 
 def policy(id):
-    """
-    Get a policy by ID saved in DB
+    """Get a policy by ID saved in DB
     :param id: policy id
     :return: sstatus(boolean), data, message(string)
     """
@@ -168,8 +175,7 @@ def policy(id):
 
 
 def policies():
-    """
-    Get all availables policies saved on DB
+    """Get all availables policies saved on DB
     :return: status(boolean), data, message(string)
     """
     try:
@@ -183,8 +189,7 @@ def policies():
 
 
 def bot_policies(id):
-    """
-    Get all availables policies by bot's id saved on DB
+    """Get all availables policies by bot's id saved on DB
     :return: status(boolean), data, message(string)
     """
     try:
@@ -198,17 +203,16 @@ def bot_policies(id):
 
 
 def add_policy(data):
-    """
-    Add new policy to DB
+    """Add new policy to DB
     :param data: Dictionary with data to be inserted
-            Items:
-                    - id : int
-                    - API_type : str
-                    - filter : str
-                    - name : str
-                    - tags : str[]
-                    - bots : int[]
-            Ex: { "API_type": "TWITTER", "filter": "USERNAME", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
+        Items:
+                - id : int
+                - API_type : str
+                - filter : str
+                - name : str
+                - tags : str[]
+                - bots : int[]
+        Ex: { "API_type": "TWITTER", "filter": "USERNAME", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
     :return: status(boolean), data, message(string)
     """
     try:
@@ -227,8 +231,7 @@ def add_policy(data):
 
 
 def remove_policy(id):
-    """
-    Remove a policy by ID saved in DB
+    """Remove a policy by ID saved in DB
     :param id: policy id
     :return: status(boolean), data, message(string)
     """
@@ -245,8 +248,7 @@ def remove_policy(id):
 
 
 def update_policy(data, id):
-    """
-    Update a policy by ID saved in DB
+    """Update a policy by ID saved in DB
     :param id: policy id
     :return: status(boolean), data, message(string)
     """
@@ -267,16 +269,30 @@ def update_policy(data, id):
 
 
 def policy_by_service(service):
-    """
-    Return all service policies saved in DB
+    """Return all service policies saved in DB
     :param id: service name
     :return: status(boolean), data, message(string)
     """
     try:
         data = [serializers.Policy(
-            policy).data for policy in Policy.objects.filter(API_type=service)]
+                policy).data for policy in Policy.objects.filter(API_type=service)]
         return True, data, f"Sucesso a obter as politicas do instagram"
 
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, "Erro a obter as politicas do instagram"
+
+
+def twitter_bot_messages(id):
+    """
+    Return all privates messages from a bot
+    :param id: id's bot
+    :return: status(boolean), data, message(string)
+    """
+    try:
+        data = [serializers.Message(msg).data for msg in Message.objects.filter(bot_id=id)]
+        return True, data, f"Sucesso a obter as mensagens privadas dos bot com id {id}"
+
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        return False, None, f"Erro a obter as mensagens privadas dos bot com id {id}"
