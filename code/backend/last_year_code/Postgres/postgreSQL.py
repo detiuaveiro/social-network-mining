@@ -41,7 +41,7 @@ class postgreSQL_API:
                 (mapa["tweet_id"], mapa["user_id"], mapa["likes"], mapa["retweets"]))
             self.conn.commit()
             cur.close()
-        except psycopg2.Error a s e:
+        except psycopg2.Error as e:
             self.conn.rollback()
             print(e)
             return {e.diag.severity: e.diag.message_primary}
