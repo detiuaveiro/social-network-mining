@@ -6,9 +6,9 @@ import sys
 from mongo_wrapper import MongoAPI
 from neo4j_wrapper import Neo4jAPI
 
-sys.path.append("..")
+sys.path.append("../policies")
 from enums import *
-from policies.PEP import PEP
+from PEP import PEP
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.INFO)
