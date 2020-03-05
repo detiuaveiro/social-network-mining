@@ -441,7 +441,6 @@ class Neo4jAPI:
         """Method used to export the entire database
 
         @param export_type: What type we want to export to. Graphml by default
-        @param export_name: The path we want to export to
         """
 
         if export_type not in ["json", "csv", "graphml"]:
@@ -453,11 +452,13 @@ class Neo4jAPI:
 
             return
 
-
         with self.driver.session() as session:
             result = session.write_transaction(self.__export_network, export_type)
 
             result = result.data()[0]["data"]
+
+            if export_type == "json":
+                result = "[" + result.replace("\n", ",") + "]"
 
             return result
 
@@ -498,10 +499,10 @@ if __name__ == "__main__":
     # print(neo.get_followers({"type": "USER", "id": 0}))
 
     # neo.export_network()
-    #print(neo.export_network("csv"))
-    #print()
+    print(neo.export_network("csv"))
+    print()
     print(neo.export_network("json"))
-    #print()
-    #print(neo.export_network())
+    print()
+    print(neo.export_network())
 
     neo.close()
