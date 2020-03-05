@@ -16,8 +16,9 @@ def next_id(model):
     return max_id + 1
 
 
-################# users #################
-
+# -----------------------------------------------------------
+# users
+# -----------------------------------------------------------
 
 def twitter_users():
     try:
@@ -41,7 +42,7 @@ def twitter_user(id):
 def twitter_users_stats():
     try:
         return True, [serializers.UserStats(us).data for us in UserStats.objects.all()], \
-               "Sucesso a obter as estatisticas de todos os utilizadores"
+            "Sucesso a obter as estatisticas de todos os utilizadores"
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, f"Erro as estatisticas de todos os utilizadores"
@@ -50,7 +51,7 @@ def twitter_users_stats():
 def twitter_user_stats(id):
     try:
         return True, serializers.UserStats(UserStats.objects.get(user_id=id)).data, \
-               "Sucesso a obter as estatisticas do utilizador pedido"
+            "Sucesso a obter as estatisticas do utilizador pedido"
     except UserStats.DoesNotExist:
         return False, None, f"Não existe nenhum utilizador com o id {id} na base de dados de estatisticas"
     except Exception as e:
@@ -70,7 +71,9 @@ def twitter_user_tweets(id):
         return False, None, f"Erro a obter os tweets do utilizador de id {id}"
 
 
-################# tweets #################
+# -----------------------------------------------------------
+# tweets
+# -----------------------------------------------------------
 
 def twitter_tweets(limit=None):
     try:
@@ -109,7 +112,7 @@ def twitter_tweet(id):
 def twitter_tweet_stats(id):
     try:
         return True, serializers.TweetStats(TweetStats.objects.get(tweet_id=id)).data, \
-               "Sucesso a obter as estatisticas do tweet de id pedido"
+            "Sucesso a obter as estatisticas do tweet de id pedido"
     except TweetStats.DoesNotExist:
         return False, None, f"Não existem estatísticas do tweet de id {id} na base de dados"
     except Exception as e:
@@ -130,7 +133,9 @@ def twitter_tweet_replies(id):
         return False, None, f"Erro a obter todas as replies do tweet de id {id}"
 
 
-################# policies #################
+# -----------------------------------------------------------
+# policies
+# -----------------------------------------------------------
 
 def policy(id):
     """
@@ -278,3 +283,18 @@ def twitter_bots():
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, "Erro a obter a informação de todos os bots"
+
+
+def twitter_bot_messages(id):
+    """
+    Return all privates messages from a bot
+    :param id: id's bot
+    :return: status(boolean), data, message(string)
+    """
+    try:
+        data = [serializers.Message(msg).data for msg in Message.objects.filter(bot_id=id)]
+        return True, data, f"Sucesso a obter as mensagens privadas dos bot com id {id}"
+
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        return False, None, f"Erro a obter as mensagens privadas dos bot com id {id}"
