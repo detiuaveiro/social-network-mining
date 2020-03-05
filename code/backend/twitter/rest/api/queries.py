@@ -267,7 +267,7 @@ def policy_by_service(service):
         return False, None, "Erro a obter as politicas do instagram"
 
 
-## Bots
+# Bots
 
 def twitter_bots():
     """
