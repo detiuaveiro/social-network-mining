@@ -4,6 +4,7 @@ import logging
 import sys
 
 from mongo_wrapper import MongoAPI
+from neo4j import Neo4jAPI
 
 sys.path.append("..")
 from enums import *
@@ -27,7 +28,8 @@ class DBWriter:
         #Falta as API
         #...
         self.mongo_client = MongoAPI()
-        pass
+        self.neo4j_client = Neo4jAPI()
+        self
 
     def action(self, message):
         message_type = message['type']
@@ -81,7 +83,16 @@ class DBWriter:
 
         @param data: dict containing bot and the user he's following
         """
-        pass
+        log.info("A bot has started following someone")
+        type1 = "BOT" if self.neo4j_client.check_bot_exists(data["bot_id"]) else "USER"
+        type2 = "BOT" if self.neo4j_client.check_bot_exists(data["data"]["id"]) else "USER"
+        self.neo4j_client.add_relationship({
+            "id_1": data["bot_id"],
+            "id_2": data["data"]["id"],
+            "type1": type1,
+            "type2": type2
+        })
+        #falta pro postgres2
 
     def like_tweet(self, data):
         """
@@ -113,9 +124,9 @@ class DBWriter:
     def request_tweet_like(self, data):
         """
         Action to request a like on tweeter:
-            Calls the control center to request the like
+            Calls the PEP to request a like
             Adds the log to postgres_stats, for the request and its result
-            The result is based on the Policy API object
+            The result is based on the PDP methods
         
         @param data: dict containing the bot id and the tweet id
         """
@@ -124,9 +135,9 @@ class DBWriter:
     def request_retweet(self, data):
         """
         Action to request a retweet:
-            Calls the control center to request the retweet
+            Calls the PEP to request the retweet
             Adds the log to postgres_stats, for the request and its result
-            The result is based on the Policy API object
+            The result is based on the PDP methods
         
         2param data: dict containing the bot id and the tweet id
         """
