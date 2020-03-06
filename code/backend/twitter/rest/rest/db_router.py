@@ -11,7 +11,7 @@
 """
 # All lower case !!!!
 DB_mapping = {
-    'mongo': ['tweet', 'user'],
+    'mongo': ['tweet', 'user', 'message'],
     'postgres': ['policy', 'userstats', 'tweetstats']
 }
 
@@ -56,8 +56,10 @@ class DB_Router:
 
     def allow_relation(self, obj1, obj2, **hints):
         """
-        Return True if a relation between obj1 and obj2 should be allowed, False if the relation should be prevented, or None if the router has no opinion.
-        This is purely a validation operation, used by foreign key and many to many operations to determine if a relation should be allowed between two objects.
+        Return True if a relation between obj1 and obj2 should be allowed, False if the relation should be prevented, 
+            or None if the router has no opinion.
+        This is purely a validation operation, used by foreign key and many to many operations to determine if a 
+            relation should be allowed between two objects.
         Decide if relation between 2 models from 2 differents database can interact through a relation
 
         :param obj1: model Object
