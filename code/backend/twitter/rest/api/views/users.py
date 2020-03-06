@@ -7,9 +7,8 @@ from api.views.utils import create_response
 
 @api_view(["GET"])
 def twitter_users(request):
+    """Returns all the users saved on the mongo database
     """
-Returns all the users saved on the mongo database
-"""
     error_messages = []
     success_messages = []
     status = HTTP_200_OK
@@ -46,12 +45,9 @@ def twitter_users_stats(request):
 
 @api_view(["GET"])
 def twitter_user(request, id):
+    """Returns the user with the requested id
+    :param id: id of the user wanted
     """
-Returns the user with the requested id
-
-Keyword arguments:
-id: id of the user wanted
-"""
     error_messages = []
     success_messages = []
     status = HTTP_200_OK
@@ -69,12 +65,9 @@ id: id of the user wanted
 
 @api_view(["GET"])
 def twitter_user_tweets(request, id):
+    """Returns the tweets of the user with the requested id
+    :param id: id of the user in relation which we want his tweets
     """
-Returns the tweets of the user with the requested id
-
-Keyword arguments:
-id: id of the user in relation which we want his tweets
-"""
     error_messages = []
     success_messages = []
     status = HTTP_200_OK
@@ -110,8 +103,24 @@ def twitter_user_followers(request, id):
                            success_messages=success_messages, status=status)
 
 
+@api_view(["GET"])
 def twitter_user_following(request, id):
-    return None
+    """Function to retrieve all the following users of some requested user
+    :param id: id of the user whom we want the following users
+    """
+    error_messages = []
+    success_messages = []
+    status = HTTP_200_OK
+
+    success, data, message = queries.twitter_user_following(int(id))
+    if success:
+        success_messages.append(message)
+    else:
+        error_messages.append(message)
+        status = HTTP_403_FORBIDDEN
+
+    return create_response(data=data, error_messages=error_messages,
+                           success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])

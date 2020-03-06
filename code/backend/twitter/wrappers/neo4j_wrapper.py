@@ -2,8 +2,13 @@ import logging
 import sys
 from neo4j import GraphDatabase
 import datetime
+<<<<<<< HEAD
 import credentials
 
+=======
+sys.path.append('..')
+import credentials
+>>>>>>> master
 
 log = logging.getLogger("Neo4j")
 log.setLevel(logging.DEBUG)
@@ -12,6 +17,10 @@ handler.setFormatter(
     logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s")
 )
 log.addHandler(handler)
+
+BOT_LABEL = "Bot"
+USER_LABEL = "User"
+FOLLOW_LABEL = "FOLLOWS"
 
 
 class Neo4jAPI:
@@ -31,9 +40,9 @@ class Neo4jAPI:
         @param data: The params of the new bot we want to create. Should include an id, name and username
         """
         if (
-            "id" not in data.keys()
-            or "name" not in data.keys()
-            or "username" not in data.keys()
+                "id" not in data.keys()
+                or "name" not in data.keys()
+                or "username" not in data.keys()
         ):
             log.error("ERROR CREATING A BOT")
             log.error(
@@ -51,7 +60,7 @@ class Neo4jAPI:
 
         # Note we use Merge rather than Create to avoid duplicates
         tx.run(
-            "MERGE (:BOT { name: $name, id: $id, username: $username })",
+            f"MERGE (:{BOT_LABEL} {{ name: $name, id: $id, username: $username }} )",
             id=data["id"],
             name=data["name"],
             username=data["username"],
@@ -63,9 +72,9 @@ class Neo4jAPI:
         @param data: The params of the new bot we want to create. Should include an id, name and username
         """
         if (
-            "id" not in data.keys()
-            or "name" not in data.keys()
-            or "username" not in data.keys()
+                "id" not in data.keys()
+                or "name" not in data.keys()
+                or "username" not in data.keys()
         ):
             log.error("ERROR CREATING A USER")
             log.debug(
@@ -82,7 +91,7 @@ class Neo4jAPI:
         log.debug("CREATING USER")
 
         tx.run(
-            "MERGE (:USER { name: $name, id: $id, username: $username })",
+            f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username }})",
             id=data["id"],
             name=data["name"],
             username=data["username"],
@@ -94,10 +103,10 @@ class Neo4jAPI:
         @param data: The params of the new relationship we want to create. Should include a type_1, type_2, id_1, id_2
         """
         if (
-            "id_1" not in data.keys()
-            or "id_2" not in data.keys()
-            or "type_1" not in data.keys()
-            or "type_2" not in data.keys()
+                "id_1" not in data.keys()
+                or "id_2" not in data.keys()
+                or "type_1" not in data.keys()
+                or "type_2" not in data.keys()
         ):
             log.error("ERROR CREATING A RELATIONSHIP")
             log.error(
@@ -106,12 +115,12 @@ class Neo4jAPI:
 
             return
 
-        if data["type_1"] not in ["BOT", "USER"] or data["type_2"] not in [
-            "BOT",
-            "USER",
+        if data["type_1"] not in [BOT_LABEL, USER_LABEL] or data["type_2"] not in [
+            BOT_LABEL,
+            USER_LABEL,
         ]:
             log.error("ERROR CREATING A RELATIONSHIP")
-            log.error("Error: Unaceptable specified types. Types must be BOT or USER")
+            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
             return
 
@@ -122,17 +131,8 @@ class Neo4jAPI:
     def __create_relationship(self, tx, data):
         log.debug("CREATING RELATIONSHIP")
 
-        query = (
-            "MATCH (u:"
-            + data["type_1"]
-            + " {id: "
-            + str(data["id_1"])
-            + " }), (r:"
-            + data["type_2"]
-            + " {id: "
-            + str(data["id_2"])
-            + "}) MERGE (u)-[:FOLLOWS]->(r)"
-        )
+        query = f'MATCH (u: {data["type_1"]} {{ id: {str(data["id_1"])} }}), ' \
+                f'(r: {data["type_2"]} {{ id: {str(data["id_2"])} }}) MERGE (u)-[:{FOLLOW_LABEL}]->(r)'
 
         tx.run(query)
 
@@ -149,7 +149,7 @@ class Neo4jAPI:
     def __bot_exists(self, tx, data):
         log.debug("CHECKING BOT EXISTANCE")
 
-        result = tx.run("MATCH (r:BOT { id:$id }) RETURN r", id=data)
+        result = tx.run(f"MATCH (r:{BOT_LABEL} {{ id:$id }}) RETURN r", id=data)
 
         if len(result.data()) == 0:
             return False
@@ -169,7 +169,7 @@ class Neo4jAPI:
     def __user_exists(self, tx, data):
         log.debug("CHECKING USER EXISTANCE")
 
-        result = tx.run("MATCH (r:USER { id:$id }) RETURN r", id=data)
+        result = tx.run(f"MATCH (r:{USER_LABEL} {{ id:$id }}) RETURN r", id=data)
 
         if len(result.data()) == 0:
             return False
@@ -203,13 +203,7 @@ class Neo4jAPI:
         if "name" in data.keys():
             set_query += "r.name = '" + data["name"] + "',"
 
-        query = (
-            "MATCH (r:USER {id:"
-            + str(data["id"])
-            + "}) "
-            + set_query[:-1]
-            + " RETURN r"
-        )  # Note we use set_query[:-1] in order to remove the final comma (,)
+        query = f'MATCH (r: {USER_LABEL} {{ id : {str(data["id"])} }}) {set_query[:-1]} RETURN r'
 
         tx.run(query)
 
@@ -240,9 +234,8 @@ class Neo4jAPI:
         if "name" in data.keys():
             set_query += "r.name = '" + data["name"] + "',"
 
-        query = (
-            "MATCH (r:BOT {id:" + str(data["id"]) + "}) " + set_query[:-1] + " RETURN r"
-        )  # Note we use set_query[:-1] in order to remove the final comma (,)
+        query = f'MATCH (r:{BOT_LABEL} {{ id: {str(data["id"])} }}) {set_query[:-1]}  RETURN r'
+        # Note we use set_query[:-1] in order to remove the final comma (,)
 
         tx.run(query)
 
@@ -268,7 +261,8 @@ class Neo4jAPI:
             query_filters += "username: '" + data["username"] + "',"
         query_filters = query_filters[:-1] + "}"
 
-        query = "MATCH (r:BOT " + query_filters + ") RETURN r"
+        query = f'MATCH (r:{BOT_LABEL} {query_filters}) RETURN r'
+
         result = []
         for i in tx.run(query):
             result.append(dict(i.items()[0][1]))
@@ -297,7 +291,8 @@ class Neo4jAPI:
             query_filters += "username: '" + data["username"] + "',"
         query_filters = query_filters[:-1] + "}"
 
-        query = "MATCH (r:USER " + query_filters + ") RETURN r"
+        query = f'MATCH (r:{USER_LABEL} {query_filters}) RETURN r'
+
         result = []
         for i in tx.run(query):
             result.append(dict(i.items()[0][1]))
@@ -311,10 +306,10 @@ class Neo4jAPI:
             a type_1, type_2, id_1, id_2
         """
         if (
-            "id_1" not in data.keys()
-            or "id_2" not in data.keys()
-            or "type_1" not in data.keys()
-            or "type_2" not in data.keys()
+                "id_1" not in data.keys()
+                or "id_2" not in data.keys()
+                or "type_1" not in data.keys()
+                or "type_2" not in data.keys()
         ):
             log.error("ERROR CHECKING RELATIONSHIP")
             log.debug(
@@ -323,12 +318,12 @@ class Neo4jAPI:
 
             return
 
-        if data["type_1"] not in ["BOT", "USER"] or data["type_2"] not in [
-            "BOT",
-            "USER",
+        if data["type_1"] not in [BOT_LABEL, USER_LABEL] or data["type_2"] not in [
+            BOT_LABEL,
+            USER_LABEL,
         ]:
             log.error("ERROR CHECKING RELATIONSHIP")
-            log.error("Error: Unaceptable specified types. Types must be BOT or USER")
+            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
             return
 
@@ -339,17 +334,8 @@ class Neo4jAPI:
     def __check_relationship(self, tx, data):
         log.debug("VERIFYING RELATIONSHIP EXISTANCE")
 
-        query = (
-            "MATCH (a:"
-            + data["type_1"]
-            + " {id: "
-            + str(data["id_1"])
-            + " })-[r:FOLLOWS]->(b:"
-            + data["type_2"]
-            + " {id: "
-            + str(data["id_2"])
-            + "}) RETURN a, b"
-        )
+        query = f'MATCH (a: {data["type_1"]} {{id: {str(data["id_1"])} }})-[r:{FOLLOW_LABEL}]' \
+                f'->(b:{data["type_2"]} {{id: {str(data["id_2"])} }}) RETURN a, b'
 
         result = tx.run(query)
 
@@ -363,7 +349,7 @@ class Neo4jAPI:
 
         @param data: The specification of who we want to get the followings of. Should include a id and type
         """
-        if "id" not in data.keys() or "type" not in data.keys():
+        if "id" not in data.keys():
             log.error("ERROR RETRIEVING FOLLOWINGS")
             log.error(
                 "Error: Specified data doesn't contain necessary fields - type, id"
@@ -371,9 +357,9 @@ class Neo4jAPI:
 
             return
 
-        if data["type"] not in ["BOT", "USER"]:
+        if data["type"] not in [BOT_LABEL, USER_LABEL]:
             log.error("ERROR RETRIEVING FOLLOWINGS")
-            log.error("Error: Unaceptable specified types. Types must be BOT or USER")
+            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
             return
 
@@ -383,13 +369,8 @@ class Neo4jAPI:
 
     def __get_following(self, tx, data):
         log.debug("GETTING FOLLOWINGS")
-        query = (
-            "MATCH (a:"
-            + data["type"]
-            + " {id: "
-            + str(data["id"])
-            + " })-[r:FOLLOWS]->(b) RETURN b"
-        )
+
+        query = f'MATCH (a:{data["type"]} {{id: {str(data["id"])} }})-[r:{FOLLOW_LABEL}]->(b) RETURN b'
 
         result = []
         for i in tx.run(query):
@@ -410,9 +391,9 @@ class Neo4jAPI:
 
             return
 
-        if "type" in data and data["type"] not in ["BOT", "USER"]:
+        if data["type"] not in [BOT_LABEL, USER_LABEL]:
             log.error("ERROR RETRIEVING FOLLOWINGS")
-            log.error("Error: Unaceptable specified types. Types must be BOT or USER")
+            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
             return
 
@@ -422,13 +403,8 @@ class Neo4jAPI:
 
     def __get_followers(self, tx, data):
         log.debug("GETTING FOLLOWERS")
-        query = (
-            "MATCH (b)-[r:FOLLOWS]->"
-            + f"(a {': ' + data['type'] if 'type' in data else ''}"
-            + " {id: "
-            + str(data["id"])
-            + " }) RETURN b"
-        )
+
+        query = f'MATCH (b)-[r:{FOLLOW_LABEL}]->(a:{data["type"]} {{id: {str(data["id"])} }}) RETURN b'
 
         result = []
         for i in tx.run(query):
@@ -451,7 +427,7 @@ class Neo4jAPI:
             )
 
             return
-        
+
         if export_name is None:
             export_name = (
                 "../export_results/"
@@ -460,9 +436,9 @@ class Neo4jAPI:
                 + "_"
                 + str(datetime.datetime.now()).replace(" ", "_")
             )
-            
+
             export_name = export_name + "." + export_type
-        
+
         with self.driver.session() as session:
             return session.write_transaction(self.__export_network, {"type": export_type, "name": export_name})
 
@@ -485,7 +461,7 @@ if __name__ == "__main__":
     neo = Neo4jAPI()
     # neo.add_bot({"id":0,"name":"Jonas","username":"Jonas_Pistolas"})
     # neo.add_user({"id":0,"name":"DS","username":"FenixD.S"})
-    # neo.add_relationship({"id_1": 0, "id_2": 0, "type_1": "BOT", "type_2": "USER"})
+    # neo.add_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
 
     # print(neo.check_bot_exists(0))
     # print(neo.check_user_exists(0))
@@ -493,15 +469,17 @@ if __name__ == "__main__":
     # neo.update_user({"id": 0, "name": "Diogo Ass"})
     # neo.update_user({"id": 0, "username": "FenixDickSucker","name":"DS"})
 
-    # print(neo.search_bots({"name":"Jonas"}))
-    # print(neo.search_users({"id":0}))
-    # print(neo.check_relationship_exists({"id_1": 0, "id_2": 0, "type_1": "BOT", "type_2": "USER"}))
+    # neo.update_bot({"id":0,"name":"bot lindo"})
 
-    # print(neo.get_followingfrom ({"type": "BOT", "id": 0}))
-    # print(neo.get_followers({"type": "USER", "id": 0}))
-    
+    # print(neo.search_bots({"name":"bot lindo"}))
+    # print(neo.search_users({"id":0}))
+    # print(neo.check_relationship_exists({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL}))
+
+    # print(neo.get_following({"type": BOT_LABEL, "id": 0}))
+    # print(neo.get_followers({"type": USER_LABEL, "id": 0}))
+
     # neo.export_network()
     # neo.export_network("csv")
-    neo.export_network("json")
+    # neo.export_network("json")
 
     neo.close()
