@@ -254,7 +254,7 @@ class Neo4jAPI:
             query_filters += "name: '" + data["name"] + "',"
         if "username" in data.keys():
             query_filters += "username: '" + data["username"] + "',"
-        query_filters = query_filters[:-1] + "}"
+        query_filters += query_filters[:-1] + "}"
 
         query = f'MATCH (r:{BOT_LABEL} {query_filters}) RETURN r'
 
