@@ -281,7 +281,7 @@ def twitter_bots():
         return True, data, f"Sucesso a obter a informação de todos os bots"
 
     except Exception as e:
-        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_bots.__name__} -> {e}")
         return False, None, "Erro a obter a informação de todos os bots"
 
 
