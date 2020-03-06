@@ -80,6 +80,17 @@ def twitter_user_followers(id):
         return False, None, f"Erro a obter os followers do utilizador de id {id}"
 
 
+def twitter_user_following(id):
+    try:
+        following = neo4j.get_followers({'id': id})
+        if not following:
+            return False, None, f"Não existem  utilizadores a serem seguidos pelo utilizador de id {id} na base de dados"
+        return True, following, "Sucesso a obter todos os utilizadores que o utilizador pedido segue"
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        return False, None, f"Erro a obter os utilizadores que o utilizador de id {id} segue"
+
+
 # -----------------------------------------------------------
 # tweets
 # -----------------------------------------------------------
@@ -270,3 +281,18 @@ def policy_by_service(service):
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, "Erro a obter as politicas do instagram"
+
+
+def twitter_bot_messages(id):
+    """
+    Return all privates messages from a bot
+    :param id: id's bot
+    :return: status(boolean), data, message(string)
+    """
+    try:
+        data = [serializers.Message(msg).data for msg in Message.objects.filter(bot_id=id)]
+        return True, data, f"Sucesso a obter as mensagens privadas dos bot com id {id}"
+
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        return False, None, f"Erro a obter as mensagens privadas dos bot com id {id}"
