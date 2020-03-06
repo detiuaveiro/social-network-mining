@@ -3,7 +3,7 @@ from datetime import datetime
 from django.db.models import Max
 from api.models import *
 import api.serializers as serializers
-
+from api import neo4j
 
 logger = logging.getLogger('queries')
 
@@ -82,7 +82,7 @@ def twitter_user_followers(id):
 
 def twitter_user_following(id):
     try:
-        following = neo4j.get_followers({'id': id})
+        following = neo4j.get_following({'id': id})
         if not following:
             return False, None, f"Não existem  utilizadores a serem seguidos pelo utilizador de id {id} na base de dados"
         return True, following, "Sucesso a obter todos os utilizadores que o utilizador pedido segue"
