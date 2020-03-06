@@ -203,6 +203,56 @@ class PostgresPoliciesAPI:
             print(error)
 
 
+    def search_tweet(self, params=None):
+        """
+        Searches and returns all Tweets if no data is specified, or the specific tweet matching the given parameters
+
+        @param params: The parameters we want to query
+        @return The query's result or error
+        """
+
+        try:
+            cursor = self.conn.cursor()
+
+            query = "select timestamp, tweet_id, likes, retweets from tweets "
+            if params == None:
+                query += ";"
+            else:
+                query += "WHERE "
+                control = 0
+                if "tweet_id" in params.keys():
+                    query += "tweet_id = " + params["tweet_id"]
+                    control = 1
+                if "likes" in params.keys():
+                    if control == 1:
+                        query += " AND "
+                    query += "likes = " + params["likes"]
+                    control = 1
+                if "retweets" in params.keys():
+                    if control == 1:
+                        query += " AND "
+                    query += "retweets = " + params["retweets"]
+
+                query += ";"
+
+            cursor.execute(query)
+
+            data = cursor.fetchall()
+
+            self.conn.commit()
+            cursor.close()
+
+            # result = self.postProcessResults(data, ['timestamp', 'tweet_id', 'likes', 'retweets'])
+            result = []  # Array of jsons
+            for tuple in data:
+                result.append({"timestamp": tuple[0], "tweet_id": tuple[1], "likes": tuple[2], "retweets": tuple[3]})
+
+            return {"success": True, "data": result}
+        except psycopg2.Error as e:
+            self.conn.rollback()
+            return {"success": False, "error": error}
+
+
 if __name__ == "__main__":
     # TODO: Test and implement searching by timestamp ; Policies API
     anal = PostgresAnalysisAPI()
