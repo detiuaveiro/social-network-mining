@@ -127,7 +127,7 @@ class PostgresAnalysisAPI:
                 result.append({"timestamp": tuple[0], "tweet_id": tuple[1], "likes": tuple[2], "retweets": tuple[3]})
 
             return {"success": True, "data": result}
-        except psycopg2.Error as e:
+        except psycopg2.Error as error:
             self.conn.rollback()
             return {"success": False, "error": error}
 
@@ -180,7 +180,7 @@ class PostgresAnalysisAPI:
                     {"timestamp": tuple[0], "user_id": tuple[1], "followers": tuple[2], "following": tuple[3]})
 
             return {"success": True, "data": result}
-        except psycopg2.Error as e:
+        except psycopg2.Error as error:
             self.conn.rollback()
             return {"success": False, "error": error}
 
@@ -248,7 +248,7 @@ class PostgresPoliciesAPI:
                 result.append({"timestamp": tuple[0], "tweet_id": tuple[1], "likes": tuple[2], "retweets": tuple[3]})
 
             return {"success": True, "data": result}
-        except psycopg2.Error as e:
+        except psycopg2.Error as error:
             self.conn.rollback()
             return {"success": False, "error": error}
 
@@ -258,9 +258,16 @@ if __name__ == "__main__":
     anal = PostgresAnalysisAPI()
     # anal.insert_tweet({"tweet_id": 831606548300517377, "user_id": 6253282, "likes": 100, "retweets": 2})
     # anal.insert_user({"user_id": 6253283, "followers": 10000, "following": 1234})
-    for i in anal.search_tweet()["data"]:
-        print(i)
-    for i in anal.search_user()["data"]:
-        print(i)
+    try:
+        for i in anal.search_tweet()["data"]:
+            print(i)
+    except:
+        print(anal.search_tweet()["error"])
+
+    try:
+        for i in anal.search_user()["data"]:
+            print(i)
+    except:
+        print(anal.search_tweet()["error"])
 
     # print(datetime.datetime.now())
