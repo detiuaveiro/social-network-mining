@@ -2,13 +2,8 @@ import logging
 import sys
 from neo4j import GraphDatabase
 import datetime
-<<<<<<< HEAD
-import credentials
-
-=======
 sys.path.append('..')
 import credentials
->>>>>>> master
 
 log = logging.getLogger("Neo4j")
 log.setLevel(logging.DEBUG)
