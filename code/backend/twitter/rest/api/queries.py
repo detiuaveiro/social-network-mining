@@ -16,8 +16,9 @@ def next_id(model):
     return max_id + 1
 
 
-################# users #################
-
+# -----------------------------------------------------------
+# users
+# -----------------------------------------------------------
 
 def twitter_users():
     try:
@@ -30,7 +31,7 @@ def twitter_users():
 
 def twitter_user(id):
     try:
-        return True, serializers.User(User.objects.get(user_id=id)).data, "Sucesso a obter o utilizador pedido"
+        return True, serializers.User(User.objects.get(user_id=id)).data, "Sucesso o utilizador pedido"
     except User.DoesNotExist:
         return False, None, f"O utilizador de id {id} não existe na base de dados"
     except Exception as e:
@@ -41,7 +42,7 @@ def twitter_user(id):
 def twitter_users_stats():
     try:
         return True, [serializers.UserStats(us).data for us in UserStats.objects.all()], \
-               "Sucesso a obter as estatisticas de todos os utilizadores"
+            "Sucesso a obter as estatisticas de todos os utilizadores"
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
         return False, None, f"Erro as estatisticas de todos os utilizadores"
@@ -50,7 +51,7 @@ def twitter_users_stats():
 def twitter_user_stats(id):
     try:
         return True, serializers.UserStats(UserStats.objects.get(user_id=id)).data, \
-               "Sucesso a obter as estatisticas do utilizador pedido"
+            "Sucesso a obter as estatisticas do utilizador pedido"
     except UserStats.DoesNotExist:
         return False, None, f"Não existe nenhum utilizador com o id {id} na base de dados de estatisticas"
     except Exception as e:
@@ -61,8 +62,6 @@ def twitter_user_stats(id):
 def twitter_user_tweets(id):
     try:
         user_tweets = Tweet.objects.filter(user=id)
-        print(id)
-        print(Tweet.objects.filter(user=id))
         return True, [serializers.Tweet(tweet).data for tweet in
                       user_tweets], "Sucesso a obter todos os tweets do utilizador pedido"
     except Exception as e:
@@ -70,7 +69,31 @@ def twitter_user_tweets(id):
         return False, None, f"Erro a obter os tweets do utilizador de id {id}"
 
 
-################# tweets #################
+def twitter_user_followers(id):
+    try:
+        followers = neo4j.get_followers({'id': id})
+        if not followers:
+            return False, None, f"Não existem followers do utilizador de id {id} na base de dados"
+        return True, followers, "Sucesso a obter todos os followers do utilizador pedido"
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        return False, None, f"Erro a obter os followers do utilizador de id {id}"
+
+
+def twitter_user_following(id):
+    try:
+        following = neo4j.get_followers({'id': id})
+        if not following:
+            return False, None, f"Não existem  utilizadores a serem seguidos pelo utilizador de id {id} na base de dados"
+        return True, following, "Sucesso a obter todos os utilizadores que o utilizador pedido segue"
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        return False, None, f"Erro a obter os utilizadores que o utilizador de id {id} segue"
+
+
+# -----------------------------------------------------------
+# tweets
+# -----------------------------------------------------------
 
 def twitter_tweets(limit=None):
     try:
@@ -106,6 +129,17 @@ def twitter_tweet(id):
         return False, None, f"Erro a obter todos os tweets do id {id}"
 
 
+def twitter_tweet_stats(id):
+    try:
+        return True, serializers.TweetStats(TweetStats.objects.get(tweet_id=id)).data, \
+            "Sucesso a obter as estatisticas do tweet de id pedido"
+    except TweetStats.DoesNotExist:
+        return False, None, f"Não existem estatísticas do tweet de id {id} na base de dados"
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        return False, None, f"Erro a obter as estatisticas do tweet de id {id}"
+
+
 def twitter_tweet_replies(id):
     try:
         Tweet.objects.get(in_reply_to_status_id=id)
@@ -119,7 +153,9 @@ def twitter_tweet_replies(id):
         return False, None, f"Erro a obter todas as replies do tweet de id {id}"
 
 
-################# policies #################
+# -----------------------------------------------------------
+# policies
+# -----------------------------------------------------------
 
 def policy(id):
     """
@@ -174,12 +210,12 @@ def add_policy(data):
     Add new policy to DB
     :param data: Dictionary with data to be inserted
         Items:
-            - id : int
-            - API_type : str
-            - filter : str
-            - name : str
-            - tags : str[]
-            - bots : int[]
+                - id : int
+                - API_type : str
+                - filter : str
+                - name : str
+                - tags : str[]
+                - bots : int[]
         Ex: { "API_type": "TWITTER", "filter": "USERNAME", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
     :return: status(boolean), data, message(string)
     """
@@ -267,5 +303,20 @@ def twitter_bot(id):
 
         return True, bot, f"Sucesso a obter informações do bot com ID {id}"
     except Exception as e:
-        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_bot.__name__} -> {e}")
         return False, None, f"Erro a obter as informações do bot com ID {id}"
+
+
+def twitter_bot_messages(id):
+    """
+    Return all privates messages from a bot
+    :param id: id's bot
+    :return: status(boolean), data, message(string)
+    """
+    try:
+        data = [serializers.Message(msg).data for msg in Message.objects.filter(bot_id=id)]
+        return True, data, f"Sucesso a obter as mensagens privadas dos bot com id {id}"
+
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+        return False, None, f"Erro a obter as mensagens privadas dos bot com id {id}"

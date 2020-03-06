@@ -2,6 +2,8 @@ from rest_framework import serializers
 from api.enums import Policy as enum_policy
 
 
+# from mongoengine import EmbeddedDocumentField
+
 class User(serializers.Serializer):
     user_id = serializers.IntegerField()
     description = serializers.CharField()
@@ -46,3 +48,27 @@ class Policy(serializers.Serializer):
     tags = serializers.ListField(child=serializers.CharField())
     bots = serializers.ListField(child=serializers.IntegerField(validators=[]))
     active = serializers.BooleanField(required=False)
+
+
+class Url(serializers.Serializer):
+    url = serializers.EmailField()
+    expanded_url = serializers.EmailField()
+    display_url = serializers.CharField()
+    indices = serializers.ListField(child=serializers.IntegerField())
+
+
+class Message_entities(serializers.Serializer):
+    hashtags = serializers.ListField(child=serializers.CharField(), allow_empty=True)
+    symbols = serializers.ListField(child=serializers.CharField(), allow_empty=True)
+    user_mentions = serializers.ListField(child=serializers.CharField(), allow_empty=True)
+    urls = serializers.ListField(child=Url(), allow_empty=True)
+
+
+class Message(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
+    created_at = serializers.CharField()
+    recipient_id = serializers.IntegerField()
+    sender_id = serializers.IntegerField()
+    text = serializers.CharField()
+    entities = Message_entities()
+    bot_id = serializers.CharField()
