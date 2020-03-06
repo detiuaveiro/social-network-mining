@@ -207,12 +207,12 @@ def add_policy(data):
     Add new policy to DB
     :param data: Dictionary with data to be inserted
         Items:
-                - id : int
-                - API_type : str
-                - filter : str
-                - name : str
-                - tags : str[]
-                - bots : int[]
+            - id : int
+            - API_type : str
+            - filter : str
+            - name : str
+            - tags : str[]
+            - bots : int[]
         Ex: { "API_type": "TWITTER", "filter": "USERNAME", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
     :return: status(boolean), data, message(string)
     """
@@ -298,6 +298,22 @@ def twitter_bot(id):
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_bot.__name__} -> {e}")
         return False, None, f"Erro a obter as informações do bot com ID {id}"
+
+        
+def twitter_bots():
+    """
+    Return all bots info saved on mongodb
+    :return: status(boolean), data, message(string)
+    """
+    try:
+        bots_ids = [int(bot['id']) for bot in neo4j.search_bots()]
+        data = [serializers.User(user).data for user in User.objects.filter(user_id__in=bots_ids)]
+
+        return True, data, f"Sucesso a obter a informação de todos os bots"
+
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_bots.__name__} -> {e}")
+        return False, None, "Erro a obter a informação de todos os bots"
 
 
 def twitter_bot_messages(id):
