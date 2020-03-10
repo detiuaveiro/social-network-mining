@@ -21,7 +21,7 @@ class DBWriter:
     Class to simulate the behaviour of a bot:
     On receiving a message from a message broker, this class will act accordingly
     """
-    
+
     def __init__(self):
         """
         This will start instaces for all the DB's API
@@ -67,7 +67,7 @@ class DBWriter:
 
         elif message_type == MessageTypes.SAVE_DIRECT_MESSAGES:
             self.save_dm(message)
-    
+
         elif message_type == MessageTypes.ERROR_BOT:
             self.error(message)
 
@@ -99,7 +99,7 @@ class DBWriter:
         """
         Action to like tweet:
             Calls postgres_stats to add new log
-        
+
         @param data dict with the bot id and the tweet he liked
         """
         pass
@@ -128,7 +128,7 @@ class DBWriter:
             Calls the PEP to request a like
             Adds the log to postgres_stats, for the request and its result
             The result is based on the PDP methods
-        
+
         @param data: dict containing the bot id and the tweet id
         """
         log.info("Request a like to a tweet")
@@ -157,7 +157,7 @@ class DBWriter:
             Calls the PEP to request the retweet
             Adds the log to postgres_stats, for the request and its result
             The result is based on the PDP methods
-        
+
         2param data: dict containing the bot id and the tweet id
         """
         log.info("Request a retweeting a tweet")
@@ -185,7 +185,7 @@ class DBWriter:
             Calls the control center to request the reply
             Adds the log to postgres_stats, for the request and its result
             The result is based on the Policy API object
-        
+
         @param data: dict containing the bot id and the tweet id
         """
         log.info("Request a reply to a tweet")
@@ -216,7 +216,7 @@ class DBWriter:
             Calls the control center to request the follow
             Adds the log to postgres_stats, for the request and its result
             The result is based on the Policy API object
-        
+
         @param data: dict containing the bot id and the tweet id
         """
         log.info("Request a like to a tweet")
@@ -241,7 +241,7 @@ class DBWriter:
             Calls the neo4j and the mongo object to update or store the user be it a bot or a user)
             Adds the log of the operation to postgress_stats
             If the user is a bot, must also call the Policy API object
-        
+
         @param data: dict containing the id of the bot and the user object
         """
         log.info("Saving User")
@@ -281,7 +281,7 @@ class DBWriter:
         Stores info about a tweet:
             Calls the mongo object to save or update a tweet
             Adds the operation log to postgress_stats
-        
+
         @param data: dict containing the id of the tweet to bee saved
         """
         tweet_exists = self.mongo_client.search(
@@ -303,7 +303,7 @@ class DBWriter:
         Stores the info about a bot's direct messages:
             Calls the mongo object to save or update a dm
             Adds the operation log to postgress_stats
-        
+
         @param data: dict containignt the id of the bot and the DMs
         """
         for message in data['data']:
@@ -322,21 +322,61 @@ class DBWriter:
         """
         Stores error that may have occured in the running of a bot:
             Calls the postgres stats to log the error
-        
+
         @param data: dict with the id of a bot and the error object
         """
         pass
 
     def find_followers(self, data):
         """
-        Saves the followers for a given user in the graph database:
-            May need to create the user and its followers from scratch or just update their respective info
-        
-        params
-        ------
-        data: dict with the id of a user and a list of user IDs
+        Function that writes the follow relationship on the Neo4j API database;
+        The function will also request for the bot who sent the message to follow the users who follow
+        one of the bot's followers
+
+        @param data: dict with the id of a bot and a second dictionary with the bot's followers as keys that map
+        to his followers
         """
-        pass
+        log.info("Starting to create the Follow Relationship")
+        for follower in data["data"]:
+            #missing log
+            #Verify if the follower is on the database as a user
+            is_user = self.neo4j_client.check_user_exists(follower)
+            is_bot = self.neo4j_client.check_bot_exists(follower)
+            for follower_follower in data["data"][follower]:
+                follower_follower_is_user = self.neo4j_client.check_user_exists(follower_follower)
+                if follower_follower_is_user:
+                    request_accepted = self.pep.receive_message({
+                        "type": PoliciesTypes.REQUEST_FOLLOW_USER,
+                        "bot_id": data['bot_id'],
+                        "user_id": follower_follower
+                    })
+                    if request_accepted:
+                        log.info("We can follow for the follower's follower")
+                        #missing log
+                        self.send(data["bot_id"],
+                                  ResponseType.FOLLOW_USERS,
+                                  {"type": "id", "data": [int(follower_follower)]}
+                                  )
+                    else:
+                        #missing log
+                        pass
+
+                    if is_user:
+                        self.neo4j_client.add_relationship({
+                            "id_1": follower,
+                            "id_2": follower_follower,
+                            "type_1": "User",
+                            "type_2": "User"
+                        })
+                else:
+                    # Follower's follower is a bot
+                    # All we do is add the relation to the DB
+                    self.neo4j_client.add_relationship({
+                        "id_1": follower,
+                        "id_2": follower_follower,
+                        "type_1": "User",
+                        "type_2": "Bot"
+                    })
 
     def send(self, bot, message_type, params):
         """
