@@ -4,7 +4,6 @@ import sys
 import json
 import csv
 import datetime
-sys.path.append('..')
 import credentials
 
 

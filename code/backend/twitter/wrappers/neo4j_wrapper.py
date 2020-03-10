@@ -254,7 +254,8 @@ class Neo4jAPI:
             query_filters += "name: '" + data["name"] + "',"
         if "username" in data.keys():
             query_filters += "username: '" + data["username"] + "',"
-        query_filters = query_filters[:-1] + "}"
+
+        query_filters = (query_filters[:-1] if len(query_filters) > 1 else query_filters) + "}"
 
         query = f'MATCH (r:{BOT_LABEL} {query_filters}) RETURN r'
 
@@ -284,7 +285,7 @@ class Neo4jAPI:
             query_filters += "name: '" + data["name"] + "',"
         if "username" in data.keys():
             query_filters += "username: '" + data["username"] + "',"
-        query_filters = query_filters[:-1] + "}"
+        query_filters = (query_filters[:-1] if len(query_filters) > 1 else query_filters) + "}"
 
         query = f'MATCH (r:{USER_LABEL} {query_filters}) RETURN r'
 
@@ -344,7 +345,7 @@ class Neo4jAPI:
 
         @param data: The specification of who we want to get the followings of. Should include a id and type
         """
-        if "id" not in data.keys() or "type" not in data.keys():
+        if "id" not in data.keys():
             log.error("ERROR RETRIEVING FOLLOWINGS")
             log.error(
                 "Error: Specified data doesn't contain necessary fields - type, id"
@@ -352,7 +353,7 @@ class Neo4jAPI:
 
             return
 
-        if data["type"] not in [BOT_LABEL, USER_LABEL]:
+        if 'type' in data and data["type"] not in [BOT_LABEL, USER_LABEL]:
             log.error("ERROR RETRIEVING FOLLOWINGS")
             log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
@@ -365,7 +366,8 @@ class Neo4jAPI:
     def __get_following(self, tx, data):
         log.debug("GETTING FOLLOWINGS")
 
-        query = f'MATCH (a:{data["type"]} {{id: {str(data["id"])} }})-[r:{FOLLOW_LABEL}]->(b) RETURN b'
+        query = f"MATCH (a {':' + data['type'] if 'type' in data else ''} {{id: {str(data['id'])} }})-" \
+                f"[r:{FOLLOW_LABEL}]->(b) RETURN b"
 
         result = []
         for i in tx.run(query):
@@ -378,7 +380,7 @@ class Neo4jAPI:
 
         @param data: The specification of who we want to get the followings of. Should include a id and type
         """
-        if "id" not in data.keys() or "type" not in data.keys():
+        if "id" not in data.keys():
             log.error("ERROR RETRIEVING FOLLOWERS")
             log.debug(
                 "Error: Specified data doesn't contain necessary fields - type, id"
@@ -386,7 +388,7 @@ class Neo4jAPI:
 
             return
 
-        if data["type"] not in [BOT_LABEL, USER_LABEL]:
+        if 'type' in data and data["type"] not in [BOT_LABEL, USER_LABEL]:
             log.error("ERROR RETRIEVING FOLLOWINGS")
             log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
@@ -399,7 +401,8 @@ class Neo4jAPI:
     def __get_followers(self, tx, data):
         log.debug("GETTING FOLLOWERS")
 
-        query = f'MATCH (b)-[r:{FOLLOW_LABEL}]->(a:{data["type"]} {{id: {str(data["id"])} }}) RETURN b'
+        query = f'MATCH (b)-[r:{FOLLOW_LABEL}]->' \
+                f'(a {":" + data["type"] if "type" in data else ""} {{id: {str(data["id"])} }}) RETURN b'
 
         result = []
         for i in tx.run(query):
