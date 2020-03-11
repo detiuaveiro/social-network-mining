@@ -1,4 +1,0 @@
-{"type":"node","id":"0","labels":["BOT"],"properties":{"name":"Jonas","id":0,"username":"Jonas_Pistolas"}}
-{"type":"node","id":"20","labels":["USER"],"properties":{"name":"DS","id":0,"username":"FenixDickSucker"}}
-{"type":"node","id":"21","labels":["BOT"],"properties":{"name":"DG","id":1,"username":"Beautiful_sorriso"}}
-{"id":"0","type":"relationship","label":"FOLLOWS","start":{"id":"0","labels":["BOT"]},"end":{"id":"20","labels":["USER"]}}
