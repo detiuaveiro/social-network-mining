@@ -103,7 +103,7 @@ class Task:
         elif(message_type == MessageTypes.SAVE_DIRECT_MESSAGES):
             self.Save_Direct_Messages(message=message)
 
-    def User_Followed(self, message):
+    def User_Followed(self, message):   #omfg
         """
         Stores information about a bot following a user.
 
