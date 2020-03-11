@@ -1,10 +1,10 @@
+import datetime
+import credentials
 import psycopg2
 import logging
 import sys
 
 sys.path.append("..")
-import credentials
-import datetime
 
 log = logging.getLogger("PostgreSQL")
 log.setLevel(logging.DEBUG)
@@ -123,7 +123,8 @@ class PostgresAPI:
             # result = self.postProcessResults(data, ['timestamp', 'tweet_id', 'likes', 'retweets'])
             result = []  # Array of jsons
             for tuple in data:
-                result.append({"timestamp": tuple[0], "tweet_id": tuple[1], "likes": tuple[2], "retweets": tuple[3]})
+                result.append(
+                    {"timestamp": tuple[0], "tweet_id": tuple[1], "likes": tuple[2], "retweets": tuple[3]})
 
             return {"success": True, "data": result}
         except psycopg2.Error as error:
@@ -131,7 +132,8 @@ class PostgresAPI:
             return {"success": False, "error": error}
 
     def search_user(self, params=None):
-        """
+        """sudo -u postgres psql
+
         Searches and returns all Users if no data is specified, or the specific tweet matching the given parameters
 
         @param params: The parameters we want to query
@@ -183,21 +185,114 @@ class PostgresAPI:
             self.conn.rollback()
             return {"success": False, "error": error}
 
+    def search_logs(self, params=None, limit=None):
+        """
+        Searches and returns all logs if no data is specified, or the specific logs matching the parameters. Can also specify the amount of logs to be retrieved.
+        Data retrieved is ordered by the most recent
+
+        @param params: The parameters we want to query. Right now only bot_id is supported
+        @param limit: An optional parameter specifying the amount of logs to be retrieved
+
+        @return The query's result or error
+        """
+
+        try:
+            cursor = self.conn.cursor()
+
+            query = f"select * from logs " \
+                    f"{'WHERE' if params is not None else ''} " \
+                    f"{'id_bot=' + params['bot_id'] if params is not None and 'bot_id' in params.keys() else ''} " \
+                    f"ORDER BY timestamp DESC " \
+                    f"{'limit ' + str(limit) if limit is not None else ''} ;"
+
+
+            cursor.execute(query)
+            print(query)
+
+
+            data = cursor.fetchall()
+
+            self.conn.commit()
+            cursor.close()
+
+            # result = self.postProcessResults(data, ['timestamp', 'tweet_id', 'likes', 'retweets'])
+            result = []  # Array of jsons
+
+            for tuple in data:
+                result.append(
+                    {"id_bot": tuple[0], "timestamp": tuple[1], "action": tuple[2]})
+
+            return {"success": True, "data": result}
+        except psycopg2.Error as error:
+            self.conn.rollback()
+            return {"success": False, "error": error}
+
+    def search_policies(self, params=None, limit=None):
+        """
+        Searches and returns all policies if no data is specified, or the specific policies matching the parameters. Can also specify the amount of poliecies to be retrieved.
+
+        @param params: The parameters we want to query. Right now only bot_id is supported
+        @param limit: An optional parameter specifying the amount of logs to be retrieved
+
+        @return The query's result or error
+        """
+
+        try:
+            cursor = self.conn.cursor()
+
+            query = f"select api.name,policies.name,params,active,id_policy,filter.name from policies " \
+                    f"   left outer join filter on filter.id=policies.filter " \
+                    f"   left outer join api on api.id=policies.API_type " \
+                    f"{'WHERE' if params is not None else ''} " \
+                    f"{'api.name=' + params['api_name'] if params is not None and 'api_name' in params.keys() else ''} " \ 
+                    f"{'policies.id_policy=' + params['policy_id'] if params is not None and 'policy_id' in params.keys() else ''} " \
+                    f"{'policies.id_policy=' + params['policy_id'] if params is not None and 'policy_id' in params.keys() else ''} " \
+
+            cursor.execute(query)
+
+            data = cursor.fetchall()
+
+            self.conn.commit()
+            cursor.close()
+
+            result = []  # Array of jsons
+            for tuple in data:
+                result.append(
+                    {"API_type": tuple[0], "name": tuple[1], "bots": [], "params": [], "active": tuple[3],
+                     "policy_id": tuple[4], "filter": tuple[5]})
+                min_bot_len = 19
+                for param in tuple[2]:
+                    if param.isnumeric() and len(param) >= min_bot_len:
+                        result["bots"].append(param)
+                    else:
+                        result["params"].append(param)
+
+            return {"success": True, "data": result}
+        except psycopg2.Error as error:
+            self.conn.rollback()
+            return {"success": False, "error": error}
+
 
 if __name__ == "__main__":
     # TODO: Test and implement searching by timestamp ; Policies API
     anal = PostgresAPI()
     # anal.insert_tweet({"tweet_id": 831606548300517377, "user_id": 6253282, "likes": 100, "retweets": 2})
     # anal.insert_user({"user_id": 6253283, "followers": 10000, "following": 1234})
-    #try:
+    # try:
     #    for i in anal.search_tweet()["data"]:
     #        print(i)
-    #except:
+    # except:
     #    print(anal.search_tweet()["error"])
 
-    #try:
+    # try:
     #    for i in anal.search_user()["data"]:
     #        print(i)
-    #except:
+    # except:
     #    print(anal.search_tweet()["error"])
-    
+
+    result = anal.search_logs(limit=10)
+    if result["success"]:
+        for i in result["data"]:
+            print(i)
+    else:
+        print(anal.search_tweet()["error"])
