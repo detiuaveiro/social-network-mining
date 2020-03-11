@@ -18,7 +18,7 @@ log.addHandler(handler)
 
 class DBWriter:
     """
-    Class to simulate the behaviour of a bot:
+    Class to smulate the behaviour of a bot:
     On receiving a message from a message broker, this class will act accordingly
     """
 
@@ -85,13 +85,13 @@ class DBWriter:
         @param data: dict containing bot and the user he's following
         """
         log.info("A bot has started following someone")
-        type1 = "BOT" if self.neo4j_client.check_bot_exists(data["bot_id"]) else "USER"
-        type2 = "BOT" if self.neo4j_client.check_bot_exists(data["data"]["id"]) else "USER"
+        type1 = "Bot" if self.neo4j_client.check_bot_exists(data["bot_id"]) else "User"
+        type2 = "Bot" if self.neo4j_client.check_bot_exists(data["data"]["id"]) else "User"
         self.neo4j_client.add_relationship({
             "id_1": data["bot_id"],
             "id_2": data["data"]["id"],
-            "type1": type1,
-            "type2": type2
+            "type_1": type1,
+            "type_2": type2
         })
         #falta pro postgres2
 
@@ -250,29 +250,29 @@ class DBWriter:
         if not exists:
             log.info("Bot is new to the party")
             follow_list = self.pep.first_time_policy()
-            self.send(data["bot_id"], ResponseType.FOLLOW_USERS, {"type": "screen_name", "data": follow_list})
+            self.send(data["bot_id"], ResponseTypes.FOLLOW_USERS, {"type": "screen_name", "data": follow_list})
             self.mongo_client.insert_users(data["data"])
-            self.neo4j_client.add_bot({"id": data['bot_id'], "name": data['data']['name'], "username": data['data']['screen_name']})
+            self.neo4j_client.add_bot({"id": data["data"]['id'], "name": data['data']['name'], "username": data['data']['screen_name']})
         else:
 
             is_bot = self.neo4j_client.check_bot_exists(data["data"]["id"])
             if is_bot:
                 log.info("It's a bot that's already been registered in the database")
                 #Update the info of the bot
-                self.mongo_client.update_users(data["data"])
+                #self.mongo_client.update_users(data["data"])
                 self.neo4j_client.update_bot({"id": data["data"]['id'], "name": data['data']['name'], "username": data['data']['screen_name']})
 
             else:
                 if self.neo4j_client.check_user_exists(data["data"]["id"]):
                     log.info("It's a user that's already been registered in the database")
-                    self.mongo_client.update_users(data["data"])
-                    self.neo4j_client.update_user({"id": data["data"["id"], "name": data['data']['name'], "username": data['data']['screen_name']]})
+                    #self.mongo_client.update_users(data["data"])
+                    self.neo4j_client.update_user({"id": data["data"]["id"], "name": data['data']['name'], "username": data['data']['screen_name']  })
 
                 else:
                     log.info("User is new to the party")
                     self.mongo_client.insert_users(data["data"])
-                    self.neo4j_client.add_user({"id": data["data"["id"], "name": data['data']['name'],
-                                                         "username": data['data']['screen_name']]})
+                    self.neo4j_client.add_user({"id": data["data"]["id"], "name": data['data']['name'],
+                                                         "username": data['data']['screen_name' ]})
 
         #missing log
 
@@ -366,7 +366,7 @@ class DBWriter:
                         log.info("We can follow for the follower's follower")
                         #missing log
                         self.send(data["bot_id"],
-                                  ResponseType.FOLLOW_USERS,
+                                  ResponseTypes.FOLLOW_USERS,
                                   {"type": "id", "data": [int(follower_follower)]}
                                   )
                     else:
@@ -418,7 +418,69 @@ class DBWriter:
             conn.close()
         except:
             log.error("FAILED TO SEND MESSAGE:")
+    
+    def close(self):
+        self.neo4j_client.close()
+        self.pep.pdp.close()
 
 
 if __name__ == "__main__":
     dbwriter = DBWriter()
+
+    dbwriter.save_user({
+        "bot_id": 874358,
+        "data":{
+            "id": 874358,
+            "name": "abc xyz",
+            "screen_name": "ina",
+            "location": "ygo",
+            "description": "fusion monster",
+        }
+    })
+
+    dbwriter.request_follow_user({
+       "bot_id": 874358,
+       "data":{
+           "id": 318689
+       } 
+    })
+
+    '''
+    dbwriter.save_user({
+        "bot_id": 318689,
+        "data":{
+            "id": 318689,
+            "name": "abc",
+            "screen_name": "buster dragon",
+            "location": "ygo",
+            "description": "fusion monster",
+        }
+    })
+    dbwriter.save_user({
+        "bot_id": 318689,
+        "data":{
+            "id": 123234,
+            "name": "xyz",
+            "screen_name": "the other one",
+            "location": "ygo",
+            "description": "fusion monster",
+        }
+    })
+    dbwriter.follow_user({
+        "bot_id": 318689,
+        "data":{
+            "id": 123234
+        }
+    })
+    
+    dbwriter.save_dm({
+        "bot_id": 318689,
+        "data": {
+            "id": 12345432123,
+            "text": "ola, my first tweet",
+            "user": 123234
+        }
+    })
+    '''
+    
+    dbwriter.close()
