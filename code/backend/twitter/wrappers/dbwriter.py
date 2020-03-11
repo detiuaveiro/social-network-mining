@@ -5,9 +5,9 @@ import sys
 
 from mongo_wrapper import MongoAPI
 from neo4j_wrapper import Neo4jAPI
+from enums import * 
 
-sys.path.append("../policies")
-from enums import *
+sys.path.append("../policies/")
 from PEP import PEP
 
 log = logging.getLogger('Database Writer')
@@ -342,6 +342,18 @@ class DBWriter:
             #Verify if the follower is on the database as a user
             is_user = self.neo4j_client.check_user_exists(follower)
             is_bot = self.neo4j_client.check_bot_exists(follower)
+            if not (is_user or is_bot):
+                ## The follower isn't registered in the database, so that must be handled
+                self.save_user({
+                    "bot_id": data["bot_id"],
+                    "data": {
+                        "id": follower,
+                        "name": "",
+                        "screen_name": ""
+                    }
+                })
+                is_user = True
+
             for follower_follower in data["data"][follower]:
                 follower_follower_is_user = self.neo4j_client.check_user_exists(follower_follower)
                 if follower_follower_is_user:
@@ -368,15 +380,23 @@ class DBWriter:
                             "type_1": "User",
                             "type_2": "User"
                         })
+                    else:
+                        self.neo4j_client.add_relationship({
+                            "id_1": follower,
+                            "id_2": follower_follower,
+                            "type_1": "Bot",
+                            "type_2": "User"
+                        })
                 else:
-                    # Follower's follower is a bot
-                    # All we do is add the relation to the DB
-                    self.neo4j_client.add_relationship({
-                        "id_1": follower,
-                        "id_2": follower_follower,
-                        "type_1": "User",
-                        "type_2": "Bot"
-                    })
+                    ## Condition in case the follower's follower is a bot
+                    ## The only thing that may happen that's not covered by the above cases is a bot-bot following
+                    if not is_user:
+                        self.neo4j_client.add_relationship({
+                            "id_1": follower,
+                            "id_2": follower_follower,
+                            "type_1": "Bot",
+                            "type_2": "Bot"
+                        })
 
     def send(self, bot, message_type, params):
         """
