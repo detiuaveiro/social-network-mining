@@ -93,7 +93,7 @@ class DBWriter:
 		})
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Follow relationship added between {data['bot_id']} and {data['data']['id']}"
+			"action": f"FOLLOW: {data['bot_id']} and {data['data']['id']}"
 		})
 
 	def like_tweet(self, data):
@@ -105,7 +105,7 @@ class DBWriter:
 		"""
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Tweet liked between {data['bot_id']} and {data['data']['id']}"
+			"action": f"TWEET LIKED: {data['bot_id']} and {data['data']['id']}"
 		})
 
 	def retweet(self, data):
@@ -117,7 +117,7 @@ class DBWriter:
 		"""
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Retweet between {data['bot_id']} and {data['data']['id']}"
+			"action": f"RETWEET: {data['bot_id']} and {data['data']['id']}"
 		})
 
 	def reply_tweet(self, data):
@@ -129,7 +129,7 @@ class DBWriter:
 		"""
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Tweet replied between {data['bot_id']} and {data['data']['id']}"
+			"action": f"TWEET REPLIED: {data['bot_id']} and {data['data']['id']}"
 		})
 
 	def request_tweet_like(self, data):
@@ -144,7 +144,7 @@ class DBWriter:
 		log.info("Request a like to a tweet")
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Request for a like between {data['bot_id']} and {data['data']['user']} \
+			"action": f"REQUEST LIKE: {data['bot_id']} and {data['data']['user']} \
 			for tweet {data['data']['id']}"
 		})
 		request_accepted = self.pep.receive_message({
@@ -160,7 +160,7 @@ class DBWriter:
 			log.info("Like request accepted")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request accepted for a like between {data['bot_id']} and {data['data']['user']} \
+				"action": f"REQUEST LIKE ACCEPTED: {data['bot_id']} and {data['data']['user']} \
 				for tweet {data['data']['id']}"
 			})
 			self.send(data['bot_id'], ResponseTypes.LIKE_TWEETS, data['data']['id'])
@@ -168,10 +168,9 @@ class DBWriter:
 			log.warning("Like request denied")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request denied for a like between {data['bot_id']} and {data['data']['user']} \
+				"action": f"REQUEST LIKE DENIED: {data['bot_id']} and {data['data']['user']} \
 				for tweet {data['data']['id']}"
 			})
-		# add log
 
 	def request_retweet(self, data):
 		"""
@@ -185,7 +184,7 @@ class DBWriter:
 		log.info("Request a retweeting a tweet")
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Request for a retweet between {data['bot_id']} and {data['data']['user']} \
+			"action": f"RETWEET REQUEST: {data['bot_id']} and {data['data']['user']} \
 			for tweet {data['data']['id']}"
 		})
 		request_accepted = self.pep.receive_message({
@@ -201,7 +200,7 @@ class DBWriter:
 			log.info("Retweet request accepted")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request accepted for a retweet between {data['bot_id']} and {data['data']['user']} \
+				"action": f"RETWEET REQUEST ACCEPTED: {data['bot_id']} and {data['data']['user']} \
 				for tweet {data['data']['id']}"
 			})
 			self.send(data['bot_id'], ResponseTypes.RETWEET_TWEETS, data['data']['id'])
@@ -209,7 +208,7 @@ class DBWriter:
 			log.warning("Retweet request denied")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request denied for a retweet between {data['bot_id']} and {data['data']['user']} \
+				"action": f"RETWEET REQUEST DENIED: {data['bot_id']} and {data['data']['user']} \
 				for tweet {data['data']['id']}"
 			})
 
@@ -225,7 +224,7 @@ class DBWriter:
 		log.info("Request a reply to a tweet")
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Request sent for a reply between {data['bot_id']} and {data['data']['user']} \
+			"action": f"REPLY REQUEST: {data['bot_id']} and {data['data']['user']} \
 			for tweet {data['data']['id']}"
 		})
 		request_accepted = self.pep.receive_message({
@@ -244,7 +243,7 @@ class DBWriter:
 			log.info("Like request accepted")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request accepted for a reply between {data['bot_id']} and {data['data']['user']} \
+				"action": f"REPLY REQUEST ACCEPTED: {data['bot_id']} and {data['data']['user']} \
 				for tweet {data['data']['id']}"
 			})
 			self.send(data['bot_id'], ResponseTypes.POST_TWEETS, data['data']['id'])
@@ -252,7 +251,7 @@ class DBWriter:
 			log.warning("Like request denied")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request denied for a reply between {data['bot_id']} and {data['data']['user']} \
+				"action": f"REPLY REQUEST DENIED: {data['bot_id']} and {data['data']['user']} \
 				for tweet {data['data']['id']}"
 			})
 
@@ -268,7 +267,7 @@ class DBWriter:
 		log.info("Request a like to a tweet")
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Request sent for a follow between {data['bot_id']} and {data['data']['user']}"
+			"action": f"FOLLOW REQUEST: {data['bot_id']} and {data['data']['user']}"
 		})
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
@@ -280,14 +279,14 @@ class DBWriter:
 			log.info("Like request accepted")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request accepted for a follow between {data['bot_id']} and {data['data']['user']}"
+				"action": f"FOLLOW REQUEST ACCEPTED: {data['bot_id']} and {data['data']['user']}"
 			})
 			self.send(data['bot_id'], ResponseTypes.FOLLOW_USERS, data['data']['id'])
 		else:
 			log.warning("Like request denied")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request denied for a follow between {data['bot_id']} and {data['data']['user']}"
+				"action": f"FOLLOW REQUEST DENIED: {data['bot_id']} and {data['data']['user']}"
 			})
 
 	def save_user(self, data):
@@ -315,14 +314,22 @@ class DBWriter:
 			if is_bot:
 				log.info("It's a bot that's already been registered in the database")
 				# Update the info of the bot
-				# self.mongo_client.update_users(data["data"])
+				self.mongo_client.update_users(
+					match={"id": data["data"]['id']},
+					new_data=data["data"],
+					all=False
+				)
 				self.neo4j_client.update_bot(
 					{"id": data["data"]['id'], "name": data['data']['name'], "username": data['data']['screen_name']})
 
 			else:
 				if self.neo4j_client.check_user_exists(data["data"]["id"]):
 					log.info("It's a user that's already been registered in the database")
-					# self.mongo_client.update_users(data["data"])
+					self.mongo_client.update_users(
+						match={"id": data["data"]['id']},
+						new_data=data["data"],
+						all=False
+					)
 					self.neo4j_client.update_user({
 						"id": data["data"]["id"],
 						"name": data['data']['name'],
@@ -341,15 +348,15 @@ class DBWriter:
 						"name": data['data']['name'],
 						"username": data['data']['screen_name']
 					})
-					self.postgress_client.insert_user({
-						"user_id": data["data"]["id"],
-						"followers": data["data"]["followers_count"],
-						"following": data["data"]["friends_count"]
-					})
 					self.postgress_client.insert_log({
 						"bot_id": data["bot_id"],
 						"action": f"Inserting info for {data['data']['user']}"
 					})
+				self.postgress_client.insert_user({
+					"user_id": data["data"]["id"],
+					"followers": data["data"]["followers_count"],
+					"following": data["data"]["friends_count"]
+				})
 
 	def save_tweet(self, data):
 		"""
@@ -366,7 +373,11 @@ class DBWriter:
 		)
 		if tweet_exists:
 			log.info("Updating tweet")
-			self.mongo_client.update_tweets(data['data'])
+			self.mongo_client.update_tweet(
+				match={"id": data["data"]['id']},
+				new_data=data["data"],
+				all=False
+			)
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": f"Updating tweet for {data['data']['id']}"
@@ -378,7 +389,12 @@ class DBWriter:
 				"bot_id": data["bot_id"],
 				"action": f"Inserting tweet for {data['data']['id']}"
 			})
-		# missing log
+		self.postgress_client.insert_tweet({
+			"tweet_id": data['data']['id'],
+			"user_id": data['data']['user'],
+			"likes": data['data']['favorite_count'],
+			"retweets": data['data']['retweet_count']
+		})
 
 	def save_dm(self, data):
 		"""
