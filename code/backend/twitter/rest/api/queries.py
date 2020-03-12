@@ -291,7 +291,6 @@ def twitter_bot(id):
     try:
         if not neo4j.check_bot_exists(id):
             return False, None, f"Bot com id {id} não existe na base de dados"
-
         bot = neo4j.search_bots({"id": id})
 
         return True, bot, f"Sucesso a obter informações do bot com ID {id}"
@@ -322,10 +321,10 @@ def twitter_bot_messages(id):
     :param id: id's bot
     :return: status(boolean), data, message(string)
     """
-    try:
-        data = [serializers.Message(msg).data for msg in Message.objects.filter(bot_id=id)]
-        return True, data, f"Sucesso a obter as mensagens privadas dos bot com id {id}"
+    #try:
+    data = [serializers.Message(msg).data for msg in Message.objects.filter(bot_id=id)]
+    return True, data, f"Sucesso a obter as mensagens privadas dos bot com id {id}"
 
-    except Exception as e:
-        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_bot_messages.__name__} -> {e}")
-        return False, None, f"Erro a obter as mensagens privadas dos bot com id {id}"
+    #except Exception as e:
+    logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_bot_messages.__name__} -> {e}")
+    return False, None, f"Erro a obter as mensagens privadas dos bot com id {id}"

@@ -1,22 +1,34 @@
 import pytest
-import random
-from django.test import TestCase
+from django.test import RequestFactory
+from django.urls import reverse
 from api.models import UserStats
+from api.views import bots
 from mixer.backend.django import mixer
-
-@pytest.mark.django_db
-class TestBots(TestCase):
-    databases = "__all__"
-
-    @classmethod
-    def setUpClass(cls):
-        super(TestBots,cls).setUpClass()
-        UserStats.objects.using("postgres").create(user_id=1, following=1, followers=1)
-
-    #@pytest.fixture
-    #def user_stats(db):
-    #    return
+from api.tests.utils import *
 
 
-    def test_twitter_stats(self):
-        assert True
+@pytest.fixture(scope='module')
+def factory():
+    return RequestFactory()
+
+
+@pytest.fixture
+def user_stats(db):
+    return mixer.blend(UserStats)
+
+
+def test_successful_twitter_stats_request(factory, user_stats):
+    path = reverse('twitter_stats')
+    request = factory.get(path)
+    response = bots.twitter_stats(request)
+    assert is_response_successful(response)
+
+
+def test_unsuccessfully_twitter_stats_request(factory):
+    path = reverse('twitter_stats')
+    request = factory.get(path)
+    response = bots.twitter_stats(request)
+    assert is_response_unsuccessful(response)
+
+
+

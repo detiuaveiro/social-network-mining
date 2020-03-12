@@ -1,5 +1,7 @@
-from rest.settings import  *
+from rest.settings import *
 
+
+DATABASE_ROUTERS = ["api.tests.mongo_tests.mongo_db_router.DB_Router"]
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
