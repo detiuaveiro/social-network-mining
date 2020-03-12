@@ -5,7 +5,7 @@ import sys
 
 sys.path.append('../wrappers')
 from mongo_wrapper import *
-from neo4j import *
+from neo4j_wrapper import *
 from enums import *
 from credentials import *
 
@@ -36,7 +36,7 @@ class PDP:
 		pass
 
 	def receive_request(self, data):
-		## Leaving this as a simple function call, leaving the room for handling the data available
+		# Leaving this as a simple function call, leaving the room for handling the data available
 		return self.evaluate(data)
 
 	def evaluate(self, msg):
@@ -138,13 +138,14 @@ class PDP:
 		return message
 
 	def get_first_time_list(self):
-		'''
-		When a bot connects for the first time to Twitter, he'll have to start following people
-		This is the old way: having a set list of possible users and the bot will follow a random group from those followers
-		In future iterations we may alter this so that there are possible branches a bot could start with: politics, football fan, etc., each branch with a list of possible users to follow
+		"""
+		When a bot connects for the first time to Twitter, he'll have to start following people This is the old way:
+		having a set list of possible users and the bot will follow a random group from those followers In future
+		iterations we may alter this so that there are possible branches a bot could start with: politics,
+		football fan, etc., each branch with a list of possible users to follow
 
 		@return: List of users the bot will start following
-		'''
+		"""
 		num_users = random.randint(2, 10)
 		users = ["dailycristina", "PaulaNevesD", "doloresaveiro", "Corpodormente", "Manzarra",
 				 "Feromonas", "DanielaRuah", "RicardoTPereira", "LuciaMoniz", "D_Morgado",
@@ -180,13 +181,13 @@ class PDP:
 		return bot_list
 
 	def analyze_tweet_like(self, data):
-		'''
+		"""
 		Algorithm to analyse if a bot should like a Tweet
 		Takes the current statistics and turns them into a real value
 
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
-		'''
+		"""
 
 		heuristic_value = 0
 		# Verify if there's a relation between the bot and the user
@@ -212,22 +213,25 @@ class PDP:
 
 	def analyze_tweet_retweet(self, data):
 
-		'''
+		"""
 		Algorithm to analyse if a bot should retweet a Tweet
 		Takes the current statistics and turns them into a real value
 
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
-		'''
+		"""
 
 		heuristic_value = 0
 		# Verify if there's a relation between the bot and the user
 		type1 = "BOT" if self.neo4j.check_bot_exists(data["bot_id"]) else "USER"
 		type2 = "BOT" if self.neo4j.check_bot_exists(data["user_id"]) else "USER"
-		relation_exists = self.neo4j.check_relationship_exists({"id_1": data["bot_id"],
-																"type1": type1,
-																"id_2": data["user_id"],
-																"type2": type2})
+		relation_exists = self.neo4j.check_relationship_exists({
+			"id_1": data["bot_id"],
+			"type1": type1,
+			"id_2": data["user_id"],
+			"type2": type2
+		})
+
 		if relation_exists:
 			heuristic_value += BOT_FOLLOWS_USER
 
@@ -241,16 +245,19 @@ class PDP:
 		return 0
 
 	def analyze_tweet_reply(self, data):
-		'''
+		"""
 		Algorithm to analyse if a bot should reply
 		Takes the current statistics and turns them into a real value
 
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
-		'''
-		#This was not implemented last year
+		"""
+		# This was not implemented last year
 		return 0
 
 	def analyze_follow_user(self, data):
-		#This was not implemeneted last year
+		# This was not implemeneted last year
 		return False
+
+	def close(self):
+		self.neo4j.close()

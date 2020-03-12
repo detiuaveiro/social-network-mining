@@ -1,5 +1,6 @@
 from enum import IntEnum
 
+
 class MessageTypes(IntEnum):
     USER_FOLLOWED = 1
     TWEET_LIKED = 2
@@ -15,6 +16,7 @@ class MessageTypes(IntEnum):
     FIND_FOLLOWERS = 12
     SAVE_DIRECT_MESSAGES = 13
 
+
 class ResponseTypes(IntEnum):
     FOLLOW_USERS = 1
     FIND_BY_KEYWORDS = 2
@@ -22,6 +24,7 @@ class ResponseTypes(IntEnum):
     RETWEET_TWEETS = 4
     POST_TWEETS = 5
     FIND_FOLLOWERS = 6
+
 
 class Neo4jTypes(IntEnum):
     CREATE_BOT = 1
@@ -33,6 +36,7 @@ class Neo4jTypes(IntEnum):
     UPDATE_BOT = 7
     CREATE_RELATION_USER_USER = 8
     CREATE_RELATION_BOT_BOT = 9
+
 
 class PoliciesTypes(IntEnum):
     REQUEST_TWEET_LIKE = 1
