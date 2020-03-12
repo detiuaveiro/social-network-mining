@@ -144,7 +144,7 @@ class DBWriter:
 		log.info("Request a like to a tweet")
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"REQUEST LIKE: {data['bot_id']} and {data['data']['user']} \
+			"action": f"REQUEST LIKE: {data['bot_id']} and {data['data']['id']} \
 			for tweet {data['data']['id']}"
 		})
 		request_accepted = self.pep.receive_message({
@@ -160,7 +160,7 @@ class DBWriter:
 			log.info("Like request accepted")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"REQUEST LIKE ACCEPTED: {data['bot_id']} and {data['data']['user']} \
+				"action": f"REQUEST LIKE ACCEPTED: {data['bot_id']} and {data['data']['id']} \
 				for tweet {data['data']['id']}"
 			})
 			self.send(data['bot_id'], ResponseTypes.LIKE_TWEETS, data['data']['id'])
@@ -168,7 +168,7 @@ class DBWriter:
 			log.warning("Like request denied")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"REQUEST LIKE DENIED: {data['bot_id']} and {data['data']['user']} \
+				"action": f"REQUEST LIKE DENIED: {data['bot_id']} and {data['data']['id']} \
 				for tweet {data['data']['id']}"
 			})
 
@@ -184,7 +184,7 @@ class DBWriter:
 		log.info("Request a retweeting a tweet")
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"RETWEET REQUEST: {data['bot_id']} and {data['data']['user']} \
+			"action": f"RETWEET REQUEST: {data['bot_id']} and {data['data']['id']} \
 			for tweet {data['data']['id']}"
 		})
 		request_accepted = self.pep.receive_message({
@@ -200,7 +200,7 @@ class DBWriter:
 			log.info("Retweet request accepted")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"RETWEET REQUEST ACCEPTED: {data['bot_id']} and {data['data']['user']} \
+				"action": f"RETWEET REQUEST ACCEPTED: {data['bot_id']} and {data['data']['id']} \
 				for tweet {data['data']['id']}"
 			})
 			self.send(data['bot_id'], ResponseTypes.RETWEET_TWEETS, data['data']['id'])
@@ -208,7 +208,7 @@ class DBWriter:
 			log.warning("Retweet request denied")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"RETWEET REQUEST DENIED: {data['bot_id']} and {data['data']['user']} \
+				"action": f"RETWEET REQUEST DENIED: {data['bot_id']} and {data['data']['id']} \
 				for tweet {data['data']['id']}"
 			})
 
@@ -224,7 +224,7 @@ class DBWriter:
 		log.info("Request a reply to a tweet")
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"REPLY REQUEST: {data['bot_id']} and {data['data']['user']} \
+			"action": f"REPLY REQUEST: {data['bot_id']} and {data['data']['id']} \
 			for tweet {data['data']['id']}"
 		})
 		request_accepted = self.pep.receive_message({
@@ -243,7 +243,7 @@ class DBWriter:
 			log.info("Like request accepted")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"REPLY REQUEST ACCEPTED: {data['bot_id']} and {data['data']['user']} \
+				"action": f"REPLY REQUEST ACCEPTED: {data['bot_id']} and {data['data']['id']} \
 				for tweet {data['data']['id']}"
 			})
 			self.send(data['bot_id'], ResponseTypes.POST_TWEETS, data['data']['id'])
@@ -251,7 +251,7 @@ class DBWriter:
 			log.warning("Like request denied")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"REPLY REQUEST DENIED: {data['bot_id']} and {data['data']['user']} \
+				"action": f"REPLY REQUEST DENIED: {data['bot_id']} and {data['data']['id']} \
 				for tweet {data['data']['id']}"
 			})
 
@@ -267,7 +267,7 @@ class DBWriter:
 		log.info("Request a like to a tweet")
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"FOLLOW REQUEST: {data['bot_id']} and {data['data']['user']}"
+			"action": f"FOLLOW REQUEST: {data['bot_id']} and {data['data']['id']}"
 		})
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
@@ -279,14 +279,14 @@ class DBWriter:
 			log.info("Like request accepted")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"FOLLOW REQUEST ACCEPTED: {data['bot_id']} and {data['data']['user']}"
+				"action": f"FOLLOW REQUEST ACCEPTED: {data['bot_id']} and {data['data']['id']}"
 			})
 			self.send(data['bot_id'], ResponseTypes.FOLLOW_USERS, data['data']['id'])
 		else:
 			log.warning("Like request denied")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"FOLLOW REQUEST DENIED: {data['bot_id']} and {data['data']['user']}"
+				"action": f"FOLLOW REQUEST DENIED: {data['bot_id']} and {data['data']['id']}"
 			})
 
 	def save_user(self, data):
@@ -504,6 +504,22 @@ class DBWriter:
 
 if __name__ == "__main__":
 	dbwriter = DBWriter()
+	dbwriter.save_tweet({
+		"bot_id": 874358,
+		"data": {
+			'id': 8912323,
+			'user': 874358,
+			'favorite_count': 0,
+			'retweet_count': 0
+		}
+	})
+	dbwriter.request_tweet_like({
+		"bot_id": 874358,
+		"data":{
+
+		}
+	})
+	'''
 
 	dbwriter.save_user({
 		"bot_id": 874358,
@@ -523,7 +539,6 @@ if __name__ == "__main__":
 		}
 	})
 
-	'''
 	dbwriter.save_user({
 		"bot_id": 318689,
 		"data":{
