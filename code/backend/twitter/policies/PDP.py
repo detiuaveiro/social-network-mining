@@ -6,6 +6,7 @@ import sys
 sys.path.append('../wrappers')
 from mongo_wrapper import *
 from neo4j_wrapper import *
+from postgresql_wrapper import *
 from enums import *
 from credentials import *
 
@@ -32,7 +33,7 @@ class PDP:
 		'''
 		self.mongo = MongoAPI()
 		self.neo4j = Neo4jAPI()
-		# self.postgres_policies = PostgresAPI("policies")
+		self.postgres = PostgresAPI()
 		pass
 
 	def receive_request(self, data):
@@ -182,6 +183,47 @@ class PDP:
 
 		return bot_list
 
+	def _bot_is_targeted(self, policy, data):
+		"""
+		Private function to check if a bot is being targeted in a policy
+		Checks first if the bot was mentioned in the tweet, or if the user who posted the tweet is himself listed
+		in the policy
+
+		@param Policy dictionary containing its information
+		@param Data dictionary containing important information
+
+		@returns True or False depending if the bot was indeed targeted
+		"""
+		for mentions in data["tweet_entities"]["user_mentions"]:
+			if mentions["screen_name"] in policy["bots"]:
+				return True
+
+		user = self.mongo.find(
+			collection="users",
+			query={"id": data["user_id"]},
+			single=True
+		)
+		return user in policy["bots"]
+
+	def _tweet_has_keywords(self, policy, data):
+		"""
+		Private function to check if a tweet uses any important keywords, be it hashtags or commonly found words
+
+		@param Policy dictionary containing its information
+		@param Data dictionary containing important information
+
+		@returns True or False depending if the tweet has keywords
+		"""
+		for hashtag in data["tweet_entities"]["hashtags"]:
+			if hashtag["text"] in policy["params"]:
+				return True
+
+		for keyword in policy["params"]:
+			if keyword in data["tweet_text"]:
+				return True
+
+		return False
+
 	def analyze_tweet_like(self, data):
 		"""
 		Algorithm to analyse if a bot should like a Tweet
@@ -195,21 +237,57 @@ class PDP:
 		# Verify if there's a relation between the bot and the user
 		type1 = "BOT" if self.neo4j.check_bot_exists(data["bot_id"]) else "USER"
 		type2 = "BOT" if self.neo4j.check_bot_exists(data["user_id"]) else "USER"
-		relation_exists = self.neo4j.check_relationship_exists({"id_1": data["bot_id"],
-																"type1": type1,
-																"id_2": data["user_id"],
-																"type2": type2})
+		relation_exists = self.neo4j.check_relationship_exists({
+			"id_1": data["bot_id"],
+			"type1": type1,
+			"id_2": data["user_id"],
+			"type2": type2
+		})
 		if relation_exists:
 			heuristic_value += BOT_FOLLOWS_USER
 
 		# Next we check if the bot and the user have some policies in common
-		# Need the postgres database for this one
+		policy_list = self.postgres.search_policies({
+			"bot_id": data["bot_id"]
+		})
+		for policy in policy_list:
+			increase = False
+			if policy["filter"] == "Target":
+				# Check if our bot is being targeted
+
+				if self._bot_is_targeted(policy, data):
+					heuristic_value += POLICY_USER_IS_TARGETED
+
+			elif policy["filter"] == "Keywords":
+				# Check if tweet has any important keywords (be it a hashtag or a commonly found word)
+
+				if self._tweet_has_keywords(policy, data):
+					heuristic_value += POLICY_KEYWORDS_MATCHES
 
 		# We then check if the bot has retweeted the tweet
-
-		# Then we check if the policy has the word "Keyword"... for some reason
-
-		# After that we check if the bot has been liking too many tweets in a row, applying a penalty if such is the case
+		bot_logs = self.postgres.search_logs({"bot_id": data["bot_id"]})
+		for log in bot_logs:
+			# Log Structure: "ACTION: bot_id and tweet_id
+			action, users = log.split(": ")
+			if "RETWEET" == action:
+				bot, tweet = users.split(" and ")
+				if tweet == data["tweet_id"]:
+					heuristic_value = heuristic_value + BOT_RETWEETED_TWEET if heuristic_value < 0.8 else 1
+					break
+			elif "TWEET LIKE" == action:
+				bot, tweet = users.split(" and ")
+				user_tweet = self.mongo.find(
+					collection="tweets",
+					query={"id": tweet},
+					single=True
+				)
+				if user_tweet == data["user_id"]:
+					date = log["timestamp"]
+					now = datetime.datetime.now()
+					if (now - date).seconds < PENALTY_LIKED_RECENTLY_LARGE_INTERVAL:
+						heuristic_value += PENALTY_LIKED_RECENTLY_LARGE
+					elif (now - date).seconds < PENALTY_LIKED_RECENTLY_SMALL_INTERVAL:
+						heuristic_value += PENALTY_LIKED_RECENTLY_SMALL
 
 		return heuristic_value
 
@@ -234,17 +312,48 @@ class PDP:
 			"type2": type2
 		})
 
-		if relation_exists:
-			heuristic_value += BOT_FOLLOWS_USER
-
 		# Next we check if the bot and the user have some policies in common
-		# Need the postgres database for this one
+		policy_list = self.postgres.search_policies({
+			"bot_id": data["bot_id"]
+		})
+		for policy in policy_list:
+			increase = False
+			if policy["filter"] == "Target":
+				# Check if our bot is being targeted
 
-		# Then we check if the policy has the word "Keyword"... for some reason
+				if self._bot_is_targeted(policy, data):
+					heuristic_value += POLICY_USER_IS_TARGETED
 
-		# After that we check if the bot has been liking too many tweets in a row, applying a penalty if such is the case
+			elif policy["filter"] == "Keywords":
+				# Check if tweet has any important keywords (be it a hashtag or a commonly found word)
 
-		return 0
+				if self._tweet_has_keywords(policy, data):
+					heuristic_value += POLICY_KEYWORDS_MATCHES
+
+		# We then check if the bot has retweeted the tweet
+		bot_logs = self.postgres.search_logs({"bot_id": data["bot_id"]})
+		for log in bot_logs:
+			# Log Structure: "ACTION: bot_id and tweet_id
+			action, users = log.split(": ")
+			if "TWEET LIKE" == action:
+				bot, tweet = users.split(" and ")
+				if tweet == data["tweet_id"]:
+					heuristic_value = heuristic_value + BOT_LIKED_TWEET if heuristic_value < 0.7 else 1
+					break
+			elif "RETWEET" == action:
+				bot, tweet = users.split(" and ")
+				user_tweet = self.mongo.find(
+					collection="tweets",
+					query={"id": tweet},
+					single=True
+				)
+				if user_tweet == data["user_id"]:
+					date = log["timestamp"]
+					now = datetime.datetime.now()
+					if (now - date).seconds < PENALTY_RETWEETED_USER_RECENTLY_INTERVAL:
+						heuristic_value += PENALTY_RETWEETED_USER_RECENTLY
+
+		return heuristic_value
 
 	def analyze_tweet_reply(self, data):
 		"""
@@ -258,6 +367,13 @@ class PDP:
 		return 0
 
 	def analyze_follow_user(self, data):
+		"""
+		Algorithm to analyse if a bot should follow
+		Takes the current statistics and turns them into a real value
+
+		@param: data - dictionary containing the data of the bot and the tweet it wants to like
+		@returns: float that will then be compared to the threshold previously defined
+		"""
 		# This was not implemeneted last year
 		return False
 
