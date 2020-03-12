@@ -1,0 +1,2 @@
+pytest api/tests/mongo_tests/* -o DJANGO_SETTINGS_MODULE=rest.mongodb_test_settings -o addopts=--cov=api/views --cov-report  html --reuse-db
+pytest api/tests/postgresql_tests/* -o DJANGO_SETTINGS_MODULE=rest.postgres_test_settings -o addopts=--cov=api/views --cov-report  html --reuse-db
