@@ -3,9 +3,9 @@ import json
 import random
 import sys
 
-sys.path.append('..')
-from wrappers.mongo_wrapper import *
-from wrappers.neo4j import *
+sys.path.append('../wrappers')
+from mongo_wrapper import *
+from neo4j_wrapper import *
 from enums import *
 from credentials import *
 
@@ -36,7 +36,7 @@ class PDP:
 		pass
 
 	def receive_request(self, data):
-		## Leaving this as a simple function call, leaving the room for handling the data available
+		# Leaving this as a simple function call, leaving the room for handling the data available
 		return self.evaluate(data)
 
 	def evaluate(self, msg):
@@ -138,38 +138,41 @@ class PDP:
 		return message
 
 	def get_first_time_list(self):
-		'''
-		When a bot connects for the first time to Twitter, he'll have to start following people
-		This is the old way: having a set list of possible users and the bot will follow a random group from those followers
-		In future iterations we may alter this so that there are possible branches a bot could start with: politics, football fan, etc., each branch with a list of possible users to follow
+		"""
+		When a bot connects for the first time to Twitter, he'll have to start following people This is the old way:
+		having a set list of possible users and the bot will follow a random group from those followers In future
+		iterations we may alter this so that there are possible branches a bot could start with: politics,
+		football fan, etc., each branch with a list of possible users to follow
 
 		@return: List of users the bot will start following
-		'''
+		"""
 		num_users = random.randint(2, 10)
-		users = ["dailycristina", "PaulaNevesD", "doloresaveiro", "Corpodormente", "Manzarra",
-				 "Feromonas", "DanielaRuah", "RicardoTPereira", "LuciaMoniz", "D_Morgado",
-				 "ClaudiaPFVieira", "RuiSinelCordes", "DiogoBeja", "blackmirror", "13ReasonsWhy",
-				 "NetflixPT", "DCComics", "gameofthrones", "cw_arrow", "CW_TheFlash",
-				 "TheCW_Legends", "nbcthisisus", "lacasadepapel", "lucifernetflix",
-				 "thecwsupergirl", "cw_riverdale", "hawaiifive0cbs", "cwthe100", "agentsofshield",
-				 "thesimpsons", "macgyvercbs", "americancrimetv", "acsfx", "shadowhunterstv",
-				 "theamericansfx", "crimminds_cbs", "KimKardashian", "khloekardashian",
-				 "kourtneykardash", "KendallJenner", "KylieJenner", "KrisJenner", "pewdiepie",
-				 "tim_cook", "elonmusk", "BillGates", "FCPorto", "KDTrey5", "Cristiano",
-				 "hazardeden10", "PauDybala_JR", "Sporting_CP", "Dame_Lillard", "stephenasmith",
-				 "RealSkipBayless", "ManCity", "juventusfc", "FCBarcelona", "realmadrid",
-				 "SergioRamos", "KingJames", "katyperry", "cher", "NICKIMINAJ", "deadmau5",
-				 "kanyewest", "axlrose", "patrickcarney", "vincestaples", "KillerMike",
-				 "thedavidcrosby", "samantharonson", "Eminem", "pittyleone", "thesonicyouth", "bep",
-				 "ladygaga", "coldplay", "britneyspears", "backstreetboys", "chilipeppers",
-				 "fosterthepeople", "acdc", "arcticmonkeys", "blurofficial", "gorillaz", "greenday",
-				 "linkinpark", "MCRofficial", "falloutboy", "PanicAtTheDisco", "AllTimeLow",
-				 "PTXofficial", "kirstin", "StephenCurry30", "NBA", "SLBenfica", "partido_pan",
-				 "ppdpsd", "psocialista", "_cdspp", "cdupcppev", "realdonaldtrump", "borisjohnson",
-				 "nigel_farage", "jeremycorbyn", "theresa_may", "joebiden", "fhollande",
-				 "angelamerkeicdu", "barackobama", "berniesanders", "nicolasmaduro", "vp",
-				 "realxi_jinping", "mlp_officiel", "jguaido", "RuiRioPSD", "antoniocostapm",
-				 "catarina_mart", "cristasassuncao", "heloisapolonia", "jairbolsonaro"]
+		users = [
+			"dailycristina", "PaulaNevesD", "doloresaveiro", "Corpodormente", "Manzarra",
+			"Feromonas", "DanielaRuah", "RicardoTPereira", "LuciaMoniz", "D_Morgado",
+			"ClaudiaPFVieira", "RuiSinelCordes", "DiogoBeja", "blackmirror", "13ReasonsWhy",
+			"NetflixPT", "DCComics", "gameofthrones", "cw_arrow", "CW_TheFlash",
+			"TheCW_Legends", "nbcthisisus", "lacasadepapel", "lucifernetflix",
+			"thecwsupergirl", "cw_riverdale", "hawaiifive0cbs", "cwthe100", "agentsofshield",
+			"thesimpsons", "macgyvercbs", "americancrimetv", "acsfx", "shadowhunterstv",
+			"theamericansfx", "crimminds_cbs", "KimKardashian", "khloekardashian",
+			"kourtneykardash", "KendallJenner", "KylieJenner", "KrisJenner", "pewdiepie",
+			"tim_cook", "elonmusk", "BillGates", "FCPorto", "KDTrey5", "Cristiano",
+			"hazardeden10", "PauDybala_JR", "Sporting_CP", "Dame_Lillard", "stephenasmith",
+			"RealSkipBayless", "ManCity", "juventusfc", "FCBarcelona", "realmadrid",
+			"SergioRamos", "KingJames", "katyperry", "cher", "NICKIMINAJ", "deadmau5",
+			"kanyewest", "axlrose", "patrickcarney", "vincestaples", "KillerMike",
+			"thedavidcrosby", "samantharonson", "Eminem", "pittyleone", "thesonicyouth", "bep",
+			"ladygaga", "coldplay", "britneyspears", "backstreetboys", "chilipeppers",
+			"fosterthepeople", "acdc", "arcticmonkeys", "blurofficial", "gorillaz", "greenday",
+			"linkinpark", "MCRofficial", "falloutboy", "PanicAtTheDisco", "AllTimeLow",
+			"PTXofficial", "kirstin", "StephenCurry30", "NBA", "SLBenfica", "partido_pan",
+			"ppdpsd", "psocialista", "_cdspp", "cdupcppev", "realdonaldtrump", "borisjohnson",
+			"nigel_farage", "jeremycorbyn", "theresa_may", "joebiden", "fhollande",
+			"angelamerkeicdu", "barackobama", "berniesanders", "nicolasmaduro", "vp",
+			"realxi_jinping", "mlp_officiel", "jguaido", "RuiRioPSD", "antoniocostapm",
+			"catarina_mart", "cristasassuncao", "heloisapolonia", "jairbolsonaro"
+		]
 
 		bot_list = []
 		while len(bot_list) < num_users:
@@ -180,13 +183,13 @@ class PDP:
 		return bot_list
 
 	def analyze_tweet_like(self, data):
-		'''
+		"""
 		Algorithm to analyse if a bot should like a Tweet
 		Takes the current statistics and turns them into a real value
 
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
-		'''
+		"""
 
 		heuristic_value = 0
 		# Verify if there's a relation between the bot and the user
@@ -212,22 +215,25 @@ class PDP:
 
 	def analyze_tweet_retweet(self, data):
 
-		'''
+		"""
 		Algorithm to analyse if a bot should retweet a Tweet
 		Takes the current statistics and turns them into a real value
 
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
-		'''
+		"""
 
 		heuristic_value = 0
 		# Verify if there's a relation between the bot and the user
 		type1 = "BOT" if self.neo4j.check_bot_exists(data["bot_id"]) else "USER"
 		type2 = "BOT" if self.neo4j.check_bot_exists(data["user_id"]) else "USER"
-		relation_exists = self.neo4j.check_relationship_exists({"id_1": data["bot_id"],
-																"type1": type1,
-																"id_2": data["user_id"],
-																"type2": type2})
+		relation_exists = self.neo4j.check_relationship_exists({
+			"id_1": data["bot_id"],
+			"type1": type1,
+			"id_2": data["user_id"],
+			"type2": type2
+		})
+
 		if relation_exists:
 			heuristic_value += BOT_FOLLOWS_USER
 
@@ -241,16 +247,19 @@ class PDP:
 		return 0
 
 	def analyze_tweet_reply(self, data):
-		'''
+		"""
 		Algorithm to analyse if a bot should reply
 		Takes the current statistics and turns them into a real value
 
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
-		'''
-		#This was not implemented last year
+		"""
+		# This was not implemented last year
 		return 0
 
 	def analyze_follow_user(self, data):
-		#This was not implemeneted last year
+		# This was not implemeneted last year
 		return False
+
+	def close(self):
+		self.neo4j.close()

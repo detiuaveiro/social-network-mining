@@ -103,7 +103,7 @@ class Task:
         elif(message_type == MessageTypes.SAVE_DIRECT_MESSAGES):
             self.Save_Direct_Messages(message=message)
 
-    def User_Followed(self, message):
+    def User_Followed(self, message):   #omfg
         """
         Stores information about a bot following a user.
 
@@ -354,70 +354,70 @@ class Task:
             A dictionary containing the id of the bot, and a dictionary that maps user ids into a list of their followers
         """
         log.info("TASK: SAVE FOLLOWERS OF USER")
-        for key, value in message['data'].items():
-            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "SAVE LIST OF USERS FOLLOWED BY USER WITH ID: "+str(key)})
-            exists = self.neo4j.task(Neo4jTypes.SEARCH_USER,data={"user_id": int(key)})
-            isBot = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": key})
+        for follower, value in message['data'].items():
+            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "SAVE LIST OF USERS FOLLOWED BY USER WITH ID: "+str(follower)})
+            exists = self.neo4j.task(Neo4jTypes.SEARCH_USER,data={"user_id": int(follower)})
+            isBot = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": follower})
             if (exists):
-                for user2 in value:
-                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": user2})
+                for follower_follower in value:
+                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": follower_follower})
                     if (not exists2):
                         result = self.policy.lifecycle(msg={
                             "type": PoliciesTypes.REQUEST_FOLLOW_USER,
                             "bot_id": message['bot_id'],
-                            "user_id": int(user2),
+                            "user_id": int(follower_follower),
                         })
                         if (result==1):
                             log.info("USER ALLOWED TO BE FOLLOWED")
-                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(user2)+" ) ALLOWED TO BE FOLLOWED"})
+                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(follower_follower)+" ) ALLOWED TO BE FOLLOWED"})
                             send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.FOLLOW_USERS,
-                                    params={"type": "id", "data": [int(user2)]})
+                                    params={"type": "id", "data": [int(follower_follower)]})
                         else:
                             log.info("USER NOT ALLOWED TO BE FOLLOWED")
-                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(user2)+" ) NOT ALLOWED TO BE FOLLOWED"})
-                        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_USER_USER,data={"user1": int(key), "user2": int(user2)})
+                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(follower_follower)+" ) NOT ALLOWED TO BE FOLLOWED"})
+                        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_USER_USER,data={"user1": int(follower), "follower_follower": int(follower_follower)})
                     else:
                         continue
             elif (isBot):
-                for user2 in value:
-                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": user2})
+                for follower_follower in value:
+                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": follower_follower})
                     if (not exists2):
                         result = self.policy.lifecycle(msg={
                             "type": PoliciesTypes.REQUEST_FOLLOW_USER,
                             "bot_id": message['bot_id'],
-                            "user_id": int(user2),
+                            "user_id": int(follower_follower),
                         })
                         if (result==1):
                             log.info("USER ALLOWED TO BE FOLLOWED")
-                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(user2)+" ) ALLOWED TO BE FOLLOWED"})
+                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(follower_follower)+" ) ALLOWED TO BE FOLLOWED"})
                             send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.FOLLOW_USERS,
-                                    params={"type": "id", "data": [int(user2)]})
+                                    params={"type": "id", "data": [int(follower_follower)]})
                         else:
                             log.info("USER NOT ALLOWED TO BE FOLLOWED")
-                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(user2)+" ) NOT ALLOWED TO BE FOLLOWED"})
-                        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_BOT_USER,data={"bot_id": key, "user_id": int(user2)})
+                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(follower_follower)+" ) NOT ALLOWED TO BE FOLLOWED"})
+                        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_BOT_USER,data={"bot_id": follower, "user_id": int(follower_follower)})
                     else:
-                        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_BOT_BOT,data={"bot1": key, "bot2": user2})
+                        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_BOT_BOT,data={"bot1": follower, "bot2": follower_follower})
             else:
-                self.neo4j.task(Neo4jTypes.CREATE_USER,data={"id": key, "name": "", "username": ""})
-                self.mongo.save('users', {"id": int(key)})
-                for user2 in value:
-                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": user2})
+                self.neo4j.task(Neo4jTypes.CREATE_USER,data={"id": follower, "name": "", "username": ""})
+                self.mongo.save('users', {"id": int(follower)})
+                for follower_follower in value:
+                    exists2 = self.neo4j.task(Neo4jTypes.SEARCH_BOT,data={"bot_id": follower_follower})
                     if(not exists2):
                         result = self.policy.lifecycle(msg={
                             "type": PoliciesTypes.REQUEST_FOLLOW_USER,
                             "bot_id": message['bot_id'],
-                            "user_id": int(user2),
+                            "user_id": int(follower_follower),
                         })
                         if (result==1):
                             log.info("USER ALLOWED TO BE FOLLOWED")
-                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(user2)+" ) ALLOWED TO BE FOLLOWED"})
+                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(follower_follower)+" ) ALLOWED TO BE FOLLOWED"})
                             send_reply(bot_id=message['bot_id'], message_type=ResponseTypes.FOLLOW_USERS,
-                                    params={"type": "id", "data": [int(user2)]})
+                                    params={"type": "id", "data": [int(follower_follower)]})
                         else:
                             log.info("USER NOT ALLOWED TO BE FOLLOWED")
-                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(user2)+" ) NOT ALLOWED TO BE FOLLOWED"})
-                        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_USER_USER,data={"user1": int(key), "user2": int(user2)})
+                            self.postgreSQL2.addLog(mapa={"id_bot": message['bot_id'], "action": "USER (ID: "+str(follower_follower)+" ) NOT ALLOWED TO BE FOLLOWED"})
+                        self.neo4j.task(query_type=Neo4jTypes.CREATE_RELATION_USER_USER,data={"user1": int(follower), "follower_follower": int(follower_follower)})
                     else:
                         continue
 
