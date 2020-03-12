@@ -23,9 +23,10 @@ def add_bot_neo4j():
     return neo4j.check_bot_exists(1)
 
 
-@pytest.fixture
-def message(db):
-    return mixer.blend(Message, entitites=None)
+@pytest.fixture(autouse=True)
+def delete_neo4j_data():
+    neo4j.delete_bot(1)
+    return not neo4j.check_bot_exists(1)
 
 
 def test_successful_twitter_bots_request(factory, user):
@@ -55,17 +56,19 @@ def test_unsuccessfully_twitter_bot_request(factory):
     path = reverse('twitter_bot', kwargs={'id': 1})
     request = factory.get(path)
     response = bots.twitter_bot(request, id=1)
-    assert is_response_empty(response)
+    assert is_response_unsuccessful(response)
 
+# Todo Message tests
 
-#def test_successful_twitter_bot_messages_request(factory, message):
-#    path = reverse('twitter_bot_messages', kwargs={'id': '1'})
+# def test_successful_twitter_bot_messages_request(factory, message):
+#    print(message.bot_id)
+#    path = reverse('twitter_bot_messages', kwargs={'id': 1})
 #    request = factory.get(path)
-#    response = bots.twitter_bot_messages(request, id='1')
+#    response = bots.twitter_bot_messages(request, id=1)
+#    print(response.data)
 #    assert is_response_successful(response)
-#
-#
-#def test_unsuccessfully_twitter_bot_messages_request(factory, db):
+
+# def test_unsuccessfully_twitter_bot_messages_request(factory, db):
 #    path = reverse('twitter_bot_messages', kwargs={'id': '1'})
 #    request = factory.get(path)
 #    response = bots.twitter_bot_messages(request, id='1')
