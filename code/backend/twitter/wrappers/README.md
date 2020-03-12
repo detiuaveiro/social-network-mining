@@ -36,3 +36,9 @@ docker run --name twitter_neo4j -p7474:7474 -p 7687:7687 -v $HOME/neo4j/plugins:
 
 
 7. In case you run a export process using apoc, they will be written on ~/neo4j/import folder
+
+# Convert neo4j bots string ids to Integer ids
+
+```neo4j
+MATCH (n:Bot) Set n.id = toInt(n.id)
+```
