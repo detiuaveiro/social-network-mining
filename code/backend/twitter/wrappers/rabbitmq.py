@@ -15,6 +15,7 @@ log.addHandler(handler)
 
 WAIT_TIME = 10
 
+
 class Rabbitmq():
     """Class representing Rabbit MQ"""
 
@@ -36,14 +37,16 @@ class Rabbitmq():
             Password for authentication
         """
 
-        ## Setting up pika credentials and parameters
+        # Setting up pika credentials and parameters
         pika_credentials = pika.PlainCredentials(username, password)
-        self.pika_parameters = pika.ConnectionParameters(host=host,
-                                                        port=port,
-                                                        virtual_host=vhost,
-                                                        credentials=pika_credentials,
-                                                        heartbeat=600,
-                                                        blocked_connection_timeout=300)
+        self.pika_parameters = pika.ConnectionParameters(
+            host=host,
+            port=port,
+            virtual_host=vhost,
+            credentials=pika_credentials,
+            heartbeat=600,
+            blocked_connection_timeout=300
+        )
 
         self.reconnection_attempt = 0
         self.MAX_RECONNECTIONS = 10
@@ -61,43 +64,59 @@ class Rabbitmq():
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue='API', durable=True)
 
-        #Declare Exchanges
+        # Declare Exchanges
         log.info("Declaring exchanges")
-        self.channel.exchange_declare(exchange='task_deliver',
-                                    exchange_type='direct',
-                                    durable=True)
+        self.channel.exchange_declare(
+            exchange='task_deliver',
+            exchange_type='direct',
+            durable=True
+        )
 
-        self.channel.exchange_declare(exchange='twitter_data',
-                                    exchange_type='direct',
-                                    durable=True)
+        self.channel.exchange_declare(
+            exchange='twitter_data',
+            exchange_type='direct',
+            durable=True
+        )
 
-        self.channel.exchange_declare(exchange='logs',
-                                    exchange_type='direct',
-                                    durable=True)
+        self.channel.exchange_declare(
+            exchange='logs',
+            exchange_type='direct',
+            durable=True
+        )
 
-        self.channel.exchange_declare(exchange='queries',
-                                    exchange_type='direct',
-                                    durable=True)
+        self.channel.exchange_declare(
+            exchange='queries',
+            exchange_type='direct',
+            durable=True
+        )
 
-        #Create Bindings
+        # Create Bindings
         log.info("Creating bindings")
-        self.channel.queue_bind(exchange='data',
-                                queue="API",
-                                routing_key="data.twitter")
+        self.channel.queue_bind(
+            exchange='data',
+            queue="API",
+            routing_key="data.twitter"
+        )
         
-        self.channel.queue_bind(exchange="twitter_data",
-                                queue="API",
-                                routing_key='data.twitter')
+        self.channel.queue_bind(
+            exchange="twitter_data",
+            queue="API",
+            routing_key='data.twitter'
+        )
 
-        self.channel.queue_bind(exchange="logs",
-                                queue="API",
-                                routing_key='logs.twitter')
+        self.channel.queue_bind(
+            exchange="logs",
+            queue="API",
+            routing_key='logs.twitter'
+        )
 
-        self.channel.queue_bind(exchange="queries",
-                                queue="API",
-                                routing_key='queries.twitter')
+        self.channel.queue_bind(
+            exchange="queries",
+            queue="API",
+            routing_key='queries.twitter'
+        )
         
-        ## Implement a task manager
+        # Implement a task manager
         self.database_writer = DBWriter()
 
         log.info("Connection to Rabbit Established")
@@ -112,10 +131,11 @@ class Rabbitmq():
         message: (Dictionary) dictionary to be stringified and sent
         """
 
-        self.channel.basic_publish(exchange="tasks_deliver",
-                                    routing_key=routing_key,
-                                    body=json.dumps(message)
-                                    )
+        self.channel.basic_publish(
+            exchange="tasks_deliver",
+            routing_key=routing_key,
+            body=json.dumps(message)
+        )
 
     def receive(self, queue_name='API'):
         """
@@ -127,8 +147,10 @@ class Rabbitmq():
         """
 
         try:
-            self.channel.queue_declare(queue=queue_name,
-                                    durable=True)
+            self.channel.queue_declare(
+                queue=queue_name,
+                durable=True
+            )
             
             log.info(" [*] Waiting for Messages. To exit press CTRL+C")
             
@@ -153,6 +175,7 @@ class Rabbitmq():
         Close the connection with the Rabbit MQ server
         """
         self.connection.close()
+
 
 if __name__ == "__main__":
     rabbit = Rabbitmq()
