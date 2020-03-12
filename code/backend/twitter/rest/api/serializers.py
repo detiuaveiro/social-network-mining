@@ -70,5 +70,8 @@ class Message(serializers.Serializer):
     recipient_id = serializers.IntegerField()
     sender_id = serializers.IntegerField()
     text = serializers.CharField()
-    entities = Message_entities()
+    entities = Message_entities(required=False)
     bot_id = serializers.CharField()
+
+
+
