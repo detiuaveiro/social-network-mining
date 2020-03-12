@@ -147,30 +147,32 @@ class PDP:
 		@return: List of users the bot will start following
 		"""
 		num_users = random.randint(2, 10)
-		users = ["dailycristina", "PaulaNevesD", "doloresaveiro", "Corpodormente", "Manzarra",
-				 "Feromonas", "DanielaRuah", "RicardoTPereira", "LuciaMoniz", "D_Morgado",
-				 "ClaudiaPFVieira", "RuiSinelCordes", "DiogoBeja", "blackmirror", "13ReasonsWhy",
-				 "NetflixPT", "DCComics", "gameofthrones", "cw_arrow", "CW_TheFlash",
-				 "TheCW_Legends", "nbcthisisus", "lacasadepapel", "lucifernetflix",
-				 "thecwsupergirl", "cw_riverdale", "hawaiifive0cbs", "cwthe100", "agentsofshield",
-				 "thesimpsons", "macgyvercbs", "americancrimetv", "acsfx", "shadowhunterstv",
-				 "theamericansfx", "crimminds_cbs", "KimKardashian", "khloekardashian",
-				 "kourtneykardash", "KendallJenner", "KylieJenner", "KrisJenner", "pewdiepie",
-				 "tim_cook", "elonmusk", "BillGates", "FCPorto", "KDTrey5", "Cristiano",
-				 "hazardeden10", "PauDybala_JR", "Sporting_CP", "Dame_Lillard", "stephenasmith",
-				 "RealSkipBayless", "ManCity", "juventusfc", "FCBarcelona", "realmadrid",
-				 "SergioRamos", "KingJames", "katyperry", "cher", "NICKIMINAJ", "deadmau5",
-				 "kanyewest", "axlrose", "patrickcarney", "vincestaples", "KillerMike",
-				 "thedavidcrosby", "samantharonson", "Eminem", "pittyleone", "thesonicyouth", "bep",
-				 "ladygaga", "coldplay", "britneyspears", "backstreetboys", "chilipeppers",
-				 "fosterthepeople", "acdc", "arcticmonkeys", "blurofficial", "gorillaz", "greenday",
-				 "linkinpark", "MCRofficial", "falloutboy", "PanicAtTheDisco", "AllTimeLow",
-				 "PTXofficial", "kirstin", "StephenCurry30", "NBA", "SLBenfica", "partido_pan",
-				 "ppdpsd", "psocialista", "_cdspp", "cdupcppev", "realdonaldtrump", "borisjohnson",
-				 "nigel_farage", "jeremycorbyn", "theresa_may", "joebiden", "fhollande",
-				 "angelamerkeicdu", "barackobama", "berniesanders", "nicolasmaduro", "vp",
-				 "realxi_jinping", "mlp_officiel", "jguaido", "RuiRioPSD", "antoniocostapm",
-				 "catarina_mart", "cristasassuncao", "heloisapolonia", "jairbolsonaro"]
+		users = [
+			"dailycristina", "PaulaNevesD", "doloresaveiro", "Corpodormente", "Manzarra",
+			"Feromonas", "DanielaRuah", "RicardoTPereira", "LuciaMoniz", "D_Morgado",
+			"ClaudiaPFVieira", "RuiSinelCordes", "DiogoBeja", "blackmirror", "13ReasonsWhy",
+			"NetflixPT", "DCComics", "gameofthrones", "cw_arrow", "CW_TheFlash",
+			"TheCW_Legends", "nbcthisisus", "lacasadepapel", "lucifernetflix",
+			"thecwsupergirl", "cw_riverdale", "hawaiifive0cbs", "cwthe100", "agentsofshield",
+			"thesimpsons", "macgyvercbs", "americancrimetv", "acsfx", "shadowhunterstv",
+			"theamericansfx", "crimminds_cbs", "KimKardashian", "khloekardashian",
+			"kourtneykardash", "KendallJenner", "KylieJenner", "KrisJenner", "pewdiepie",
+			"tim_cook", "elonmusk", "BillGates", "FCPorto", "KDTrey5", "Cristiano",
+			"hazardeden10", "PauDybala_JR", "Sporting_CP", "Dame_Lillard", "stephenasmith",
+			"RealSkipBayless", "ManCity", "juventusfc", "FCBarcelona", "realmadrid",
+			"SergioRamos", "KingJames", "katyperry", "cher", "NICKIMINAJ", "deadmau5",
+			"kanyewest", "axlrose", "patrickcarney", "vincestaples", "KillerMike",
+			"thedavidcrosby", "samantharonson", "Eminem", "pittyleone", "thesonicyouth", "bep",
+			"ladygaga", "coldplay", "britneyspears", "backstreetboys", "chilipeppers",
+			"fosterthepeople", "acdc", "arcticmonkeys", "blurofficial", "gorillaz", "greenday",
+			"linkinpark", "MCRofficial", "falloutboy", "PanicAtTheDisco", "AllTimeLow",
+			"PTXofficial", "kirstin", "StephenCurry30", "NBA", "SLBenfica", "partido_pan",
+			"ppdpsd", "psocialista", "_cdspp", "cdupcppev", "realdonaldtrump", "borisjohnson",
+			"nigel_farage", "jeremycorbyn", "theresa_may", "joebiden", "fhollande",
+			"angelamerkeicdu", "barackobama", "berniesanders", "nicolasmaduro", "vp",
+			"realxi_jinping", "mlp_officiel", "jguaido", "RuiRioPSD", "antoniocostapm",
+			"catarina_mart", "cristasassuncao", "heloisapolonia", "jairbolsonaro"
+		]
 
 		bot_list = []
 		while len(bot_list) < num_users:

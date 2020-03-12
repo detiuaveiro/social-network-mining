@@ -1,6 +1,5 @@
 import logging
 import sys
-
 from mongo_wrapper import MongoAPI
 from neo4j_wrapper import Neo4jAPI
 from postgresql_wrapper import PostgresAPI
@@ -145,7 +144,8 @@ class DBWriter:
 		log.info("Request a like to a tweet")
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Request for a like between {data['bot_id']} and {data['data']['user']} for tweet {data['data']['id']}"
+			"action": f"Request for a like between {data['bot_id']} and {data['data']['user']} \
+			for tweet {data['data']['id']}"
 		})
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_LIKE,
@@ -160,14 +160,16 @@ class DBWriter:
 			log.info("Like request accepted")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request accepted for a like between {data['bot_id']} and {data['data']['user']} for tweet {data['data']['id']}"
+				"action": f"Request accepted for a like between {data['bot_id']} and {data['data']['user']} \
+				for tweet {data['data']['id']}"
 			})
 			self.send(data['bot_id'], ResponseTypes.LIKE_TWEETS, data['data']['id'])
 		else:
 			log.warning("Like request denied")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request denied for a like between {data['bot_id']} and {data['data']['user']} for tweet {data['data']['id']}"
+				"action": f"Request denied for a like between {data['bot_id']} and {data['data']['user']} \
+				for tweet {data['data']['id']}"
 			})
 		# add log
 
@@ -183,7 +185,8 @@ class DBWriter:
 		log.info("Request a retweeting a tweet")
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Request for a retweet between {data['bot_id']} and {data['data']['user']} for tweet {data['data']['id']}"
+			"action": f"Request for a retweet between {data['bot_id']} and {data['data']['user']} \
+			for tweet {data['data']['id']}"
 		})
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_RETWEET,
@@ -206,7 +209,8 @@ class DBWriter:
 			log.warning("Retweet request denied")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request denied for a retweet between {data['bot_id']} and {data['data']['user']} for tweet {data['data']['id']}"
+				"action": f"Request denied for a retweet between {data['bot_id']} and {data['data']['user']} \
+				for tweet {data['data']['id']}"
 			})
 
 	def request_tweet_reply(self, data):
@@ -221,7 +225,8 @@ class DBWriter:
 		log.info("Request a reply to a tweet")
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Request sent for a reply between {data['bot_id']} and {data['data']['user']} for tweet {data['data']['id']}"
+			"action": f"Request sent for a reply between {data['bot_id']} and {data['data']['user']} \
+			for tweet {data['data']['id']}"
 		})
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_REPLY,
@@ -239,14 +244,16 @@ class DBWriter:
 			log.info("Like request accepted")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request accepted for a reply between {data['bot_id']} and {data['data']['user']} for tweet {data['data']['id']}"
+				"action": f"Request accepted for a reply between {data['bot_id']} and {data['data']['user']} \
+				for tweet {data['data']['id']}"
 			})
 			self.send(data['bot_id'], ResponseTypes.POST_TWEETS, data['data']['id'])
 		else:
 			log.warning("Like request denied")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Request denied for a reply between {data['bot_id']} and {data['data']['user']} for tweet {data['data']['id']}"
+				"action": f"Request denied for a reply between {data['bot_id']} and {data['data']['user']} \
+				for tweet {data['data']['id']}"
 			})
 
 	def request_follow_user(self, data):
@@ -427,7 +434,7 @@ class DBWriter:
 			is_user = self.neo4j_client.check_user_exists(follower)
 			is_bot = self.neo4j_client.check_bot_exists(follower)
 			if not (is_user or is_bot):
-				## The follower isn't registered in the database, so that must be handled
+				# The follower isn't registered in the database, so that must be handled
 				self.save_user({
 					"bot_id": data["bot_id"],
 					"data": {
@@ -446,30 +453,12 @@ class DBWriter:
 						"user_id": follower_follower
 					})
 
-					if is_user:
-						self.neo4j_client.add_relationship({
-							"id_1": follower,
-							"id_2": follower_follower,
-							"type_1": "User",
-							"type_2": "User"
-						})
-					else:
-						self.neo4j_client.add_relationship({
-							"id_1": follower,
-							"id_2": follower_follower,
-							"type_1": "Bot",
-							"type_2": "User"
-						})
-				else:
-					## Condition in case the follower's follower is a bot
-					## The only thing that may happen that's not covered by the above cases is a bot-bot following
-					if not is_user:
-						self.neo4j_client.add_relationship({
-							"id_1": follower,
-							"id_2": follower_follower,
-							"type_1": "Bot",
-							"type_2": "Bot"
-						})
+				self.follow_user({
+					"bot_id": follower,
+					"data":{
+						"id": follower_follower
+					}
+				})
 
 	def send(self, bot, message_type, params):
 		"""
