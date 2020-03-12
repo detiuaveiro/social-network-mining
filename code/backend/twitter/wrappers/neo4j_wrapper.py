@@ -2,6 +2,7 @@ import logging
 import sys
 from neo4j import GraphDatabase
 import datetime
+
 sys.path.append('..')
 import credentials
 
@@ -208,7 +209,7 @@ class Neo4jAPI:
         @param data: The params of the bot we want to update and the other update params. Should include an old_id
         """
         if "id" not in data.keys():
-            log.error("ERROR CREATING A USER")
+            log.error("ERROR UPDATING A BOT")
             log.error("Error: Specified data doesn't contain necessary fields - old_id")
 
             return
@@ -231,6 +232,74 @@ class Neo4jAPI:
 
         query = f'MATCH (r:{BOT_LABEL} {{ id: {str(data["id"])} }}) {set_query[:-1]}  RETURN r'
         # Note we use set_query[:-1] in order to remove the final comma (,)
+
+        tx.run(query)
+
+    def delete_user(self, id):
+        """Method used to delete a given user
+
+        @param id: The id of the user we want to delete
+        """
+
+        with self.driver.session() as session:
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__delete_node, USER_LABEL, id)
+
+    def delete_bot(self, id):
+        """Method used to delete a given bot
+
+        @param id: The id of the bot we want to delete
+        """
+
+        with self.driver.session() as session:
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__delete_node, BOT_LABEL, id)
+
+    def __delete_node(self, tx, type, id):
+        log.debug("DELETING NODE")
+
+        query = f'MATCH (r:{type} {{ id: {str(id)} }}) DETACH DELETE r'
+
+        tx.run(query)
+
+    def delete_relationship(self, data):
+        """Method used to delete a given bot
+
+        @param data: The params of the new relationship we want to delete. Should include a type_1, type_2, id_1, id_2
+        """
+        if (
+                "id_1" not in data.keys()
+                or "id_2" not in data.keys()
+                or "type_1" not in data.keys()
+                or "type_2" not in data.keys()
+        ):
+            log.error("ERROR DELETING A RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - type_1, type_2, id_1, id_2"
+            )
+
+            return
+
+        if data["type_1"] not in [BOT_LABEL, USER_LABEL] or data["type_2"] not in [
+            BOT_LABEL,
+            USER_LABEL,
+        ]:
+            log.error("ERROR DELETING A RELATIONSHIP")
+            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+
+            return
+
+        with self.driver.session() as session:
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__delete_rel, data)
+
+    def __delete_rel(self, tx, data):
+        log.debug("DELETING RELATIONSHIP")
+
+        query = f'MATCH (a:{str(data["type_1"])} {{ id: {str(data["id_1"])} }})-' \
+                f'[r:{FOLLOW_LABEL}]->' \
+                f'(b:{str(data["type_2"])} {{ id: {str(data["id_2"])} }}) ' \
+                f' DELETE r'
 
         tx.run(query)
 
@@ -428,11 +497,11 @@ class Neo4jAPI:
 
         if export_name is None:
             export_name = (
-                "../export_results/"
-                + export_type
-                + "/neo4j"
-                + "_"
-                + str(datetime.datetime.now()).replace(" ", "_")
+                    "../export_results/"
+                    + export_type
+                    + "/neo4j"
+                    + "_"
+                    + str(datetime.datetime.now()).replace(" ", "_")
             )
 
             export_name = export_name + "." + export_type
@@ -479,5 +548,8 @@ if __name__ == "__main__":
     # neo.export_network()
     # neo.export_network("csv")
     # neo.export_network("json")
+
+    # neo.delete_user(0)
+    # neo.delete_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
 
     neo.close()
