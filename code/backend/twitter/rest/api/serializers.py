@@ -50,6 +50,12 @@ class Policy(serializers.Serializer):
     active = serializers.BooleanField(required=False)
 
 
+class Log(serializers.Serializer):
+    id_bot = serializers.IntegerField()
+    timestamp = serializers.DateTimeField()
+    action = serializers.CharField()
+
+
 class Url(serializers.Serializer):
     url = serializers.EmailField()
     expanded_url = serializers.EmailField()
@@ -70,5 +76,8 @@ class Message(serializers.Serializer):
     recipient_id = serializers.IntegerField()
     sender_id = serializers.IntegerField()
     text = serializers.CharField()
-    entities = Message_entities()
+    entities = Message_entities(required=False)
     bot_id = serializers.CharField()
+
+
+

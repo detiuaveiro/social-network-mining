@@ -26,10 +26,8 @@ class PostgresAPI:
 		try:
 			# Connect to the PostgreSQL server
 			self.conn = psycopg2.connect(
-				host=credentials.POSTGRES_URL,
-				database=credentials.POSTGRES_DB,
-				user=credentials.POSTGRES_USERNAME,
-				password=credentials.POSTGRES_PASSWORD
+				host=credentials.POSTGRES_URL, database=credentials.POSTGRES_DB,
+				user=credentials.POSTGRES_USERNAME, password=credentials.POSTGRES_PASSWORD
 			)
 
 		except (Exception, psycopg2.DatabaseError) as error:
@@ -75,7 +73,8 @@ class PostgresAPI:
 			cursor = self.conn.cursor()
 			cursor.execute(
 				"INSERT INTO users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",
-				(data["user_id"], data["followers"], data["following"]))
+				(data["user_id"], data["followers"], data["following"])
+			)
 			self.conn.commit()
 			cursor.close()
 		except psycopg2.Error as error:
@@ -200,9 +199,8 @@ class PostgresAPI:
 
 	def search_logs(self, params=None, limit=None):
 		"""
-		Searches and returns all logs if no data is specified, or the specific logs matching the parameters.
-		Can also specify the amount of logs to be retrieved.
-		Data retrieved is ordered by the most recent
+		Searches and returns all logs if no data is specified, or the specific logs matching the parameters. Can also
+		specify the amount of logs to be retrieved. Data retrieved is ordered by the most recent
 
 		@param params: The parameters we want to query. Right now only bot_id is supported
 		@param limit: An optional parameter specifying the amount of logs to be retrieved
@@ -213,8 +211,7 @@ class PostgresAPI:
 		try:
 			cursor = self.conn.cursor()
 
-			query = \
-				f"select * from logs " \
+			query = f"select * from logs " \
 				f"{'WHERE' if params is not None else ''} " \
 				f"{'id_bot=' + str(params['bot_id']) if params is not None and 'bot_id' in params.keys() else ''} " \
 				f"ORDER BY timestamp DESC " \
@@ -257,8 +254,7 @@ class PostgresAPI:
 		try:
 			cursor = self.conn.cursor()
 
-			query = \
-				f"select api.name,policies.name,params,active,id_policy,filter.name, policies.bots from policies " \
+			query = f"select api.name,policies.name,params,active,id_policy,filter.name, policies.bots from policies " \
 				f"   left outer join filter on filter.id=policies.filter " \
 				f"   left outer join api on api.id=policies.API_type "
 
@@ -347,14 +343,16 @@ class PostgresAPI:
 		try:
 			cursor = self.conn.cursor()
 
-			cursor.execute(f"SELECT * FROM api WHERE name=\'{data['api_name']}\';")
+			cursor.execute(
+				f"SELECT * FROM api WHERE name=\'{data['api_name']}\';")
 			api_existance = cursor.fetchone()
 			if len(api_existance) == 0:
 				return {"success": False, "error": "Specified API does not exist"}
 			else:
 				api_id = api_existance[0]
 
-			cursor.execute(f"SELECT * FROM filter WHERE name=\'{data['filter']}\';")
+			cursor.execute(
+				f"SELECT * FROM filter WHERE name=\'{data['filter']}\';")
 			filter_existance = cursor.fetchone()
 			if len(filter_existance) == 0:
 				return {"success": False, "error": "Specified Filter does not exist"}
@@ -368,7 +366,8 @@ class PostgresAPI:
 				return {"success": False, "error": "Specified API-Filter connection does not exist"}
 
 			cursor.execute(
-				"INSERT INTO policies (api_type, filter, name, params, active, id_policy, bots) values (%s,%s,%s,%s,%s,%s,%s);",
+				"INSERT INTO policies (api_type, filter, name, params, active, id_policy, bots) "
+				"values (%s,%s,%s,%s,%s,%s,%s);",
 				(api_id, filter_id, data["name"], data["params"], data["active"], data["policy_id"], data["bots"]))
 
 			self.conn.commit()
@@ -425,7 +424,8 @@ class PostgresAPI:
 
 			api_id = None
 			if 'api_name' in params.keys():
-				cursor.execute(f"SELECT * FROM api WHERE name=\'{params['api_name']}\';")
+				cursor.execute(
+					f"SELECT * FROM api WHERE name=\'{params['api_name']}\';")
 				api_existance = cursor.fetchone()
 				if len(api_existance) == 0:
 					return {"success": False, "error": "Specified API does not exist"}
@@ -434,7 +434,8 @@ class PostgresAPI:
 
 			filter_id = None
 			if 'filter' in params.keys():
-				cursor.execute(f"SELECT * FROM filter WHERE name=\'{params['filter']}\';")
+				cursor.execute(
+					f"SELECT * FROM filter WHERE name=\'{params['filter']}\';")
 				filter_existance = cursor.fetchone()
 				if len(filter_existance) == 0:
 					return {"success": False, "error": "Specified Filter does not exist"}
@@ -503,30 +504,29 @@ class PostgresAPI:
 if __name__ == "__main__":
 	# TODO: Test and implement searching by timestamp ; Policies API
 	anal = PostgresAPI()
-	'''
-	anal.insert_tweet({"tweet_id": 831606548300517377, "user_id": 6253282, "likes": 100, "retweets": 2})
-	anal.insert_user({"user_id": 6253283, "followers": 10000, "following": 1234})
-	for i in anal.search_tweet()["data"]:
-		print(i)
+	# anal.insert_tweet({"tweet_id": 831606548300517377, "user_id": 6253282, "likes": 100, "retweets": 2})
+	# anal.insert_user({"user_id": 6253283, "followers": 10000, "following": 1234})
+	# for i in anal.search_tweet()["data"]:
+	#   print(i)
 
-	for i in anal.search_user()["data"]:
-		print(i)
+	# for i in anal.search_user()["data"]:
+	#   print(i)
 
-	result = anal.search_policies({'api_name': 'Twitter', 'policy_id': 80, 'bot_id': 1129475305444388866}, limit=10)
-	if result["success"]:
-	for i in result["data"]:
-		print(i)
-	else:
-		print(result["error"])
+	# result = anal.search_policies({'api_name': 'Twitter', 'policy_id': 80, 'bot_id': 1129475305444388866}, limit=10)
+	# if result["success"]:
+	#    for i in result["data"]:
+	#        print(i)
+	# else:
+	#   print(result["error"])
 
-	anal.insert_log({"bot_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
-	anal.insert_log({"user_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
+	# anal.insert_log({"bot_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
+	# anal.insert_log({"user_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
 
-	print(anal.insert_policy({
-	'api_name': 'Twitter', 'filter': 'Keywords', 'name': 'Jonas Pistolas found Ded', 'bots': [1129475305444388866],
-	'params': ['OMG'], 'active': True, 'policy_id': 420}))'''
+	# print(anal.insert_policy(
+	#   {'api_name': 'Twitter', 'filter': 'Keywords', 'name': 'Jonas Pistolas found Ded', 'bots': [1129475305444388866],
+	#    'params': ['OMG'], 'active': True, 'policy_id': 421}))
 
-	result = anal.search_policies({'policy_id': 420})
+	result = anal.search_policies({'policy_id': 421})
 	if result["success"]:
 		for i in result["data"]:
 			print(i)

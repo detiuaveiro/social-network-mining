@@ -7,7 +7,6 @@ MONGO_PORT = 27017
 MONGO_FULL_URL = f"{MONGO_URL}:{MONGO_PORT}"
 MONGO_DB = "snm_mongo"
 
-
 # -----------------------------------------------------------
 # POSTGRES 
 # -----------------------------------------------------------
@@ -21,7 +20,6 @@ POSTGRES_DB = 'postgres'
 POSTGRES_USERNAME = "snm"
 POSTGRES_PASSWORD = "pg_snm"
 
-
 # -----------------------------------------------------------
 # RABBITMQ
 # -----------------------------------------------------------
@@ -32,7 +30,6 @@ RABBITMQ_FULL_URL = f"{RABBITMQ_URL}:{RABBITMQ_PORT}"
 RABBITMQ_USERNAME = "pi_rabbit_admin"
 RABBITMQ_VHOST = "PI"
 RABBITMQ_PASSWORD = "yPvawEVxks7MLg3lfr3g"
-
 
 # -----------------------------------------------------------
 # NEO4J
