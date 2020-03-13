@@ -72,6 +72,16 @@ class Policy(models.Model):
         db_table = "policies"
 
 
+class Log(models.Model):
+    id_bot = models.IntegerField(primary_key=True)
+    timestamp = models.DateTimeField()
+    action = models.TextField()
+
+    class Meta:
+        managed = True
+        db_table = 'logs'
+
+
 class Url(djongo_models.Model):
     url = djongo_models.EmailField()
     expanded_url = djongo_models.EmailField()
@@ -87,14 +97,14 @@ class Message_entities(djongo_models.Model):
 
 
 class Message(djongo_models.Model):
-    id = djongo_models.BigIntegerField(primary_key=True)
+    id = djongo_models.BigIntegerField(primary_key=True, db_column="_id")
     created_at = djongo_models.TextField()
     recipient_id = djongo_models.BigIntegerField()
     sender_id = djongo_models.BigIntegerField()
     text = djongo_models.TextField()
-    entities = djongo_models.EmbeddedField(Message_entities)
+    entities = djongo_models.EmbeddedField(Message_entities, blank=True, null=True)
     bot_id = djongo_models.TextField()
 
     class Meta:
         managed = True
-        db_table = 'messages'
+        db_table = "messages"

@@ -2,6 +2,7 @@ import logging
 import sys
 from neo4j import GraphDatabase
 import datetime
+
 sys.path.append('..')
 import credentials
 
@@ -208,7 +209,7 @@ class Neo4jAPI:
         @param data: The params of the bot we want to update and the other update params. Should include an old_id
         """
         if "id" not in data.keys():
-            log.error("ERROR CREATING A USER")
+            log.error("ERROR UPDATING A BOT")
             log.error("Error: Specified data doesn't contain necessary fields - old_id")
 
             return
@@ -231,6 +232,74 @@ class Neo4jAPI:
 
         query = f'MATCH (r:{BOT_LABEL} {{ id: {str(data["id"])} }}) {set_query[:-1]}  RETURN r'
         # Note we use set_query[:-1] in order to remove the final comma (,)
+
+        tx.run(query)
+
+    def delete_user(self, id):
+        """Method used to delete a given user
+
+        @param id: The id of the user we want to delete
+        """
+
+        with self.driver.session() as session:
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__delete_node, USER_LABEL, id)
+
+    def delete_bot(self, id):
+        """Method used to delete a given bot
+
+        @param id: The id of the bot we want to delete
+        """
+
+        with self.driver.session() as session:
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__delete_node, BOT_LABEL, id)
+
+    def __delete_node(self, tx, type, id):
+        log.debug("DELETING NODE")
+
+        query = f'MATCH (r:{type} {{ id: {str(id)} }}) DETACH DELETE r'
+
+        tx.run(query)
+
+    def delete_relationship(self, data):
+        """Method used to delete a given bot
+
+        @param data: The params of the new relationship we want to delete. Should include a type_1, type_2, id_1, id_2
+        """
+        if (
+                "id_1" not in data.keys()
+                or "id_2" not in data.keys()
+                or "type_1" not in data.keys()
+                or "type_2" not in data.keys()
+        ):
+            log.error("ERROR DELETING A RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - type_1, type_2, id_1, id_2"
+            )
+
+            return
+
+        if data["type_1"] not in [BOT_LABEL, USER_LABEL] or data["type_2"] not in [
+            BOT_LABEL,
+            USER_LABEL,
+        ]:
+            log.error("ERROR DELETING A RELATIONSHIP")
+            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+
+            return
+
+        with self.driver.session() as session:
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__delete_rel, data)
+
+    def __delete_rel(self, tx, data):
+        log.debug("DELETING RELATIONSHIP")
+
+        query = f'MATCH (a:{str(data["type_1"])} {{ id: {str(data["id_1"])} }})-' \
+                f'[r:{FOLLOW_LABEL}]->' \
+                f'(b:{str(data["type_2"])} {{ id: {str(data["id_2"])} }}) ' \
+                f' DELETE r'
 
         tx.run(query)
 
@@ -410,11 +479,10 @@ class Neo4jAPI:
 
         return result
 
-    def export_network(self, export_type="graphml", export_name=None):
+    def export_network(self, export_type="graphml"):
         """Method used to export the entire database
 
         @param export_type: What type we want to export to. Graphml by default
-        @param export_name: The path we want to export to
         """
 
         if export_type not in ["json", "csv", "graphml"]:
@@ -426,33 +494,31 @@ class Neo4jAPI:
 
             return
 
-        if export_name is None:
-            export_name = (
-                "../export_results/"
-                + export_type
-                + "/neo4j"
-                + "_"
-                + str(datetime.datetime.now()).replace(" ", "_")
-            )
-
-            export_name = export_name + "." + export_type
-
         with self.driver.session() as session:
-            return session.write_transaction(self.__export_network, {"type": export_type, "name": export_name})
+            result = session.write_transaction(self.__export_network, export_type)
 
-    def __export_network(self, tx, data):
+            result = result.data()[0]["data"]
+
+            if export_type == "json":
+                result = "[" + result.replace("\n", ",") + "]"
+
+            return result
+
+    def __export_network(self, tx, export_type):
         log.debug("EXPORTING NETWORK")
 
-        if data["type"] == "json":
-            tx.run(
-                "CALL apoc.export.json.all('" + data["name"] + "',{useTypes:true})"
+        if export_type == "json":
+            result = tx.run(
+                "CALL apoc.export.json.all(null,{useTypes:true, stream:true})"
             )
-        elif data["type"] == "csv":
-            tx.run(
-                "CALL apoc.export.csv.all('" + data["name"] + "', {useTypes:true})"
+        elif export_type == "csv":
+            result = tx.run(
+                "CALL apoc.export.csv.all(null,{useTypes:true, stream:true})"
             )
         else:
-            tx.run("CALL apoc.export.graphml.all('" + data["name"] + "', {useTypes:true})")
+            result = tx.run("CALL apoc.export.graphml.all(null,{useTypes:true, stream:true})")
+
+        return result
 
 
 if __name__ == "__main__":
@@ -476,8 +542,20 @@ if __name__ == "__main__":
     # print(neo.get_following({"type": BOT_LABEL, "id": 0}))
     # print(neo.get_followers({"type": USER_LABEL, "id": 0}))
 
+    # print(neo.get_following({"type": "BOT", "id": 0}))
+    # print(neo.get_followers({"type": "USER", "id": 0}))
+
+    # neo.export_network()
+    # print(neo.export_network("csv"))
+    # print()
+    # print(neo.export_network("json"))
+    # print()
+    # print(neo.export_network())
+
     # neo.export_network()
     # neo.export_network("csv")
     # neo.export_network("json")
 
+    # neo.delete_user(0)
+    # neo.delete_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
     neo.close()
