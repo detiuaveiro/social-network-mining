@@ -489,6 +489,7 @@ class PostgresAPI:
             self.conn.rollback()
             return {"success": False, "error": error}
 
+
 if __name__ == "__main__":
     # TODO: Test and implement searching by timestamp ; Policies API
     anal = PostgresAPI()
