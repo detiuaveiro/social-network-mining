@@ -18,26 +18,30 @@ log.addHandler(handler)
 class PostgresAPI:
 	"""PostgreSQL
 
-    Encompasses methods used for all API and PDP interactions with our PostgreSQL DB.
-    """
+	Encompasses methods used for all API and PDP interactions with our PostgreSQL DB.
+	"""
 
 	def __init__(self):
 		log.debug("Connecting to PostgreSQL Analysis")
 		try:
 			# Connect to the PostgreSQL server
-			self.conn = psycopg2.connect(host=credentials.POSTGRES_URL, database=credentials.POSTGRES_DB,
-										 user=credentials.POSTGRES_USERNAME, password=credentials.POSTGRES_PASSWORD)
+			self.conn = psycopg2.connect(
+				host=credentials.POSTGRES_URL,
+				database=credentials.POSTGRES_DB,
+				user=credentials.POSTGRES_USERNAME,
+				password=credentials.POSTGRES_PASSWORD
+			)
 
 		except (Exception, psycopg2.DatabaseError) as error:
 			print(error)
 
 	def insert_tweet(self, data):
 		"""
-        Attempts to insert a new Tweet item into the database
+		Attempts to insert a new Tweet item into the database
 
-        @param data: The data of the item we want to insert. Should have - tweet_id, user_id, likes, retweets
-        @return A success or failure message ({success: True/False ; error: None/Error})
-        """
+		@param data: The data of the item we want to insert. Should have - tweet_id, user_id, likes, retweets
+		@return A success or failure message ({success: True/False ; error: None/Error})
+		"""
 		try:
 			cursor = self.conn.cursor()
 			cursor.execute(
@@ -61,16 +65,17 @@ class PostgresAPI:
 
 	def insert_user(self, data):
 		"""
-        Attempts to insert a new User item into the database
+		Attempts to insert a new User item into the database
 
-        @param data: The collection we want to insert the document into
-        @return A success or failure message ({success: True/False ; error: None/Error})
-        """
+		@param data: The collection we want to insert the document into
+		@return A success or failure message ({success: True/False ; error: None/Error})
+		"""
 
 		try:
 			cursor = self.conn.cursor()
-			cursor.execute("INSERT INTO users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",
-						   (data["user_id"], data["followers"], data["following"]))
+			cursor.execute(
+				"INSERT INTO users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",
+				(data["user_id"], data["followers"], data["following"]))
 			self.conn.commit()
 			cursor.close()
 		except psycopg2.Error as error:
@@ -89,11 +94,11 @@ class PostgresAPI:
 
 	def search_tweet(self, params=None):
 		"""
-        Searches and returns all Tweets if no data is specified, or the specific tweet matching the given parameters
+		Searches and returns all Tweets if no data is specified, or the specific tweet matching the given parameters
 
-        @param params: The parameters we want to query
-        @return The query's result or error
-        """
+		@param params: The parameters we want to query
+		@return The query's result or error
+		"""
 
 		try:
 			cursor = self.conn.cursor()
@@ -142,11 +147,11 @@ class PostgresAPI:
 
 	def search_user(self, params=None):
 		"""
-        Searches and returns all Users if no data is specified, or the specific tweet matching the given parameters
+		Searches and returns all Users if no data is specified, or the specific tweet matching the given parameters
 
-        @param params: The parameters we want to query
-        @return The query's result or error
-        """
+		@param params: The parameters we want to query
+		@return The query's result or error
+		"""
 
 		try:
 			cursor = self.conn.cursor()
@@ -195,23 +200,24 @@ class PostgresAPI:
 
 	def search_logs(self, params=None, limit=None):
 		"""
-        Searches and returns all logs if no data is specified, or the specific logs matching the parameters. Can also specify the amount of logs to be retrieved.
-        Data retrieved is ordered by the most recent
+		Searches and returns all logs if no data is specified, or the specific logs matching the parameters. Can also specify the amount of logs to be retrieved.
+		Data retrieved is ordered by the most recent
 
-        @param params: The parameters we want to query. Right now only bot_id is supported
-        @param limit: An optional parameter specifying the amount of logs to be retrieved
+		@param params: The parameters we want to query. Right now only bot_id is supported
+		@param limit: An optional parameter specifying the amount of logs to be retrieved
 
-        @return The query's result or error
-        """
+		@return The query's result or error
+		"""
 
 		try:
 			cursor = self.conn.cursor()
 
-			query = f"select * from logs " \
-					f"{'WHERE' if params is not None else ''} " \
-					f"{'id_bot=' + str(params['bot_id']) if params is not None and 'bot_id' in params.keys() else ''} " \
-					f"ORDER BY timestamp DESC " \
-					f"{'limit ' + str(limit) if limit is not None else ''} ;"
+			query = \
+				f"select * from logs " \
+				f"{'WHERE' if params is not None else ''} " \
+				f"{'id_bot=' + str(params['bot_id']) if params is not None and 'bot_id' in params.keys() else ''} " \
+				f"ORDER BY timestamp DESC " \
+				f"{'limit ' + str(limit) if limit is not None else ''} ;"
 
 			cursor.execute(query)
 			print(query)
@@ -238,20 +244,21 @@ class PostgresAPI:
 
 	def search_policies(self, params=None, limit=None):
 		"""
-        Searches and returns all policies if no data is specified, or the specific policies matching the parameters. Can also specify the amount of poliecies to be retrieved.
+		Searches and returns all policies if no data is specified, or the specific policies matching the parameters. Can also specify the amount of poliecies to be retrieved.
 
-        @param params: The parameters we want to query. Right now only bot_id is supported
-        @param limit: An optional parameter specifying the amount of logs to be retrieved
+		@param params: The parameters we want to query. Right now only bot_id is supported
+		@param limit: An optional parameter specifying the amount of logs to be retrieved
 
-        @return The query's result or error
-        """
+		@return The query's result or error
+		"""
 
 		try:
 			cursor = self.conn.cursor()
 
-			query = f"select api.name,policies.name,params,active,id_policy,filter.name, policies.bots from policies " \
-					f"   left outer join filter on filter.id=policies.filter " \
-					f"   left outer join api on api.id=policies.API_type "
+			query = \
+				f"select api.name,policies.name,params,active,id_policy,filter.name, policies.bots from policies " \
+				f"   left outer join filter on filter.id=policies.filter " \
+				f"   left outer join api on api.id=policies.API_type "
 
 			if params is not None:
 				query += " WHERE "
@@ -280,9 +287,10 @@ class PostgresAPI:
 
 			result = []  # Array of jsons
 			for tuple in data:
-				result.append(
-					{"API_type": tuple[0], "name": tuple[1], "params": tuple[2], "active": tuple[3],
-					 "policy_id": tuple[4], "filter": tuple[5], "bots": tuple[6]})
+				result.append({
+					"API_type": tuple[0], "name": tuple[1], "params": tuple[2], "active": tuple[3],
+					"policy_id": tuple[4], "filter": tuple[5], "bots": tuple[6]
+				})
 
 			return {"success": True, "data": result}
 		except psycopg2.Error as error:
@@ -294,11 +302,11 @@ class PostgresAPI:
 
 	def insert_log(self, data):
 		"""
-        Attempts to insert a new Log item into the database
+		Attempts to insert a new Log item into the database
 
-        @param data: The data of the item we want to insert. Should have
-        @return A success or failure message ({success: True/False ; error: None/Error})
-        """
+		@param data: The data of the item we want to insert. Should have
+		@return A success or failure message ({success: True/False ; error: None/Error})
+		"""
 		try:
 			cursor = self.conn.cursor()
 			cursor.execute(
@@ -329,11 +337,11 @@ class PostgresAPI:
 
 	def insert_policy(self, data):
 		"""
-        Attempts to insert a new Log item into the database
+		Attempts to insert a new Log item into the database
 
-        @param data: The data of the item we want to insert.
-        @return A success or failure message ({success: True/False ; error: None/Error})
-        """
+		@param data: The data of the item we want to insert.
+		@return A success or failure message ({success: True/False ; error: None/Error})
+		"""
 		try:
 			cursor = self.conn.cursor()
 
@@ -374,13 +382,13 @@ class PostgresAPI:
 
 	def delete_policy(self, policy_id):
 		"""
-        Deletes the policy with the given id
+		Deletes the policy with the given id
 
-        @param policy_id: The id of the policy we want to delete
-        @param limit: An optional parameter specifying the amount of logs to be retrieved
+		@param policy_id: The id of the policy we want to delete
+		@param limit: An optional parameter specifying the amount of logs to be retrieved
 
-        @return The query's result or error
-        """
+		@return The query's result or error
+		"""
 
 		try:
 			cursor = self.conn.cursor()
@@ -401,14 +409,14 @@ class PostgresAPI:
 
 	def update_policy(self, policy_id, params):
 		"""
-        Updates the policy with the specified policy id, changing the params specified.
+		Updates the policy with the specified policy id, changing the params specified.
 
-        @param params: The parameters we want to update.
-        @param policy_id: The id of the policy we want to update
-        @param limit: An optional parameter specifying the amount of logs to be retrieved
+		@param params: The parameters we want to update.
+		@param policy_id: The id of the policy we want to update
+		@param limit: An optional parameter specifying the amount of logs to be retrieved
 
-        @return The query's result or error
-        """
+		@return The query's result or error
+		"""
 
 		try:
 			cursor = self.conn.cursor()
@@ -503,8 +511,8 @@ if __name__ == "__main__":
 
 	# result = anal.search_policies({'api_name': 'Twitter', 'policy_id': 80, 'bot_id': 1129475305444388866}, limit=10)
 	# if result["success"]:
-	#    for i in result["data"]:
-	#        print(i)
+	#	for i in result["data"]:
+	#		print(i)
 	# else:
 	#   print(result["error"])
 
@@ -512,8 +520,8 @@ if __name__ == "__main__":
 	# anal.insert_log({"user_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
 
 	# print(anal.insert_policy(
-	#    {'api_name': 'Twitter', 'filter': 'Keywords', 'name': 'Jonas Pistolas found Ded', 'bots': [1129475305444388866],
-	#     'params': ['OMG'], 'active': True, 'policy_id': 420}))
+	#	{'api_name': 'Twitter', 'filter': 'Keywords', 'name': 'Jonas Pistolas found Ded', 'bots': [1129475305444388866],
+	#	 'params': ['OMG'], 'active': True, 'policy_id': 420}))
 
 	result = anal.search_policies({'policy_id': 420})
 	if result["success"]:
