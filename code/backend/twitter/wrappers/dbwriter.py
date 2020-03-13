@@ -459,7 +459,6 @@ class DBWriter:
 						"screen_name": ""
 					}
 				})
-				is_user = True
 
 			for follower_follower in data["data"][follower]:
 				follower_follower_is_user = self.neo4j_client.check_user_exists(follower_follower)
@@ -471,7 +470,7 @@ class DBWriter:
 
 				self.follow_user({
 					"bot_id": follower,
-					"data":{
+					"data": {
 						"id": follower_follower
 					}
 				})
@@ -520,7 +519,8 @@ if __name__ == "__main__":
 	
 	tweet = {
 		"id" : 8912323,
-		"text" : "RT @nbastats: HISTORY!\n\nSteph Curry and Draymond Green become the first teammates in @NBAHistory to both record a triple-double in the same…",
+		"text" : "RT @nbastats: HISTORY!\n\nSteph Curry and Draymond Green become the first teammates in @NBAHistory \
+		to both record a triple-double in the same…",
 		"truncated" : False,
 		"entities" : {
 			"hashtags" : [ ],
