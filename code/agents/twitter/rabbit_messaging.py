@@ -58,7 +58,7 @@ class RabbitMessaging:
 		self.messaging = Client(api_url=self.__url, user=self.__username, passwd=self.__password)
 
 	@__reconnect_messaging
-	def __setup_messaging(self):
+	def _setup_messaging(self):
 		"""Private method for setting up the messaging connections
 		"""
 		
@@ -105,6 +105,3 @@ class RabbitMessaging:
 		if msg and msg[0].get("payload", None):
 			return from_json(msg[0]["payload"])
 		return {}
-
-	def _run(self):
-		self.__setup_messaging()
