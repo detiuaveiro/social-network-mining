@@ -39,7 +39,7 @@ urlpatterns = [
     path("twitter/stats", bots.twitter_stats, name="twitter_stats"),
     path("twitter/bots", bots.twitter_bots, name="twitter_bots"),
     url(r"^twitter/bots/(?P<id>[0-9]+)/$", bots.twitter_bot, name="twitter_bot"),
-    url(r"^twitter/bots/(?P<id>[0-9]+)/logs/$", bots.twitter_bot_logs, name="twitter_bot_logs"),
+    url(r"^twitter/bots/(?P<id>[0-9]+)/logs/(?P<limit>[0-9]+)/$", bots.twitter_bot_logs, name="twitter_bot_logs"),
     url(r"^twitter/bots/(?P<id>[0-9]+)/messages/$", bots.twitter_bot_messages, name="twitter_bot_messages"),
 
     path(r"twitter/tweets/all", tweets.twitter_tweets, name="twitter_tweets"),

@@ -4,12 +4,10 @@ import sys
 import json
 import csv
 import datetime
-
-sys.path.append("..")
 import credentials
 
 log = logging.getLogger("Mongo")
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(
     logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s")
@@ -20,7 +18,7 @@ log.addHandler(handler)
 class MongoAPI:
     """Mongo Wrapper.
 
-    Class that acts as a wrapper for all methods related to our Mongo DB 
+    Class that acts as a wrapper for all methods related to our Mongo DB
     """
 
     def __init__(self):
@@ -34,7 +32,7 @@ class MongoAPI:
     # TODO - IMPLEMENT ME PLEASE!
     def verify_integrity(self, collection, document):
         """Verifies if the document to be inserted has the same structure as the other documents in the collection
-        
+
         @param collection: The collection we want to insert the document into
         @param document: The document we want to insert
         @return: True or false wether the integrity is verified or not
@@ -43,7 +41,7 @@ class MongoAPI:
 
     def get_count(self, collection, data={}):
         """Gets the total number of documents in a given collection
-        
+
         @param collection: The collection we want to count the documents in
         @param data: The params we want the counted documents to have. By default it counts all documents
         @return: The number of documents in a given collection
@@ -67,7 +65,7 @@ class MongoAPI:
 
     def insert_users(self, data):
         """Inserts a new single document into our Users Collection
-        
+
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
         try:
@@ -79,7 +77,7 @@ class MongoAPI:
 
     def insert_tweets(self, data):
         """Inserts a new single document into our Tweets Collection
-        
+
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
         try:
@@ -91,7 +89,7 @@ class MongoAPI:
 
     def insert_messages(self, data):
         """Inserts a new single document into our Messages Collection
-        
+
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
         try:
@@ -99,6 +97,57 @@ class MongoAPI:
             log.debug("INSERT SUCCESFUL")
         except Exception as e:
             log.error("ERROR INSERTING DOCUMENT")
+            log.error("Error: " + str(e))
+
+    def update_users(self, match, new_data, all=True):
+        """Updates one or many documents on Users Collection
+
+        @param match: The params the documents we want to update must fulfill
+        @param new_data: The new data we want to place
+        @param all: Whether we want to update all or just the first document found
+        """
+        try:
+            if all:
+                self.users.update_many(match, new_data)
+            else:
+                self.users.update_one(match, new_data)
+            log.debug("UPDATE SUCCESSFUL")
+        except Exception as e:
+            log.error("ERROR UPDATING DOCUMENT")
+            log.error("Error: " + str(e))
+
+    def update_tweets(self, match, new_data, all=True):
+        """Updates one or many documents on Tweets Collection
+
+        @param match: The params the documents we want to update must fulfill
+        @param new_data: The new data we want to place
+        @param all: Whether we want to update all or just the first document found
+        """
+        try:
+            if all:
+                self.tweets.update_many(match, new_data)
+            else:
+                self.tweets.update_one(match, new_data)
+            log.debug("UPDATE SUCCESSFUL")
+        except Exception as e:
+            log.error("ERROR UPDATING DOCUMENT")
+            log.error("Error: " + str(e))
+
+    def update_messages(self, match, new_data, all=True):
+        """Updates one or many documents on Messages Collection
+
+        @param match: The params the documents we want to update must fulfill
+        @param new_data: The new data we want to place
+        @param all: Whether we want to update all or just the first document found
+        """
+        try:
+            if all:
+                self.messages.update_many(match, new_data)
+            else:
+                self.messages.update_one(match, new_data)
+            log.debug("UPDATE SUCCESSFUL")
+        except Exception as e:
+            log.error("ERROR UPDATING DOCUMENT")
             log.error("Error: " + str(e))
 
     def search(
@@ -110,11 +159,12 @@ class MongoAPI:
             export_type=None,
     ):
         """Searches the a collection by a given search query. Can also export to a json or csv
-        
+
         @param collection: Specifies the collection we want to query
         @param query: The search query we're using. By default it finds all documents
         @param fields: Specifies the fields we want to show on the query result
-        @param single: Whether we want to search only for one document or for all that match the query. By default we search for all
+        @param single: Whether we want to search only for one document or for all that match the query. By default
+        we search for all
         @param export_type: Specifies whether or not to export the result. Can either be None, json or csv
         @return: The search result
         """
@@ -160,7 +210,7 @@ class MongoAPI:
 
     def __export_data(self, data, export_type):
         """Exports a given array of documents into a csv or json
-        
+
         @param data: An array of documents to export
         @param export_type: The type of the file we want to export to
         """
@@ -179,7 +229,7 @@ class MongoAPI:
             else:
                 field_names = []
 
-            #Get the values
+            # Get the values
             for row in data:
                 for field in row:
                     csv_content += row[field] + ","
@@ -222,6 +272,6 @@ if __name__ == "__main__":
     # mongo.search(collection="tweets",export_type="json")
     # mongo.search(collection="users",query={"name": "ds"}, export_type="json")
 
-    print(mongo.search(collection="messages", fields=["name"], export_type="csv"))
+    # mongo.search(collection="messages", fields=["name"], export_type="csv")
     # mongo.search(collection="tweets", export_type="csv")
     # mongo.search(collection="users", query={"name": "ds"}, export_type="csv")

@@ -45,7 +45,7 @@ class Tweet(djongo_models.Model):
         managed = True
         db_table = "tweets"
 
-    
+
 class TweetStats(models.Model):
     tweet_id = models.BigIntegerField(primary_key=True)
     user_id = models.IntegerField()
@@ -70,3 +70,41 @@ class Policy(models.Model):
     class Meta:
         managed = True
         db_table = "policies"
+
+
+class Log(models.Model):
+    id_bot = models.IntegerField(primary_key=True)
+    timestamp = models.DateTimeField()
+    action = models.TextField()
+
+    class Meta:
+        managed = True
+        db_table = 'logs'
+
+
+class Url(djongo_models.Model):
+    url = djongo_models.EmailField()
+    expanded_url = djongo_models.EmailField()
+    display_url = djongo_models.TextField()
+    indices = djongo_models.ListField(djongo_models.IntegerField())
+
+
+class Message_entities(djongo_models.Model):
+    hashtags = djongo_models.ListField(djongo_models.TextField())
+    symbols = djongo_models.ListField(djongo_models.TextField())
+    user_mentions = djongo_models.ListField(djongo_models.TextField())
+    urls = djongo_models.ListField(Url)
+
+
+class Message(djongo_models.Model):
+    id = djongo_models.BigIntegerField(primary_key=True, db_column="_id")
+    created_at = djongo_models.TextField()
+    recipient_id = djongo_models.BigIntegerField()
+    sender_id = djongo_models.BigIntegerField()
+    text = djongo_models.TextField()
+    entities = djongo_models.EmbeddedField(Message_entities, blank=True, null=True)
+    bot_id = djongo_models.TextField()
+
+    class Meta:
+        managed = True
+        db_table = "messages"
