@@ -19,7 +19,8 @@ WAIT_TIME = 10
 class Rabbitmq():
     """Class representing Rabbit MQ"""
 
-    def __init__(self, host=RABBITMQ_URL, port=RABBITMQ_PORT, vhost=RABBITMQ_VHOST, username=RABBITMQ_USERNAME, password=RABBITMQ_PASSWORD):
+    def __init__(self, host=RABBITMQ_URL, port=RABBITMQ_PORT, vhost=RABBITMQ_VHOST, username=RABBITMQ_USERNAME,
+                 password=RABBITMQ_PASSWORD):
         """
         Create a Rabbit MQ instance which represents a connection to a Rabbit MQ server
 
@@ -56,7 +57,8 @@ class Rabbitmq():
     
     def _setup(self):
         """
-        Set up function, will start the connection, create all necessary exchanges and respective bindings from the parameters given from the constructor
+        Set up function, will start the connection, create all necessary exchanges and respective bindings from the
+        parameters given from the constructor
         """
     
         self.connection = pika.BlockingConnection(self.pika_parameters)
@@ -139,7 +141,7 @@ class Rabbitmq():
 
     def receive(self, queue_name='API'):
         """
-        Receives messages and puts thme in the queue given from the argument
+        Receives messages and puts them in the queue given from the argument
 
         params:
         -------

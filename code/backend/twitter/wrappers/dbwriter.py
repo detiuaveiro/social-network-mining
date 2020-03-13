@@ -623,8 +623,8 @@ if __name__ == "__main__":
 
 	dbwriter.find_followers({
 		"bot_id": 318689,
-		"data":{
-			"123234":[875358]
+		"data": {
+			"123234": [875358]
 		}
 	})
 
