@@ -273,11 +273,27 @@ def policy_by_service(service):
     """
     try:
         data = [serializers.Policy(policy).data for policy in Policy.objects.filter(API_type=service)]
-        return True, data, f"Sucesso a obter as politicas do instagram"
+        return True, data, f"Sucesso a obter as politicas do {service}"
 
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {policy_by_service.__name__} -> {e}")
-        return False, None, "Erro a obter as politicas do instagram"
+        return False, None, f"Erro a obter as politicas do {service}"
+
+
+def twitter_bot_logs(id, limit):
+    """
+    Return all logs from a bot
+    :param id: bot id
+    :return: status(boolean), data, message(string)
+    """
+    try:
+        logs = Log.objects.filter(id_bot=id)
+        data = [serializers.Log(log).data for log in (logs if not limit or limit > len(logs) else logs[:limit])]
+        return True, data, f"Sucesso a obter os logs do bot com ID {id}"
+
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_bot_logs.__name__} ->  {e}")
+        return False, None, f"Erro a obter os logs do bot com ID {id}"
 
 
 # Bots
@@ -298,7 +314,7 @@ def twitter_bot(id):
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_bot.__name__} -> {e}")
         return False, None, f"Erro a obter as informações do bot com ID {id}"
 
-        
+
 def twitter_bots():
     """
     Return all bots info saved on mongodb
