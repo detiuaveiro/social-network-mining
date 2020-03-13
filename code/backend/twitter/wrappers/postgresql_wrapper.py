@@ -238,7 +238,8 @@ class PostgresAPI:
 
     def search_policies(self, params=None, limit=None):
         """
-        Searches and returns all policies if no data is specified, or the specific policies matching the parameters. Can also specify the amount of poliecies to be retrieved.
+        Searches and returns all policies if no data is specified, or the specific policies matching the parameters.
+        Can also specify the amount of poliecies to be retrieved.
 
         @param params: The parameters we want to query. Right now only bot_id is supported
         @param limit: An optional parameter specifying the amount of logs to be retrieved
@@ -358,7 +359,8 @@ class PostgresAPI:
                 return {"success": False, "error": "Specified API-Filter connection does not exist"}
 
             cursor.execute(
-                "INSERT INTO policies (api_type, filter, name, params, active, id_policy, bots) values (%s,%s,%s,%s,%s,%s,%s);",
+                "INSERT INTO policies (api_type, filter, name, params, active, id_policy, bots) "
+                "values (%s,%s,%s,%s,%s,%s,%s);",
                 (api_id, filter_id, data["name"], data["params"], data["active"], data["policy_id"], data["bots"]))
 
             self.conn.commit()
@@ -512,10 +514,10 @@ if __name__ == "__main__":
     # anal.insert_log({"user_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
 
     # print(anal.insert_policy(
-    #    {'api_name': 'Twitter', 'filter': 'Keywords', 'name': 'Jonas Pistolas found Ded', 'bots': [1129475305444388866],
-    #     'params': ['OMG'], 'active': True, 'policy_id': 420}))
+    #   {'api_name': 'Twitter', 'filter': 'Keywords', 'name': 'Jonas Pistolas found Ded', 'bots': [1129475305444388866],
+    #    'params': ['OMG'], 'active': True, 'policy_id': 421}))
 
-    result = anal.search_policies({'policy_id': 420})
+    result = anal.search_policies({'policy_id': 421})
     if result["success"]:
         for i in result["data"]:
             print(i)
