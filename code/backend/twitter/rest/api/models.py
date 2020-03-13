@@ -72,6 +72,16 @@ class Policy(models.Model):
         db_table = "policies"
 
 
+class Log(models.Model):
+    id_bot = models.IntegerField(primary_key=True)
+    timestamp = models.DateTimeField()
+    action = models.TextField()
+
+    class Meta:
+        managed = True
+        db_table = 'logs'
+
+
 class Url(djongo_models.Model):
     url = djongo_models.EmailField()
     expanded_url = djongo_models.EmailField()
