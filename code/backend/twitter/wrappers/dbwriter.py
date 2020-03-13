@@ -85,12 +85,16 @@ class DBWriter:
 		log.info("A bot has started following someone")
 		type1 = "Bot" if self.neo4j_client.check_bot_exists(data["bot_id"]) else "User"
 		type2 = "Bot" if self.neo4j_client.check_bot_exists(data["data"]["id"]) else "User"
-		self.neo4j_client.add_relationship({
+		relationship = {
 			"id_1": data["bot_id"],
 			"id_2": data["data"]["id"],
 			"type_1": type1,
 			"type_2": type2
-		})
+		}
+		if self.neo4j_client.check_relationship_exists(relationship):
+			log.info("The bot already follows the user")
+			return
+		self.neo4j_client.add_relationship(relationship)
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": f"FOLLOW: {data['bot_id']} and {data['data']['id']}"
@@ -337,7 +341,7 @@ class DBWriter:
 					})
 					self.postgress_client.insert_log({
 						"bot_id": data["bot_id"],
-						"action": f"Updating info for {data['data']['user']}"
+						"action": f"Updating info for {data['data']['id']}"
 					})
 
 				else:
@@ -437,12 +441,12 @@ class DBWriter:
 		The function will also request for the bot who sent the message to follow the users who follow
 		one of the bot's followers
 
-		@param data: dict with the id of a bot and a second dictionary with the bot's followers as keys that map
+		@param data: dict with the id of a bot and a second dictionary with the bot's followers' ID as keys that map
 		to his followers
 		"""
 		log.info("Starting to create the Follow Relationship")
 		for follower in data["data"]:
-			self.postgress_client.addLog({
+			self.postgress_client.insert_log({
 				"id_bot": data['bot_id'],
 				"action": f"Save list of followers for {follower}"
 			})
@@ -454,9 +458,11 @@ class DBWriter:
 				self.save_user({
 					"bot_id": data["bot_id"],
 					"data": {
-						"id": follower,
+						"id": int(follower),
 						"name": "",
-						"screen_name": ""
+						"screen_name": "",
+						"followers_count": 0,
+						"friends_count": 0
 					}
 				})
 
@@ -465,11 +471,11 @@ class DBWriter:
 				if follower_follower_is_user:
 					self.request_follow_user({
 						"bot_id": data['bot_id'],
-						"user_id": follower_follower
+						"data": {"id": follower_follower}
 					})
 
 				self.follow_user({
-					"bot_id": follower,
+					"bot_id": int(follower),
 					"data": {
 						"id": follower_follower
 					}
@@ -505,17 +511,6 @@ if __name__ == "__main__":
 
 	dbwriter = DBWriter()
 	'''
-
-	dbwriter.save_user({
-		"bot_id": 874358,
-		"data": {
-			"id": 874358,
-			"name": "abc xyz",
-			"screen_name": "ina",
-			"location": "ygo",
-			"description": "fusion monster",
-		}
-	})
 	
 	tweet = {
 		"id" : 8912323,
@@ -539,7 +534,9 @@ if __name__ == "__main__":
 		"lang" : "en"
 	}
 	
-	dbwriter.save_tweet({
+	dbwriter.save_twe
+			"id":
+		et({
 		"bot_id": 874358,
 		"data": tweet
 	})
@@ -553,34 +550,7 @@ if __name__ == "__main__":
 		"bot_id": 874358,
 		"data": {
 			"id": 318689
-		}
-	})
-
-	dbwriter.save_user({
-		"bot_id": 318689,
-		"data":{
-			"id": 318689,
-			"name": "abc",
-			"screen_name": "buster dragon",
-			"location": "ygo",
-			"description": "fusion monster",
-		}
-	})
-	dbwriter.save_user({
-		"bot_id": 318689,
-		"data":{
-			"id": 123234,
-			"name": "xyz",
-			"screen_name": "the other one",
-			"location": "ygo",
-			"description": "fusion monster",
-		}
-	})
-	dbwriter.follow_user({
-		"bot_id": 318689,
-		"data":{
-			"id": 123234
-		}
+		}git
 	})
 	
 	dbwriter.save_dm({
@@ -591,6 +561,71 @@ if __name__ == "__main__":
 			"user": 123234
 		}
 	})
-	'''
+
+	
+	dbwriter.follow_user({
+		"bot_id": 318689,
+		"data": {
+			"id": 123234
+		}
+	})	'''
+	dbwriter.save_user({
+		"bot_id": 874358,
+		"data": {
+			"id": 874358,
+			"name": "abc xyz",
+			"screen_name": "ina",
+			"location": "ygo",
+			"description": "fusion monster",
+			"followers_count": 0,
+			"friends_count": 0
+		}
+	})
+
+	dbwriter.save_user({
+		"bot_id": 318689,
+		"data": {
+			"id": 318689,
+			"name": "abc",
+			"screen_name": "buster dragon",
+			"location": "ygo",
+			"description": "fusion monster",
+			"followers_count": 0,
+			"friends_count": 0
+		}
+	})
+	dbwriter.save_user({
+		"bot_id": 318689,
+		"data": {
+			"id": 123234,
+			"name": "xyz",
+			"screen_name": "the other one",
+			"location": "ygo",
+			"description": "fusion monster",
+			"followers_count": 0,
+			"friends_count": 0
+		}
+	})
+
+	dbwriter.follow_user({
+		"bot_id": 318689,
+		"data": {
+			"id": 123234
+		}
+	})
+
+	dbwriter.follow_user({
+		"bot_id": 875358,
+		"data": {
+			"id": 123234
+		}
+	})
+
+	dbwriter.find_followers({
+		"bot_id": 318689,
+		"data":{
+			"123234":[875358]
+		}
+	})
 
 	dbwriter.close()
