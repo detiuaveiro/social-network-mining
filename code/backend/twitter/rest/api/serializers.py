@@ -50,6 +50,12 @@ class Policy(serializers.Serializer):
     active = serializers.BooleanField(required=False)
 
 
+class Log(serializers.Serializer):
+    id_bot = serializers.IntegerField()
+    timestamp = serializers.DateTimeField()
+    action = serializers.CharField()
+
+
 class Url(serializers.Serializer):
     url = serializers.EmailField()
     expanded_url = serializers.EmailField()
