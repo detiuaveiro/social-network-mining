@@ -568,7 +568,7 @@ if __name__ == "__main__":
 		"data": {
 			"id": 123234
 		}
-	})	'''
+	})	
 	dbwriter.save_user({
 		"bot_id": 874358,
 		"data": {
@@ -627,5 +627,5 @@ if __name__ == "__main__":
 			"123234": [875358]
 		}
 	})
-
+	'''
 	dbwriter.close()
