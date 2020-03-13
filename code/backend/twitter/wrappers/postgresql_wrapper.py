@@ -99,7 +99,7 @@ class PostgresAPI:
             cursor = self.conn.cursor()
 
             query = "select timestamp, tweet_id, likes, retweets from tweets "
-            if params == None:
+            if params is None:
                 query += ";"
             else:
                 query += "WHERE "
@@ -195,8 +195,8 @@ class PostgresAPI:
 
     def search_logs(self, params=None, limit=None):
         """
-        Searches and returns all logs if no data is specified, or the specific logs matching the parameters. Can also specify the amount of logs to be retrieved.
-        Data retrieved is ordered by the most recent
+        Searches and returns all logs if no data is specified, or the specific logs matching the parameters. Can also
+        specify the amount of logs to be retrieved. Data retrieved is ordered by the most recent
 
         @param params: The parameters we want to query. Right now only bot_id is supported
         @param limit: An optional parameter specifying the amount of logs to be retrieved
