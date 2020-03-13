@@ -184,7 +184,7 @@ class DBWriter:
 		log.info("Request a retweeting a tweet")
 		self.postgress_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"RETWEET REQUEST: {data['bot_id']} and {data['data']['id']} \
+			"action": f"RETWEET REQUEST: {data['bot_id']} and {data['data']['user']} \
 			for tweet {data['data']['id']}"
 		})
 		request_accepted = self.pep.receive_message({
@@ -200,7 +200,7 @@ class DBWriter:
 			log.info("Retweet request accepted")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"RETWEET REQUEST ACCEPTED: {data['bot_id']} and {data['data']['id']} \
+				"action": f"RETWEET REQUEST ACCEPTED: {data['bot_id']} and {data['data']['user']} \
 				for tweet {data['data']['id']}"
 			})
 			self.send(data['bot_id'], ResponseTypes.RETWEET_TWEETS, data['data']['id'])
@@ -208,7 +208,7 @@ class DBWriter:
 			log.warning("Retweet request denied")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"RETWEET REQUEST DENIED: {data['bot_id']} and {data['data']['id']} \
+				"action": f"RETWEET REQUEST DENIED: {data['bot_id']} and {data['data']['user']} \
 				for tweet {data['data']['id']}"
 			})
 
@@ -503,22 +503,8 @@ class DBWriter:
 
 
 if __name__ == "__main__":
-	dbwriter = DBWriter()
-	dbwriter.save_tweet({
-		"bot_id": 874358,
-		"data": {
-			'id': 8912323,
-			'user': 874358,
-			'favorite_count': 0,
-			'retweet_count': 0
-		}
-	})
-	dbwriter.request_tweet_like({
-		"bot_id": 874358,
-		"data":{
 
-		}
-	})
+	dbwriter = DBWriter()
 	'''
 
 	dbwriter.save_user({
@@ -530,6 +516,37 @@ if __name__ == "__main__":
 			"location": "ygo",
 			"description": "fusion monster",
 		}
+	})
+	
+	tweet = {
+		"id" : 8912323,
+		"text" : "RT @nbastats: HISTORY!\n\nSteph Curry and Draymond Green become the first teammates in @NBAHistory to both record a triple-double in the same…",
+		"truncated" : False,
+		"entities" : {
+			"hashtags" : [ ],
+			"symbols" : [ ],
+			"user_mentions" : [	],
+			"urls" : [ ]
+		},
+		"source" : "<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
+		"in_reply_to_status_id" : None,
+		"in_reply_to_user_id" : None,
+		"in_reply_to_screen_name" : None,
+		"user" : 874358,
+		"is_quote_status" : False,
+		"retweet_count" : 564,
+		"favorite_count" : 0,
+		"lang" : "en"
+	}
+	
+	dbwriter.save_tweet({
+		"bot_id": 874358,
+		"data": tweet
+	})
+	
+	dbwriter.request_tweet_like({
+		"bot_id": 874358,
+		"data": tweet
 	})
 
 	dbwriter.request_follow_user({
