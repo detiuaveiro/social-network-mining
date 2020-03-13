@@ -661,7 +661,7 @@ class TwitterBot:
         """
 		log.debug(f"Sending {data}")
 		self._send_message(data.to_json(), message_type=message_type,
-						   routing_key=self.query_routing_key,
+						   routing_key=self.bquery_routing_key,
 						   exchange=self.query_exchange)
 
 	def send_event(self, message_type: MessageType, data: BaseModel):

@@ -46,7 +46,7 @@ class RabbitMessaging:
 				try:
 					return function(self, *args, **kwargs)
 				except NetworkError as error:
-					logger.error(f"{current_time()}: Connection to RabbitMQ lost. Trying to reconnect...")
+					logger.error(f"{current_time(str_time=True)}: Connection to RabbitMQ lost. Trying to reconnect...")
 					self.__connect()
 
 					if current_reconnect == self.__reconnect_max_iterations - 1:
