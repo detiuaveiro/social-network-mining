@@ -57,9 +57,10 @@ class RabbitMessaging:
 	def __setup_messaging(self):
 		"""Private method for setting up the messaging connections
 		"""
+		
 		for current_setting_name in self.settings:
 			current_setting = self.settings[current_setting_name]
-
+			
 			logger.info(f"Setting up Messaging to: {current_setting}\n"
 						 f"Connecting to exchange {current_setting.exchange}")
 			self.messaging.create_exchange(vhost=self.vhost, name=current_setting.exchange, xtype="direct")

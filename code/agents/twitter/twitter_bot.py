@@ -50,5 +50,5 @@ if __name__ == "__main__":
 		'query': MessagingSettings(QUERY_EXCHANGE, routing_key=QUERY_ROUTING_KEY),
 		'data': MessagingSettings(DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY)
 	}
-	bot = TwitterBot("URL", RABBIT_USERNAME, RABBIT_PASSWORD, VHOST, messaging_settings, 1, None)
+	bot = TwitterBot("localhost:15672", RABBIT_USERNAME, RABBIT_PASSWORD, VHOST, messaging_settings, 1, None)
 	bot.run()
