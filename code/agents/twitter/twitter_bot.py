@@ -46,9 +46,9 @@ class TwitterBot(RabbitMessaging):
 if __name__ == "__main__":
 	messaging_settings = {
 		'tasks': MessagingSettings(TASKS_EXCHANGE, TASKS_QUEUE_PREFIX, TASKS_ROUTING_KEY_PREFIX),
-		'log': MessagingSettings(LOG_EXCHANGE, routing_key=LOG_ROUTING_KEY),
-		'query': MessagingSettings(QUERY_EXCHANGE, routing_key=QUERY_ROUTING_KEY),
-		'data': MessagingSettings(DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY)
+		'log': MessagingSettings(exchange=LOG_EXCHANGE, routing_key=LOG_ROUTING_KEY),
+		'query': MessagingSettings(exchange=QUERY_EXCHANGE, routing_key=QUERY_ROUTING_KEY),
+		'data': MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY)
 	}
-	bot = TwitterBot("127.0.0.1:5672", RABBIT_USERNAME, RABBIT_PASSWORD, VHOST, messaging_settings, 1, None)
+	bot = TwitterBot("localhost:15672", RABBIT_USERNAME, RABBIT_PASSWORD, VHOST, messaging_settings, 1, None)
 	bot.run()
