@@ -205,13 +205,12 @@ class MongoAPI:
             if export_type is not None:
                 if export_name is None:
                     export_name = (
-                            "../export_results/"
-                            + export_type
-                            + "/mongo_"
-                            + collection
-                            + "_"
-                            + str(datetime.datetime.now()
-                                  ).replace(" ", "_")
+                        "../export_results/"
+                        + export_type
+                        + "/mongo_"
+                        + collection
+                        + "_"
+                        + str(datetime.datetime.now()).replace(" ", "_")
                     )
                     export_name = (
                         export_name + ".json"

@@ -497,11 +497,11 @@ class Neo4jAPI:
 
         if export_name is None:
             export_name = (
-                    "../export_results/"
-                    + export_type
-                    + "/neo4j"
-                    + "_"
-                    + str(datetime.datetime.now()).replace(" ", "_")
+                "../export_results/"
+                + export_type
+                + "/neo4j"
+                + "_"
+                + str(datetime.datetime.now()).replace(" ", "_")
             )
 
             export_name = export_name + "." + export_type
