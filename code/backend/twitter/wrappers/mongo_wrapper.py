@@ -6,7 +6,6 @@ import csv
 import datetime
 import credentials
 
-
 log = logging.getLogger("Mongo")
 log.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(sys.stdout)
@@ -62,7 +61,7 @@ class MongoAPI:
                     return self.messages.count_documents(data)
             except Exception as e:
                 log.error("ERROR GETTING DOCUMENT COUNT")
-                log.error("Error: ", e)
+                log.error("Error: " + str(e))
 
     def insert_users(self, data):
         """Inserts a new single document into our Users Collection
@@ -74,7 +73,7 @@ class MongoAPI:
             log.debug("INSERT SUCCESFUL")
         except Exception as e:
             log.error("ERROR INSERTING DOCUMENT")
-            log.error("Error: ", e)
+            log.error("Error: " + str(e))
 
     def insert_tweets(self, data):
         """Inserts a new single document into our Tweets Collection
@@ -86,7 +85,7 @@ class MongoAPI:
             log.debug("INSERT SUCCESFUL")
         except Exception as e:
             log.error("ERROR INSERTING DOCUMENT")
-            log.error("Error: ", e)
+            log.error("Error: " + str(e))
 
     def insert_messages(self, data):
         """Inserts a new single document into our Messages Collection
@@ -98,16 +97,67 @@ class MongoAPI:
             log.debug("INSERT SUCCESFUL")
         except Exception as e:
             log.error("ERROR INSERTING DOCUMENT")
-            log.error("Error: ", e)
+            log.error("Error: " + str(e))
+
+    def update_users(self, match, new_data, all=True):
+        """Updates one or many documents on Users Collection
+
+        @param match: The params the documents we want to update must fulfill
+        @param new_data: The new data we want to place
+        @param all: Whether we want to update all or just the first document found
+        """
+        try:
+            if all:
+                self.users.update_many(match, new_data)
+            else:
+                self.users.update_one(match, new_data)
+            log.debug("UPDATE SUCCESSFUL")
+        except Exception as e:
+            log.error("ERROR UPDATING DOCUMENT")
+            log.error("Error: " + str(e))
+
+    def update_tweets(self, match, new_data, all=True):
+        """Updates one or many documents on Tweets Collection
+
+        @param match: The params the documents we want to update must fulfill
+        @param new_data: The new data we want to place
+        @param all: Whether we want to update all or just the first document found
+        """
+        try:
+            if all:
+                self.tweets.update_many(match, new_data)
+            else:
+                self.tweets.update_one(match, new_data)
+            log.debug("UPDATE SUCCESSFUL")
+        except Exception as e:
+            log.error("ERROR UPDATING DOCUMENT")
+            log.error("Error: " + str(e))
+
+    def update_messages(self, match, new_data, all=True):
+        """Updates one or many documents on Messages Collection
+
+        @param match: The params the documents we want to update must fulfill
+        @param new_data: The new data we want to place
+        @param all: Whether we want to update all or just the first document found
+        """
+        try:
+            if all:
+                self.messages.update_many(match, new_data)
+            else:
+                self.messages.update_one(match, new_data)
+            log.debug("UPDATE SUCCESSFUL")
+        except Exception as e:
+            log.error("ERROR UPDATING DOCUMENT")
+            log.error("Error: " + str(e))
 
     def search(
-        self,
-        collection,
-        query={},
-        fields=None,
-        single=False,
-        export_type=None,
-        export_name=None,
+            self,
+            collection,
+            query={},
+            fields=None,
+            single=False,
+            export_type=None,
+            export_name=None,
     ):
         """Searches the a collection by a given search query. Can also export to a json or csv
 
@@ -160,8 +210,7 @@ class MongoAPI:
                         + "/mongo_"
                         + collection
                         + "_"
-                        + str(datetime.datetime.now()
-                              ).replace(" ", "_")
+                        + str(datetime.datetime.now()).replace(" ", "_")
                     )
                     export_name = (
                         export_name + ".json"
@@ -174,7 +223,7 @@ class MongoAPI:
             return result
         except Exception as e:
             log.error("ERROR SEARCHING FOR DOCUMENT")
-            log.error("Error: ", e)
+            log.error("Error: " + str(e))
 
     def __export_data(self, data, export_name, export_type):
         """Exports a given array of documents into a csv or json

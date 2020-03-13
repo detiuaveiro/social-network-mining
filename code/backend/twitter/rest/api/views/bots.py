@@ -78,8 +78,26 @@ def twitter_bot(_, id):
                            success_messages=success_messages, status=status)
 
 
-def twitter_bot_logs(request, id):
-    return None
+@api_view(["GET"])
+def twitter_bot_logs(_, id, limit=None):
+    """
+    Returns all logs from a bot identified by his id
+    :param id: bot's id
+    :return: response object
+    """
+    error_messages = []
+    success_messages = []
+    status = HTTP_200_OK
+
+    success, data, message = queries.twitter_bot_logs(id, int(limit) if limit and limit.isdigit() else None)
+    if success:
+        success_messages.append(message)
+    else:
+        error_messages.append(message)
+        status = HTTP_403_FORBIDDEN
+
+    return create_response(data=data, error_messages=error_messages,
+                           success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
