@@ -13,16 +13,6 @@ def factory():
 
 
 @pytest.fixture
-def tweet(db):
-    return mixer.blend(Tweet)
-
-
-@pytest.fixture
-def tweets_list(db):
-    return mixer.cycle(5).blend(Tweet)
-
-
-@pytest.fixture
 def tweets_stats(db):
     return mixer.cycle(5).blend(TweetStats)
 
