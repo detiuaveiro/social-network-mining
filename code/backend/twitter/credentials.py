@@ -7,7 +7,6 @@ MONGO_PORT = 27017
 MONGO_FULL_URL = f"{MONGO_URL}:{MONGO_PORT}"
 MONGO_DB = "snm_mongo"
 
-
 # -----------------------------------------------------------
 # POSTGRES 
 # -----------------------------------------------------------
@@ -15,10 +14,11 @@ MONGO_DB = "snm_mongo"
 POSTGRES_URL = "localhost"
 POSTGRES_PORT = 5432
 POSTGRES_FULL_URL = f"{POSTGRES_URL}:{POSTGRES_PORT}"
-POSTGRES_DB = "snm_pg"
+# POSTGRES_POLICIES_DB = "snm_policies_pg"
+# POSTGRES_ANALYSIS_DB = "snm_analysis_pg"
+POSTGRES_DB = 'postgres'
 POSTGRES_USERNAME = "snm"
 POSTGRES_PASSWORD = "pg_snm"
-
 
 # -----------------------------------------------------------
 # RABBITMQ
@@ -30,7 +30,6 @@ RABBITMQ_FULL_URL = f"{RABBITMQ_URL}:{RABBITMQ_PORT}"
 RABBITMQ_USERNAME = "pi_rabbit_admin"
 RABBITMQ_VHOST = "PI"
 RABBITMQ_PASSWORD = "yPvawEVxks7MLg3lfr3g"
-
 
 # -----------------------------------------------------------
 # NEO4J
