@@ -23,7 +23,7 @@ def logs(db):
 
 
 @catch_exception
-def test_successful_twitter_stats_request(error_catcher, factory):  # , user_stats):
+def test_successful_twitter_stats_request(error_catcher, factory, user_stats):
     path = reverse('twitter_stats')
     request = factory.get(path)
     response = bots.twitter_stats(request)

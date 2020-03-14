@@ -30,7 +30,7 @@ def delete_neo4j_data():
 
 
 @catch_exception
-def test_successful_twitter_bots_request(error_catcher, factory):  # , user):
+def test_successful_twitter_bots_request(error_catcher, factory, user):
     assert add_bot_neo4j()
     path = reverse('twitter_bots')
     request = factory.get(path)
