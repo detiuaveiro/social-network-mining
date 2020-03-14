@@ -53,7 +53,9 @@ jobs:
             ./run_tests.sh
         env:
           POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+          POSTGRES_HOST: postgres
           MONGO_PORT: ${{ job.services.mongo.ports[27017] }}
+          MONGO_HOST: mongo
           NEO4J_PORT: ${{ job.services.neo4j.ports[7687] }}
 
 
