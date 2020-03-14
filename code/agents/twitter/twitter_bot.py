@@ -62,10 +62,14 @@ if __name__ == "__main__":
 		'data': MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY)
 	}
 
-	consumer_key = "yqoymTNrS9ZDGsBnlFhIuw"
-	consumer_secret = "OMai1whT3sT3XMskI7DZ7xiju5i5rAYJnxSEHaKYvEs"
-	token = "1097916541830680576-RWAa8hM2tkGMXQWaa0Bg5sDYTFD0oV"
-	token_secret = "bYyREitpd1J1wr758FMwmk7TI5KHyMEomEv80jgecJUVL"
+	#consumer_key = "yqoymTNrS9ZDGsBnlFhIuw"
+	#consumer_secret = "OMai1whT3sT3XMskI7DZ7xiju5i5rAYJnxSEHaKYvEs"
+	#token = "1097916541830680576-RWAa8hM2tkGMXQWaa0Bg5sDYTFD0oV"
+	#token_secret = "bYyREitpd1J1wr758FMwmk7TI5KHyMEomEv80jgecJUVL"
+	consumer_key = "vP8ULCHpJYTcRRfNqiVHLLemC"
+	consumer_secret = "e3C7OtUlMh3VxEi0Bx038bv9hCKwYGFgbH7dnsLNpvpUL4SWy4"
+	token = "1103294806497902594-Q90yPSULqg27zcWjLSZ99ZSzgGyQYP"
+	token_secret = "iaK1qYJEtYNAx5Npv90VZB0bkPjaLojOXD5HuJrZCAfsb"
 
 	twitter_auth = tweepy.OAuthHandler(consumer_key=consumer_key, consumer_secret=consumer_secret)
 	twitter_auth.set_access_token(key=token, secret=token_secret)
