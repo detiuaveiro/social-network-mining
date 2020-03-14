@@ -20,10 +20,10 @@ FOLLOW_LABEL = "FOLLOWS"
 
 
 class Neo4jAPI:
-    def __init__(self):
+    def __init__(self, FULL_URL=credentials.NEO4J_FULL_URL):
         log.debug("Connecting to Neo4j")
         self.driver = GraphDatabase.driver(
-            "bolt://" + credentials.NEO4J_FULL_URL,
+            "bolt://" + FULL_URL,
             auth=(credentials.NEO4J_USERNAME, credentials.NEO4J_PASSWORD),
         )
 
