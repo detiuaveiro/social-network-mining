@@ -41,7 +41,6 @@ def test_successful_twitter_bot_logs_request(factory, logs):
     path = reverse('twitter_bot_logs', kwargs={'id': 1, 'limit': limit})
     request = factory.get(path)
     response = bots.twitter_bot_logs(request, id=1, limit=str(limit))
-    print(response.data['data'])
     assert is_response_successful(response) and len(response.data['data']) == limit
 
 
