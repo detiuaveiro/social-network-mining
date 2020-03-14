@@ -11,7 +11,7 @@
 """
 # All lower case !!!!
 DB_mapping = {
-    'default': ['policy', 'userstats', 'tweetstats']
+    'default': ['policy', 'userstats', 'tweetstats', 'log']
 }
 
 
