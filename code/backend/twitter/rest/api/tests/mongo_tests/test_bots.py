@@ -29,7 +29,8 @@ def delete_neo4j_data():
     return not neo4j.check_bot_exists(1)
 
 
-def test_successful_twitter_bots_request(factory, user):
+@catch_exception
+def test_successful_twitter_bots_request(error_catcher, factory):  # , user):
     assert add_bot_neo4j()
     path = reverse('twitter_bots')
     request = factory.get(path)
@@ -37,14 +38,16 @@ def test_successful_twitter_bots_request(factory, user):
     assert is_response_successful(response)
 
 
-def test_unsuccessfully_twitter_bots_request(factory, db):
+@catch_exception
+def test_unsuccessfully_twitter_bots_request(error_catcher, factory, db):
     path = reverse('twitter_bots')
     request = factory.get(path)
     response = bots.twitter_bots(request)
     assert is_response_empty(response)
 
 
-def test_successful_twitter_bot_request(factory):
+@catch_exception
+def test_successful_twitter_bot_request(error_catcher, factory):
     assert add_bot_neo4j()
     path = reverse('twitter_bot', kwargs={'id': 1})
     request = factory.get(path)
@@ -52,7 +55,8 @@ def test_successful_twitter_bot_request(factory):
     assert is_response_successful(response)
 
 
-def test_unsuccessfully_twitter_bot_request(factory):
+@catch_exception
+def test_unsuccessfully_twitter_bot_request(error_catcher, factory):
     path = reverse('twitter_bot', kwargs={'id': 1})
     request = factory.get(path)
     response = bots.twitter_bot(request, id=1)
