@@ -23,7 +23,14 @@ def add_bot_neo4j():
     return neo4j.check_bot_exists(1)
 
 
-def test_successful_twitter_bots_request(factory, user):
+@pytest.fixture(autouse=True)
+def delete_neo4j_data():
+    neo4j.delete_bot(1)
+    return not neo4j.check_bot_exists(1)
+
+
+@catch_exception
+def test_successful_twitter_bots_request(error_catcher, factory, user):
     assert add_bot_neo4j()
     path = reverse('twitter_bots')
     request = factory.get(path)
@@ -31,15 +38,16 @@ def test_successful_twitter_bots_request(factory, user):
     assert is_response_successful(response)
 
 
-def test_unsuccessfully_twitter_bots_request(factory):
+@catch_exception
+def test_unsuccessfully_twitter_bots_request(error_catcher, factory, db):
     path = reverse('twitter_bots')
     request = factory.get(path)
     response = bots.twitter_bots(request)
-    with pytest.raises(Exception):
-        assert is_response_unsuccessful(response)
+    assert is_response_empty(response)
 
 
-def test_successful_twitter_bot_request(factory):
+@catch_exception
+def test_successful_twitter_bot_request(error_catcher, factory):
     assert add_bot_neo4j()
     path = reverse('twitter_bot', kwargs={'id': 1})
     request = factory.get(path)
@@ -47,24 +55,25 @@ def test_successful_twitter_bot_request(factory):
     assert is_response_successful(response)
 
 
-def test_unsuccessfully_twitter_bot_request(factory):
+@catch_exception
+def test_unsuccessfully_twitter_bot_request(error_catcher, factory):
     path = reverse('twitter_bot', kwargs={'id': 1})
     request = factory.get(path)
     response = bots.twitter_bot(request, id=1)
-    with pytest.raises(Exception):
-        assert is_response_unsuccessful(response)
+    assert is_response_unsuccessful(response)
 
-# Todo message_tests
+# Todo Message tests
+
 # def test_successful_twitter_bot_messages_request(factory, message):
-#    path = reverse('twitter_bot_messages', kwargs={'id': '1'})
+#    print(message.bot_id)
+#    path = reverse('twitter_bot_messages', kwargs={'id': 1})
 #    request = factory.get(path)
-#    response = bots.twitter_bot_messages(request, id='1')
+#    response = bots.twitter_bot_messages(request, id=1)
+#    print(response.data)
 #    assert is_response_successful(response)
-#
-#
-# def test_unsuccessfully_twitter_bot_messages_request(factory):
+
+# def test_unsuccessfully_twitter_bot_messages_request(factory, db):
 #    path = reverse('twitter_bot_messages', kwargs={'id': '1'})
 #    request = factory.get(path)
 #    response = bots.twitter_bot_messages(request, id='1')
-#    with pytest.raises(Exception):
-#        assert is_response_unsuccessful(response)
+#    assert is_response_unsuccessful(response)

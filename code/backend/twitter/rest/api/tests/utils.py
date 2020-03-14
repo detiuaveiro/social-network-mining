@@ -1,3 +1,33 @@
+import functools
+import subprocess
+import pytest
+
+
+def catch_exception(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        worker = kwargs['error_catcher']
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            print('stdout:', worker.stdout.read().decode("utf-8"))
+            print('stderr:', worker.stderr.read().decode("utf-8"))
+            raise
+
+    return wrapper
+
+
+@pytest.fixture(scope='module')
+def error_catcher(request) -> subprocess.Popen:
+    """py.test fixture to create app scaffold."""
+    cmdline = ["echo", "ERROR!!"]
+
+    worker = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    worker.wait(timeout=5.0)
+
+    return worker
+
+
 def is_keys_in_data(response_data, data_keys=None):
     if data_keys is None:
         return True

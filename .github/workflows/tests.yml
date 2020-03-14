@@ -1,0 +1,61 @@
+name: Rest Tests
+
+on: [push]
+
+jobs:
+
+  rest_tests:
+    name: "Rest Api Tests"
+    runs-on: ubuntu-latest
+
+    container:
+      image: python:latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: twitter_postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+      mongo:
+        image: mongo:latest
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: admin
+          MONGO_INITDB_DATABASE: twitter
+        ports:
+          - 27017:27017
+
+      neo4j:
+        image: neo4j:3.5.15
+        env:
+          NEO4J_AUTH: neo4j/neo4jPI
+        ports:
+          - 7687:7687
+
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Installing all dependencies
+        run: |
+            for r in $(find . | grep requirements.txt | grep code/backend/twitter/rest); do
+              echo $r
+              pip install --user -r $r
+            done
+      - name: Run rest api tests
+        run: |
+            cd code/backend/twitter/rest
+            ./run_tests.sh
+        env:
+          POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+          POSTGRES_HOST: postgres
+          MONGO_PORT: ${{ job.services.mongo.ports[27017] }}
+          MONGO_HOST: mongo
+          NEO4J_PORT: ${{ job.services.neo4j.ports[7687] }}
+
+
