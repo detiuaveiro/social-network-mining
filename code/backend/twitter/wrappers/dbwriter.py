@@ -164,7 +164,7 @@ class DBWriter:
 			"tweet_entities": data['data']['entities']
 		})
 
-		if True:
+		if request_accepted:
 			log.info("Like request accepted")
 			self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
