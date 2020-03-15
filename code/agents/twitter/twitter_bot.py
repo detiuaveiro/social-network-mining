@@ -1,8 +1,9 @@
 import logging
+from typing import List
 
 import tweepy
 from tweepy.error import TweepError
-from tweepy.models import User
+from tweepy.models import User, Status, ResultSet
 
 import messages_types
 from rabbit_messaging import RabbitMessaging, MessagingSettings
@@ -72,7 +73,7 @@ class TwitterBot(RabbitMessaging):
 		logger.debug(f"Sending our user to {DATA_EXCHANGE}")
 		self.__send_user(self.user)
 
-		print(type(self._twitter_api.home_timeline()[1]))
+		print(self.__user_timeline_tweets(self.user)[0])
 
 	def __send_user(self, user: User):
 		"""Function to send a twitter's User object to the server
@@ -81,6 +82,23 @@ class TwitterBot(RabbitMessaging):
 		"""
 		logger.debug(f"Sending {user}")
 		self.__send_message(to_json(user._json), messages_types.BotToServer.SAVE_USER, DATA_EXCHANGE)
+
+	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
+		"""Function to get the 20 (default) most recent tweets (including retweets) from some user
+
+		:param user: user whom tweets we want
+		:param kwargs: dictionary with keyword arguments. These arguments can be the follows:
+			- since_id: Returns only statuses with an ID greater than (that is, more recent than) the specified ID
+    		- max_id: Returns only statuses with an ID less than (that is, older than) or equal to the specified ID
+    		- count: Specifies the number of statuses to retrieve
+    		- page: Specifies the page of results to retrieve. Note: there are pagination limits
+		"""
+		logger.debug(f"Getting timeline tweets for User with id={user.id}")
+		if user.id == self.user.id:
+			return list(self._twitter_api.home_timeline(**kwargs))
+		return list(user.timeline(**kwargs))
+
+	# def __read_timeline
 
 	def run(self):
 		self.__setup()
