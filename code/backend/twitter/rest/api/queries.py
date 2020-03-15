@@ -213,7 +213,7 @@ def add_policy(data):
             - name : str
             - tags : str[]
             - bots : int[]
-        Ex: { "API_type": "TWITTER", "filter": "USERNAME", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
+        Ex: { "API_type": "Twitter", "filter": "Instagram", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
     :return: status(boolean), data, message(string)
     """
     try:
