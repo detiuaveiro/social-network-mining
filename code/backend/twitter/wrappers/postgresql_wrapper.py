@@ -343,7 +343,6 @@ class PostgresAPI:
 		@return A success or failure message ({success: True/False ; error: None/Error})
 		"""
 
-
 		try:
 
 			if data['api_name'] not in self.api_types:
@@ -352,10 +351,8 @@ class PostgresAPI:
 			if data['filter'] not in self.filters:
 				return {"success": False, "error": "Specified Filter does not exist"}
 
-			
 			cursor = self.conn.cursor()
 
-			
 			cursor.execute('select max(id_policy) from policies;')
 			max_id = cursor.fetchall()[0][0]
 
@@ -419,7 +416,6 @@ class PostgresAPI:
 				if params['api_name'] not in self.api_types:
 					return {"success": False, "error": "Specified API does not exist"}
 
-			
 			if 'filter' in params.keys():
 				if params['filter'] not in self.filters:
 					return {"success": False, "error": "Specified Filter does not exist"}
@@ -475,35 +471,35 @@ class PostgresAPI:
 if __name__ == "__main__":
 	# TODO: Test and implement searching by timestamp ; Policies API
 	anal = PostgresAPI()
-	# anal.insert_tweet({"tweet_id": 831606548300517377, "user_id": 6253282, "likes": 100, "retweets": 2})
-	# anal.insert_user({"user_id": 6253283, "followers": 10000, "following": 1234})
-	# for i in anal.search_tweet()["data"]:
-	#   print(i)
+	
+	anal.insert_tweet({"tweet_id": 831606548300517377, "user_id": 6253282, "likes": 100, "retweets": 2})
+	anal.insert_user({"user_id": 6253283, "followers": 10000, "following": 1234})
+	for i in anal.search_tweet()["data"]:
+		print(i)
 
-	# for i in anal.search_user()["data"]:
-	#   print(i)
+	for i in anal.search_user()["data"]:
+		print(i)
 
-	# result = anal.search_policies({'api_name': 'Twitter', 'policy_id': 80, 'bot_id': 1129475305444388866}, limit=10)
-	# if result["success"]:
-	#    for i in result["data"]:
-	#        print(i)
-	# else:
-	#   print(result["error"])
+	result = anal.search_policies({'api_name': 'Twitter', 'policy_id': 80, 'bot_id': 1129475305444388866}, limit=10)
+	if result["success"]:
+		for i in result["data"]:
+			print(i)
+	else:
+		print(result["error"])
 
-	# anal.insert_log({"bot_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
-	# anal.insert_log({"user_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
+	anal.insert_log({"bot_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
+	anal.insert_log({"user_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
 
-	#print(anal.insert_policy({'api_name': 'Twitter', 'filter': 'Keywords', 'name': 'Jonas Pistolas found Ded', 'bots': [1129475305444388866],
-	#   'params': ['OMG'], 'active': True, 'policy_id': 421}))
-	#print(anal.update_policy(421,{'api_name': 'Instagram', 'filter': 'Target'}))
-#
-#
-	#result = anal.search_policies({'policy_id': 421})
-	##print(result)
-	#if result["success"]:
-	#	for i in result["data"]:
-	#		print(i)
-	#else:
-	#	print(result["error"])
+	print(anal.insert_policy({'api_name': 'Twitter', 'filter': 'Keywords', 'name': 'Jonas Pistolas found Ded', 
+							'bots': [1129475305444388866], 'params': ['OMG'], 'active': True, 'policy_id': 421}))
+	print(anal.update_policy(421, {'api_name': 'Instagram', 'filter': 'Target'}))
+	
+	result = anal.search_policies({'policy_id': 421})
+	print(result)
+	if result["success"]:
+		for i in result["data"]:
+			print(i)
+	else:
+		print(result["error"])
 
 
