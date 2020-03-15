@@ -177,7 +177,7 @@ class PDP:
 
 		bot_list = []
 		while len(bot_list) < num_users:
-			index = random.randint(0,len(users) -1)
+			index = random.randint(0, len(users) - 1)
 			bot_list.append(users.pop(index))
 
 		return bot_list
