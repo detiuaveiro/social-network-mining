@@ -1,5 +1,8 @@
 from datetime import datetime
+import time
 import json
+
+import readtime
 
 
 # -----------------------------------------------------------
@@ -18,3 +21,19 @@ def current_time(str_time=False):
     if str_time:
         return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return datetime.utcnow().timestamp()
+
+
+def wait(seconds: float):
+    time.sleep(seconds)
+
+
+def virtual_read_wait(text: str) -> float:
+    """Function to fake the reading time for the given text
+
+    :param text: text to read
+    :return: time taken to read the provided text
+    """
+    time_to_read = readtime.of_text(text).seconds
+    wait(time_to_read)
+
+    return time_to_read
