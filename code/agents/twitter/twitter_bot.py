@@ -55,6 +55,12 @@ class TwitterBot(RabbitMessaging):
 			'data': data
 		}), exchange)
 
+	def __send_data(self, data, message_type: messages_types.BotToServer):
+		self.__send_message(data, message_type, DATA_EXCHANGE)
+
+	def __send_query(self, data, message_type: messages_types.BotToServer):
+		self.__send_message(data, message_type, QUERY_EXCHANGE)
+
 	def __setup(self):
 		"""Function to setting up messaging queues and check if twitter credentials are ok
 		"""
@@ -73,7 +79,8 @@ class TwitterBot(RabbitMessaging):
 		logger.debug(f"Sending our user to {DATA_EXCHANGE}")
 		self.__send_user(self.user)
 
-		print(self.__user_timeline_tweets(self.user)[0])
+		logger.info("Reading home timeline")
+		self.__read_timeline(self.user)
 
 	def __send_user(self, user: User):
 		"""Function to send a twitter's User object to the server
@@ -81,7 +88,7 @@ class TwitterBot(RabbitMessaging):
 		:param user: user to send
 		"""
 		logger.debug(f"Sending {user}")
-		self.__send_message(to_json(user._json), messages_types.BotToServer.SAVE_USER, DATA_EXCHANGE)
+		self.__send_data(to_json(user._json), messages_types.BotToServer.SAVE_USER)
 
 	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
 		"""Function to get the 20 (default) most recent tweets (including retweets) from some user
@@ -98,7 +105,58 @@ class TwitterBot(RabbitMessaging):
 			return list(self._twitter_api.home_timeline(**kwargs))
 		return list(user.timeline(**kwargs))
 
-	# def __read_timeline
+	def __read_timeline(self, user: User, jump_users: bool = False, max_depth: int = 3, current_depth: int = 0):
+		"""Function to get an user's timeline tweets. At the same time, this function send to the server requests to
+			like a tweet, to retweet a tweet and also sends all users that made some tweet, but we don't know yet.
+			Also, this function is recursive, and tries to get all this data to the new users it possibility find
+
+		:param user: user object to read the timeline for
+		:param jump_users: flag to know if we should jump between tweet's users or not
+		:param max_depth: maximum recursion's depth
+		:param current_depth: current recursion's depth (to control the depth of the function's recursion)
+		"""
+		if current_depth == max_depth:
+			return
+
+		logger.debug(f"Reading user's <{user.__str__()}> timeline")
+		tweets = self.__user_timeline_tweets(user)
+
+		total_read_time = 0
+		for tweet in tweets:
+			tweet_json = to_json(tweet._json)
+
+			self.__send_data(tweet_json, messages_types.BotToServer.SAVE_TWEET)
+
+			total_read_time += virtual_read_wait(tweet.text)
+
+			# If it's our own tweet, we don't really need to do any logic
+			if self.user.id == tweet.user.id:
+				continue
+
+			# Processing the tweet regarding liking/retweeting
+			if not tweet.favorited:
+				self.__send_query(tweet_json, messages_types.BotToServer.QUERY_TWEET_LIKE)
+			if not tweet.retweeted:
+				self.__send_query(tweet_json, messages_types.BotToServer.QUERY_TWEET_RETWEET)
+
+			if not jump_users:
+				tweet_user = tweet.user
+				self.__send_user(tweet_user)
+
+				user_attributes = tweet_user.__dir__()
+
+				if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
+					logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
+								   f"following him, so can't read his timeline")
+					continue
+				elif 'suspended' in user_attributes and tweet_user.suspended:
+					logger.warning(f"Found user with ID={tweet_user.id} but his account was suspended, "
+								   f"so can't read his timeline")
+					continue
+				else:
+					self.__read_timeline(tweet_user, jump_users=jump_users,
+										 max_depth=max_depth, current_depth=current_depth + 1)
+		logger.debug(f"Read {user.id}'s timeline in {total_read_time} seconds")
 
 	def run(self):
 		self.__setup()
@@ -112,10 +170,10 @@ if __name__ == "__main__":
 		DATA_EXCHANGE: MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY)
 	}
 
-	#consumer_key = "yqoymTNrS9ZDGsBnlFhIuw"
-	#consumer_secret = "OMai1whT3sT3XMskI7DZ7xiju5i5rAYJnxSEHaKYvEs"
-	#token = "1097916541830680576-RWAa8hM2tkGMXQWaa0Bg5sDYTFD0oV"
-	#token_secret = "bYyREitpd1J1wr758FMwmk7TI5KHyMEomEv80jgecJUVL"
+	# consumer_key = "yqoymTNrS9ZDGsBnlFhIuw"
+	# consumer_secret = "OMai1whT3sT3XMskI7DZ7xiju5i5rAYJnxSEHaKYvEs"
+	# token = "1097916541830680576-RWAa8hM2tkGMXQWaa0Bg5sDYTFD0oV"
+	# token_secret = "bYyREitpd1J1wr758FMwmk7TI5KHyMEomEv80jgecJUVL"
 	consumer_key = "vP8ULCHpJYTcRRfNqiVHLLemC"
 	consumer_secret = "e3C7OtUlMh3VxEi0Bx038bv9hCKwYGFgbH7dnsLNpvpUL4SWy4"
 	token = "1103294806497902594-Q90yPSULqg27zcWjLSZ99ZSzgGyQYP"
