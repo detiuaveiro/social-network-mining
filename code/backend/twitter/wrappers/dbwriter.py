@@ -522,7 +522,6 @@ class DBWriter:
 			log.error("FAILED TO SEND MESSAGE:")
 			log.error("Error: " + str(e))
 
-
 	def close(self):
 		self.neo4j_client.close()
 		self.pep.pdp.close()
