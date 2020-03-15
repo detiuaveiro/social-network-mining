@@ -29,8 +29,8 @@ ACCOUNT_SUSPENDED_ERROR_CODES = [63, 64, 326]
 # RabbitQM credentials
 # -----------------------------------------------------------
 
-RABBIT_USERNAME = 'pi_rabbit_admin'
-RABBIT_PASSWORD = 'yPvawEVxks7MLg3lfr3g'
+# RABBIT_USERNAME = 'pi_rabbit_admin'
+# RABBIT_PASSWORD = 'yPvawEVxks7MLg3lfr3g'
 
-#RABBIT_USERNAME = 'admin'
-#RABBIT_PASSWORD = 'admin'			# 
+RABBIT_USERNAME = 'admin'
+RABBIT_PASSWORD = 'admin'

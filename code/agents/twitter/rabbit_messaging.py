@@ -55,7 +55,7 @@ class RabbitMessaging:
 		return wrapper
 
 	def __connect(self):
-		self.messaging = Client(api_url=self.__url, user=self.__username, passwd=self.__password)
+		self.__messaging = Client(api_url=self.__url, user=self.__username, passwd=self.__password)
 
 	@__reconnect_messaging
 	def _setup_messaging(self):
@@ -67,14 +67,14 @@ class RabbitMessaging:
 			
 			logger.info(f"Setting up Messaging to: {current_setting}\n"
 						 f"Connecting to exchange {current_setting.exchange}")
-			self.messaging.create_exchange(vhost=self.vhost, name=current_setting.exchange, xtype="direct")
+			self.__messaging.create_exchange(vhost=self.vhost, name=current_setting.exchange, xtype="direct")
 
 			if current_setting.queue:
 				logger.info(f"Creating queue {current_setting.queue}")
-				self.messaging.create_queue(vhost=self.vhost, name=current_setting.queue, durable=True)
+				self.__messaging.create_queue(vhost=self.vhost, name=current_setting.queue, durable=True)
 
 				logger.info(f"Binding exchange to queue {current_setting.queue} with key {current_setting.routing_key}")
-				self.messaging.create_binding(vhost=self.vhost, exchange=current_setting.exchange,
+				self.__messaging.create_binding(vhost=self.vhost, exchange=current_setting.exchange,
 											  queue=current_setting.queue, rt_key=current_setting.routing_key)
 
 			logger.info(f"Connected to Messaging Service using: {current_setting.__str__()}")
