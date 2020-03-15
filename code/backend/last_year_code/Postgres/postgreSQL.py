@@ -350,10 +350,26 @@ class postgreSQL_API:
         try:
             cur = self.conn.cursor()
             cur.execute(
-                "select api.name,policies.name,params,active,id_policy,filter.name from policies left outer join filter on filter.id=policies.filter left outer join api on api.id=policies.API_type;")
+                "select api.name,policies.name,params,active,id_policy,filter.name from policies "
+                "   left outer join filter on filter.id=policies.filter "
+                "   left outer join api on api.id=policies.API_type;")
+
             data = cur.fetchall()
             self.conn.commit()
             cur.close()
+            result = []  # Array of jsons
+            for tuple in data:
+                result.append(
+                    {"API_type": tuple[0], "name": tuple[1], "bots": [], "params": [], "active": tuple[3],
+                     "policy_id": tuple[4], "filter": tuple[5]})
+                min_bot_len = 19
+                for param in tuple[2]:
+                    if param.isnumeric() and len(param) >= min_bot_len:
+                        result["bots"].append(param)
+                    else:
+                        result["params"].append(param)
+
+            return data
             result = self.postProcessResults(data, ['API_type', 'name', 'params', 'active', 'id_policy', 'filter'])
             """
             {id_policy:[api,filter,params,etc]}
@@ -685,3 +701,11 @@ class postgreSQL_API:
         except psycopg2.Error as e:
             self.conn.rollback()
             return e.diag.severity
+
+
+if __name__ == '__main__':
+    pg = postgreSQL_API('postgres')
+
+    for i in pg.getPoliciesByBot('1129390603031207937'):
+        print(i)
+        print()
