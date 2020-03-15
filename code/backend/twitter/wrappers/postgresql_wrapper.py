@@ -471,7 +471,7 @@ class PostgresAPI:
 if __name__ == "__main__":
 	# TODO: Test and implement searching by timestamp ; Policies API
 	anal = PostgresAPI()
-	
+	"""
 	anal.insert_tweet({"tweet_id": 831606548300517377, "user_id": 6253282, "likes": 100, "retweets": 2})
 	anal.insert_user({"user_id": 6253283, "followers": 10000, "following": 1234})
 	for i in anal.search_tweet()["data"]:
@@ -501,5 +501,5 @@ if __name__ == "__main__":
 			print(i)
 	else:
 		print(result["error"])
-
+	"""
 
