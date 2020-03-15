@@ -89,7 +89,7 @@ def test_successful_add_policy_request(error_catcher, factory, policy):
     data.pop('id', None)
     request = factory.post(path, data, content_type='application/json')
     response = policies.add_policy(request)
-    assert is_response_successful(response)
+    assert is_response_successful(response) and Policy.objects.filter().count() == 2
 
 
 @catch_exception
@@ -105,7 +105,7 @@ def test_successful_remove_policy_request(error_catcher, factory, policy):
     path = reverse('remove_policy', kwargs={'id': 1})
     request = factory.delete(path)
     response = policies.remove_policy(request, id=1)
-    assert is_response_successful(response)
+    assert is_response_successful(response) and Policy.objects.filter().count() == 0
 
 
 @catch_exception
@@ -121,7 +121,7 @@ def test_successful_update_policy_request(error_catcher, factory, policy):
     path = reverse('update_policy', kwargs={'id': 1})
     request = factory.put(path, {'name': 'bot_1'}, content_type='application/json')
     response = policies.update_policy(request, id=1)
-    assert is_response_successful(response)
+    assert is_response_successful(response) and Policy.objects.filter().count() == 1
 
 
 @catch_exception
