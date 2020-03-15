@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Dict, Union
 
 import tweepy
 from tweepy.error import TweepError
@@ -61,6 +61,11 @@ class TwitterBot(RabbitMessaging):
 	def __send_query(self, data, message_type: messages_types.BotToServer):
 		self.__send_message(data, message_type, QUERY_EXCHANGE)
 
+	def __receive_message(self):
+		"""Function to consume a new message from the tasks's queue
+		"""
+		return self._receive_message(TASKS_EXCHANGE)
+
 	def __setup(self):
 		"""Function to setting up messaging queues and check if twitter credentials are ok
 		"""
@@ -81,6 +86,9 @@ class TwitterBot(RabbitMessaging):
 
 		logger.info("Reading home timeline")
 		self.__read_timeline(self.user)
+
+		# ver porque não está a dar (o twitter não está a deixar aceder)
+		# self.__direct_messages()
 
 	def __send_user(self, user: User):
 		"""Function to send a twitter's User object to the server
@@ -119,7 +127,7 @@ class TwitterBot(RabbitMessaging):
 			return
 
 		logger.debug(f"Reading user's <{user.__str__()}> timeline")
-		tweets = self.__user_timeline_tweets(user)
+		tweets = self.__user_timeline_tweets(user, count=MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE)
 
 		total_read_time = 0
 		for tweet in tweets:
@@ -158,8 +166,50 @@ class TwitterBot(RabbitMessaging):
 										 max_depth=max_depth, current_depth=current_depth + 1)
 		logger.debug(f"Read {user.id}'s timeline in {total_read_time} seconds")
 
+	def __direct_messages(self):
+		logger.info("Checking direct messages")
+		messages = self._twitter_api.list_direct_messages()
+		self.__send_data(messages, messages_types.BotToServer.SAVE_DIRECT_MESSAGES)
+
 	def run(self):
+		"""Bot's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
+			task, does a different action
+		"""
 		self.__setup()
+
+		while True:
+			try:
+				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")
+				task = self.__receive_message()
+
+				if task:
+					task_type, task_params = task['type'], task['params']
+					logger.debug(f"Received task <{task}>")
+
+					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
+						pass
+					elif task_type == messages_types.ServerToBot.LIKE_TWEETS:
+						pass
+					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
+						pass
+					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
+						pass
+					elif task_type == messages_types.ServerToBot.FIND_FOLLOWERS:
+						pass
+					elif task_type == messages_types.ServerToBot.POST_TWEET:
+						pass
+					else:
+						logger.warning(f"Received unknown task type: {task_type}")
+				else:
+					logger.warning("There are not new messages on the tasks's queue")
+					# TODO -> VER O QUE FAZER NESTA SITUAÇÃO
+					wait(5)
+			except Exception as error:
+				logger.error(f"{current_time(str_time=True)}: Error on bot's loop: {error}")
+				exit(1)
+
+	def __follow_users_routine(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
+		pass
 
 
 if __name__ == "__main__":
