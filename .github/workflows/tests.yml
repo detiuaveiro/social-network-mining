@@ -47,10 +47,21 @@ jobs:
               echo $r
               pip install --user -r $r
             done
-      - name: Run rest api tests
+      - name: Run Mongo tests
         run: |
             cd code/backend/twitter/rest
-            ./run_tests.sh
+            echo "Running Mongo tests..."
+            python -m pytest api/tests/mongo_tests/* -x -o DJANGO_SETTINGS_MODULE=rest.mongodb_test_settings -o addopts=--cov=api/views --cov-report  html --create-db
+      - name: Run Postgres tests
+        run: |
+            cd code/backend/twitter/rest
+            echo "Running Postgres tests..."
+            python -m pytest api/tests/postgresql_tests/* -x -o DJANGO_SETTINGS_MODULE=rest.postgres_test_settings -o addopts=--cov=api/views --cov-report  html --create-db
+      - name: Run Neo4j tests
+        run: |
+            cd code/backend/twitter/rest
+            echo "Running Neo4j tests..."
+            python -m pytest api/tests/neo4j_tests/* -x -o DJANGO_SETTINGS_MODULE=rest.settings -o addopts=--cov=api/views --cov-report  html --create-db
         env:
           POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
           POSTGRES_HOST: postgres
