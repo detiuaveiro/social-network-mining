@@ -1,3 +1,4 @@
+from PEP import PEP
 import logging
 import sys
 from mongo_wrapper import MongoAPI
@@ -6,12 +7,12 @@ from postgresql_wrapper import PostgresAPI
 from enums import *
 
 sys.path.append("../policies/")
-from PEP import PEP
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+handler.setFormatter(logging.Formatter(
+	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
 
 
@@ -77,14 +78,16 @@ class DBWriter:
 	def follow_user(self, data):
 		"""
 		Action to follow user:
-			Calls neo4j to add new relation between bot and user
-			Calls postgres_stats to add new log with the action details
+				Calls neo4j to add new relation between bot and user
+				Calls postgres_stats to add new log with the action details
 
 		@param data: dict containing bot and the user he's following
 		"""
 		log.info("A bot has started following someone")
-		type1 = "Bot" if self.neo4j_client.check_bot_exists(data["bot_id"]) else "User"
-		type2 = "Bot" if self.neo4j_client.check_bot_exists(data["data"]["id"]) else "User"
+		type1 = "Bot" if self.neo4j_client.check_bot_exists(
+			data["bot_id"]) else "User"
+		type2 = "Bot" if self.neo4j_client.check_bot_exists(
+			data["data"]["id"]) else "User"
 		relationship = {
 			"id_1": data["bot_id"],
 			"id_2": data["data"]["id"],
@@ -103,7 +106,7 @@ class DBWriter:
 	def like_tweet(self, data):
 		"""
 		Action to like tweet:
-			Calls postgres_stats to add new log
+				Calls postgres_stats to add new log
 
 		@param data dict with the bot id and the tweet he liked
 		"""
@@ -115,7 +118,7 @@ class DBWriter:
 	def retweet(self, data):
 		"""
 		Action to retweet:
-			Calls postgres_stats to add new log
+				Calls postgres_stats to add new log
 
 		@param data: dict containing bot and the tweet he retweeted
 		"""
@@ -127,7 +130,7 @@ class DBWriter:
 	def reply_tweet(self, data):
 		"""
 		Action to reply a tweet:
-			Calls progres_stats to add what the bot replied and to which tweet
+				Calls progres_stats to add what the bot replied and to which tweet
 
 		@param data: dict contaning bot and the reply they made
 		"""
@@ -139,9 +142,9 @@ class DBWriter:
 	def request_tweet_like(self, data):
 		"""
 		Action to request a like on tweeter:
-			Calls the PEP to request a like
-			Adds the log to postgres_stats, for the request and its result
-			The result is based on the PDP methods
+				Calls the PEP to request a like
+				Adds the log to postgres_stats, for the request and its result
+				The result is based on the PDP methods
 
 		@param data: dict containing the bot id and the tweet id
 		"""
@@ -167,7 +170,10 @@ class DBWriter:
 				"action": f"REQUEST LIKE ACCEPTED: {data['bot_id']} and {data['data']['id']} \
 				for tweet {data['data']['id']}"
 			})
-			self.send(data['bot_id'], ResponseTypes.LIKE_TWEETS, data['data']['id'])
+			self.send(
+				data['bot_id'], ResponseTypes.LIKE_TWEETS,
+				data['data']['id']
+			)
 		else:
 			log.warning("Like request denied")
 			self.postgress_client.insert_log({
@@ -179,9 +185,9 @@ class DBWriter:
 	def request_retweet(self, data):
 		"""
 		Action to request a retweet:
-			Calls the PEP to request the retweet
-			Adds the log to postgres_stats, for the request and its result
-			The result is based on the PDP methods
+				Calls the PEP to request the retweet
+				Adds the log to postgres_stats, for the request and its result
+				The result is based on the PDP methods
 
 		2param data: dict containing the bot id and the tweet id
 		"""
@@ -207,7 +213,10 @@ class DBWriter:
 				"action": f"RETWEET REQUEST ACCEPTED: {data['bot_id']} and {data['data']['user']} \
 				for tweet {data['data']['id']}"
 			})
-			self.send(data['bot_id'], ResponseTypes.RETWEET_TWEETS, data['data']['id'])
+			self.send(
+				data['bot_id'],
+				ResponseTypes.RETWEET_TWEETS, data['data']['id']
+			)
 		else:
 			log.warning("Retweet request denied")
 			self.postgress_client.insert_log({
@@ -219,9 +228,9 @@ class DBWriter:
 	def request_tweet_reply(self, data):
 		"""
 		Action to request a reply:
-			Calls the control center to request the reply
-			Adds the log to postgres_stats, for the request and its result
-			The result is based on the Policy API object
+				Calls the control center to request the reply
+				Adds the log to postgres_stats, for the request and its result
+				The result is based on the Policy API object
 
 		@param data: dict containing the bot id and the tweet id
 		"""
@@ -250,7 +259,9 @@ class DBWriter:
 				"action": f"REPLY REQUEST ACCEPTED: {data['bot_id']} and {data['data']['id']} \
 				for tweet {data['data']['id']}"
 			})
-			self.send(data['bot_id'], ResponseTypes.POST_TWEETS, data['data']['id'])
+			self.send(
+				data['bot_id'], ResponseTypes.POST_TWEETS,
+				data['data']['id'])
 		else:
 			log.warning("Like request denied")
 			self.postgress_client.insert_log({
@@ -262,9 +273,9 @@ class DBWriter:
 	def request_follow_user(self, data):
 		"""
 		Action to request a follow:
-			Calls the control center to request the follow
-			Adds the log to postgres_stats, for the request and its result
-			The result is based on the Policy API object
+				Calls the control center to request the follow
+				Adds the log to postgres_stats, for the request and its result
+				The result is based on the Policy API object
 
 		@param data: dict containing the bot id and the tweet id
 		"""
@@ -285,7 +296,9 @@ class DBWriter:
 				"bot_id": data["bot_id"],
 				"action": f"FOLLOW REQUEST ACCEPTED: {data['bot_id']} and {data['data']['id']}"
 			})
-			self.send(data['bot_id'], ResponseTypes.FOLLOW_USERS, data['data']['id'])
+			self.send(
+				data['bot_id'], ResponseTypes.FOLLOW_USERS,
+				data['data']['id'])
 		else:
 			log.warning("Like request denied")
 			self.postgress_client.insert_log({
@@ -296,19 +309,21 @@ class DBWriter:
 	def save_user(self, data):
 		"""
 		Stores info about a user:
-			Calls the neo4j and the mongo object to update or store the user be it a bot or a user)
-			Adds the log of the operation to postgress_stats
-			If the user is a bot, must also call the Policy API object
+				Calls the neo4j and the mongo object to update or store the user be it a bot or a user)
+				Adds the log of the operation to postgress_stats
+				If the user is a bot, must also call the Policy API object
 
 		@param data: dict containing the id of the bot and the user object
 		"""
 		log.info("Saving User")
-		log.info("First we check if the bot sending the message has been in the database")
+		log.info(
+			"First we check if the bot sending the message has been in the database")
 		exists = self.neo4j_client.check_bot_exists(data["bot_id"])
 		if not exists:
 			log.info("Bot is new to the party")
 			follow_list = self.pep.first_time_policy()
-			self.send(data["bot_id"], ResponseTypes.FOLLOW_USERS, {"type": "screen_name", "data": follow_list})
+			self.send(data["bot_id"], ResponseTypes.FOLLOW_USERS, {
+				"type": "screen_name", "data": follow_list})
 			self.mongo_client.insert_users(data["data"])
 			self.neo4j_client.add_bot(
 				{"id": data["data"]['id'], "name": data['data']['name'], "username": data['data']['screen_name']})
@@ -316,7 +331,8 @@ class DBWriter:
 
 			is_bot = self.neo4j_client.check_bot_exists(data["data"]["id"])
 			if is_bot:
-				log.info("It's a bot that's already been registered in the database")
+				log.info(
+					"It's a bot that's already been registered in the database")
 				# Update the info of the bot
 				self.mongo_client.update_users(
 					match={"id": data["data"]['id']},
@@ -328,7 +344,8 @@ class DBWriter:
 
 			else:
 				if self.neo4j_client.check_user_exists(data["data"]["id"]):
-					log.info("It's a user that's already been registered in the database")
+					log.info(
+						"It's a user that's already been registered in the database")
 					self.mongo_client.update_users(
 						match={"id": data["data"]['id']},
 						new_data=data["data"],
@@ -365,8 +382,8 @@ class DBWriter:
 	def save_tweet(self, data):
 		"""
 		Stores info about a tweet:
-			Calls the mongo object to save or update a tweet
-			Adds the operation log to postgress_stats
+				Calls the mongo object to save or update a tweet
+				Adds the operation log to postgress_stats
 
 		@param data: dict containing the id of the tweet to bee saved
 		"""
@@ -403,8 +420,8 @@ class DBWriter:
 	def save_dm(self, data):
 		"""
 		Stores the info about a bot's direct messages:
-			Calls the mongo object to save or update a dm
-			Adds the operation log to postgress_stats
+				Calls the mongo object to save or update a dm
+				Adds the operation log to postgress_stats
 
 		@param data: dict containignt the id of the bot and the DMs
 		"""
@@ -426,7 +443,7 @@ class DBWriter:
 	def error(self, data):
 		"""
 		Stores error that may have occured in the running of a bot:
-			Calls the postgres stats to log the error
+				Calls the postgres stats to log the error
 
 		@param data: dict with the id of a bot and the error object
 		"""
@@ -467,7 +484,8 @@ class DBWriter:
 				})
 
 			for follower_follower in data["data"][follower]:
-				follower_follower_is_user = self.neo4j_client.check_user_exists(follower_follower)
+				follower_follower_is_user = self.neo4j_client.check_user_exists(
+					follower_follower)
 				if follower_follower_is_user:
 					self.request_follow_user({
 						"bot_id": data['bot_id'],
@@ -511,34 +529,33 @@ if __name__ == "__main__":
 
 	dbwriter = DBWriter()
 
-	
 	tweet = {
-		"id" : 8912323,
-		"text" : "RT @nbastats: HISTORY!\n\nSteph Curry and Draymond Green become the first teammates in @NBAHistory \
+		"id": 8912323,
+		"text": "RT @nbastats: HISTORY!\n\nSteph Curry and Draymond Green become the first teammates in @NBAHistory \
 		to both record a triple-double in the same…",
-		"truncated" : False,
-		"entities" : {
-			"hashtags" : [ ],
-			"symbols" : [ ],
-			"user_mentions" : [	],
-			"urls" : [ ]
+		"truncated": False,
+		"entities": {
+			"hashtags": [],
+			"symbols": [],
+			"user_mentions": [	],
+			"urls": []
 		},
-		"source" : "<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
-		"in_reply_to_status_id" : None,
-		"in_reply_to_user_id" : None,
-		"in_reply_to_screen_name" : None,
-		"user" : 874358,
-		"is_quote_status" : False,
-		"retweet_count" : 564,
-		"favorite_count" : 0,
-		"lang" : "en"
+		"source": "<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
+		"in_reply_to_status_id": None,
+		"in_reply_to_user_id": None,
+		"in_reply_to_screen_name": None,
+		"user": 874358,
+		"is_quote_status": False,
+		"retweet_count": 564,
+		"favorite_count": 0,
+		"lang": "en"
 	}
-	
+
 	dbwriter.save_tweet({
 		"bot_id": 874358,
 		"data": tweet
 	})
-	
+
 	dbwriter.request_tweet_like({
 		"bot_id": 874358,
 		"data": tweet
@@ -550,7 +567,7 @@ if __name__ == "__main__":
 			"id": 318689
 		}
 	})
-	
+
 	dbwriter.save_dm({
 		"bot_id": 318689,
 		"data": [{
@@ -560,13 +577,12 @@ if __name__ == "__main__":
 		}]
 	})
 
-	
 	dbwriter.follow_user({
 		"bot_id": 318689,
 		"data": {
 			"id": 123234
 		}
-	})	
+	})
 	dbwriter.save_user({
 		"bot_id": 874358,
 		"data": {
