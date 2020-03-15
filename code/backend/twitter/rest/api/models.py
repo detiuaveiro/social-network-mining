@@ -64,7 +64,7 @@ class Policy(models.Model):
     filter = models.TextField()
     name = models.TextField()
     tags = ArrayField(models.TextField(), db_column="params")
-    bots = ArrayField(models.IntegerField())
+    bots = ArrayField(models.BigIntegerField())
     active = models.BooleanField(default=False)
 
     class Meta:
