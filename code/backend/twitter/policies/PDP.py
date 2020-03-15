@@ -177,9 +177,8 @@ class PDP:
 
 		bot_list = []
 		while len(bot_list) < num_users:
-			username = random.choice(users)
-			if username not in bot_list:
-				bot_list.append(username)
+			index = random.randint(0,len(users) -1)
+			bot_list.append(users.pop(index))
 
 		return bot_list
 
