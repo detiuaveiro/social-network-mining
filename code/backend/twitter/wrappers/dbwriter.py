@@ -377,7 +377,7 @@ class DBWriter:
 		)
 		if tweet_exists:
 			log.info("Updating tweet")
-			self.mongo_client.update_tweet(
+			self.mongo_client.update_tweets(
 				match={"id": data["data"]['id']},
 				new_data=data["data"],
 				all=False
@@ -510,7 +510,7 @@ class DBWriter:
 if __name__ == "__main__":
 
 	dbwriter = DBWriter()
-	'''
+
 	
 	tweet = {
 		"id" : 8912323,
@@ -534,9 +534,7 @@ if __name__ == "__main__":
 		"lang" : "en"
 	}
 	
-	dbwriter.save_twe
-			"id":
-		et({
+	dbwriter.save_tweet({
 		"bot_id": 874358,
 		"data": tweet
 	})
@@ -550,16 +548,16 @@ if __name__ == "__main__":
 		"bot_id": 874358,
 		"data": {
 			"id": 318689
-		}git
+		}
 	})
 	
 	dbwriter.save_dm({
 		"bot_id": 318689,
-		"data": {
+		"data": [{
 			"id": 12345432123,
 			"text": "ola, my first tweet",
 			"user": 123234
-		}
+		}]
 	})
 
 	
@@ -586,6 +584,18 @@ if __name__ == "__main__":
 		"bot_id": 318689,
 		"data": {
 			"id": 318689,
+			"name": "abc",
+			"screen_name": "buster dragon",
+			"location": "ygo",
+			"description": "fusion monster",
+			"followers_count": 0,
+			"friends_count": 0
+		}
+	})
+	dbwriter.save_user({
+		"bot_id": 31868,
+		"data": {
+			"id": 31868,
 			"name": "abc",
 			"screen_name": "buster dragon",
 			"location": "ygo",
@@ -627,5 +637,5 @@ if __name__ == "__main__":
 			"123234": [875358]
 		}
 	})
-	'''
+
 	dbwriter.close()
