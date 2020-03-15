@@ -59,7 +59,7 @@ class TweetStats(models.Model):
 
 
 class Policy(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.IntegerField(primary_key=True, db_column="id_policy")
     API_type = models.TextField()
     filter = models.TextField()
     name = models.TextField()
