@@ -157,6 +157,7 @@ class TwitterBot:
 		log.info("Reading Home Timeline")
 		self.read_timeline(self.user, jump_users=False)
 		self.check_direct_messages()
+
 		# log.debug("Checking last Tweet")
 		# self.last_home_tweet = self._cache.get("last_home_tweet", None)
 		# log.debug(f"Last Tweet was: <{self.last_home_tweet}>")
