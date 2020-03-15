@@ -30,6 +30,15 @@ RABBITMQ_FULL_URL = f"{RABBITMQ_URL}:{RABBITMQ_PORT}"
 RABBITMQ_USERNAME = "pi_rabbit_admin"
 RABBITMQ_VHOST = "PI"
 RABBITMQ_PASSWORD = "yPvawEVxks7MLg3lfr3g"
+# Queues and Exchanges
+TT_DATA_EXCHANGE = "twitter_data"
+TT_TASK_DELIVER = "task_deliver"
+TT_LOGS = 'logs'
+TT_QUERIES = "queries"
+DATA_RK = "data.twitter"
+LOGS_RK = 'logs.twitter'
+QUERIES_RK = 'queries.twitter'
+API_QUEUE = 'API'
 
 
 # -----------------------------------------------------------
