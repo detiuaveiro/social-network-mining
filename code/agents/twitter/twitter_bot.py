@@ -247,8 +247,6 @@ class TwitterBot(RabbitMessaging):
 				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")
 				task = self.__receive_message()
 
-				self.__follow_users("screen_name", ["cristiano"])
-
 				if task:
 					task_type, task_params = task['type'], task['params']
 					logger.debug(f"Received task <{task}>")
@@ -256,7 +254,7 @@ class TwitterBot(RabbitMessaging):
 					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
 						logger.warning(f"Not processing {messages_types.ServerToBot.FIND_BY_KEYWORDS} with {task_params}")
 					elif task_type == messages_types.ServerToBot.FOLLOW_USERS:
-						pass
+						self.__follow_users(id_type=task_params['type'], data=task_params['data'])
 					elif task_type == messages_types.ServerToBot.LIKE_TWEETS:
 						pass
 					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:

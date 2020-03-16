@@ -522,11 +522,11 @@ class DBWriter(Rabbitmq):
 		log.info(f"Sending {message_type.name} to Bot with ID: <{bot}>")
 		log.debug(f"Content: {params}")
 		payload = {
-			"type": message_type,
-			"params": params
+			'type': message_type,
+			'params': params
 		}
 		try:
-			self._send(routing_key='tasks.twitter.' + str(bot), message=json.dumps(payload))
+			self._send(routing_key='tasks.twitter.' + str(bot), message=payload)
 			# self._close()
 		except Exception as e:
 			log.error(f"FAILED TO SEND MESSAGE: {e}")
