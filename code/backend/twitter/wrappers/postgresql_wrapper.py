@@ -35,7 +35,7 @@ class PostgresAPI:
 			self.filters = [x[0] for x in enum_policy.api_filter()]
 
 		except (Exception, psycopg2.DatabaseError) as error:
-			print(error)
+			log.error(f"Error trying to connect to database: {error}")
 
 	def insert_tweet(self, data):
 		"""
@@ -222,7 +222,6 @@ class PostgresAPI:
 				f"{'limit ' + str(limit) if limit is not None else ''} ;"
 
 			cursor.execute(query)
-			print(query)
 
 			data = cursor.fetchall()
 

@@ -1,738 +1,383 @@
-import argparse
 import logging
-import os
-import sys
 from typing import List, Dict, Union
 
-import pyrabbit2
 import tweepy
-from pyrabbit2 import Client
+from tweepy.error import TweepError
+from tweepy.models import User, Status, ResultSet
 
-import settings
-import utils
-from api import TweepyWrapper
-from cache import Cache
-from enums import Task, MessageType
-from exceptions import NoMessagesInQueue
-from models import User, Tweet, BaseModel
+import messages_types
+from rabbit_messaging import RabbitMessaging, MessagingSettings
+from settings import *
+from utils import *
 
-log = logging.getLogger("bot-agents")
-log.setLevel(logging.DEBUG)
-
-
-def reconnect_messagging(_func=None, *, max_times=5):
-	def decorator(func):
-		def wrapper(self, *args, **kwargs):
-			for current_reconnect in range(max_times):
-				try:
-					return func(self, *args, **kwargs)
-				except pyrabbit2.http.NetworkError as e:
-					log.error("Unable to retrieve a message. Retrying...")
-					# if we reach the maximum number of retries, just end the program
-					# In theory, this shouldn't happen
-					if current_reconnect == max_times:
-						raise e
-					# recreate the instance
-					self.messaging = Client(api_url=os.environ.get("SERVER_HOST", "127.0.0.1"),
-											user=settings.RABBIT_USERNAME,
-											passwd=settings.RABBIT_PASSWORD)
-
-		wrapper.__name__ = func.__name__
-		wrapper.__doc__ = func.__doc__
-		return wrapper
-
-	if _func is None:
-		return decorator
-	else:
-		return decorator(_func)
+logger = logging.getLogger("bot-agents")
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(open("bot_agens.log", "w"))
+handler.setFormatter(logging.Formatter(
+	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+logger.addHandler(handler)
 
 
-class TwitterBot:
-	def __init__(self, bot_id, messaging_manager: Client, api: tweepy.API):
+class TwitterBot(RabbitMessaging):
+	def __init__(self, url, username, password, vhost, messaging_settings, bot_id, api: tweepy.API):
+		super().__init__(url, username, password, vhost, messaging_settings)
 		self._id = bot_id
-		self.messaging = messaging_manager
-		self._api = api
+		self._twitter_api = api
 		self.user: User
-		self._cache: Cache = Cache(f"cache_{self._id}", logger=log)
-		self.vhost = settings.VHOST
-		# Name of the exchange to receive the tasks
-		self.tasks_exchange: str = settings.TASKS_EXCHANGE
-		# Name of the queue we're going to use to receive the tasks
-		self.tasks_queue = f"{settings.TASKS_QUEUE_PREFIX}-{self._id}"
-		self.tasks_routing_key = f"{settings.TASKS_ROUTING_KEY_PREFIX}.{self._id}"
-		# Name of the exchange to upload the actions
-		self.query_exchange = settings.QUERY_EXCHANGE
-		self.query_routing_key = settings.QUERY_ROUTING_KEY
-		# Name of the exchange to upload the logs
-		self.log_exchange = settings.LOG_EXCHANGE
-		self.log_routing_key = settings.LOG_ROUTING_KEY
-		# Name of the exchange to upload data
-		self.data_exchange = settings.DATA_EXCHANGE
-		self.data_routing_key = settings.DATA_ROUTING_KEY
-		# Last Tweet read
-		self.last_home_tweet: int = None
-		# no comments
-		self._api.create_favourite = self._api.create_favorite
+		self._last_home_tweet: int = None
 
 	def __repr__(self):
-		return f"<TwitterBot id={self._id}, messaging_manager={self.messaging}, api={self._api}>"
+		return f"<TwitterBot id={self._id}, api={self._twitter_api}>"
 
-	def _send_error_log(self, e):
-		# Log the error
-		log.warning(f"TweepyError with code=<{e.api_code}> and reason=<{e.reason}>, {e}")
-		# if it was an error code of account suspended, send a log
-		if e.api_code == 63 or e.api_code == 64 or e.api_code == 326:
-			payload = {
-				"type": MessageType.EVENT_USER_SUSPENDED,
+	def __send_error_suspended_log(self, error: TweepError):
+		logger.error(f"TweepyError with code=<{error.api_code}> and reason=<{error.reason}>: {error}")
+
+		if error.api_code in ACCOUNT_SUSPENDED_ERROR_CODES:
+			data = {
+				"type": messages_types.BotToServer.EVENT_USER_SUSPENDED,
 				"bot_id": self._id,
-				"timestamp": utils.current_time(),
+				"timestamp": current_time(),
 				"data": {
-					"code": e.api_code,
-					"msg": e.reason
+					"code": error.api_code,
+					"msg": error.reason
 				},
 			}
-			self.messaging.publish(vhost=self.vhost, xname=self.log_exchange,
-								   rt_key=self.log_routing_key,
-								   payload=utils.to_json(payload))
 
-	@reconnect_messagging(max_times=settings.MAX_RABBIT_RETRIES)
-	def _setup_messaging(self):
+			self._messaging.publish(vhost=VHOST, xname=LOG_EXCHANGE, rt_key=LOG_ROUTING_KEY, payload=to_json(data))
+
+	def __get_tweet_dict(self, tweet: Status):
+		tweet_dict = tweet._json.copy()
+		tweet_dict['user'] = tweet_dict['user']['id']
+		return tweet_dict
+
+	def __send_message(self, data, message_type: messages_types.BotToServer, exchange):
+		"""Function to send a new message to the server throw rabbitMQ
+
+		:param data: data to send
+		:param message_type: type of message to send to server
+		:param exchange: rabbit's exchange where to send the new message
 		"""
-            Private method for setuping the messaging connections
-        """
-		log.debug("Setting up Messaging to: Receive Tasks")
-		log.debug(f"Connecting to exchange {self.tasks_exchange}")
-		self.messaging.create_exchange(vhost=self.vhost, name=self.tasks_exchange, xtype="direct")
-		log.debug(f"Creating queue {self.tasks_queue}")
-		self.messaging.create_queue(vhost=self.vhost, name=self.tasks_queue, durable=True)
-		log.debug(f"Binding exchange to queue {self.tasks_queue} with key {self.tasks_routing_key}")
-		self.messaging.create_binding(vhost=self.vhost, exchange=self.tasks_exchange,
-									  queue=self.tasks_queue, rt_key=self.tasks_routing_key)
-		log.info("---------------------------------------")
-		log.info(
-			f"Connected to Messaging Service using: exchange={self.tasks_exchange}, queue={self.tasks_queue}, routing_key={self.tasks_routing_key}")
-		log.info("Ready to receive tasks")
+		self._send_message(to_json({
+			'type': message_type,
+			'bot_id': self._id,
+			'timestamp': current_time(),
+			'data': data
+		}), exchange)
 
-		log.debug("---------------------------------------")
-		log.debug("Setting up Messaging to: Upload Logs")
-		log.debug(f"Connecting to exchange {self.log_exchange}")
-		self.messaging.create_exchange(vhost=self.vhost, name=self.log_exchange, xtype="direct")
-		log.info("---------------------------------------")
-		log.info(
-			f"Connected to Messaging Service using: exchange={self.log_exchange}")
-		log.info("Ready to: Upload Logs")
+	def __send_user(self, user: User):
+		"""Function to send a twitter's User object to the server
 
-		log.debug("---------------------------------------")
-		log.debug("Setting up Messaging to: Make Queries")
-		log.debug(f"Connecting to exchange {self.query_exchange}")
-		self.messaging.create_exchange(vhost=self.vhost, name=self.query_exchange, xtype="direct")
-		log.info("---------------------------------------")
-		log.info(
-			f"Connected to Messaging Service using: exchange={self.query_exchange}")
-		log.info("Ready to: Make Queries")
-
-		log.debug("---------------------------------------")
-		log.debug("Setting up Messaging to: Upload Data")
-		log.debug(f"Connecting to exchange {self.data_exchange}")
-		self.messaging.create_exchange(vhost=self.vhost, name=self.data_exchange, xtype="direct")
-		log.info("---------------------------------------")
-		log.info(
-			f"Connected to Messaging Service using: exchange={self.data_exchange}")
-		log.info("Ready to: Upload Data")
-
-	def _setup(self):
+		:param user: user to send
 		"""
-            Private method for setting up. Includes setting the messagging queues, checking if the credentials are valid
-        """
-		log.debug(f"Setting up with: {self}")
-		log.debug("---------------------------------------")
+		logger.debug(f"Sending {user}")
+		self.__send_data(user._json, messages_types.BotToServer.SAVE_USER)
+
+	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
+		logger.debug(f"Sending {tweet}")
+		self.__send_data(self.__get_tweet_dict(tweet), message_type)
+
+	def __send_data(self, data, message_type: messages_types.BotToServer):
+		self.__send_message(data, message_type, DATA_EXCHANGE)
+
+	def __send_query(self, data, message_type: messages_types.BotToServer):
+		self.__send_message(data, message_type, QUERY_EXCHANGE)
+
+	def __send_event(self, data, message_type: messages_types.BotToServer):
+		self.__send_message(data, message_type, LOG_EXCHANGE)
+
+	def __receive_message(self):
+		"""Function to consume a new message from the tasks's queue
+		"""
+		return self._receive_message(TASKS_EXCHANGE)
+
+	def __setup(self):
+		"""Function to setting up messaging queues and check if twitter credentials are ok
+		"""
+
+		logger.debug("Setting up messaging")
 		self._setup_messaging()
-		log.debug("Verifying credentials")
-		self.user: User = self._api.verify_credentials()
-		log.info(f"Logged in as:{self.user}")
-		log.debug(f"Sending our user to {self.data_exchange}")
-		self.send_user(user=self.user)
-		log.debug("Opening Cache")
-		self._cache.open()
-		log.info("Reading Home Timeline")
-		self.read_timeline(self.user, jump_users=False)
-		self.check_direct_messages()
-		# log.debug("Checking last Tweet")
-		# self.last_home_tweet = self._cache.get("last_home_tweet", None)
-		# log.debug(f"Last Tweet was: <{self.last_home_tweet}>")
 
-	@reconnect_messagging(max_times=settings.MAX_RABBIT_RETRIES)
-	def get_new_message(self):
+		logger.debug("Verifying credentials")
+		try:
+			self.user = self._twitter_api.verify_credentials()
+			logger.info(f"Logged in as:{self.user}")
+		except TweepError as error:
+			logger.error(f"Error verifying credentials: {error}")
+			exit(1)
+
+		logger.debug(f"Sending our user to {DATA_EXCHANGE}")
+		self.__send_user(self.user)
+
+		logger.info("Reading home timeline")
+		self.__read_timeline(self.user)
+
+		# ver porque não está a dar (o twitter não está a deixar aceder)
+		# self.__direct_messages()
+
+	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
+		"""Function to get the 20 (default) most recent tweets (including retweets) from some user
+
+		:param user: user whom tweets we want
+		:param kwargs: dictionary with keyword arguments. These arguments can be the follows:
+			- since_id: Returns only statuses with an ID greater than (that is, more recent than) the specified ID
+    		- max_id: Returns only statuses with an ID less than (that is, older than) or equal to the specified ID
+    		- count: Specifies the number of statuses to retrieve
+    		- page: Specifies the page of results to retrieve. Note: there are pagination limits
 		"""
-            Helper message to get a new message from the tasks queue
-        """
-		msg: List[Dict] = self.messaging.get_messages(vhost=self.vhost, qname=self.tasks_queue,
-													  count=1)
-		if msg and msg[0].get("payload", None):
-			return utils.from_json(msg[0]["payload"])
-		raise NoMessagesInQueue("Queue has no messages left!")
+		logger.debug(f"Getting timeline tweets for User with id={user.id}")
+		if user.id == self.user.id:
+			return list(self._twitter_api.home_timeline(**kwargs))
+		return list(user.timeline(**kwargs))
 
-	def run(self):
+	def __read_timeline(self, user: User, jump_users: bool = False, max_depth: int = 3, current_depth: int = 0):
+		"""Function to get an user's timeline tweets. At the same time, this function send to the server requests to
+			like a tweet, to retweet a tweet and also sends all users that made some tweet, but we don't know yet.
+			Also, this function is recursive, and tries to get all this data to the new users it possibility find
+
+		:param user: user object to read the timeline for
+		:param jump_users: flag to know if we should jump between tweet's users or not
+		:param max_depth: maximum recursion's depth
+		:param current_depth: current recursion's depth (to control the depth of the function's recursion)
 		"""
-        Loop of the bot.
-        As simple as a normal handler, tries to get tasks from the queue and, depending on the task, does a different action
-        """
-		self._setup()
-		retries = settings.MAX_RETRIES
-		log.debug("Starting to get tasks...")
-		while True:
-			try:
-				log.info(f"Getting next task from {self.tasks_queue}")
-				task_msg = self.get_new_message()
-				task_type, task_params = task_msg["type"], task_msg["params"]
-				log.debug(f"Received task {task_msg} with: {task_params}")
-				if task_type == Task.FIND_BY_KEYWORDS:
-					log.warning(f"Not processing {Task.FIND_BY_KEYWORDS.name} with {task_params}")
-				elif task_type == Task.FOLLOW_USERS:
-					self.follow_users_routine(task_params)
-				elif task_type == Task.LIKE_TWEETS:
-					self.like_tweets_routine(task_params)
-				elif task_type == Task.RETWEET_TWEETS:
-					self.retweet_tweets_routine(task_params)
-				elif task_type == Task.FIND_FOLLOWERS:
-					self.find_followers(task_params)
-				elif task_type == Task.POST_TWEET:
-					self.post_tweet_routine(task_params)
-				else:
-					log.warning(f"Received unknown task_msg: {task_msg}")
-			except NoMessagesInQueue:
-				if retries == 0:
-					break
-				log.info("No Messages found. Waiting...")
-				utils.wait_for(5)
-				retries -= 1
-			except tweepy.error.TweepError as e:
-				self._send_error_log(e)
-		self.cleanup()
-
-	def cleanup(self):
-		"""
-        Method for cleaning up any connections.
-        TODO: maybe remove this?
-        """
-		log.warning("TODO: Implement Clean up")
-		self._cache.close()
-
-	def check_direct_messages(self):
-		log.info("Checking Direct Messages")
-		messages_list = self._api.direct_messages()
-		self.send_data(messages_list, message_type=MessageType.SAVE_DIRECT_MESSAGES)
-
-	def like_tweets_routine(self, tweets_ids: Union[int, List[int]]):
-		"""
-        Routine for the LIKE_TWEETS task
-        Likes 1 or several tweets, with their ids being the parameters
-
-        Parameters
-        ----------
-        tweets_ids: `Union[int, List[int]]`
-            Either 1 tweet ID or a list of tweet Ids
-        """
-		log.info("Starting 'Like Tweets' routine...")
-
-		# Helper function so we don't have to repeat code
-
-		def get_and_like_tweet(tweet_id):
-			tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
-			read_time = utils.read_text_and_wait(tweet.text)
-			log.debug(f"Read Tweet in {read_time}")
-			if tweet.favorited:
-				log.info(f"Tweet with ID={tweet.id} already liked, no need to like again")
-			else:
-				log.info(f"Liking Tweet with ID={tweet.id}")
-				tweet.like()
-				self.send_event(MessageType.EVENT_TWEET_LIKED, tweet)
-
-		# Single tweet
-		if type(tweets_ids) is int:
-			get_and_like_tweet(tweet_id=tweets_ids)
-		# Multiple tweets
-		elif type(tweets_ids) is list:
-			for tweet_id in tweets_ids:
-				get_and_like_tweet(tweet_id=tweet_id)
-		# Unknown type
-		else:
-			log.warning(
-				f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
-
-	def retweet_tweets_routine(self, tweets_ids: Union[int, List[int]]):
-		"""
-        Routine for the RETWEET_TWEETS task
-        Retweets 1 or several tweets, with their ids being the parameters
-
-        Parameters
-        ----------
-        tweets_ids: `Union[int, List[int]]`
-            Either 1 tweet ID or a list of tweet Ids
-        """
-		log.info("Starting 'Retweet Tweets' routine...")
-
-		# Helper function so we don't have to repeat code
-		def get_and_retweet_tweet(tweet_id):
-			tweet: Tweet = self._api.get_status(tweet_id=tweet_id)
-			read_time = utils.read_text_and_wait(tweet.text)
-			log.debug(f"Read Tweet in {read_time}")
-			if tweet.retweeted:
-				log.info(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
-			else:
-				log.info(f"Retweeting Tweet with ID={tweet.id}")
-				tweet.retweet()
-				self.send_event(MessageType.EVENT_TWEET_RETWEETED, tweet)
-
-		# Single tweet
-		if type(tweets_ids) is int:
-			get_and_retweet_tweet(tweet_id=tweets_ids)
-		# Multiple tweets
-		elif type(tweets_ids) is list:
-			for tweet_id in tweets_ids:
-				get_and_retweet_tweet(tweet_id=tweet_id)
-		# Unknown type
-		else:
-			log.warning(
-				f"Unknown parameter type received, {type(tweets_ids)} with content: <{tweets_ids}>")
-
-	def post_tweet_routine(self, data: dict):
-		log.info("Starting Post Tweet Routine")
-		reply_id = data.get("in_reply_to_status_id", None)
-		status = data.get("status", None)
-		if not status:
-			log.warning("No status providing! Ignoring")
+		if current_depth == max_depth:
 			return
-		# "Simulating" some kind of posting a tweet by "writing it"
-		# On average, a person reads 2 to 3 times faster than they type
-		# So if we just "read" the text 3 times, we're more or less waiting the same time as
-		# if we were typing it
-		write_time = utils.read_text_and_wait(status * 3)
-		log.debug(f"'Wrote' Tweet in {write_time}")
-		tweet_sent = None
-		if reply_id is None:
-			tweet_sent = self._api.update_status(status=status,
-												 auto_populate_reply_metadata=True)
-		else:
-			tweet_sent = self._api.update_status(status=status,
-												 auto_populate_reply_metadata=True,
-												 in_reply_to_status_id=reply_id)
-		if tweet_sent:
-			self.send_tweet(tweet_sent)
 
-	def find_followers(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
-		"""
-        Routine for the FIND_FOLLOWERS task
-        We can accept 2 types of users list, either by screen names or by IDs.
-        Params is assumed to be this kind of structure
-        "params" : {
-            "type" : "screen_name"
-            "data" : ["barackobama",...],
-        }
-        or
-        "params" : {
-            "type" : "id"
-            "data : [2312312312312,...],
-        }
-        Parameters
-        ----------
-        params : Dict[Any]
-            Dictionary with the payload, the data itself + the type
-        """
-
-		log.info("Starting 'Find Followers' routine...")
-
-		if not params["data"]:
-			log.info("No users provided!")
-		else:
-			# By default, assume `user_ids`
-			unclean_type = params["type"].lower()
-			arg_type = "user_id"
-			# making a check
-			if unclean_type == "id" or unclean_type == "user_id":
-				arg_type = "user_id"
-			elif unclean_type == "screen_name":
-				arg_type = "screen_name"
-
-			# To minimize the impact of people changing their screen_names, we're going to try and get their user objects
-			user_obj_ids = []
-			for param in params["data"]:
-				log.info(f"Getting user object for User by [{arg_type}] with <{param}>")
-				arg_param = {
-					arg_type: param,
-				}
-				user = None
-				try:
-					user = self._api.get_user(**arg_param)
-				except tweepy.error.TweepError as e:
-					log.error(f"Unable to find user by [{arg_type}] with <{param}>, due to {e}")
-				if user:
-					self.send_user(user)
-					user_obj_ids += [user.id]
-			if not user_obj_ids:
-				log.warning(
-					"Could not find any of the Users Objects! Not searching for their Followers")
-			# will be skipped if warning above is done
-			# Since we already got their user objects, might as well send and use IDs all over
-			for user_id in user_obj_ids:
-				log.info(f"Getting Followers for User with ID <{user_id}>")
-				try:
-					followers = self._api.followers_ids(id=user_id)
-					if followers:
-						# if they have followers, we need to send the user objects of the followers
-						# and then the followers list
-						# NOTE: Twitter API limits to 100 followers per request
-						for follower_id in range(0, len(followers), 100):
-							try:
-								user_objects = self._api.lookup_users(
-									user_ids=followers[follower_id:follower_id + 100])
-								# sending the users
-								for user in user_objects:
-									self.send_user(user)
-							except tweepy.error.TweepError as e:
-								log.error(
-									f"Unable to get follower[{follower_id}:{follower_id + 100}]' objects for User {user_id}, with reason {e.reason}")
-								# utils.wait_for(5)
-						# after sending each user object (hopefully), send the followers
-						self.send_data({user_id: followers}, MessageType.SAVE_FOLLOWERS)
-				except tweepy.error.TweepError as e:
-					log.error(
-						f"Unable to find Followers for User with ID <{param}> because reason={e.reason}")
-		log.info("Exiting Follow Users Routine...")
-
-	def follow_users_routine(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
-		"""
-        Routine for the FOLLOW_USERS task
-        We can accept 2 types of users list, either by screen names or by IDs.
-        Params is assumed to be this kind of structure
-
-        "params" : {
-            "type" : "screen_name"
-            "data" : ["barackobama",...],
-        }
-        
-        or 
-
-        "params" : {
-            "type" : "id"
-            "data : [2312312312312,...],
-        }
-
-        Parameters
-        ----------
-        params : Dict[Any]
-            Dictionary with the payload, the data itself + the type
-
-        See Also
-        --------
-        search_in_user
-        """
-		log.info("Starting 'Follow Users' routine...")
-
-		if not params["data"]:
-			log.warning("No users provided!")
-		else:
-			# To avoid having to write 2 loops, or making an if check on every loop,
-			# we'll just take advantage of python's dict as params
-			# So we'll kinda of do
-			"""
-                fun_kwargs = {
-                    params["type"] : value
-                }
-            """
-			# By default, assume `user_ids`
-			unclean_type = params["type"].lower()
-			arg_type = "user_id"
-			# making a check
-			if unclean_type == "id" or unclean_type == "user_id":
-				arg_type = "user_id"
-			elif unclean_type == "screen_name":
-				arg_type = "screen_name"
-
-			for i in params["data"]:
-				# get the user object
-				# TODO: Use the cache as, you know, an actual cache
-				log.info(f"Getting user object for User by [{arg_type}] with <{i}>")
-				arg_param = {
-					arg_type: i,
-				}
-				user = None
-				try:
-					user = self._api.get_user(**arg_param)
-				except tweepy.error.TweepError as e:
-					log.error(f"Unable to find user by [{arg_type}] with <{i}> due to {e}")
-				if user:
-					log.info(f"Found with: {user}")
-					self.search_in_user(user)
-		log.info("Exiting Follow Users Routine...")
-
-	def search_in_user(self, user_obj: User):
-		"""
-        1. Sends the user object to the control center.
-        2. Reads the user's description.
-        3a. If the user is protected, tries to follow him and stop.
-        3b. If he's not protected, then.
-        4. Reads the user's timeline.
-        5. Tries to follow the user.
-
-        Parameters
-        ----------
-        user_obj : User
-            User object
-        """
-		log.info(f"Searching User with id={user_obj.id}")
-
-		# self._cache.save_user(user_obj)
-		# Save the user
-		self.send_user(user_obj)
-		# If we're not following him, try to follow him
-		if not user_obj.following:
-			# read the user's  description
-			utils.read_text_and_wait(user_obj.description)
-			try:
-				user_obj.follow()
-				log.info(f"Followed User with ID={user_obj.id}")
-				self.send_event(MessageType.EVENT_USER_FOLLOWED, user_obj)
-			except tweepy.error.TweepError as e:
-				if e.api_code == 161:
-					# can't follow, just ignore
-					# TODO: implement logic for resuming follows
-					log.error(f"Unable to follow User with api_code={e.api_code},reason={e.reason}")
-				else:
-					log.error(f"Error with api_code={e.api_code},reason={e.reason}")
-		# If the user isn't protected or he's protected and we're following him, read his timeline
-		if not user_obj.protected or (user_obj.protected and user_obj.following):
-			self.read_timeline(user_obj, jump_users=True)
-
-	def get_user_timeline_tweets(self, user_obj: User, **kwargs) -> List[Tweet]:
-		"""
-        Helper method so we don't have to worry about handling the home timeline
-
-        Parameters
-        ----------
-        user_obj : `User`
-            The User to get the tweets for
-        kwargs : Dict[Any]
-            Keyword arguments for the api
-        Returns
-        -------
-        tweets: List[Tweet]
-            A List of tweets from the provided user's timeline
-        """
-		log.debug(f"Getting timeline tweets for User with id={user_obj.id}")
-		if user_obj.id == self.user.id:
-			return self._api.home_timeline()
-		return user_obj.timeline(**kwargs)
-
-	def read_timeline(self, user_obj: User, *, jump_users=False,
-					  max_depth=3, max_jumps=5, current_depth=0, total_jumps=0):
-		"""
-        Method for reading a user's timeline.
-        It jumps between timelines with a recursive call of this function
-
-        Parameters
-        ----------
-        user_obj : User
-            User object to read the timeline for
-        jump_users : bool
-            Flag to know if we should jump between user's tweets or not
-        max_depth : int
-            Max depth to jump
-        max_jumps : int
-            Max number of total jumps to do
-        current_depth : int
-            Internal control variable for recursive return
-        total_jumps : int
-            Internal variable for recursive return
-        """
-		log.info(f"Reading User {user_obj}'s timeline")
-		tweets_to_get = utils.random_between(settings.MIN_USER_TIMELINE_TWEETS,
-											 settings.MAX_USER_TIMELINE_TWEETS)
-		# get the user's timeline tweets
-		tweets = self.get_user_timeline_tweets(user_obj, count=tweets_to_get)
-		if not tweets:
-			log.warning("No Tweets to read!")
-			return
+		logger.debug(f"Reading user's <{user.__str__()}> timeline")
+		tweets = self.__user_timeline_tweets(user, count=MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE)
 
 		total_read_time = 0
 		for tweet in tweets:
-			# log.debug(f"Saving Tweet with ID={tweet.id} to cache")
-			# save the tweet
-			# self._cache.save_tweet(tweet)
-			self.send_tweet(tweet)
+			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
 
-			# read it's content
-			total_read_time += utils.read_text_and_wait(tweet.text)
+			total_read_time += virtual_read_wait(tweet.text)
+
 			# If it's our own tweet, we don't really need to do any logic
 			if self.user.id == tweet.user.id:
 				continue
+
 			# Processing the tweet regarding liking/retweeting
 			if not tweet.favorited:
-				self.query_like_tweet(tweet)
+				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_LIKE)
 			if not tweet.retweeted:
-				self.query_retweet_tweet(tweet)
-			# If the author of the tweet isn't the same user that we're reading the timeline
-			# (Because retweets can appear), then jump and do the logic for reading the timeline
-			# (assuming we haven't reached max jumps)
-			if (not jump_users) or (total_jumps == max_jumps) or (current_depth == max_depth):
-				continue
-			elif tweet.user.id != user_obj.id:
-				# save the user
-				self.send_user(tweet.user)
-				if tweet.user.protected and not tweet.user.following:
-					log.warning(
-						f"Found user with ID={tweet.user.id} but he's protected and we're not following him, so can't read his timeline")
+				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_RETWEET)
+
+			if not jump_users:
+				tweet_user = tweet.user
+				self.__send_user(tweet_user)
+
+				user_attributes = tweet_user.__dir__()
+
+				if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
+					logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
+								   f"following him, so can't read his timeline")
 					continue
-				elif tweet.user.suspended:
-					log.warning(
-						f"Found user with ID={tweet.user.id} but his account was suspended, so can't read his timeline")
+				elif 'suspended' in user_attributes and tweet_user.suspended:
+					logger.warning(f"Found user with ID={tweet_user.id} but his account was suspended, "
+								   f"so can't read his timeline")
 					continue
 				else:
-					self.read_timeline(user_obj,
-									   jump_users=jump_users,
-									   total_jumps=total_jumps + 1,
-									   max_jumps=max_jumps,
-									   current_depth=current_depth + 1,
-									   max_depth=max_depth, )
+					self.__read_timeline(tweet_user, jump_users=jump_users,
+										 max_depth=max_depth, current_depth=current_depth + 1)
+		logger.debug(f"Read {user.id}'s timeline in {total_read_time} seconds")
 
-		log.debug(f"Read {user_obj}'s timeline in {total_read_time} seconds")
+	def __direct_messages(self):
+		logger.info("Checking direct messages")
+		messages = self._twitter_api.list_direct_messages()
+		self.__send_data(messages, messages_types.BotToServer.SAVE_DIRECT_MESSAGES)
 
-	def query_like_tweet(self, tweet: Tweet):
+	def __follow_users(self, id_type: str, data: List[Union[str, int]]):
+		"""Function to follow a specific group of users
+
+		:param id_type: user's identification type (can have the value id (numerical identification), or screen_name
+			(string identification)
+		:param data: list of the user's identifications to follow
 		"""
-            Method for asking the control center asking whether to like a tweet.
-        """
-		if tweet.favorited:
-			log.info(f"Tweet with ID={tweet.id} already liked, no need to like again")
-			return
-		else:
-			log.info(f"Asking to like Tweet with ID={tweet.id}")
-			self.send_query(MessageType.QUERY_TWEET_LIKE, tweet)
+		logger.info("Starting follow users routine")
 
-	def query_retweet_tweet(self, tweet: Tweet):
+		if id_type == "id":
+			id_type = "user_id"
+
+		for user_id in data:
+			logger.info(f"Searching for User object identified by [{id_type}] with <{user_id}>")
+
+			try:
+				arg_param = {
+					id_type: user_id
+				}
+				user: User = self._twitter_api.get_user(**arg_param)
+
+				if user:
+					logger.info(f"Found user: {user}")
+					self.__follow_user(user)
+			except TweepError as error:
+				logger.error(f"Unable to find user identified by [{id_type}] with <{user_id}>: {error}")
+
+	def __follow_user(self, user: User):
+		"""Function to follow a specific user. It sends the user to the server and then, if the bot doesn't follow the
+			user, it tries to follow the user. At last, it reads the user's tweets timeline and sends it to the server
+
+		:param user: user to follow
 		"""
-            Method for asking the control center asking whether to retweet a tweet.
-        """
-		if tweet.retweeted:
-			log.info(f"Tweet with ID={tweet.id} already retweeted, no need to retweet again")
-			return
-		else:
-			log.info(f"Asking to Retweet Tweet with ID={tweet.id}")
-			self.send_query(MessageType.QUERY_TWEET_RETWEET, tweet)
+		logger.info(f"Following user <{user}>")
 
-	def send_user(self, user: User) -> None:
+		self.__send_user(user)
+
+		if not user.following:
+			virtual_read_wait(user.description)
+
+			try:
+				user.follow()
+				logger.info(f"Followed User tih id <{user.id}>")
+				self.__send_event(user._json, messages_types.BotToServer.EVENT_USER_FOLLOWED)
+			except TweepError as error:
+				if error.api_code == FOLLOW_USER_ERROR_CODE:
+					logger.error(f"Unable to follow User with id <{user.id}>: {error}")
+				else:
+					logger.error(f"Error with api_code={error.api_code}: {error}")
+
+		if not user.protected or (user.protected and user.following):
+			self.__read_timeline(user, jump_users=True)
+
+	def __find_tweet_by_id(self, tweet_id: int) -> Union[Status, None]:
+		"""Function to find and return a tweet for a given id
+
+		:param tweet_id: id of the tweet which we want to find
 		"""
-        Helper function for sending the user to the server
+		try:
+			return self._twitter_api.get_status(tweet_id)
+		except TweepError as error:
+			logger.error(f"Error finding tweet with id <{tweet_id}>: {error}")
+			return None
 
-        Parameters
-        ----------
-        user : User
-            The User Object to send
-        """
-		log.debug(f"Sending {user}")
-		self.send_data(user.to_json(), MessageType.SAVE_USER)
+	def __like_tweet(self, tweet_id: int):
+		"""Function to like a tweet
 
-	def send_tweet(self, tweet: Tweet):
+		:param tweet_id: id of the tweet which we want to give a like
 		"""
-        Helper function for sending a tweet to the server
+		logger.info("Starting like tweets routine")
 
-        Parameters
-        ----------
-        tweet : Tweet
-            The Tweet Object to send
-        """
-		log.debug(f"Sending {tweet}")
-		self.send_data(tweet.to_json(), MessageType.SAVE_TWEET)
+		tweet: Status = self.__find_tweet_by_id(tweet_id)
+		if tweet:
+			# read the tweet
+			read_time = virtual_read_wait(tweet.text)
+			logger.debug(f"Read Tweet in {read_time}")
+			try:
+				if tweet.favorited:
+					logger.info(f"Tweet with id <{tweet_id}> already liked, no need to like again")
+				else:
+					logger.info(f"Linking tweet with id <{tweet.id}>")
+					tweet.favorite()
+					self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_LIKED)
+			except Exception as error:
+				logger.error(f"Error liking tweet with id <{tweet_id}>: {error}")
 
-	def send_data(self, data, message_type: MessageType):
-		self._send_message(data, message_type=message_type,
-						   routing_key=self.data_routing_key,
-						   exchange=self.data_exchange)
+	def __retweet_tweet(self, tweet_id: id):
+		"""Function to retweet a specific tweet, givem the id of that tweet
 
-	def send_query(self, message_type: MessageType, data: BaseModel):
+		:param tweet_id: id of the tweet we want to retweet
 		"""
-        Generic Helper function for sending a query to the server
+		logger.info("Starting routine retweet tweet...")
 
-        Parameters
-        ----------
-        message_type : MessageType
-            The query to send
-        data: BaseModel
-            the data associated with the event (usually the object)
-        """
-		log.debug(f"Sending {data}")
-		self._send_message(data.to_json(), message_type=message_type,
-						   routing_key=self.query_routing_key,
-						   exchange=self.query_exchange)
+		tweet: Status = self.__find_tweet_by_id(tweet_id)
+		if tweet:
+			# read the tweet
+			read_time = virtual_read_wait(tweet.text)
+			logger.debug(f"Read Tweet in {read_time}")
 
-	def send_event(self, message_type: MessageType, data: BaseModel):
+			try:
+				if tweet.retweeted:
+					logger.info(f"Tweet with id <{tweet.id}> already retweeted, no need to retweet again")
+				else:
+					logger.info(f"Retweeting Tweet with id <{tweet.id}>")
+					tweet.retweet()
+					self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_RETWEETED)
+			except Exception as error:
+				logger.error(f"Error retweeting tweet with id <{tweet_id}>: {error}")
 
-		""" Generic Helper function for sending an event to the server
-        Parameters
-        ----------
-        message_type : MessageType
-            the event to send
-        data: BaseModel
-            the data associated with the event (usually the object)
-        """
-		log.debug(f"Sending {data}")
-		self._send_message(data.to_json(), message_type=message_type,
-						   routing_key=self.log_routing_key,
-						   exchange=self.log_exchange)
+	def __post_tweet(self, text: str, reply_id: int = None):
+		"""Function to post a new tweet. This can or cannot be a reply to other tweet
 
-	@reconnect_messagging(max_times=settings.MAX_RABBIT_RETRIES)
-	def _send_message(self, data, *, message_type: MessageType, routing_key: str, exchange: str):
-		log.debug(
-			f"Sending <{message_type.name}> to exchange [{exchange}] with routing_key [{routing_key}]")
-		payload = utils.wrap_message(data, bot_id=self._id, message_type=message_type)
-		self.messaging.publish(vhost=self.vhost, xname=exchange, rt_key=routing_key,
-							   payload=utils.to_json(payload))
+		:param text: text to post in new tweet
+		:param reply_id: tweet to reply to
+		"""
+		logger.info("Starting routine post tweet...")
 
+		write_time = virtual_read_wait(text)
+		logger.debug(f"Tweet take {write_time} seconds to be written")
 
-def parse_args():
-	parser = argparse.ArgumentParser()
-	parser.add_argument("--user_agent",
-						help="User Agent to use. Defaults to the one present in settings.py",
-						default=os.environ.get("USER_AGENT", settings.DEFAULT_USER_AGENT))
-	parser.add_argument("--tor_proxy",
-						help="HTTPS Proxy (to use with TOR)",
-						default=os.environ.get("TOR_PROXY", ""))
-	parser.add_argument("--server_host",
-						help="Location of the server to connect to. Defaults to 127.0.0.1",
-						default=os.environ.get("SERVER_HOST", "127.0.0.1"))
-	return parser.parse_args()
+		args = {
+			'status': text,
+			'auto_populate_reply_metadata': True
+		}
+		if reply_id:
+			args['in_reply_to_status_id'] = reply_id
+
+		try:
+			tweet: Status = self._twitter_api.update_status(**args)
+			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
+		except TweepError as error:
+			logger.error(f"Error posting a new tweet: {error}")
+
+	def run(self):
+		"""Bot's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
+			task, does a different action
+		"""
+		self.__setup()
+
+		while True:
+			try:
+				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")
+				task = self.__receive_message()
+
+				if task:
+					task_type, task_params = task['type'], task['params']
+					logger.debug(f"Received task <{task}>")
+
+					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
+						logger.warning(f"Not processing {messages_types.ServerToBot.FIND_BY_KEYWORDS} with {task_params}")
+					elif task_type == messages_types.ServerToBot.FOLLOW_USERS:
+						self.__follow_users(id_type=task_params['type'], data=task_params['data'])
+					elif task_type == messages_types.ServerToBot.LIKE_TWEETS:
+						self.__like_tweet(task_params)
+					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
+						self.__retweet_tweet(task_params)
+					elif task_type == messages_types.ServerToBot.FIND_FOLLOWERS:
+						pass
+					elif task_type == messages_types.ServerToBot.POST_TWEET:
+						self.__post_tweet(**task_params)
+					else:
+						logger.warning(f"Received unknown task type: {task_type}")
+				else:
+					logger.warning("There are not new messages on the tasks's queue")
+					# TODO -> VER O QUE FAZER NESTA SITUAÇÃO
+					wait(5)
+			except Exception as error:
+				logger.error(f"Error on bot's loop: {error}")
+				# exit(1)
 
 
 if __name__ == "__main__":
-	args = parse_args()
-	proxies = args.tor_proxy
-	user_agent = args.user_agent
-	server = args.server_host
-	key = os.environ["KEY"]
-	secret = os.environ["SECRET"]
-	token = os.environ["TOKEN"]
-	token_secret = os.environ["TOKEN_SECRET"]
+	bot_id = 1103294806497902594
 
-	bot_id = token.split('-')[0]
-	formatter = logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s")
-	# Logging to stdout
-	handler = logging.StreamHandler(sys.stdout)
-	handler.setFormatter(formatter)
-	log.addHandler(handler)
-	# And to a timestamped file
-	file_handler = logging.FileHandler(f"{bot_id}_{int(utils.current_time())}.log", encoding='utf-8')
-	file_handler.setFormatter(formatter)
-	log.addHandler(file_handler)
+	messaging_settings = {
+		TASKS_EXCHANGE: MessagingSettings(exchange=TASKS_EXCHANGE, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}.{bot_id}",
+										  queue=f"{TASKS_QUEUE_PREFIX}-{bot_id}"),
+		LOG_EXCHANGE: MessagingSettings(exchange=LOG_EXCHANGE, routing_key=LOG_ROUTING_KEY),
+		QUERY_EXCHANGE: MessagingSettings(exchange=QUERY_EXCHANGE, routing_key=QUERY_ROUTING_KEY),
+		DATA_EXCHANGE: MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY)
+	}
 
-	# TODO: change password
-	messaging_manager = Client(api_url=server,
-							   user=settings.RABBIT_USERNAME,
-							   passwd=settings.RABBIT_PASSWORD)
+	# consumer_key = "yqoymTNrS9ZDGsBnlFhIuw"
+	# consumer_secret = "OMai1whT3sT3XMskI7DZ7xiju5i5rAYJnxSEHaKYvEs"
+	# token = "1097916541830680576-RWAa8hM2tkGMXQWaa0Bg5sDYTFD0oV"
+	# token_secret = "bYyREitpd1J1wr758FMwmk7TI5KHyMEomEv80jgecJUVL"
+	consumer_key = "vP8ULCHpJYTcRRfNqiVHLLemC"
+	consumer_secret = "e3C7OtUlMh3VxEi0Bx038bv9hCKwYGFgbH7dnsLNpvpUL4SWy4"
+	token = "1103294806497902594-Q90yPSULqg27zcWjLSZ99ZSzgGyQYP"
+	token_secret = "iaK1qYJEtYNAx5Npv90VZB0bkPjaLojOXD5HuJrZCAfsb"
 
-	wrapper_api = TweepyWrapper(tor_proxies=proxies, user_agent=user_agent, consumer_key=key,
-								consumer_secret=secret, token=token, token_secret=token_secret)
-
-	bot = TwitterBot(bot_id=bot_id, messaging_manager=messaging_manager,
-					 api=wrapper_api)
-
+	twitter_auth = tweepy.OAuthHandler(consumer_key=consumer_key, consumer_secret=consumer_secret)
+	twitter_auth.set_access_token(key=token, secret=token_secret)
+	bot = TwitterBot("localhost:15672", RABBIT_USERNAME, RABBIT_PASSWORD, VHOST, messaging_settings, bot_id,
+					 tweepy.API(auth_handler=twitter_auth, wait_on_rate_limit=True))
 	bot.run()
-	exit(0)

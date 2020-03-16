@@ -7,8 +7,8 @@ import datetime
 import credentials
 
 log = logging.getLogger("Mongo")
-log.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
+log.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(open("mongo.log", "w"))
 handler.setFormatter(
     logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s")
 )
@@ -108,9 +108,9 @@ class MongoAPI:
         """
         try:
             if all:
-                self.users.update_many(match, new_data)
+                self.users.update_many(match, {"$set": new_data})
             else:
-                self.users.update_one(match, new_data)
+                self.users.update_one(match, {"$set": new_data})
             log.debug("UPDATE SUCCESSFUL")
         except Exception as e:
             log.error("ERROR UPDATING DOCUMENT")
@@ -125,9 +125,9 @@ class MongoAPI:
         """
         try:
             if all:
-                self.tweets.update_many(match, new_data)
+                self.tweets.update_many(match, {"$set": new_data})
             else:
-                self.tweets.update_one(match, new_data)
+                self.tweets.update_one(match, {"$set": new_data})
             log.debug("UPDATE SUCCESSFUL")
         except Exception as e:
             log.error("ERROR UPDATING DOCUMENT")
@@ -142,9 +142,9 @@ class MongoAPI:
         """
         try:
             if all:
-                self.messages.update_many(match, new_data)
+                self.messages.update_many(match, {"$set": new_data})
             else:
-                self.messages.update_one(match, new_data)
+                self.messages.update_one(match, {"$set": new_data})
             log.debug("UPDATE SUCCESSFUL")
         except Exception as e:
             log.error("ERROR UPDATING DOCUMENT")
@@ -177,13 +177,17 @@ class MongoAPI:
             return
 
         try:
-            if fields is not None:
+            if fields:
                 projection = {"_id": False}
                 for i in fields:
                     projection[i] = True
             else:
-                projection = None
+                projection = {"_id": True}
 
+            log.debug(query)
+            log.debug(projection)
+
+            result = None
             if single:
                 if collection == "tweets":
                     result = list(self.tweets.find_one(query, projection))

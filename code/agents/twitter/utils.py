@@ -1,15 +1,13 @@
-import datetime
-import json
-import random
+from datetime import datetime
 import time
+import json
 
 import readtime
-import requests
 
-from enums import MessageType
 
-TWITTER_EPOCH = 1288834974657
-
+# -----------------------------------------------------------
+# json
+# -----------------------------------------------------------
 
 def to_json(obj):
     return json.dumps(obj, separators=(',', ':'))
@@ -19,62 +17,23 @@ def from_json(string):
     return json.loads(string)
 
 
-def random_between(min_val, max_val):
-    return random.uniform(min_val, max_val)
+def current_time(str_time=False):
+    if str_time:
+        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    return datetime.utcnow().timestamp()
 
 
-def snowflake_time(snowflake_id: int) -> datetime.datetime:
-    """Returns the creation date in UTC of a Twitter id."""
-    return datetime.datetime.utcfromtimestamp(((snowflake_id >> 22) + TWITTER_EPOCH) / 1000)
+def wait(seconds: float):
+    time.sleep(seconds)
 
 
-def wait_for(secs):
-    """Uses time.sleep to wait for a specified amount of seconds"""
-    time.sleep(secs)
+def virtual_read_wait(text: str) -> float:
+    """Function to fake the reading time for the given text
 
-
-def read_text_and_wait(text: str):
+    :param text: text to read
+    :return: time taken to read the provided text
     """
-    Fakes the reading time for the given text.
+    time_to_read = readtime.of_text(text).seconds
+    wait(time_to_read)
 
-    Parameters
-    ----------
-    text : str
-        text to read
-
-    Returns
-    -------
-    the time taken to read the text provided
-
-    """
-    time_for_text = readtime.of_text(text)
-    # edge case if it was empty 
-    # TODO: Don't forget to check for entities and etc
-    time_for_text = time_for_text.seconds if time_for_text.seconds > 1 else 1
-
-    # wait for the some time
-    wait_time = random_between(time_for_text * 0.9, time_for_text * 1.10)
-    # wait the given time
-
-    wait_for(round(wait_time))
-
-    # handy return for keeping track of the total times
-    return wait_time
-
-
-def current_time():
-    return datetime.datetime.utcnow().timestamp()
-
-
-def make_request_json(method, url, data, **options):
-    return requests.request(method=method, url=url, data=to_json(data), **options)
-
-
-def wrap_message(data, *, bot_id, message_type: MessageType):
-    payload = {
-        "type"     : message_type,
-        "bot_id"   : bot_id,
-        "timestamp": current_time(),
-        "data"     : data,
-    }
-    return payload
+    return time_to_read

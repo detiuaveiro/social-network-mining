@@ -5,7 +5,7 @@
 MONGO_URL = "localhost"
 MONGO_PORT = 27017
 MONGO_FULL_URL = f"{MONGO_URL}:{MONGO_PORT}"
-MONGO_DB = "snm_mongo"
+MONGO_DB = "twitter"
 
 
 # -----------------------------------------------------------
@@ -15,9 +15,9 @@ MONGO_DB = "snm_mongo"
 POSTGRES_URL = "localhost"
 POSTGRES_PORT = 5432
 POSTGRES_FULL_URL = f"{POSTGRES_URL}:{POSTGRES_PORT}"
-POSTGRES_DB = "postgres"
-POSTGRES_USERNAME = "snm"
-POSTGRES_PASSWORD = "pg_snm"
+POSTGRES_DB = "twitter_postgres"
+POSTGRES_USERNAME = "admin"
+POSTGRES_PASSWORD = "admin"
 
 
 # -----------------------------------------------------------
