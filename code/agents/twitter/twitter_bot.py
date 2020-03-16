@@ -294,6 +294,30 @@ class TwitterBot(RabbitMessaging):
 			except Exception as error:
 				logger.error(f"Error retweeting tweet with id <{tweet_id}>: {error}")
 
+	def __post_tweet(self, text: str, reply_id: int = None):
+		"""Function to post a new tweet. This can or cannot be a reply to other tweet
+
+		:param text: text to post in new tweet
+		:param reply_id: tweet to reply to
+		"""
+		logger.info("Starting routine post tweet...")
+
+		write_time = virtual_read_wait(text)
+		logger.debug(f"Tweet take {write_time} seconds to be written")
+
+		args = {
+			'status': text,
+			'auto_populate_reply_metadata': True
+		}
+		if reply_id:
+			args['in_reply_to_status_id'] = reply_id
+
+		try:
+			tweet: Status = self._twitter_api.update_status(**args)
+			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
+		except TweepError as error:
+			logger.error(f"Error posting a new tweet: {error}")
+
 	def run(self):
 		"""Bot's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
 			task, does a different action
@@ -317,12 +341,10 @@ class TwitterBot(RabbitMessaging):
 						self.__like_tweet(task_params)
 					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
 						self.__retweet_tweet(task_params)
-					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
-						pass
 					elif task_type == messages_types.ServerToBot.FIND_FOLLOWERS:
 						pass
 					elif task_type == messages_types.ServerToBot.POST_TWEET:
-						pass
+						self.__post_tweet(**task_params)
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
 				else:
@@ -331,7 +353,7 @@ class TwitterBot(RabbitMessaging):
 					wait(5)
 			except Exception as error:
 				logger.error(f"Error on bot's loop: {error}")
-				exit(1)
+				# exit(1)
 
 
 if __name__ == "__main__":
