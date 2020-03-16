@@ -25,19 +25,28 @@ def policy(db):
 
 @pytest.fixture
 def policy_twitter(db):
-    return mixer.blend(Policy, tags=["PSD", "PS"], bots=[1, 2], id=1,
+    return mixer.blend(Policy, tags=["PSD", "PS"], bots=[1], id=1,
                        API_type="Twitter", filter=choice([x[0] for x in Enum_policy.api_filter()]))
 
 
 @pytest.fixture
 def policy_instagram(db):
-    return mixer.blend(Policy, tags=["PSD", "PS"], bots=[1, 2], id=1,
+    return mixer.blend(Policy, tags=["PSD", "PS"], bots=[1], id=1,
                        API_type="Instagram", filter=choice([x[0] for x in Enum_policy.api_filter()]))
 
 
 def add_bot_neo4j(bot_id=1):
     neo4j.add_bot({'id': bot_id, 'name': 'bot_test', 'username': 'bot_test_username'})
     return neo4j.check_bot_exists(bot_id)
+
+
+@pytest.fixture(autouse=True)
+def delete_neo4j_data():
+    for bot_id in [1, 2]:
+        neo4j.delete_bot(bot_id)
+        if neo4j.check_bot_exists(bot_id):
+            return False
+    return True
 
 
 @catch_exception
