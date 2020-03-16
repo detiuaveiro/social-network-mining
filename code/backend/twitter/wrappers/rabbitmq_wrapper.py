@@ -2,7 +2,7 @@ import pika
 import time
 import logging
 import json
-from credentials import *
+from wrappers.credentials import *
 
 log = logging.getLogger('Rabbit')
 log.setLevel(logging.INFO)
