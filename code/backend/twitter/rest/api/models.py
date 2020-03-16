@@ -70,6 +70,7 @@ class Policy(models.Model):
     class Meta:
         managed = True
         db_table = "policies"
+        unique_together = ["API_type", "filter", "tags"]
 
 
 class Log(models.Model):
