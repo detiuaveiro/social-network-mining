@@ -2,8 +2,6 @@ from rest_framework import serializers
 from api.enums import Policy as enum_policy
 
 
-# from mongoengine import EmbeddedDocumentField
-
 class User(serializers.Serializer):
     user_id = serializers.IntegerField()
     description = serializers.CharField()
