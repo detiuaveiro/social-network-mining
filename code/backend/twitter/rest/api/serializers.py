@@ -45,8 +45,8 @@ class Policy(serializers.Serializer):
     API_type = serializers.ChoiceField(choices=enum_policy.api_types())
     filter = serializers.ChoiceField(choices=enum_policy.api_filter())
     name = serializers.CharField()
-    tags = serializers.ListField(child=serializers.CharField())
-    bots = serializers.ListField(child=serializers.IntegerField(validators=[]))
+    tags = serializers.ListField(child=serializers.CharField(), allow_empty=False)
+    bots = serializers.ListField(child=serializers.IntegerField(validators=[]), allow_empty=False)
     active = serializers.BooleanField(required=False)
 
 
