@@ -43,7 +43,7 @@ jobs:
       - uses: actions/checkout@v1
       - name: Installing all dependencies
         run: |
-            for r in $(find . | grep requirements | grep code/backend/twitter/rest); do
+            for r in $(find . | grep requirements | grep code/backend/twitter); do
               echo $r
               pip install --user -r $r
             done
