@@ -3,13 +3,13 @@ from enum import Enum, unique
 
 @unique
 class Policy(Enum):
-    INSTAGRAM = "instagram"
-    TWITTER = "twitter"
-    KEYWORDS = "keywords"
-    USERNAME = "username"
+    INSTAGRAM = "Instagram"
+    TWITTER = "Twitter"
+    KEYWORDS = "Keywords"
+    TARGET = "Target"
 
     def describe(self):
-        return self.name, self.value
+        return self.value, self.name
 
     @classmethod
     def api_types(cls):
@@ -17,4 +17,4 @@ class Policy(Enum):
 
     @classmethod
     def api_filter(cls):
-        return [cls.describe(cls.KEYWORDS), cls.describe(cls.USERNAME)]
+        return [cls.describe(cls.KEYWORDS), cls.describe(cls.TARGET)]

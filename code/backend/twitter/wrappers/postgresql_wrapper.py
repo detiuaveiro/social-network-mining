@@ -5,6 +5,7 @@ import logging
 import sys
 
 sys.path.append("..")
+from rest.api.enums import Policy as enum_policy
 
 log = logging.getLogger("PostgreSQL")
 log.setLevel(logging.DEBUG)
@@ -29,6 +30,9 @@ class PostgresAPI:
 				host=credentials.POSTGRES_URL, database=credentials.POSTGRES_DB,
 				user=credentials.POSTGRES_USERNAME, password=credentials.POSTGRES_PASSWORD
 			)
+
+			self.api_types = [x[0] for x in enum_policy.api_types()]
+			self.filters = [x[0] for x in enum_policy.api_filter()]
 
 		except (Exception, psycopg2.DatabaseError) as error:
 			print(error)
@@ -254,9 +258,7 @@ class PostgresAPI:
 		try:
 			cursor = self.conn.cursor()
 
-			query = f"select api.name,policies.name,params,active,id_policy,filter.name, policies.bots from policies " \
-				f"   left outer join filter on filter.id=policies.filter " \
-				f"   left outer join api on api.id=policies.API_type "
+			query = f"select policies.api_type,policies.name,params,active,id_policy,policies.filter, policies.bots from policies"
 
 			if params is not None:
 				query += " WHERE "
@@ -340,35 +342,24 @@ class PostgresAPI:
 		@param data: The data of the item we want to insert.
 		@return A success or failure message ({success: True/False ; error: None/Error})
 		"""
+
 		try:
+
+			if data['api_name'] not in self.api_types:
+				return {"success": False, "error": "Specified API does not exist"}
+			
+			if data['filter'] not in self.filters:
+				return {"success": False, "error": "Specified Filter does not exist"}
+
 			cursor = self.conn.cursor()
 
-			cursor.execute(
-				f"SELECT * FROM api WHERE name=\'{data['api_name']}\';")
-			api_existance = cursor.fetchone()
-			if len(api_existance) == 0:
-				return {"success": False, "error": "Specified API does not exist"}
-			else:
-				api_id = api_existance[0]
-
-			cursor.execute(
-				f"SELECT * FROM filter WHERE name=\'{data['filter']}\';")
-			filter_existance = cursor.fetchone()
-			if len(filter_existance) == 0:
-				return {"success": False, "error": "Specified Filter does not exist"}
-			else:
-				filter_id = filter_existance[0]
-
-			cursor.execute(
-				f"SELECT * FROM filter_api WHERE api_id={api_id} AND filter_id={filter_id};")
-			api_filter_existence = cursor.fetchone()
-			if len(api_filter_existence) == 0:
-				return {"success": False, "error": "Specified API-Filter connection does not exist"}
+			cursor.execute('select max(id_policy) from policies;')
+			max_id = cursor.fetchall()[0][0]
 
 			cursor.execute(
 				"INSERT INTO policies (api_type, filter, name, params, active, id_policy, bots) "
 				"values (%s,%s,%s,%s,%s,%s,%s);",
-				(api_id, filter_id, data["name"], data["params"], data["active"], data["policy_id"], data["bots"]))
+				(data['api_name'], data['filter'], data["name"], data["params"], data["active"], max_id + 1, data["bots"]))
 
 			self.conn.commit()
 			cursor.close()
@@ -400,14 +391,14 @@ class PostgresAPI:
 			self.conn.commit()
 			cursor.close()
 
-			return {"success": True, "data": result}
+			return {"success": True}
 		except psycopg2.Error as error:
 			self.conn.rollback()
 			return {"success": False, "error": error}
 		except Exception as error:
 			self.conn.rollback()
 			return {"success": False, "error": error}
-
+	
 	def update_policy(self, policy_id, params):
 		"""
 		Updates the policy with the specified policy id, changing the params specified.
@@ -420,46 +411,27 @@ class PostgresAPI:
 		"""
 
 		try:
-			cursor = self.conn.cursor()
 
-			api_id = None
 			if 'api_name' in params.keys():
-				cursor.execute(
-					f"SELECT * FROM api WHERE name=\'{params['api_name']}\';")
-				api_existance = cursor.fetchone()
-				if len(api_existance) == 0:
+				if params['api_name'] not in self.api_types:
 					return {"success": False, "error": "Specified API does not exist"}
-				else:
-					api_id = api_existance[0]
 
-			filter_id = None
 			if 'filter' in params.keys():
-				cursor.execute(
-					f"SELECT * FROM filter WHERE name=\'{params['filter']}\';")
-				filter_existance = cursor.fetchone()
-				if len(filter_existance) == 0:
+				if params['filter'] not in self.filters:
 					return {"success": False, "error": "Specified Filter does not exist"}
-				else:
-					filter_id = filter_existance[0]
-
-			if api_id is not None and filter_id is not None:
-				cursor.execute(
-					f"SELECT * FROM filter_api WHERE api_id={api_id} AND filter_id={filter_id};")
-				api_filter_existence = cursor.fetchone()
-				if len(api_filter_existence) == 0:
-					return {"success": False, "error": "Specified API-Filter connection does not exist"}
-
+			
+			cursor = self.conn.cursor()
 			query = f"update policies "
 
 			query += " SET "
 			control = 0
 			if "api_type" in params.keys():
-				query += 'api_type=' + str(api_id)
+				query += f"api_type='{params['api_name']}'"
 				control = 1
 			if "filter" in params.keys():
 				if control == 1:
 					query += " , "
-				query += 'filter=' + str(filter_id)
+				query += f"filter='{params['filter']}'"
 				control = 1
 			if "name" in params.keys():
 				if control == 1:
@@ -476,11 +448,6 @@ class PostgresAPI:
 					query += " , "
 				query += 'active=' + str(params['active'])
 				control = 1
-			if "policy_id" in params.keys():
-				if control == 1:
-					query += " AND "
-				query += 'id_policy=' + str(params['policy_id'])
-				control = 1
 			if "bot_id" in params.keys():
 				if control == 1:
 					query += " , "
@@ -492,7 +459,7 @@ class PostgresAPI:
 			self.conn.commit()
 			cursor.close()
 
-			return {"success": True, "data": result}
+			return {"success": True}
 		except psycopg2.Error as error:
 			self.conn.rollback()
 			return {"success": False, "error": error}
@@ -504,31 +471,35 @@ class PostgresAPI:
 if __name__ == "__main__":
 	# TODO: Test and implement searching by timestamp ; Policies API
 	anal = PostgresAPI()
-	# anal.insert_tweet({"tweet_id": 831606548300517377, "user_id": 6253282, "likes": 100, "retweets": 2})
-	# anal.insert_user({"user_id": 6253283, "followers": 10000, "following": 1234})
-	# for i in anal.search_tweet()["data"]:
-	#   print(i)
+	"""
+	anal.insert_tweet({"tweet_id": 831606548300517377, "user_id": 6253282, "likes": 100, "retweets": 2})
+	anal.insert_user({"user_id": 6253283, "followers": 10000, "following": 1234})
+	for i in anal.search_tweet()["data"]:
+		print(i)
 
-	# for i in anal.search_user()["data"]:
-	#   print(i)
+	for i in anal.search_user()["data"]:
+		print(i)
 
-	# result = anal.search_policies({'api_name': 'Twitter', 'policy_id': 80, 'bot_id': 1129475305444388866}, limit=10)
-	# if result["success"]:
-	#    for i in result["data"]:
-	#        print(i)
-	# else:
-	#   print(result["error"])
-
-	# anal.insert_log({"bot_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
-	# anal.insert_log({"user_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
-
-	# print(anal.insert_policy(
-	#   {'api_name': 'Twitter', 'filter': 'Keywords', 'name': 'Jonas Pistolas found Ded', 'bots': [1129475305444388866],
-	#    'params': ['OMG'], 'active': True, 'policy_id': 421}))
-
-	result = anal.search_policies({'policy_id': 421})
+	result = anal.search_policies({'api_name': 'Twitter', 'policy_id': 80, 'bot_id': 1129475305444388866}, limit=10)
 	if result["success"]:
 		for i in result["data"]:
 			print(i)
 	else:
 		print(result["error"])
+
+	anal.insert_log({"bot_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
+	anal.insert_log({"user_id": 1129475305444388866, "action": "SAVING TWEET (1127597365978959872)"})
+
+	print(anal.insert_policy({'api_name': 'Twitter', 'filter': 'Keywords', 'name': 'Jonas Pistolas found Ded', 
+							'bots': [1129475305444388866], 'params': ['OMG'], 'active': True, 'policy_id': 421}))
+	print(anal.update_policy(421, {'api_name': 'Instagram', 'filter': 'Target'}))
+	
+	result = anal.search_policies({'policy_id': 421})
+	print(result)
+	if result["success"]:
+		for i in result["data"]:
+			print(i)
+	else:
+		print(result["error"])
+	"""
+

@@ -213,7 +213,7 @@ def add_policy(data):
             - name : str
             - tags : str[]
             - bots : int[]
-        Ex: { "API_type": "TWITTER", "filter": "USERNAME", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
+        Ex: { "API_type": "Twitter", "filter": "Instagram", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
     :return: status(boolean), data, message(string)
     """
     try:
@@ -221,7 +221,10 @@ def add_policy(data):
         if not policy_serializer.is_valid():
             return False, policy_serializer.errors, "Dados invalidos!"
 
-        # TODO -> Verificar se os ids dos bots são validos
+        for bot_id in policy_serializer.data['bots']:
+            if not neo4j.check_bot_exists(bot_id):
+                return False, None, "IDs dos bots invalidos"
+
         policy = Policy.objects.create(id=next_id(Policy), **policy_serializer.data)
 
         return True, {'id': policy.id}, "Sucesso a adicionar uma nova politica"
