@@ -22,28 +22,32 @@ def tweet_stats(db):
     return mixer.blend(TweetStats, tweet_id=1)
 
 
-def test_successful_twitter_tweets_stats_request(factory, tweets_stats):
+@catch_exception
+def test_successful_twitter_tweets_stats_request(error_catcher, factory, tweets_stats):
     path = reverse('twitter_tweets_stats')
     request = factory.get(path)
     response = tweets.twitter_tweets_stats(request)
     assert is_response_successful(response)
 
 
-def test_unsuccessfully_twitter_tweets_stats_request(factory, db):
+@catch_exception
+def test_unsuccessfully_twitter_tweets_stats_request(error_catcher, factory, db):
     path = reverse('twitter_tweets_stats')
     request = factory.get(path)
     response = tweets.twitter_tweets_stats(request)
     assert is_response_empty(response)
 
 
-def test_successful_twitter_tweet_stats_request(factory, tweet_stats):
+@catch_exception
+def test_successful_twitter_tweet_stats_request(error_catcher, factory, tweet_stats):
     path = reverse('twitter_tweet_stats', kwargs={'id': 1})
     request = factory.get(path)
     response = tweets.twitter_tweet_stats(request, id=1)
     assert is_response_successful(response)
 
 
-def test_unsuccessfully_twitter_tweet_stats_request(factory, db):
+@catch_exception
+def test_unsuccessfully_twitter_tweet_stats_request(error_catcher, factory, db):
     path = reverse('twitter_tweet_stats', kwargs={'id': 1})
     request = factory.get(path)
     response = tweets.twitter_tweet_stats(request, id=1)

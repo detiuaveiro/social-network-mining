@@ -206,10 +206,12 @@ class PDP:
                  "angelamerkeicdu", "barackobama", "berniesanders", "nicolasmaduro", "vp",
                  "realxi_jinping", "mlp_officiel", "jguaido", "RuiRioPSD", "antoniocostapm",
                  "catarina_mart", "cristasassuncao", "heloisapolonia", "jairbolsonaro"]
+
         while num_users > 0:
             num = random.randint(0, len(users) - 1)
             usernames.append(users[num])
             num_users -= 1
+
         for i in usernames:
             for j in usernames:
                 if i == j:

@@ -1,4 +1,5 @@
 from rest.settings import *
+import os
 
 DATABASE_ROUTERS = ["api.tests.postgresql_tests.postgres_db_router.DB_Router"]
 DATABASES = {
@@ -7,7 +8,7 @@ DATABASES = {
         'NAME': 'twitter_postgres',
         'USER': 'admin',
         'PASSWORD': 'admin',
-        'HOST': 'localhost',
-        'PORT': 5432,
+        'HOST': os.environ['POSTGRES_HOST'],
+        'PORT': os.environ['POSTGRES_PORT'],
     }
 }
