@@ -103,9 +103,21 @@ def test_successful_add_policy_request(error_catcher, factory, policy):
     path = reverse('add_policy')
     data = Policy_serializer(policy).data
     data.pop('id', None)
+    data.pop('tags', ["CDU"])
     request = factory.post(path, data, content_type='application/json')
     response = policies.add_policy(request)
     assert is_response_successful(response) and Policy.objects.filter().count() == 2
+
+
+@catch_exception
+def test_unsuccessfully_add_policy_with_duplicated_params_policies_request(error_catcher, factory, policy):
+    assert add_bot_neo4j()
+    path = reverse('add_policy')
+    data = Policy_serializer(policy).data
+    data.pop('id', None)
+    request = factory.post(path, data, content_type='application/json')
+    response = policies.add_policy(request)
+    assert is_response_unsuccessful(response)
 
 
 @catch_exception
