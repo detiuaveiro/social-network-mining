@@ -19,7 +19,7 @@ class PEP:
 		return self.send_request(message)
 
 	def send_request(self, msg):
-		return msg  # PDP().receive_request(msg)
+		return msg 
 
 	def receive_response(self, msg):
 		# json loads da resposta do PDP
