@@ -238,6 +238,17 @@ class TwitterBot(RabbitMessaging):
 		if not user.protected or (user.protected and user.following):
 			self.__read_timeline(user, jump_users=True)
 
+	def __find_tweet_by_id(self, tweet_id: int) -> Union[Status, None]:
+		"""Function to find and return a tweet for a given id
+
+		:param tweet_id: id of the tweet which we want to find
+		"""
+		try:
+			return self._twitter_api.get_status(tweet_id)
+		except TweepError as error:
+			logger.error(f"Error finding tweet with id <{tweet_id}>: {error}")
+			return None
+
 	def __like_tweet(self, tweet_id: int):
 		"""Function to like a tweet
 
@@ -245,22 +256,43 @@ class TwitterBot(RabbitMessaging):
 		"""
 		logger.info("Starting like tweets routine")
 
-		try:
-			# get the tweet with the id tweet_id
-			tweet: Status = self._twitter_api.get_status(tweet_id)
+		tweet: Status = self.__find_tweet_by_id(tweet_id)
+		if tweet:
+			# read the tweet
+			read_time = virtual_read_wait(tweet.text)
+			logger.debug(f"Read Tweet in {read_time}")
+			try:
+				if tweet.favorited:
+					logger.info(f"Tweet with id <{tweet_id}> already liked, no need to like again")
+				else:
+					logger.info(f"Linking tweet with id <{tweet.id}>")
+					tweet.favorite()
+					self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_LIKED)
+			except Exception as error:
+				logger.error(f"Error liking tweet with id <{tweet_id}>: {error}")
 
+	def __retweet_tweet(self, tweet_id: id):
+		"""Function to retweet a specific tweet, givem the id of that tweet
+
+		:param tweet_id: id of the tweet we want to retweet
+		"""
+		logger.info("Starting routine retweet tweet...")
+
+		tweet: Status = self.__find_tweet_by_id(tweet_id)
+		if tweet:
 			# read the tweet
 			read_time = virtual_read_wait(tweet.text)
 			logger.debug(f"Read Tweet in {read_time}")
 
-			if tweet.favorited:
-				logger.info(f"Tweet with id <{tweet_id}> already liked, no need to like again")
-			else:
-				logger.info(f"Linking tweet with id <{tweet.id}>")
-				tweet.favorite()
-				self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_LIKED)
-		except Exception as error:
-			logger.error(f"Error liking tweet with id <{tweet_id}>: {error}")
+			try:
+				if tweet.retweeted:
+					logger.info(f"Tweet with id <{tweet.id}> already retweeted, no need to retweet again")
+				else:
+					logger.info(f"Retweeting Tweet with id <{tweet.id}>")
+					tweet.retweet()
+					self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_RETWEETED)
+			except Exception as error:
+				logger.error(f"Error retweeting tweet with id <{tweet_id}>: {error}")
 
 	def run(self):
 		"""Bot's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
@@ -284,7 +316,7 @@ class TwitterBot(RabbitMessaging):
 					elif task_type == messages_types.ServerToBot.LIKE_TWEETS:
 						self.__like_tweet(task_params)
 					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
-						pass
+						self.__retweet_tweet(task_params)
 					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
 						pass
 					elif task_type == messages_types.ServerToBot.FIND_FOLLOWERS:
