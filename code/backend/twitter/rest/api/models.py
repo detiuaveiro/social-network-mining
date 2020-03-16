@@ -62,7 +62,7 @@ class Policy(models.Model):
     id = models.IntegerField(primary_key=True, db_column="id_policy")
     API_type = models.TextField(db_column="api_type")
     filter = models.TextField()
-    name = models.TextField()
+    name = models.TextField(unique=True)  # alter table policies add constraint unique_name unique(name);
     tags = ArrayField(models.TextField(), db_column="params")
     bots = ArrayField(models.BigIntegerField())
     active = models.BooleanField(default=False)

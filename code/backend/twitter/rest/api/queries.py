@@ -248,7 +248,7 @@ def add_policy(data):
         return False, None, str(e)
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {add_policy.__name__} -> {e}")
-        return False, None, "Erro ao adicionar uma nova politica"
+        return False, None, f"Erro ao adicionar uma nova politica->{e}"
 
 
 def remove_policy(id):
