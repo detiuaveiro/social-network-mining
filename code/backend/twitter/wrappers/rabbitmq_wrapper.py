@@ -1,6 +1,7 @@
 import pika
 import time
 import logging
+import json
 from credentials import *
 
 log = logging.getLogger('Rabbit')
@@ -150,9 +151,9 @@ class Rabbitmq:
             log.warning("Exception detected: {0}".format(e))
             log.warning("Attempting reconnection after waiting time...")
             time.sleep(WAIT_TIME)
-            self._setup()
+            self.__setup()
             log.debug("Setup completed")
-            self.receive(queue_name)
+            self._receive(queue_name)
 
     def received_message_handler(self, channel, method, properties, body):
         """Function to rewrite on the class that inherits this class
