@@ -34,7 +34,8 @@ def add_relationship(id_1, id_2):
     return neo4j.check_relationship_exists({"id_1": id_1, "id_2": id_2, "type_1": "Bot", "type_2": "Bot"})
 
 
-def test_successful_twitter_user_followers_request(factory):
+@catch_exception
+def test_successful_twitter_user_followers_request(error_catcher, factory):
     assert add_bot_neo4j([1, 2]) and add_relationship(2, 1)
     path = reverse('twitter_user_followers', kwargs={'id': 1})
     request = factory.get(path)
@@ -42,14 +43,16 @@ def test_successful_twitter_user_followers_request(factory):
     assert is_response_successful(response)
 
 
-def test_unsuccessfully_twitter_user_followers_request(factory):
+@catch_exception
+def test_unsuccessfully_twitter_user_followers_request(error_catcher, factory):
     path = reverse('twitter_user_followers', kwargs={'id': 1})
     request = factory.get(path)
     response = users.twitter_user_followers(request, id=1)
     assert is_response_unsuccessful(response)
 
 
-def test_successful_twitter_user_following_request(factory):
+@catch_exception
+def test_successful_twitter_user_following_request(error_catcher, factory):
     assert add_bot_neo4j([1, 2]) and add_relationship(1, 2)
     path = reverse('twitter_user_following', kwargs={'id': 1})
     request = factory.get(path)
@@ -57,7 +60,8 @@ def test_successful_twitter_user_following_request(factory):
     assert is_response_successful(response)
 
 
-def test_unsuccessfully_twitter_user_following_request(factory):
+@catch_exception
+def test_unsuccessfully_twitter_user_following_request(error_catcher, factory):
     path = reverse('twitter_user_following', kwargs={'id': 1})
     request = factory.get(path)
     response = users.twitter_user_following(request, id=1)

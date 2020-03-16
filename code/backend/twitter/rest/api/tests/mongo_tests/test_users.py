@@ -28,46 +28,49 @@ def tweet(db):
     return mixer.blend(Tweet, user=1)
 
 
-def test_successful_twitter_users_request(factory, users_list):
+@catch_exception
+def test_successful_twitter_users_request(error_catcher, factory, users_list):
     path = reverse('twitter_users')
     request = factory.get(path)
     response = users.twitter_users(request)
     assert is_response_successful(response)
 
 
-def test_unsuccessfully_twitter_users_request(factory, db):
+@catch_exception
+def test_unsuccessfully_twitter_users_request(error_catcher, factory, db):
     path = reverse('twitter_users')
     request = factory.get(path)
     response = users.twitter_users(request)
     assert is_response_empty(response)
 
 
-def test_successful_twitter_user_request(factory, user):
+@catch_exception
+def test_successful_twitter_user_request(error_catcher, factory, user):
     path = reverse('twitter_user', kwargs={'id': 1})
     request = factory.get(path)
     response = users.twitter_user(request, id=1)
     assert is_response_successful(response)
 
 
-def test_unsuccessfully_twitter_user_request(factory, db):
+@catch_exception
+def test_unsuccessfully_twitter_user_request(error_catcher, factory, db):
     path = reverse('twitter_user', kwargs={'id': 1})
     request = factory.get(path)
     response = users.twitter_user(request, id=1)
     assert is_response_unsuccessful(response)
 
 
-def test_successful_twitter_user_tweets_request(factory, tweet):
+@catch_exception
+def test_successful_twitter_user_tweets_request(error_catcher, factory, tweet):
     path = reverse('twitter_user_tweets', kwargs={'id': 1})
     request = factory.get(path)
     response = users.twitter_user_tweets(request, id=1)
     assert is_response_successful(response)
 
 
-def test_unsuccessfully_twitter_user_tweets_request(factory, db):
+@catch_exception
+def test_unsuccessfully_twitter_user_tweets_request(error_catcher, factory, db):
     path = reverse('twitter_user_tweets', kwargs={'id': 1})
     request = factory.get(path)
     response = users.twitter_user_tweets(request, id=1)
     assert is_response_empty(response)
-
-
-
