@@ -1,22 +1,18 @@
 import pika
-import json
-import logging
-import sys
 import time
-from dbwriter import *
-sys.path.append('..')
+import logging
 from credentials import *
 
 log = logging.getLogger('Rabbit')
 log.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
+handler = logging.StreamHandler(open("rabbitmq.log", "w"))
 handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
 
 WAIT_TIME = 10
 
 
-class Rabbitmq():
+class Rabbitmq:
     """Class representing Rabbit MQ"""
 
     def __init__(self, host=RABBITMQ_URL, port=RABBITMQ_PORT, vhost=RABBITMQ_VHOST, username=RABBITMQ_USERNAME,
@@ -53,9 +49,9 @@ class Rabbitmq():
         self.MAX_RECONNECTIONS = 10
         self.connection = None
         self.channel = None
-        self._setup()
+        self.__setup()
     
-    def _setup(self):
+    def __setup(self):
         """
         Set up function, will start the connection, create all necessary exchanges and respective bindings from the
         parameters given from the constructor
@@ -112,12 +108,9 @@ class Rabbitmq():
             routing_key=QUERIES_RK
         )
         
-        # Implement a task manager
-        self.database_writer = DBWriter()
-
         log.info("Connection to Rabbit Established")
 
-    def send(self, routing_key, message):
+    def _send(self, routing_key, message):
         """ 
         Routes the message to corresponding channel
 
@@ -133,7 +126,7 @@ class Rabbitmq():
             body=json.dumps(message)
         )
 
-    def receive(self, queue_name='API'):
+    def _receive(self, queue_name='API'):
         """
         Receives messages and puts them in the queue given from the argument
 
@@ -150,7 +143,7 @@ class Rabbitmq():
             
             log.info(" [*] Waiting for Messages. To exit press CTRL+C")
 
-            self.channel.basic_consume(queue=queue_name, on_message_callback=self._callback, auto_ack=True)
+            self.channel.basic_consume(queue=queue_name, on_message_callback=self.received_message_handler, auto_ack=True)
             self.channel.start_consuming()
 
         except Exception as e:
@@ -161,19 +154,13 @@ class Rabbitmq():
             log.debug("Setup completed")
             self.receive(queue_name)
 
-    def _callback(self, channel, method, properties, body):
-        log.info("MESSAGE RECEIVED")
-        message = json.loads(body)
-        self.database_writer.action(message)
+    def received_message_handler(self, channel, method, properties, body):
+        """Function to rewrite on the class that inherits this class
+        """
+        pass
 
-    def close(self):
+    def _close(self):
         """
         Close the connection with the Rabbit MQ server
         """
         self.connection.close()
-
-
-if __name__ == "__main__":
-    rabbit = Rabbitmq()
-    rabbit.receive()
-    rabbit.close()

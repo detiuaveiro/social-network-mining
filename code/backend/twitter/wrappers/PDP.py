@@ -307,13 +307,13 @@ class PDP:
 
 		heuristic_value = 0
 		# Verify if there's a relation between the bot and the user
-		type1 = "BOT" if self.neo4j.check_bot_exists(data["bot_id"]) else "USER"
-		type2 = "BOT" if self.neo4j.check_bot_exists(data["user_id"]) else "USER"
+		type1 = "Bot" if self.neo4j.check_bot_exists(data["bot_id"]) else "User"
+		type2 = "Bot" if self.neo4j.check_bot_exists(data["user_id"]) else "User"
 		relation_exists = self.neo4j.check_relationship_exists({
 			"id_1": data["bot_id"],
-			"type1": type1,
+			"type_1": type1,
 			"id_2": data["user_id"],
-			"type2": type2
+			"type_2": type2
 		})
 
 		# Next we check if the bot and the user have some policies in common

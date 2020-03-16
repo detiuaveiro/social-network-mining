@@ -1,23 +1,21 @@
+import json
 import logging
-import sys
 from mongo_wrapper import MongoAPI
 from neo4j_wrapper import Neo4jAPI
 from postgresql_wrapper import PostgresAPI
 from enums import *
-from rabbitmq import *
-
-sys.path.append("../policies/")
+from rabbitmq_wrapper import Rabbitmq
 from PEP import PEP
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
+handler = logging.StreamHandler(open("logger.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
 
 
-class DBWriter:
+class DBWriter(Rabbitmq):
 	"""
 	Class to smulate the behaviour of a bot:
 	On receiving a message from a message broker, this class will act accordingly
@@ -27,6 +25,8 @@ class DBWriter:
 		"""
 		This will start instaces for all the DB's API
 		"""
+
+		super().__init__()
 
 		self.postgress_client = PostgresAPI()
 		self.mongo_client = MongoAPI()
@@ -155,6 +155,7 @@ class DBWriter:
 			"action": f"REQUEST LIKE: {data['bot_id']} and {data['data']['id']} \
 			for tweet {data['data']['id']}"
 		})
+
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_LIKE,
 			"bot_id": data['bot_id'],
@@ -515,12 +516,19 @@ class DBWriter:
 			"params": params
 		}
 		try:
-			conn = Rabbitmq()
-			conn.send(routing_key='tasks.twitter.' + str(bot), message=payload)
-			conn.close()
+			self._send(routing_key='tasks.twitter.' + str(bot), message=payload)
+			# self._close()
 		except Exception as e:
-			log.error("FAILED TO SEND MESSAGE:")
-			log.error("Error: " + str(e))
+			log.error(f"FAILED TO SEND MESSAGE: {e}")
+
+	def received_message_handler(self, channel, method, properties, body):
+		log.info("MESSAGE RECEIVED")
+		message = json.loads(body)
+		self.action(message)
+
+	def run(self):
+		self._receive()
+		self._close()
 
 	def close(self):
 		self.neo4j_client.close()
@@ -528,132 +536,6 @@ class DBWriter:
 
 
 if __name__ == "__main__":
-
-	dbwriter = DBWriter()
-
-	tweet = {
-		"id": 8912323,
-		"text": "RT @nbastats: HISTORY!\n\nSteph Curry and Draymond Green become the first teammates in @NBAHistory \
-		to both record a triple-double in the same…",
-		"truncated": False,
-		"entities": {
-			"hashtags": [],
-			"symbols": [],
-			"user_mentions": [	],
-			"urls": []
-		},
-		"source": "<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
-		"in_reply_to_status_id": None,
-		"in_reply_to_user_id": None,
-		"in_reply_to_screen_name": None,
-		"user": 874358,
-		"is_quote_status": False,
-		"retweet_count": 564,
-		"favorite_count": 0,
-		"lang": "en"
-	}
-
-	dbwriter.save_tweet({
-		"bot_id": 874358,
-		"data": tweet
-	})
-
-	dbwriter.request_tweet_like({
-		"bot_id": 874358,
-		"data": tweet
-	})
-
-	dbwriter.request_follow_user({
-		"bot_id": 874358,
-		"data": {
-			"id": 318689
-		}
-	})
-
-	dbwriter.save_dm({
-		"bot_id": 318689,
-		"data": [{
-			"id": 12345432123,
-			"text": "ola, my first tweet",
-			"user": 123234
-		}]
-	})
-
-	dbwriter.follow_user({
-		"bot_id": 318689,
-		"data": {
-			"id": 123234
-		}
-	})
-	dbwriter.save_user({
-		"bot_id": 874358,
-		"data": {
-			"id": 874358,
-			"name": "abc xyz",
-			"screen_name": "ina",
-			"location": "ygo",
-			"description": "fusion monster",
-			"followers_count": 0,
-			"friends_count": 0
-		}
-	})
-
-	dbwriter.save_user({
-		"bot_id": 318689,
-		"data": {
-			"id": 318689,
-			"name": "abc",
-			"screen_name": "buster dragon",
-			"location": "ygo",
-			"description": "fusion monster",
-			"followers_count": 0,
-			"friends_count": 0
-		}
-	})
-	dbwriter.save_user({
-		"bot_id": 31868,
-		"data": {
-			"id": 31868,
-			"name": "abc",
-			"screen_name": "buster dragon",
-			"location": "ygo",
-			"description": "fusion monster",
-			"followers_count": 0,
-			"friends_count": 0
-		}
-	})
-	dbwriter.save_user({
-		"bot_id": 318689,
-		"data": {
-			"id": 123234,
-			"name": "xyz",
-			"screen_name": "the other one",
-			"location": "ygo",
-			"description": "fusion monster",
-			"followers_count": 0,
-			"friends_count": 0
-		}
-	})
-
-	dbwriter.follow_user({
-		"bot_id": 318689,
-		"data": {
-			"id": 123234
-		}
-	})
-
-	dbwriter.follow_user({
-		"bot_id": 875358,
-		"data": {
-			"id": 123234
-		}
-	})
-
-	dbwriter.find_followers({
-		"bot_id": 318689,
-		"data": {
-			"123234": [875358]
-		}
-	})
-
-	dbwriter.close()
+	control_center = DBWriter()
+	control_center.run()
+	control_center.close()

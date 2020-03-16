@@ -29,7 +29,7 @@ ACCOUNT_SUSPENDED_ERROR_CODES = [63, 64, 326]
 # Tweepy settings
 # -----------------------------------------------------------
 
-MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE = 1
+MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE = 10
 
 
 # -----------------------------------------------------------

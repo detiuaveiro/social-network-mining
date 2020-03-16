@@ -12,6 +12,10 @@ from utils import *
 
 logger = logging.getLogger("bot-agents")
 logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(open("bot_agens.log", "w"))
+handler.setFormatter(logging.Formatter(
+	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+logger.addHandler(handler)
 
 
 class TwitterBot(RabbitMessaging):
@@ -55,6 +59,21 @@ class TwitterBot(RabbitMessaging):
 			'data': data
 		}), exchange)
 
+	def __send_user(self, user: User):
+		"""Function to send a twitter's User object to the server
+
+		:param user: user to send
+		"""
+		logger.debug(f"Sending {user}")
+		self.__send_data(user._json, messages_types.BotToServer.SAVE_USER)
+
+	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
+		logger.debug(f"Sending {tweet}")
+
+		tweet_to_send = tweet._json.copy()
+		tweet_to_send['user'] = tweet_to_send['user']['id']
+		self.__send_data(tweet_to_send, message_type)
+
 	def __send_data(self, data, message_type: messages_types.BotToServer):
 		self.__send_message(data, message_type, DATA_EXCHANGE)
 
@@ -90,14 +109,6 @@ class TwitterBot(RabbitMessaging):
 		# ver porque não está a dar (o twitter não está a deixar aceder)
 		# self.__direct_messages()
 
-	def __send_user(self, user: User):
-		"""Function to send a twitter's User object to the server
-
-		:param user: user to send
-		"""
-		logger.debug(f"Sending {user}")
-		self.__send_data(to_json(user._json), messages_types.BotToServer.SAVE_USER)
-
 	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
 		"""Function to get the 20 (default) most recent tweets (including retweets) from some user
 
@@ -131,9 +142,7 @@ class TwitterBot(RabbitMessaging):
 
 		total_read_time = 0
 		for tweet in tweets:
-			tweet_json = to_json(tweet._json)
-
-			self.__send_data(tweet_json, messages_types.BotToServer.SAVE_TWEET)
+			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
 
 			total_read_time += virtual_read_wait(tweet.text)
 
@@ -143,9 +152,9 @@ class TwitterBot(RabbitMessaging):
 
 			# Processing the tweet regarding liking/retweeting
 			if not tweet.favorited:
-				self.__send_query(tweet_json, messages_types.BotToServer.QUERY_TWEET_LIKE)
+				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_LIKE)
 			if not tweet.retweeted:
-				self.__send_query(tweet_json, messages_types.BotToServer.QUERY_TWEET_RETWEET)
+				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_RETWEET)
 
 			if not jump_users:
 				tweet_user = tweet.user
@@ -205,7 +214,7 @@ class TwitterBot(RabbitMessaging):
 					# TODO -> VER O QUE FAZER NESTA SITUAÇÃO
 					wait(5)
 			except Exception as error:
-				logger.error(f"{current_time(str_time=True)}: Error on bot's loop: {error}")
+				logger.error(f"Error on bot's loop: {error}")
 				exit(1)
 
 	def __follow_users_routine(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
@@ -213,8 +222,11 @@ class TwitterBot(RabbitMessaging):
 
 
 if __name__ == "__main__":
+	bot_id = 1103294806497902594
+
 	messaging_settings = {
-		TASKS_EXCHANGE: MessagingSettings(TASKS_EXCHANGE, TASKS_QUEUE_PREFIX, TASKS_ROUTING_KEY_PREFIX),
+		TASKS_EXCHANGE: MessagingSettings(exchange=TASKS_EXCHANGE, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}.{bot_id}",
+										  queue=f"{TASKS_QUEUE_PREFIX}-{bot_id}"),
 		LOG_EXCHANGE: MessagingSettings(exchange=LOG_EXCHANGE, routing_key=LOG_ROUTING_KEY),
 		QUERY_EXCHANGE: MessagingSettings(exchange=QUERY_EXCHANGE, routing_key=QUERY_ROUTING_KEY),
 		DATA_EXCHANGE: MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY)
@@ -231,6 +243,6 @@ if __name__ == "__main__":
 
 	twitter_auth = tweepy.OAuthHandler(consumer_key=consumer_key, consumer_secret=consumer_secret)
 	twitter_auth.set_access_token(key=token, secret=token_secret)
-	bot = TwitterBot("localhost:15672", RABBIT_USERNAME, RABBIT_PASSWORD, VHOST, messaging_settings, 1,
+	bot = TwitterBot("localhost:15672", RABBIT_USERNAME, RABBIT_PASSWORD, VHOST, messaging_settings, bot_id,
 					 tweepy.API(auth_handler=twitter_auth, wait_on_rate_limit=True))
 	bot.run()
