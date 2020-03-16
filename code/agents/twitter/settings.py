@@ -30,7 +30,7 @@ FOLLOW_USER_ERROR_CODE = 161
 # Tweepy settings
 # -----------------------------------------------------------
 
-MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE = 1
+MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE = 3
 
 
 # -----------------------------------------------------------

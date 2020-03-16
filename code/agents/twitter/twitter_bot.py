@@ -45,6 +45,11 @@ class TwitterBot(RabbitMessaging):
 
 			self._messaging.publish(vhost=VHOST, xname=LOG_EXCHANGE, rt_key=LOG_ROUTING_KEY, payload=to_json(data))
 
+	def __get_tweet_dict(self, tweet: Status):
+		tweet_dict = tweet._json.copy()
+		tweet_dict['user'] = tweet_dict['user']['id']
+		return tweet_dict
+
 	def __send_message(self, data, message_type: messages_types.BotToServer, exchange):
 		"""Function to send a new message to the server throw rabbitMQ
 
@@ -69,10 +74,7 @@ class TwitterBot(RabbitMessaging):
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
 		logger.debug(f"Sending {tweet}")
-
-		tweet_to_send = tweet._json.copy()
-		tweet_to_send['user'] = tweet_to_send['user']['id']
-		self.__send_data(tweet_to_send, message_type)
+		self.__send_data(self.__get_tweet_dict(tweet), message_type)
 
 	def __send_data(self, data, message_type: messages_types.BotToServer):
 		self.__send_message(data, message_type, DATA_EXCHANGE)
@@ -236,6 +238,30 @@ class TwitterBot(RabbitMessaging):
 		if not user.protected or (user.protected and user.following):
 			self.__read_timeline(user, jump_users=True)
 
+	def __like_tweet(self, tweet_id: int):
+		"""Function to like a tweet
+
+		:param tweet_id: id of the tweet which we want to give a like
+		"""
+		logger.info("Starting like tweets routine")
+
+		try:
+			# get the tweet with the id tweet_id
+			tweet: Status = self._twitter_api.get_status(tweet_id)
+
+			# read the tweet
+			read_time = virtual_read_wait(tweet.text)
+			logger.debug(f"Read Tweet in {read_time}")
+
+			if tweet.favorited:
+				logger.info(f"Tweet with id <{tweet_id}> already liked, no need to like again")
+			else:
+				logger.info(f"Linking tweet with id <{tweet.id}>")
+				tweet.favorite()
+				self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_LIKED)
+		except Exception as error:
+			logger.error(f"Error liking tweet with id <{tweet_id}>: {error}")
+
 	def run(self):
 		"""Bot's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
 			task, does a different action
@@ -256,7 +282,7 @@ class TwitterBot(RabbitMessaging):
 					elif task_type == messages_types.ServerToBot.FOLLOW_USERS:
 						self.__follow_users(id_type=task_params['type'], data=task_params['data'])
 					elif task_type == messages_types.ServerToBot.LIKE_TWEETS:
-						pass
+						self.__like_tweet(task_params)
 					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
 						pass
 					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
