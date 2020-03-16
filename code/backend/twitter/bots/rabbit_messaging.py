@@ -1,10 +1,11 @@
 import logging
 import json
 from typing import Dict, List
+
 from pyrabbit2.http import NetworkError
 from pyrabbit2.api import Client
 
-from utils import current_time, from_json
+from bots.utils import current_time, from_json
 
 logger = logging.getLogger("rabbit-messaging")
 logger.setLevel(logging.DEBUG)

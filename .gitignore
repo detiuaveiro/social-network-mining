@@ -66,6 +66,7 @@ ENV/
 env.bak/
 venv.bak/
 venv_cc/
+venv_bots/
 
 # Editors
 .vscode/

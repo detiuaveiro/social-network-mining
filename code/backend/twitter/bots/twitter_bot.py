@@ -1,18 +1,18 @@
 import logging
-from typing import List, Dict, Union
+from typing import List, Union
 
 import tweepy
 from tweepy.error import TweepError
-from tweepy.models import User, Status, ResultSet
+from tweepy.models import User, Status
 
-import messages_types
-from rabbit_messaging import RabbitMessaging, MessagingSettings
-from settings import *
-from utils import *
+import bots.messages_types as messages_types
+from bots.rabbit_messaging import RabbitMessaging, MessagingSettings
+from bots.settings import *
+from bots.utils import *
 
 logger = logging.getLogger("bot-agents")
 logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(open("bot_agens.log", "w"))
+handler = logging.StreamHandler(open("bot_agent.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 logger.addHandler(handler)
@@ -354,30 +354,3 @@ class TwitterBot(RabbitMessaging):
 			except Exception as error:
 				logger.error(f"Error on bot's loop: {error}")
 				# exit(1)
-
-
-if __name__ == "__main__":
-	bot_id = 1103294806497902594
-
-	messaging_settings = {
-		TASKS_EXCHANGE: MessagingSettings(exchange=TASKS_EXCHANGE, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}.{bot_id}",
-										  queue=f"{TASKS_QUEUE_PREFIX}-{bot_id}"),
-		LOG_EXCHANGE: MessagingSettings(exchange=LOG_EXCHANGE, routing_key=LOG_ROUTING_KEY),
-		QUERY_EXCHANGE: MessagingSettings(exchange=QUERY_EXCHANGE, routing_key=QUERY_ROUTING_KEY),
-		DATA_EXCHANGE: MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY)
-	}
-
-	# consumer_key = "yqoymTNrS9ZDGsBnlFhIuw"
-	# consumer_secret = "OMai1whT3sT3XMskI7DZ7xiju5i5rAYJnxSEHaKYvEs"
-	# token = "1097916541830680576-RWAa8hM2tkGMXQWaa0Bg5sDYTFD0oV"
-	# token_secret = "bYyREitpd1J1wr758FMwmk7TI5KHyMEomEv80jgecJUVL"
-	consumer_key = "vP8ULCHpJYTcRRfNqiVHLLemC"
-	consumer_secret = "e3C7OtUlMh3VxEi0Bx038bv9hCKwYGFgbH7dnsLNpvpUL4SWy4"
-	token = "1103294806497902594-Q90yPSULqg27zcWjLSZ99ZSzgGyQYP"
-	token_secret = "iaK1qYJEtYNAx5Npv90VZB0bkPjaLojOXD5HuJrZCAfsb"
-
-	twitter_auth = tweepy.OAuthHandler(consumer_key=consumer_key, consumer_secret=consumer_secret)
-	twitter_auth.set_access_token(key=token, secret=token_secret)
-	bot = TwitterBot("localhost:15672", RABBIT_USERNAME, RABBIT_PASSWORD, VHOST, messaging_settings, bot_id,
-					 tweepy.API(auth_handler=twitter_auth, wait_on_rate_limit=True))
-	bot.run()
