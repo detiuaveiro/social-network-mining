@@ -3,7 +3,7 @@ import json
 import logging
 import sys
 import time
-from dbwriter import DBWriter
+from dbwriter import *
 sys.path.append('..')
 from credentials import *
 
@@ -64,30 +64,30 @@ class Rabbitmq():
         self.connection = pika.BlockingConnection(self.pika_parameters)
 
         self.channel = self.connection.channel()
-        self.channel.queue_declare(queue='API', durable=True)
+        self.channel.queue_declare(queue=API_QUEUE, durable=True)
 
         # Declare Exchanges
         log.info("Declaring exchanges")
         self.channel.exchange_declare(
-            exchange='task_deliver',
+            exchange=TT_TASK_DELIVER,
             exchange_type='direct',
             durable=True
         )
 
         self.channel.exchange_declare(
-            exchange='twitter_data',
+            exchange=TT_DATA_EXCHANGE,
             exchange_type='direct',
             durable=True
         )
 
         self.channel.exchange_declare(
-            exchange='logs',
+            exchange=TT_LOGS,
             exchange_type='direct',
             durable=True
         )
 
         self.channel.exchange_declare(
-            exchange='queries',
+            exchange=TT_QUERIES,
             exchange_type='direct',
             durable=True
         )
@@ -95,27 +95,21 @@ class Rabbitmq():
         # Create Bindings
         log.info("Creating bindings")
         self.channel.queue_bind(
-            exchange='data',
-            queue="API",
-            routing_key="data.twitter"
-        )
-        
-        self.channel.queue_bind(
-            exchange="twitter_data",
-            queue="API",
-            routing_key='data.twitter'
+            exchange=TT_DATA_EXCHANGE,
+            queue=API_QUEUE,
+            routing_key=DATA_RK
         )
 
         self.channel.queue_bind(
-            exchange="logs",
-            queue="API",
-            routing_key='logs.twitter'
+            exchange=TT_LOGS,
+            queue=API_QUEUE,
+            routing_key=LOGS_RK
         )
 
         self.channel.queue_bind(
-            exchange="queries",
-            queue="API",
-            routing_key='queries.twitter'
+            exchange=TT_QUERIES,
+            queue=API_QUEUE,
+            routing_key=QUERIES_RK
         )
         
         # Implement a task manager
@@ -155,13 +149,8 @@ class Rabbitmq():
             )
             
             log.info(" [*] Waiting for Messages. To exit press CTRL+C")
-            
-            def callback(channel, method, properties, body):
-                log.info("MESSAGE RECEIVED")            
-                message = json.loads(body)
-                self.database_writer.action(message)
 
-            self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+            self.channel.basic_consume(queue=queue_name, on_message_callback=self._callback, auto_ack=True)
             self.channel.start_consuming()
 
         except Exception as e:
@@ -171,7 +160,12 @@ class Rabbitmq():
             self._setup()
             log.debug("Setup completed")
             self.receive(queue_name)
-    
+
+    def _callback(self, channel, method, properties, body):
+        log.info("MESSAGE RECEIVED")
+        message = json.loads(body)
+        self.database_writer.action(message)
+
     def close(self):
         """
         Close the connection with the Rabbit MQ server

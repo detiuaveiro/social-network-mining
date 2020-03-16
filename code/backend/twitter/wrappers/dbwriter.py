@@ -1,12 +1,13 @@
-from PEP import PEP
 import logging
 import sys
 from mongo_wrapper import MongoAPI
 from neo4j_wrapper import Neo4jAPI
 from postgresql_wrapper import PostgresAPI
 from enums import *
+from rabbitmq import *
 
 sys.path.append("../policies/")
+from PEP import PEP
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.INFO)
@@ -515,10 +516,11 @@ class DBWriter:
 		}
 		try:
 			conn = Rabbitmq()
-			conn.send(routing_key='tasks.twitter.' + bot_id, message=payload)
+			conn.send(routing_key='tasks.twitter.' + str(bot), message=payload)
 			conn.close()
-		except:
+		except Exception as e:
 			log.error("FAILED TO SEND MESSAGE:")
+			log.error("Error: " + str(e))
 
 	def close(self):
 		self.neo4j_client.close()

@@ -47,10 +47,35 @@ jobs:
               echo $r
               pip install --user -r $r
             done
-      - name: Run rest api tests
+      - name: Run Mongo tests
         run: |
             cd code/backend/twitter/rest
-            ./run_tests.sh
+            echo "Running Mongo tests..."
+            python -m pytest api/tests/mongo_tests/* -x -o DJANGO_SETTINGS_MODULE=rest.mongodb_test_settings --create-db
+        env:
+          POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+          POSTGRES_HOST: postgres
+          MONGO_PORT: ${{ job.services.mongo.ports[27017] }}
+          MONGO_HOST: mongo
+          NEO4J_PORT: ${{ job.services.neo4j.ports[7687] }}
+
+      - name: Run Postgres tests
+        run: |
+            cd code/backend/twitter/rest
+            echo "Running Postgres tests..."
+            python -m pytest api/tests/postgresql_tests/* -x -o DJANGO_SETTINGS_MODULE=rest.postgres_test_settings  --create-db
+        env:
+          POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+          POSTGRES_HOST: postgres
+          MONGO_PORT: ${{ job.services.mongo.ports[27017] }}
+          MONGO_HOST: mongo
+          NEO4J_PORT: ${{ job.services.neo4j.ports[7687] }}
+      
+      - name: Run Neo4j tests
+        run: |
+            cd code/backend/twitter/rest
+            echo "Running Neo4j tests..."
+            python -m pytest api/tests/neo4j_tests/* -x -o DJANGO_SETTINGS_MODULE=rest.settings --create-db
         env:
           POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
           POSTGRES_HOST: postgres

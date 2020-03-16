@@ -152,7 +152,7 @@ def instagram_policies(_):
     success_messages = []
     status = HTTP_200_OK
 
-    success, data, message = queries.policy_by_service("INSTAGRAM")
+    success, data, message = queries.policy_by_service("Instagram")
     if success:
         success_messages.append(message)
     else:
@@ -174,7 +174,7 @@ def twitter_policies(_):
     success_messages = []
     status = HTTP_200_OK
 
-    success, data, message = queries.policy_by_service("TWITTER")
+    success, data, message = queries.policy_by_service("Twitter")
     if success:
         success_messages.append(message)
     else:
