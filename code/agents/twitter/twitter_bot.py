@@ -80,6 +80,9 @@ class TwitterBot(RabbitMessaging):
 	def __send_query(self, data, message_type: messages_types.BotToServer):
 		self.__send_message(data, message_type, QUERY_EXCHANGE)
 
+	def __send_event(self, data, message_type: messages_types.BotToServer):
+		self.__send_message(data, message_type, LOG_EXCHANGE)
+
 	def __receive_message(self):
 		"""Function to consume a new message from the tasks's queue
 		"""
@@ -180,6 +183,59 @@ class TwitterBot(RabbitMessaging):
 		messages = self._twitter_api.list_direct_messages()
 		self.__send_data(messages, messages_types.BotToServer.SAVE_DIRECT_MESSAGES)
 
+	def __follow_users(self, id_type: str, data: List[Union[str, int]]):
+		"""Function to follow a specific group of users
+
+		:param id_type: user's identification type (can have the value id (numerical identification), or screen_name
+			(string identification)
+		:param data: list of the user's identifications to follow
+		"""
+		logger.info("Starting follow users routine")
+
+		if id_type == "id":
+			id_type = "user_id"
+
+		for user_id in data:
+			logger.info(f"Searching for User object identified by [{id_type}] with <{user_id}>")
+
+			try:
+				arg_param = {
+					id_type: user_id
+				}
+				user: User = self._twitter_api.get_user(**arg_param)
+
+				if user:
+					logger.info(f"Found user: {user}")
+					self.__follow_user(user)
+			except TweepError as error:
+				logger.error(f"Unable to find user identified by [{id_type}] with <{user_id}>: {error}")
+
+	def __follow_user(self, user: User):
+		"""Function to follow a specific user. It sends the user to the server and then, if the bot doesn't follow the
+			user, it tries to follow the user. At last, it reads the user's tweets timeline and sends it to the server
+
+		:param user: user to follow
+		"""
+		logger.info(f"Following user <{user}>")
+
+		self.__send_user(user)
+
+		if not user.following:
+			virtual_read_wait(user.description)
+
+			try:
+				user.follow()
+				logger.info(f"Followed User tih id <{user.id}>")
+				self.__send_event(user._json, messages_types.BotToServer.EVENT_USER_FOLLOWED)
+			except TweepError as error:
+				if error.api_code == FOLLOW_USER_ERROR_CODE:
+					logger.error(f"Unable to follow User with id <{user.id}>: {error}")
+				else:
+					logger.error(f"Error with api_code={error.api_code}: {error}")
+
+		if not user.protected or (user.protected and user.following):
+			self.__read_timeline(user, jump_users=True)
+
 	def run(self):
 		"""Bot's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
 			task, does a different action
@@ -191,11 +247,15 @@ class TwitterBot(RabbitMessaging):
 				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")
 				task = self.__receive_message()
 
+				self.__follow_users("screen_name", ["cristiano"])
+
 				if task:
 					task_type, task_params = task['type'], task['params']
 					logger.debug(f"Received task <{task}>")
 
 					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
+						logger.warning(f"Not processing {messages_types.ServerToBot.FIND_BY_KEYWORDS} with {task_params}")
+					elif task_type == messages_types.ServerToBot.FOLLOW_USERS:
 						pass
 					elif task_type == messages_types.ServerToBot.LIKE_TWEETS:
 						pass
@@ -216,9 +276,6 @@ class TwitterBot(RabbitMessaging):
 			except Exception as error:
 				logger.error(f"Error on bot's loop: {error}")
 				exit(1)
-
-	def __follow_users_routine(self, params: Dict[str, Union[str, List[Union[str, int]]]]):
-		pass
 
 
 if __name__ == "__main__":

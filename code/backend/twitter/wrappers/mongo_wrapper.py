@@ -176,7 +176,7 @@ class MongoAPI:
 
             return
 
-        try:
+        # try:
             if fields:
                 projection = {"_id": False}
                 for i in fields:
@@ -187,6 +187,7 @@ class MongoAPI:
             log.debug(query)
             log.debug(projection)
 
+            result = None
             if single:
                 if collection == "tweets":
                     result = list(self.tweets.find_one(query, projection))
@@ -207,9 +208,9 @@ class MongoAPI:
                 return self.__export_data(result, export_type)
 
             return result
-        except Exception as e:
-            log.error("ERROR SEARCHING FOR DOCUMENT")
-            log.error("Error: " + str(e))
+        # except Exception as e:
+        #     log.error("ERROR SEARCHING FOR DOCUMENT")
+        #     log.error("Error: " + str(e))
 
     def __export_data(self, data, export_type):
         """Exports a given array of documents into a csv or json

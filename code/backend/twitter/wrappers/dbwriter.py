@@ -9,7 +9,7 @@ from PEP import PEP
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.INFO)
-handler = logging.StreamHandler(open("logger.log", "w"))
+handler = logging.StreamHandler(open("dbwritter.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
@@ -299,8 +299,13 @@ class DBWriter(Rabbitmq):
 				"action": f"FOLLOW REQUEST ACCEPTED: {data['bot_id']} and {data['data']['id']}"
 			})
 			self.send(
-				data['bot_id'], ResponseTypes.FOLLOW_USERS,
-				data['data']['id'])
+				data['bot_id'],
+				ResponseTypes.FOLLOW_USERS,
+				{
+					"type": "id",
+					"data": [data['data']['id']]
+				}
+			)
 		else:
 			log.warning("Like request denied")
 			self.postgress_client.insert_log({
@@ -324,8 +329,13 @@ class DBWriter(Rabbitmq):
 		if not exists:
 			log.info("Bot is new to the party")
 			follow_list = self.pep.first_time_policy()
-			self.send(data["bot_id"], ResponseTypes.FOLLOW_USERS, {
-				"type": "screen_name", "data": follow_list})
+			self.send(
+				data["bot_id"],
+				ResponseTypes.FOLLOW_USERS,
+				{
+					"type": "screen_name",
+					"data": follow_list,
+				})
 			self.mongo_client.insert_users(data["data"])
 			self.neo4j_client.add_bot(
 				{"id": data["data"]['id'], "name": data['data']['name'], "username": data['data']['screen_name']})
@@ -516,7 +526,7 @@ class DBWriter(Rabbitmq):
 			"params": params
 		}
 		try:
-			self._send(routing_key='tasks.twitter.' + str(bot), message=payload)
+			self._send(routing_key='tasks.twitter.' + str(bot), message=json.dumps(payload))
 			# self._close()
 		except Exception as e:
 			log.error(f"FAILED TO SEND MESSAGE: {e}")
