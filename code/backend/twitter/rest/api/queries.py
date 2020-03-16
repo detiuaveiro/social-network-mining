@@ -42,7 +42,7 @@ def twitter_user(id):
 def twitter_users_stats():
     try:
         return True, [serializers.UserStats(us).data for us in UserStats.objects.all()], \
-            "Sucesso a obter as estatisticas de todos os utilizadores"
+               "Sucesso a obter as estatisticas de todos os utilizadores"
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_users_stats.__name__} -> {e}")
         return False, None, f"Erro as estatisticas de todos os utilizadores"
@@ -51,7 +51,7 @@ def twitter_users_stats():
 def twitter_user_stats(id):
     try:
         return True, serializers.UserStats(UserStats.objects.get(user_id=id)).data, \
-            "Sucesso a obter as estatisticas do utilizador pedido"
+               "Sucesso a obter as estatisticas do utilizador pedido"
     except UserStats.DoesNotExist:
         return False, None, f"Não existe nenhum utilizador com o id {id} na base de dados de estatisticas"
     except Exception as e:
@@ -132,7 +132,7 @@ def twitter_tweet(id):
 def twitter_tweet_stats(id):
     try:
         return True, serializers.TweetStats(TweetStats.objects.get(tweet_id=id)).data, \
-            "Sucesso a obter as estatisticas do tweet de id pedido"
+               "Sucesso a obter as estatisticas do tweet de id pedido"
     except TweetStats.DoesNotExist:
         return False, None, f"Não existem estatísticas do tweet de id {id} na base de dados"
     except Exception as e:
@@ -248,7 +248,7 @@ def add_policy(data):
         return False, None, str(e)
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {add_policy.__name__} -> {e}")
-        return False, None, "Erro ao adicionar uma nova politica"
+        return False, None, f"Erro ao adicionar uma nova politica->{e}"
 
 
 def remove_policy(id):
