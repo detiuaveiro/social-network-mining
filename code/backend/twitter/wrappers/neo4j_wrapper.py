@@ -1,14 +1,13 @@
 import logging
 import sys
 from neo4j import GraphDatabase
-import datetime
 
 sys.path.append('..')
 import credentials
 
 log = logging.getLogger("Neo4j")
 log.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(sys.stdout)
+handler = logging.StreamHandler(open("neo4j.log", "w"))
 handler.setFormatter(
     logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s")
 )
@@ -388,7 +387,7 @@ class Neo4jAPI:
             USER_LABEL,
         ]:
             log.error("ERROR CHECKING RELATIONSHIP")
-            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+            log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
             return
 
