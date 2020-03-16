@@ -190,24 +190,24 @@ class MongoAPI:
             result = None
             if single:
                 if collection == "tweets":
-                    result = list(self.tweets.find_one(query, projection))
+                    result = self.tweets.find_one(query, projection)
                 if collection == "messages":
-                    result = list(self.messages.find_one(query, projection))
+                    result = self.messages.find_one(query, projection)
                 if collection == "users":
-                    result = list(self.users.find_one(query, projection))
+                    result = self.users.find_one(query, projection)
             else:
                 if collection == "tweets":
-                    result = list(self.tweets.find(query, projection))
+                    result = self.tweets.find(query, projection)
                 if collection == "messages":
-                    result = list(self.messages.find(query, projection))
+                    result = self.messages.find(query, projection)
                 if collection == "users":
-                    result = list(self.users.find(query, projection))
+                    result = self.users.find(query, projection)
 
             # Optionally export result
             if export_type is not None:
                 return self.__export_data(result, export_type)
 
-            return result
+            return list(result) if result is not None else result
         except Exception as e:
             log.error("ERROR SEARCHING FOR DOCUMENT")
             log.error("Error: " + str(e))
