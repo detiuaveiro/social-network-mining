@@ -3,7 +3,7 @@ neo4j-driver==1.7.6
 neobolt==1.7.16
 neotime==1.7.4
 pika==1.1.0
-psycopg2==2.8.4
+psycopg2-binary==2.8.4
 pycparser==2.20
 pymongo==3.10.1
 pytz==2019.3
