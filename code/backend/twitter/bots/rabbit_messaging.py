@@ -1,7 +1,6 @@
 import logging
 import json
 from typing import Dict, List
-
 from pyrabbit2.http import NetworkError
 from pyrabbit2.api import Client
 

@@ -16,8 +16,8 @@ WAIT_TIME = 10
 class Rabbitmq:
     """Class representing Rabbit MQ"""
 
-    def __init__(self, host=RABBITMQ_URL, port=RABBITMQ_PORT, vhost=RABBITMQ_VHOST, username=RABBITMQ_USERNAME,
-                 password=RABBITMQ_PASSWORD):
+    def __init__(self, host=RABBITMQ_URL, port=RABBITMQ_PORT, vhost=VHOST, username=RABBITMQ_USERNAME,
+				 password=RABBITMQ_PASSWORD):
         """
         Create a Rabbit MQ instance which represents a connection to a Rabbit MQ server
 
@@ -66,25 +66,25 @@ class Rabbitmq:
         # Declare Exchanges
         log.info("Declaring exchanges")
         self.channel.exchange_declare(
-            exchange=TT_TASK_DELIVER,
+            exchange=TASKS_EXCHANGE,
             exchange_type='direct',
             durable=True
         )
 
         self.channel.exchange_declare(
-            exchange=TT_DATA_EXCHANGE,
+            exchange=DATA_EXCHANGE,
             exchange_type='direct',
             durable=True
         )
 
         self.channel.exchange_declare(
-            exchange=TT_LOGS,
+            exchange=LOG_EXCHANGE,
             exchange_type='direct',
             durable=True
         )
 
         self.channel.exchange_declare(
-            exchange=TT_QUERIES,
+            exchange=QUERY_EXCHANGE,
             exchange_type='direct',
             durable=True
         )
@@ -92,21 +92,21 @@ class Rabbitmq:
         # Create Bindings
         log.info("Creating bindings")
         self.channel.queue_bind(
-            exchange=TT_DATA_EXCHANGE,
+            exchange=DATA_EXCHANGE,
             queue=API_QUEUE,
-            routing_key=DATA_RK
+            routing_key=DATA_ROUTING_KEY
         )
 
         self.channel.queue_bind(
-            exchange=TT_LOGS,
+            exchange=LOG_EXCHANGE,
             queue=API_QUEUE,
-            routing_key=LOGS_RK
+            routing_key=LOG_ROUTING_KEY
         )
 
         self.channel.queue_bind(
-            exchange=TT_QUERIES,
+            exchange=QUERY_EXCHANGE,
             queue=API_QUEUE,
-            routing_key=QUERIES_RK
+            routing_key=QUERY_ROUTING_KEY
         )
         
         log.info("Connection to Rabbit Established")
