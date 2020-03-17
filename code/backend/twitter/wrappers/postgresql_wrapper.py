@@ -1,15 +1,12 @@
-import datetime
-import credentials
 import psycopg2
 import logging
-import sys
 
-sys.path.append("..")
-from rest.api.enums import Policy as enum_policy
+import wrappers.credentials as credentials
+from api.enums import Policy as enum_policy
 
 log = logging.getLogger("PostgreSQL")
 log.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(sys.stdout)
+handler = logging.StreamHandler(open("postgres.log", "w"))
 handler.setFormatter(
 	logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s")
 )
@@ -35,7 +32,7 @@ class PostgresAPI:
 			self.filters = [x[0] for x in enum_policy.api_filter()]
 
 		except (Exception, psycopg2.DatabaseError) as error:
-			print(error)
+			log.error(f"Error trying to connect to database: {error}")
 
 	def insert_tweet(self, data):
 		"""
@@ -222,7 +219,6 @@ class PostgresAPI:
 				f"{'limit ' + str(limit) if limit is not None else ''} ;"
 
 			cursor.execute(query)
-			print(query)
 
 			data = cursor.fetchall()
 
