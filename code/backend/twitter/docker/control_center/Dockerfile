@@ -13,6 +13,6 @@ COPY / .
 
 # install requirements
 RUN pip3 install --upgrade setuptools
-RUN pip3 install --user -r requirements_bot.txt
+RUN pip3 install --user -r requirements_cc.txt
 
 CMD [ "python3", "start_cc.py" ]
