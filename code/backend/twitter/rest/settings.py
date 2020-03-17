@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from credentials import *
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -78,19 +79,19 @@ DATABASES = {
     'default': {},
     'mongo': {
         'ENGINE': 'djongo',
-        'NAME': 'twitter',
-        'HOST': '127.0.0.1',
-        'PORT': 27017,
-        'USER': 'admin',
-        'PASSWORD': 'admin',
+        'NAME': MONGO_DB,
+        'HOST': MONGO_URL,
+        'PORT': MONGO_PORT,
+        'USER': MONGO_USERNAME,
+        'PASSWORD': MONGO_PASSWORD,
     },
     'postgres': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'twitter_postgres',
-        'USER': 'admin',
-        'PASSWORD': 'admin',
-        'HOST': 'localhost',
-        'PORT': 5432,
+        'NAME': POSTGRES_DB,
+        'USER': POSTGRES_USERNAME,
+        'PASSWORD': POSTGRES_PASSWORD,
+        'HOST': POSTGRES_URL,
+        'PORT': POSTGRES_PORT,
     }
 }
 

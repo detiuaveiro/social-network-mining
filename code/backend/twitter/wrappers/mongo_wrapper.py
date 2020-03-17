@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 import logging
 import json
-import wrappers.credentials as credentials
+import credentials as credentials
 
 log = logging.getLogger("Mongo")
 log.setLevel(logging.DEBUG)

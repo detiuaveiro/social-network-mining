@@ -3,7 +3,6 @@ from wrappers.mongo_wrapper import *
 from wrappers.neo4j_wrapper import *
 from wrappers.postgresql_wrapper import *
 from control_center.enums import *
-from wrappers.credentials import *
 
 # Constants used below for the Heuristics
 THRESHOLD_LIKE = 0.4

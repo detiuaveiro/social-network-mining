@@ -1,7 +1,7 @@
 import psycopg2
 import logging
 
-import wrappers.credentials as credentials
+import credentials as credentials
 from api.enums import Policy as enum_policy
 
 log = logging.getLogger("PostgreSQL")
