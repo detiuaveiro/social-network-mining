@@ -1,7 +1,6 @@
 import logging
 from neo4j import GraphDatabase
-from wrappers import credentials
-
+import credentials
 
 log = logging.getLogger("Neo4j")
 log.setLevel(logging.DEBUG)
