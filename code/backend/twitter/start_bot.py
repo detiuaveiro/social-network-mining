@@ -1,11 +1,14 @@
-from bots.settings import *
+import os
+
 from bots.rabbit_messaging import MessagingSettings
 import tweepy
 from bots.twitter_bot import TwitterBot
-
+from credentials import TASKS_EXCHANGE, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, LOG_EXCHANGE, LOG_ROUTING_KEY, \
+	QUERY_EXCHANGE, QUERY_ROUTING_KEY, DATA_EXCHANGE, DATA_ROUTING_KEY, RABBITMQ_USERNAME, RABBITMQ_PASSWORD, VHOST, \
+	RABBITMQ_FULL_HTTP_URL
 
 if __name__ == "__main__":
-	bot_id = 1103294806497902594
+	bot_id = os.environ['BOT_ID']
 
 	messaging_settings = {
 		TASKS_EXCHANGE: MessagingSettings(exchange=TASKS_EXCHANGE, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}.{bot_id}",
@@ -15,13 +18,13 @@ if __name__ == "__main__":
 		DATA_EXCHANGE: MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY)
 	}
 
-	consumer_key = "vP8ULCHpJYTcRRfNqiVHLLemC"
-	consumer_secret = "e3C7OtUlMh3VxEi0Bx038bv9hCKwYGFgbH7dnsLNpvpUL4SWy4"
-	token = "1103294806497902594-Q90yPSULqg27zcWjLSZ99ZSzgGyQYP"
-	token_secret = "iaK1qYJEtYNAx5Npv90VZB0bkPjaLojOXD5HuJrZCAfsb"
+	consumer_key = os.environ['CONSUMER_KEY']
+	consumer_secret = os.environ['CONSUMER_SECRET']
+	token = os.environ['TOKEN']
+	token_secret = os.environ['TOKEN_SECRET']
 
 	twitter_auth = tweepy.OAuthHandler(consumer_key=consumer_key, consumer_secret=consumer_secret)
 	twitter_auth.set_access_token(key=token, secret=token_secret)
-	bot = TwitterBot("localhost:15672", RABBIT_USERNAME, RABBIT_PASSWORD, VHOST, messaging_settings, bot_id,
+	bot = TwitterBot(RABBITMQ_FULL_HTTP_URL, RABBITMQ_USERNAME, RABBITMQ_PASSWORD, VHOST, messaging_settings, bot_id,
 					 tweepy.API(auth_handler=twitter_auth, wait_on_rate_limit=True))
 	bot.run()
