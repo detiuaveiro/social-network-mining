@@ -216,6 +216,10 @@ def add_policy(data):
         Ex: { "API_type": "Twitter", "filter": "Instagram", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
     :return: status(boolean), data, message(string)
     """
+
+    class AddPolicyError(Exception):
+        pass
+
     try:
         policy_serializer = serializers.Policy(data=data)
         if not policy_serializer.is_valid():
@@ -223,14 +227,28 @@ def add_policy(data):
 
         for bot_id in policy_serializer.data['bots']:
             if not neo4j.check_bot_exists(bot_id):
-                return False, None, "IDs dos bots invalidos"
+                raise AddPolicyError("IDs dos bots invalidos")
+
+        status = Policy.objects.filter(API_type=policy_serializer.data['API_type'],
+                                       filter=policy_serializer.data['filter'],
+                                       tags=policy_serializer.data['tags']).exists()
+        if status:
+            args = {"API_type": policy_serializer.data['API_type'],
+                    "filter": policy_serializer.data['filter'],
+                    "tags": policy_serializer.data['tags']}
+
+            raise AddPolicyError(f"Uma politica com argumentos iguais já existe na base de dados. Args: {args}")
 
         policy = Policy.objects.create(id=next_id(Policy), **policy_serializer.data)
 
         return True, {'id': policy.id}, "Sucesso a adicionar uma nova politica"
+
+    except AddPolicyError as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {add_policy.__name__} -> {e}")
+        return False, None, str(e)
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {add_policy.__name__} -> {e}")
-        return False, None, "Erro ao adicionar uma nova politica"
+        return False, None, f"Erro ao adicionar uma nova politica->{e}"
 
 
 def remove_policy(id):
