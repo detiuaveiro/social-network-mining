@@ -1,3 +1,6 @@
+## @package twitter.wrappers
+# coding: UTF-8
+
 from pymongo import MongoClient
 import logging
 import json
