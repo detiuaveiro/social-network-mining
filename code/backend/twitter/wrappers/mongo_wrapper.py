@@ -1,14 +1,11 @@
 from pymongo import MongoClient
 import logging
-import sys
 import json
-import csv
-import datetime
-import credentials
+import credentials as credentials
 
 log = logging.getLogger("Mongo")
-log.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
+log.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(open("mongo.log", "w"))
 handler.setFormatter(
     logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s")
 )
@@ -108,9 +105,9 @@ class MongoAPI:
         """
         try:
             if all:
-                self.users.update_many(match, new_data)
+                self.users.update_many(match, {"$set": new_data})
             else:
-                self.users.update_one(match, new_data)
+                self.users.update_one(match, {"$set": new_data})
             log.debug("UPDATE SUCCESSFUL")
         except Exception as e:
             log.error("ERROR UPDATING DOCUMENT")
@@ -125,9 +122,9 @@ class MongoAPI:
         """
         try:
             if all:
-                self.tweets.update_many(match, new_data)
+                self.tweets.update_many(match, {"$set": new_data})
             else:
-                self.tweets.update_one(match, new_data)
+                self.tweets.update_one(match, {"$set": new_data})
             log.debug("UPDATE SUCCESSFUL")
         except Exception as e:
             log.error("ERROR UPDATING DOCUMENT")
@@ -142,9 +139,9 @@ class MongoAPI:
         """
         try:
             if all:
-                self.messages.update_many(match, new_data)
+                self.messages.update_many(match, {"$set": new_data})
             else:
-                self.messages.update_one(match, new_data)
+                self.messages.update_one(match, {"$set": new_data})
             log.debug("UPDATE SUCCESSFUL")
         except Exception as e:
             log.error("ERROR UPDATING DOCUMENT")
@@ -177,33 +174,37 @@ class MongoAPI:
             return
 
         try:
-            if fields is not None:
+            if fields:
                 projection = {"_id": False}
                 for i in fields:
                     projection[i] = True
             else:
-                projection = None
+                projection = {"_id": True}
 
+            log.debug(query)
+            log.debug(projection)
+
+            result = None
             if single:
                 if collection == "tweets":
-                    result = list(self.tweets.find_one(query, projection))
+                    result = self.tweets.find_one(query, projection)
                 if collection == "messages":
-                    result = list(self.messages.find_one(query, projection))
+                    result = self.messages.find_one(query, projection)
                 if collection == "users":
-                    result = list(self.users.find_one(query, projection))
+                    result = self.users.find_one(query, projection)
             else:
                 if collection == "tweets":
-                    result = list(self.tweets.find(query, projection))
+                    result = self.tweets.find(query, projection)
                 if collection == "messages":
-                    result = list(self.messages.find(query, projection))
+                    result = self.messages.find(query, projection)
                 if collection == "users":
-                    result = list(self.users.find(query, projection))
+                    result = self.users.find(query, projection)
 
             # Optionally export result
             if export_type is not None:
                 return self.__export_data(result, export_type)
 
-            return result
+            return list(result) if result is not None else result
         except Exception as e:
             log.error("ERROR SEARCHING FOR DOCUMENT")
             log.error("Error: " + str(e))

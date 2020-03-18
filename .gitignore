@@ -65,6 +65,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+venv_cc/
+venv_bots/
 
 # Editors
 .vscode/
@@ -86,3 +88,7 @@ cache_*.json
 
 # Django
 migrations/
+
+# to ocult the credentials in clear text
+docker-compose.yml
+
