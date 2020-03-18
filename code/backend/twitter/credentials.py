@@ -13,7 +13,7 @@ MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD', 'admin')
 # -----------------------------------------------------------
 # POSTGRES 
 # -----------------------------------------------------------
-POSTGRES_URL = os.environ.get('POSTGRES_URL', 'localhsot')
+POSTGRES_URL = os.environ.get('POSTGRES_URL', 'localhost')
 POSTGRES_PORT = 5432
 POSTGRES_FULL_URL = f"{POSTGRES_URL}:{POSTGRES_PORT}"
 POSTGRES_DB = os.environ.get('POSTGRES_DB', 'twitter')
