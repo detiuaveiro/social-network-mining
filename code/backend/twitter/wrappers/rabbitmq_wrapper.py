@@ -1,3 +1,6 @@
+## @package twitter.wrappers
+# coding: UTF-8
+
 import pika
 import time
 import logging
