@@ -2,10 +2,8 @@
 
 name: Docker CD
 
-on:
-  push:
-    paths:
-      - "**Dockerfile**"
+on: [pull_request]
+
 jobs:
   Build-and-Push-Docker-Image:
     runs-on: ubuntu-latest
