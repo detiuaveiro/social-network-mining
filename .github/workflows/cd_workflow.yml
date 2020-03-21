@@ -31,13 +31,13 @@ jobs:
       CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
       TOKEN: ${{ secrets.TOKEN }}
       TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
+    run: |
+        echo $NEO4J_URL
     if: contains(github.event.pull_request.labels.*.name, 'deploy')
     steps:
     - uses: actions/checkout@master
     - name: Publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
-      run: |
-        echo $NEO4J_URL
       with:
         name: detiuaveiro/social-network-mining/rest
         username: ${{ secrets.DOCKER_USERNAME }}
