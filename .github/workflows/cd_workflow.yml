@@ -13,7 +13,7 @@ jobs:
     - name: Publish Rest to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
       env:
-        MONGO_URL: ola # ${{ secrets.MONGO_URL }}
+        MONGO_URL: ${{ secrets.MONGO_URL }}
         MONGO_DB: ${{ secrets.MONGO_DB }}
         MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
         MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
