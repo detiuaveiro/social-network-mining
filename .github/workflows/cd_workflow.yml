@@ -34,7 +34,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'deploy')
     steps:
     - uses: actions/checkout@master
-    - name: Publish to Registry
+    - name: Publish Rest to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
         name: detiuaveiro/social-network-mining/rest
@@ -43,6 +43,9 @@ jobs:
         registry: docker.pkg.github.com
         dockerfile: code/backend/twitter/docker/rest/Dockerfile
         context: code/backend/twitter
+    - uses: actions/checkout@master
+    - name: Publish Bots to Registry
+      uses: elgohr/Publish-Docker-Github-Action@master
       with:
         name: detiuaveiro/social-network-mining/bot
         username: ${{ secrets.DOCKER_USERNAME }}
