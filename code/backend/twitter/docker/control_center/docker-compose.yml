@@ -1,0 +1,27 @@
+version: '2.0'
+
+services:
+  control_center:
+    build: 
+      context: ../../
+      dockerfile: docker/control_center/Dockerfile
+    container_name: control_center
+    restart: always
+    environment:
+      MONGO_URL: ${{ secrets.MONGO_URL }}
+      MONGO_DB: ${{ secrets.MONGO_DB }}
+      MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
+      MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+
+      POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+
+      RABBITMQ_URL: ${{ secrets.RABBITMQ_URL }}
+      RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+      RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+
+      NEO4J_URL: ${{ secrets.NEO4J_URL }}
+      NEO4J_USERNAME: ${{ secrets.NEO4J_USERNAME }}
+      NEO4J_PASSWORD: ${{ secrets.NEO4J_PASSWORD }}
