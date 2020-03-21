@@ -54,6 +54,7 @@ jobs:
         registry: docker.pkg.github.com
         dockerfile: code/backend/twitter/docker/bots/Dockerfile
         context: code/backend/twitter
+        tags: "latest"
     - uses: actions/checkout@master
     - name: Publish Bots to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
@@ -82,3 +83,4 @@ jobs:
         registry: docker.pkg.github.com
         dockerfile: code/backend/twitter/docker/control_center/Dockerfile
         context: code/backend/twitter
+        tags: "latest"
