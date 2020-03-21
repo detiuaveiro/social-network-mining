@@ -33,6 +33,7 @@ jobs:
         registry: docker.pkg.github.com
         dockerfile: code/backend/twitter/docker/rest/Dockerfile
         context: code/backend/twitter
+        tags: "latest"
     - uses: actions/checkout@master
     - name: Publish Bots to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
@@ -74,12 +75,6 @@ jobs:
         RABBITMQ_URL: ${{ secrets.RABBITMQ_URL }}
         RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
         RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
-  
-        BOT_ID: ${{ secrets.BOT_ID }}
-        CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
-        CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
-        TOKEN: ${{ secrets.TOKEN }}
-        TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
       with:
         name: detiuaveiro/social-network-mining/control_center
         username: ${{ secrets.DOCKER_USERNAME }}
