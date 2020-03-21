@@ -1,0 +1,25 @@
+version: '2.0'
+
+services:
+  rest:
+    build: 
+      context: ../../
+      dockerfile: docker/rest/Dockerfile
+    container_name: rest
+    restart: always
+    ports:
+      - 8000:8000
+    environment:
+      MONGO_URL: ${MONGO_URL}
+      MONGO_DB: ${MONGO_DB}
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+
+      POSTGRES_URL: ${POSTGRES_URL}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+      NEO4J_URL: ${NEO4J_URL}
+      NEO4J_USERNAME: ${NEO4J_USERNAME}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
