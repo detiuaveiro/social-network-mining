@@ -1,0 +1,23 @@
+# This file wont do us much good in this location, make sure you change the path as directed to continue!
+
+name: Docker CD
+
+on:
+  push:
+    paths:
+      - "**Dockerfile**"
+jobs:
+  Build-and-Push-Docker-Image:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'deploy')
+    steps:
+    - uses: actions/checkout@master
+    - name: Publish to Registry
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: detiuaveiro/social-network-mining/rest
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        registry: docker.pkg.github.com
+        dockerfile: code/backend/twitter/docker/rest/Dockerfile
+        context: code/backend/twitter
