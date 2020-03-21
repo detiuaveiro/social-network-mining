@@ -21,16 +21,34 @@ jobs:
       NEO4J_URL: ${{ secrets.NEO4J_URL }}
       NEO4J_USERNAME: ${{ secrets.NEO4J_USERNAME }}
       NEO4J_PASSWORD: ${{ secrets.NEO4J_PASSWORD }}
-      
+
+      RABBITMQ_URL: ${{ secrets.RABBITMQ_URL }}
+      RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+      RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+
+      BOT_ID: ${{ secrets.BOT_ID }}
+      CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
+      CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
+      TOKEN: ${{ secrets.TOKEN }}
+      TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
     if: contains(github.event.pull_request.labels.*.name, 'deploy')
     steps:
     - uses: actions/checkout@master
     - name: Publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
+      run: |
+        echo $NEO4J_URL
       with:
         name: detiuaveiro/social-network-mining/rest
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         registry: docker.pkg.github.com
         dockerfile: code/backend/twitter/docker/rest/Dockerfile
+        context: code/backend/twitter
+      with:
+        name: detiuaveiro/social-network-mining/bot
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        registry: docker.pkg.github.com
+        dockerfile: code/backend/twitter/docker/bots/Dockerfile
         context: code/backend/twitter
