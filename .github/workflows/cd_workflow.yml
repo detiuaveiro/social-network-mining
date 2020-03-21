@@ -39,6 +39,30 @@ jobs:
     - uses: actions/checkout@master
     - name: Publish Rest to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
+      env:
+        MONGO_URL: ${{ secrets.MONGO_URL }}
+        MONGO_DB: ${{ secrets.MONGO_DB }}
+        MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
+        MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+        
+        POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+        POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        
+        NEO4J_URL: ${{ secrets.NEO4J_URL }}
+        NEO4J_USERNAME: ${{ secrets.NEO4J_USERNAME }}
+        NEO4J_PASSWORD: ${{ secrets.NEO4J_PASSWORD }}
+        
+        RABBITMQ_URL: ${{ secrets.RABBITMQ_URL }}
+        RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+        RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+        
+        BOT_ID: ${{ secrets.BOT_ID }}
+        CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
+        CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
+        TOKEN: ${{ secrets.TOKEN }}
+        TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
       with:
         name: detiuaveiro/social-network-mining/rest
         username: ${{ secrets.DOCKER_USERNAME }}
