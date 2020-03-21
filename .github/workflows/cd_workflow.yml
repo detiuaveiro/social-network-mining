@@ -33,23 +33,26 @@ jobs:
       TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
     if: contains(github.event.pull_request.labels.*.name, 'deploy')
     steps:
-    - uses: actions/checkout@master
-    - name: Publish Rest to Registry
-      uses: elgohr/Publish-Docker-Github-Action@master
-      with:
-        name: detiuaveiro/social-network-mining/rest
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        registry: docker.pkg.github.com
-        dockerfile: code/backend/twitter/docker/rest/Dockerfile
-        context: code/backend/twitter
-    - uses: actions/checkout@master
-    - name: Publish Bots to Registry
-      uses: elgohr/Publish-Docker-Github-Action@master
-      with:
-        name: detiuaveiro/social-network-mining/bot
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        registry: docker.pkg.github.com
-        dockerfile: code/backend/twitter/docker/bots/Dockerfile
-        context: code/backend/twitter
+    - name: test
+      run: |
+        echo $NEO4J_URL
+    # - uses: actions/checkout@master
+    # - name: Publish Rest to Registry
+    #   uses: elgohr/Publish-Docker-Github-Action@master
+    #   with:
+    #     name: detiuaveiro/social-network-mining/rest
+    #     username: ${{ secrets.DOCKER_USERNAME }}
+    #     password: ${{ secrets.DOCKER_PASSWORD }}
+    #     registry: docker.pkg.github.com
+    #     dockerfile: code/backend/twitter/docker/rest/Dockerfile
+    #     context: code/backend/twitter
+    # - uses: actions/checkout@master
+    # - name: Publish Bots to Registry
+    #   uses: elgohr/Publish-Docker-Github-Action@master
+    #   with:
+    #     name: detiuaveiro/social-network-mining/bot
+    #     username: ${{ secrets.DOCKER_USERNAME }}
+    #     password: ${{ secrets.DOCKER_PASSWORD }}
+    #     registry: docker.pkg.github.com
+    #     dockerfile: code/backend/twitter/docker/bots/Dockerfile
+    #     context: code/backend/twitter
