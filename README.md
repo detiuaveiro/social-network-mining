@@ -4,14 +4,14 @@ Mining in Social Networks
 
 Hoje em dia as redes sociais possuem um papel muito relevante da difusão da informação. Os seus utilizadores estão constantemente a fazer publicações sobre os mais variados assuntos desde trivialidades e acontecimentos do dia a dia, a assuntos de maior relevância como política e ciência. A circulação desta informação tem vindo a aumentar exponencialmente, assim como a complexa rede envolvida na propagação desta informação e como tal várias áreas de estudo estão a dedicar-se a resolução de problemas relacionados com este tema. Mais recentemente a temática das "fake news", noticias falsas como o nome indica, tornou-se um tópico mediático, fazendo a sua resolução um problema de grande interesse.
 
-# Dashboard
+## Dashboard
 
 Dashboard desenvolvida em React.
 
 Créditos da template: https://www.creative-tim.com/product/now-ui-dashboard-react
 
 
-# Instagram's Bot
+## Instagram's Bot
 
 ### Requirements:
 
@@ -92,3 +92,18 @@ Créditos da template: https://www.creative-tim.com/product/now-ui-dashboard-rea
  $ neo4j console 
  $ cypher-shell            # to set new password
  ```
+
+
+## Server Deploy
+ - First, it's necessary to make a pull request to github with the tag `deploy` with the code we want to deploy next to the server. This will trigger the deploy workflow, that will create new images of the code to be deployed.
+ - The first time, it's necessary to have all containers pre-created on the server. So, on the server terminal, run:
+ ```bash
+ $ docker container run --env-file ~/PI_2020/env_vars/rest.env --publish 7000:7000 --detach --name rest docker.pkg.github.com/detiuaveiro/social-network-mining/rest                # run the rest container
+ $ docker container run --env-file ~/PI_2020/env_vars/bot.env --detach --name bot docker.pkg.github.com/detiuaveiro/social-network-mining/bot                # run the bot container
+ $ docker container run --env-file ~/PI_2020/env_vars/control_center.env --detach --name control_center docker.pkg.github.com/detiuaveiro/social-network-mining/control_center                # run the control center container
+ ```
+ - Also, it's necessary to have a `watchtower` container running on the server, that will deploy automaticly all the images created with the `deploy github workflow`:
+ ```bash
+ $ docker run --env-file PI_2020/env_vars/watchtower.env -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock -v ~/.docker/config.json:/config.json containrrr/watchtower
+ ```
+
