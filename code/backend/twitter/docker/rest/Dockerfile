@@ -16,7 +16,7 @@ RUN pip3 install --user -r requirements_rest.txt
 # copy rest files
 COPY / .
 
-EXPOSE 8000
+EXPOSE 7000
 
 # env variables
 ENV MONGO_URL=${MONGO_URL}
@@ -34,4 +34,4 @@ ENV NEO4J_USERNAME=${NEO4J_USERNAME}
 ENV NEO4J_PASSWORD=${NEO4J_PASSWORD}
 
 # run
-CMD [ "python3", "start_rest.py", "runserver" ]
+CMD [ "python3", "start_rest.py", "runserver", "7000" ]
