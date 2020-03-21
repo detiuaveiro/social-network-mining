@@ -31,8 +31,6 @@ jobs:
       CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
       TOKEN: ${{ secrets.TOKEN }}
       TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
-    run: |
-        echo $NEO4J_URL
     if: contains(github.event.pull_request.labels.*.name, 'deploy')
     steps:
     - uses: actions/checkout@master
