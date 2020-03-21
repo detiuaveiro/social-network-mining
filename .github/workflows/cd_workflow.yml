@@ -34,6 +34,7 @@ jobs:
         dockerfile: code/backend/twitter/docker/rest/Dockerfile
         context: code/backend/twitter
         tags: "latest"
+        tag_semver: true
     - uses: actions/checkout@master
     - name: Publish Bots to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
