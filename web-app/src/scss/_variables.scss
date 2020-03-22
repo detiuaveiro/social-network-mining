@@ -1,1 +1,111 @@
 // Variable overrides
+.nav-link {
+  font-size: 19px;
+  outline: 0;
+}
+
+// Colors
+$white: #fff !default;
+$gray-base: #181b1e !default;
+$gray-100: #f0f3f5 !default; // lighten($gray-base, 85%);
+$gray-200: #e4e7ea !default; // lighten($gray-base, 80%);
+$gray-300: #c8ced3 !default; // lighten($gray-base, 70%);
+$gray-400: #acb4bc !default; // lighten($gray-base, 60%);
+$gray-500: #8f9ba6 !default; // lighten($gray-base, 50%);
+$gray-600: #73818f !default; // lighten($gray-base, 40%);
+$gray-700: #5c6873 !default; // lighten($gray-base, 30%);
+$gray-800: #2f353a !default; // lighten($gray-base, 10%);
+$gray-900: #23282c !default; // lighten($gray-base, 5%);
+$black: #000 !default;
+
+$blue: #2189c5 !default;
+$indigo: #6610f2 !default;
+$purple: #6f42c1 !default;
+$pink: #e83e8c !default;
+$red: #f86c6b !default;
+$orange: #f8cb00 !default;
+$yellow: #ffc107 !default;
+$green: #4dbd74 !default;
+$teal: #20c997 !default;
+$cyan: #17a2b8 !default;
+$light-blue: #63c2de !default;
+
+//Instagram Colors
+$instablue: #405de6 !default;
+$instaviolet: #5851db !default;
+$instapurple: #833ab4 !default;
+$instashockpink: #c13584 !default;
+$instapink: #e1306c !default;
+$instared: #fd1d1d !default;
+$instadarkorange: #f56040 !default;
+$instaorange: #f77737 !default;
+$instadarkyellow: #fcaf45 !default;
+$instayellow: #ffdc80 !default;
+
+$instapalette: () !default;
+$instapalette: map-merge(
+  (
+    "blue": $instablue,
+    "violet": $instaviolet,
+    "purple": $instapurple,
+    "shockpink": $instashockpink,
+    "pink": $instapink,
+    "red": $instared,
+    "darkorange": $instadarkorange,
+    "orange": $instaorange,
+    "yellow": $instayellow,
+    "darkyellow": $instadarkyellow
+  ),
+  $instapalette
+);
+
+//Twitter Colors
+$twitterblue: #1da1f2 !default;
+$twitterblack: #14171a !default;
+$twitterdarkgrey: #657786 !default;
+$twittergrey: #aab8c2 !default;
+$twitterlightgrey: #e1e8ed !default;
+$twitterwhite: #f5f8fa !default;
+
+$twitterpalette: () !default;
+$twitterpalette: map-merge(
+  (
+    "blue": $twitterblue,
+    "black": $twitterblack,
+    "darkgrey": $twitterdarkgrey,
+    "grey": $twittergrey,
+    "lightgrey": $twitterlightgrey,
+    "white": $twitterwhite
+  ),
+  $twitterpalette
+);
+
+$primary: $twitterblue !default;
+$secondary: $instaviolet !default;
+$success: $green !default;
+$info: $blue !default;
+$warning: $yellow !default;
+$danger: $red !default;
+$light: $gray-100 !default;
+$dark: $twitterwhite !default;
+
+$theme-colors: () !default;
+$theme-colors: map-merge(
+  (
+    "primary": $primary,
+    "secondary": $secondary,
+    "success": $success,
+    "info": $info,
+    "warning": $warning,
+    "danger": $danger,
+    "light": $light,
+    "dark": $dark
+  ),
+  $theme-colors
+);
+
+/*
+$sidebar-bg:    $twitterwhite !default;
+$sidebar-color: $twitterblack !default;
+$sidebar-nav-link-color: $twitterblack !default;
+*/

@@ -13,6 +13,7 @@ To run, first install dependencies:
 $ cd web-app
 $ npm install
 $ npm install @material-ui/core
+$ npm install react-device-detect --save
 ```
 Then use the command to start the web app on port 3000:
 `$ npm start`
