@@ -1,8 +1,8 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node2" href="$classtwitter_1_1bots_1_1messages__types_1_1BotToServer.html" title="twitter.bots.messages\l_types.BotToServer" alt="" coords="144,5,295,47"/>
-<area shape="rect" id="node3" href="$classtwitter_1_1bots_1_1messages__types_1_1ServerToBot.html" title="twitter.bots.messages\l_types.ServerToBot" alt="" coords="144,71,295,112"/>
-<area shape="rect" id="node4" href="$classtwitter_1_1control__center_1_1enums_1_1MessageTypes.html" title="twitter.control_center.enums.\lMessageTypes" alt="" coords="124,136,315,177"/>
-<area shape="rect" id="node5" href="$classtwitter_1_1control__center_1_1enums_1_1Neo4jTypes.html" title="twitter.control_center.enums.\lNeo4jTypes" alt="" coords="124,201,315,243"/>
-<area shape="rect" id="node6" href="$classtwitter_1_1control__center_1_1enums_1_1PoliciesTypes.html" title="twitter.control_center.enums.\lPoliciesTypes" alt="" coords="124,267,315,308"/>
-<area shape="rect" id="node7" href="$classtwitter_1_1control__center_1_1enums_1_1ResponseTypes.html" title="twitter.control_center.enums.\lResponseTypes" alt="" coords="124,332,315,373"/>
+<area shape="rect" id="node2" href="$dc/d9c/classtwitter_1_1bots_1_1messages__types_1_1BotToServer.html" title="Enum for the Messages sent by the bot to the server. " alt="" coords="144,5,295,47"/>
+<area shape="rect" id="node3" href="$df/d74/classtwitter_1_1bots_1_1messages__types_1_1ServerToBot.html" title="Enum for the tasks the bot is able to run. " alt="" coords="144,71,295,112"/>
+<area shape="rect" id="node4" href="$d4/d47/classtwitter_1_1control__center_1_1enums_1_1MessageTypes.html" title="twitter.control_center.enums.\lMessageTypes" alt="" coords="124,136,315,177"/>
+<area shape="rect" id="node5" href="$d7/dfa/classtwitter_1_1control__center_1_1enums_1_1Neo4jTypes.html" title="twitter.control_center.enums.\lNeo4jTypes" alt="" coords="124,201,315,243"/>
+<area shape="rect" id="node6" href="$da/dbb/classtwitter_1_1control__center_1_1enums_1_1PoliciesTypes.html" title="twitter.control_center.enums.\lPoliciesTypes" alt="" coords="124,267,315,308"/>
+<area shape="rect" id="node7" href="$d9/d0f/classtwitter_1_1control__center_1_1enums_1_1ResponseTypes.html" title="twitter.control_center.enums.\lResponseTypes" alt="" coords="124,332,315,373"/>
 </map>
