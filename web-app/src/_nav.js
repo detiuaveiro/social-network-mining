@@ -1,6 +1,45 @@
 export default {
   items: [
     {
+      name: 'Home',
+      url: '/dashboard',
+      icon: 'fas fa-home fa-10x',
+    },
+    {
+      name: 'Bots',
+      url: '/bots',
+      icon: 'fas fa-robot',
+    },
+    {
+      name: 'Influencers',
+      url: '/influencers',
+      icon: 'fas fa-user-tag',
+    },
+    {
+      name: 'Network',
+      url: '/network',
+      icon: 'fas fa-project-diagram',
+    },
+    {
+      name: 'Statistics',
+      url: '/statistics',
+      icon: 'fas fa-chart-bar',
+    },
+    {
+      name: 'Reports',
+      url: '/reports',
+      icon: 'fas fa-file-alt',
+    },
+    {
+      name: 'Leave',
+      url: 'https://coreui.io/react/',
+      icon: 'fas fa-sign-out-alt',
+      class: 'mt-auto',
+      variant: 'danger',
+      attributes: { target: '_blank', rel: "noopener" },
+    },
+    /*
+    {
       name: 'Dashboard',
       url: '/dashboard',
       icon: 'icon-speedometer',
@@ -261,20 +300,6 @@ export default {
       icon: 'icon-ban',
       attributes: { disabled: true },
     },
-    {
-      name: 'Download CoreUI',
-      url: 'https://coreui.io/react/',
-      icon: 'icon-cloud-download',
-      class: 'mt-auto',
-      variant: 'success',
-      attributes: { target: '_blank', rel: "noopener" },
-    },
-    {
-      name: 'Try CoreUI PRO',
-      url: 'https://coreui.io/pro/react/',
-      icon: 'icon-layers',
-      variant: 'danger',
-      attributes: { target: '_blank', rel: "noopener" },
-    },
+    */
   ],
 };

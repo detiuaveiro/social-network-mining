@@ -29,7 +29,7 @@ class Widget03 extends Component {
     }
 
     const back = 'bg-' + variant;
-    const icon = 'fa fa-' + variant;
+    const icon = 'fab fa-' + variant;
     const keys = Object.keys(data);
     const vals = Object.values(data);
 

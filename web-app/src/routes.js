@@ -36,6 +36,14 @@ const Widgets = React.lazy(() => import('./views/Widgets/Widgets'));
 const Users = React.lazy(() => import('./views/Users/Users'));
 const User = React.lazy(() => import('./views/Users/User'));
 
+// Our Pages (delete everything before this before delivery)
+const Bots = React.lazy(() => import('./views/Bots/Bots'));
+const Influencers = React.lazy(() => import('./views/Influencers/Influencers'));
+const Network = React.lazy(() => import('./views/Network/Network'));
+const Statistics = React.lazy(() => import('./views/Statistics/Statistics'));
+const Reports = React.lazy(() => import('./views/Reports/Reports'));
+
+
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
   { path: '/', exact: true, name: 'Home' },
@@ -79,6 +87,14 @@ const routes = [
   { path: '/charts', name: 'Charts', component: Charts },
   { path: '/users', exact: true,  name: 'Users', component: Users },
   { path: '/users/:id', exact: true, name: 'User Details', component: User },
+  
+  // Our Pages (delete everything before this before delivery)
+  { path: '/bots', name: 'Bots', component: Bots },
+  { path: '/influencers', name: 'Influencers', component: Influencers },
+  { path: '/network', name: 'Network', component: Network },
+  { path: '/statistics', name: 'Statistics', component: Statistics },
+  { path: '/reports', name: 'Reports', component: Reports },
+
 ];
 
 export default routes;
