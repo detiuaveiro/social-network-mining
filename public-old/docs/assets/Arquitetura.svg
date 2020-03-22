@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Gerado por Microsoft Visio, SVG Export Arquitetura.svg Page-1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="22.8858in" height="8.26772in"
+		viewBox="0 0 1647.78 595.276" xml:space="preserve" color-interpolation-filters="sRGB" class="st7">
+	<v:documentProperties v:langID="2070" v:metric="true" v:viewMarkup="false">
+		<v:userDefs>
+			<v:ud v:nameU="msvSubprocessMaster" v:prompt="" v:val="VT4(Rectangle)"/>
+			<v:ud v:nameU="msvNoAutoConnect" v:val="VT0(1):26"/>
+		</v:userDefs>
+	</v:documentProperties>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#1ba1e2;stroke:#000000;stroke-dasharray:7.5,4.5;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.5}
+		.st2 {fill:#ffffff;font-family:Segoe UI;font-size:0.833336em}
+		.st3 {fill:#1ba1e2;stroke:#ffffff;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.5}
+		.st4 {font-size:1em}
+		.st5 {stroke:#1897d5;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.5}
+		.st6 {fill:#75c6ee;stroke:#ffffff;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.5}
+		.st7 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<v:userDefs>
+			<v:ud v:nameU="msvThemeOrder" v:val="VT0(0):26"/>
+		</v:userDefs>
+		<title>Página-1</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
+				v:shadowOffsetY="-8.50394"/>
+		<v:layer v:name="Conexão" v:index="0"/>
+		<g id="shape3-1" v:mID="3" v:groupContext="shape" transform="translate(842.74,-269.291)">
+			<title>Retângulo.3</title>
+			<desc>Control Center</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalAlign="0"/>
+			<v:textRect cx="127.559" cy="531.496" width="255.12" height="127.559"/>
+			<path d="M0 595.28 L255.12 595.28 L255.12 467.72 L0 467.72 L0 595.28 Z" class="st1"/>
+			<text x="95.17" y="480.72" class="st2" v:langID="2070"><v:paragraph v:horizAlign="1"/><v:tabList/>Control Center</text>		</g>
+		<g id="shape6-4" v:mID="6" v:groupContext="shape" transform="translate(689.173,-386.811)">
+			<title>Círculo</title>
+			<desc>Bots</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="56.6929" cy="538.583" width="99.22" height="85.0394"/>
+			<path d="M0 538.58 A56.6929 56.6929 0 0 1 113.39 538.58 A56.6929 56.6929 0 1 1 0 538.58 Z" class="st3"/>
+			<text x="47.08" y="541.58" class="st2" v:langID="2070"><v:paragraph v:horizAlign="1"/><v:tabList/>Bots</text>		</g>
+		<g id="shape7-7" v:mID="7" v:groupContext="shape" transform="translate(673.228,-127.559)">
+			<title>Círculo.7</title>
+			<desc>Utilizadores</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="56.6929" cy="538.583" width="99.22" height="85.0394"/>
+			<path d="M0 538.58 A56.6929 56.6929 0 0 1 113.39 538.58 A56.6929 56.6929 0 1 1 0 538.58 Z" class="st3"/>
+			<text x="30.78" y="541.58" class="st2" v:langID="2070"><v:paragraph v:horizAlign="1"/><v:tabList/>Utilizadores</text>		</g>
+		<g id="group12-10" transform="translate(1421.28,-309.754)" v:mID="12" v:groupContext="group">
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:prompt="" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<title>Lata</title>
+			<desc>Base Dados Das Politicas e dos Bots (PosgreSQL)</desc>
+			<g id="shape13-11" v:mID="13" v:groupContext="shape">
+				<title>Folha.13</title>
+				<v:userDefs>
+					<v:ud v:nameU="ControlHalfHeight" v:prompt="" v:val="VT0(0.11811023622047):24"/>
+					<v:ud v:nameU="FillForegnd" v:prompt="" v:val="VT0(1):26"/>
+					<v:ud v:nameU="FillForegnd" v:prompt="" v:val="VT5(#1ba1e2)"/>
+				</v:userDefs>
+				<path d="M0 586.77 A42.5197 8.50394 -180 1 0 85.04 586.77 L85.04 518.74 L0 518.74 L0 586.77 Z" class="st3"/>
+			</g>
+			<g id="shape12-13" v:mID="12" v:groupContext="groupContent">
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="42.5197" cy="552.756" width="85.04" height="85.0394"/>
+				<ellipse cx="42.5197" cy="518.74" rx="42.5197" ry="8.50394" class="st3"/>
+				<text x="16.96" y="537.76" class="st2" v:langID="2070"><v:paragraph v:horizAlign="1"/><v:tabList/>Base Dados<v:newlineChar/><tspan
+							x="10.96" dy="1.2em" class="st4">Das Politicas e </tspan><tspan x="23.54" dy="1.2em" class="st4">dos Bots<v:newlineChar/></tspan><tspan
+							x="15.57" dy="1.2em" class="st4">(PosgreSQL)</tspan></text>			</g>
+		</g>
+		<g id="shape14-19" v:mID="14" v:groupContext="shape" v:layerMember="0" transform="translate(802.559,-443.504)">
+			<title>Conexão dinâmica</title>
+			<path d="M0 595.28 L167.74 595.28 L167.74 641.93" class="st5"/>
+		</g>
+		<g id="shape15-22" v:mID="15" v:groupContext="shape" v:layerMember="0" transform="translate(786.614,-184.252)">
+			<title>Conexão dinâmica.15</title>
+			<path d="M0 595.28 L183.69 595.28 L183.69 510.24" class="st5"/>
+		</g>
+		<g id="shape17-25" v:mID="17" v:groupContext="shape" v:layerMember="0" transform="translate(1097.86,-333.071)">
+			<title>Conexão dinâmica.17</title>
+			<path d="M0 595.28 L10.63 595.28 L10.63 576.07 L323.42 576.07" class="st5"/>
+		</g>
+		<g id="group18-28" transform="translate(1421.28,-416.053)" v:mID="18" v:groupContext="group">
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:prompt="" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<title>Lata.18</title>
+			<desc>Base Dados Estatisticas (PostgreSQL + TimeScale)</desc>
+			<g id="shape19-29" v:mID="19" v:groupContext="shape">
+				<title>Folha.19</title>
+				<v:userDefs>
+					<v:ud v:nameU="ControlHalfHeight" v:prompt="" v:val="VT0(0.11811023622047):24"/>
+					<v:ud v:nameU="FillForegnd" v:prompt="" v:val="VT0(1):26"/>
+					<v:ud v:nameU="FillForegnd" v:prompt="" v:val="VT5(#1ba1e2)"/>
+				</v:userDefs>
+				<path d="M0 586.77 A42.5197 8.50394 -180 1 0 85.04 586.77 L85.04 518.74 L0 518.74 L0 586.77 Z" class="st3"/>
+			</g>
+			<g id="shape18-31" v:mID="18" v:groupContext="groupContent">
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="42.5197" cy="552.756" width="85.04" height="85.0394"/>
+				<ellipse cx="42.5197" cy="518.74" rx="42.5197" ry="8.50394" class="st3"/>
+				<text x="16.96" y="537.76" class="st2" v:langID="2070"><v:paragraph v:horizAlign="1"/><v:tabList/>Base Dados<v:newlineChar/><tspan
+							x="18.72" dy="1.2em" class="st4">Estatisticas<v:newlineChar/></tspan><tspan x="10.6" dy="1.2em"
+							class="st4">(PostgreSQL + </tspan><tspan x="18.92" dy="1.2em" class="st4">TimeScale)</tspan></text>			</g>
+		</g>
+		<g id="shape20-37" v:mID="20" v:groupContext="shape" v:layerMember="0" transform="translate(1097.86,-333.071)">
+			<title>Conexão dinâmica.20</title>
+			<path d="M0 595.28 L10.63 595.28 L10.63 469.77 L323.42 469.77" class="st5"/>
+		</g>
+		<g id="group24-40" transform="translate(1421.28,-203.454)" v:mID="24" v:groupContext="group">
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:prompt="" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<title>Lata.24</title>
+			<desc>Base Dados Das Tweets e dos Users (PosgreSQL)</desc>
+			<g id="shape25-41" v:mID="25" v:groupContext="shape">
+				<title>Folha.25</title>
+				<v:userDefs>
+					<v:ud v:nameU="ControlHalfHeight" v:prompt="" v:val="VT0(0.11811023622047):24"/>
+					<v:ud v:nameU="FillForegnd" v:prompt="" v:val="VT0(1):26"/>
+					<v:ud v:nameU="FillForegnd" v:prompt="" v:val="VT5(#1ba1e2)"/>
+				</v:userDefs>
+				<path d="M0 586.77 A42.5197 8.50394 -180 1 0 85.04 586.77 L85.04 518.74 L0 518.74 L0 586.77 Z" class="st3"/>
+			</g>
+			<g id="shape24-43" v:mID="24" v:groupContext="groupContent">
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="42.5197" cy="552.756" width="85.04" height="85.0394"/>
+				<ellipse cx="42.5197" cy="518.74" rx="42.5197" ry="8.50394" class="st3"/>
+				<text x="16.96" y="537.76" class="st2" v:langID="2070"><v:paragraph v:horizAlign="1"/><v:tabList/>Base Dados<v:newlineChar/><tspan
+							x="4.35" dy="1.2em" class="st4">Das Tweets e dos </tspan><tspan x="30.49" dy="1.2em" class="st4">Users<v:newlineChar/></tspan><tspan
+							x="15.57" dy="1.2em" class="st4">(PosgreSQL)</tspan></text>			</g>
+		</g>
+		<g id="shape26-49" v:mID="26" v:groupContext="shape" v:layerMember="0" transform="translate(1421.28,-245.974)">
+			<title>Conexão dinâmica.26</title>
+			<path d="M0 595.28 L-312.82 595.28 L-312.82 508.18 L-323.42 508.18" class="st5"/>
+		</g>
+		<g id="group27-52" transform="translate(1421.28,-97.1552)" v:mID="27" v:groupContext="group">
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:prompt="" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<title>Lata.27</title>
+			<desc>Base Dados da Rede (Neo4j)</desc>
+			<g id="shape28-53" v:mID="28" v:groupContext="shape">
+				<title>Folha.28</title>
+				<v:userDefs>
+					<v:ud v:nameU="ControlHalfHeight" v:prompt="" v:val="VT0(0.11811023622047):24"/>
+					<v:ud v:nameU="FillForegnd" v:prompt="" v:val="VT0(1):26"/>
+					<v:ud v:nameU="FillForegnd" v:prompt="" v:val="VT5(#1ba1e2)"/>
+				</v:userDefs>
+				<path d="M0 586.77 A42.5197 8.50394 -180 1 0 85.04 586.77 L85.04 518.74 L0 518.74 L0 586.77 Z" class="st3"/>
+			</g>
+			<g id="shape27-55" v:mID="27" v:groupContext="groupContent">
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="42.5197" cy="552.756" width="85.04" height="85.0394"/>
+				<ellipse cx="42.5197" cy="518.74" rx="42.5197" ry="8.50394" class="st3"/>
+				<text x="10.1" y="543.76" class="st2" v:langID="2070"><v:paragraph v:horizAlign="1"/><v:tabList/>Base Dados da <tspan
+							x="31.36" dy="1.2em" class="st4">Rede<v:newlineChar/></tspan><tspan x="26.31" dy="1.2em" class="st4">(Neo4j)</tspan></text>			</g>
+		</g>
+		<g id="shape33-60" v:mID="33" v:groupContext="shape" v:layerMember="0" transform="translate(1421.28,-139.675)">
+			<title>Conexão dinâmica.33</title>
+			<path d="M0 595.28 L-312.82 595.28 L-312.82 401.88 L-323.42 401.88" class="st5"/>
+		</g>
+		<g id="shape35-63" v:mID="35" v:groupContext="shape" transform="translate(856.488,-320.386)">
+			<title>Retângulo</title>
+			<desc>PDP</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="34.441" cy="569.445" width="68.89" height="51.6614"/>
+			<rect x="0" y="543.614" width="68.8819" height="51.6614" class="st6"/>
+			<text x="25.33" y="572.45" class="st2" v:langID="2070"><v:paragraph v:horizAlign="1"/><v:tabList/>PDP</text>		</g>
+		<g id="shape36-66" v:mID="36" v:groupContext="shape" transform="translate(1018.49,-320.386)">
+			<title>Retângulo.36</title>
+			<desc>User API</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="34.441" cy="569.445" width="68.89" height="51.6614"/>
+			<rect x="0" y="543.614" width="68.8819" height="51.6614" class="st6"/>
+			<text x="15.81" y="572.45" class="st2" v:langID="2070"><v:paragraph v:horizAlign="1"/><v:tabList/>User API</text>		</g>
+		<g id="shape37-69" v:mID="37" v:groupContext="shape" transform="translate(935.858,-320.386)">
+			<title>Retângulo.37</title>
+			<desc>Bots API</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="34.441" cy="569.445" width="68.89" height="51.6614"/>
+			<rect x="0" y="543.614" width="68.8819" height="51.6614" class="st6"/>
+			<text x="16.1" y="572.45" class="st2" v:langID="2070"><v:paragraph v:horizAlign="1"/><v:tabList/>Bots API</text>		</g>
+	</g>
+</svg>
