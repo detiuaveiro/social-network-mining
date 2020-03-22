@@ -75,7 +75,7 @@ def capture_def(line: str, fh: type(open)) -> dict:
             rr = re.match(r'^[(]\s*(.*)\s*[)].*', rest, flags=re.DOTALL | re.MULTILINE)
             if rr is not None:
                 rest = rr.group(1)  # 2: parameter-list with optional type-hints (comma separated)
-                if rest is not None and rest is not '':
+                if rest is not None and rest != '':
                     # (STEP-4) split param list
                     params = re.split(r'\s*[,]\s*', rest, flags=re.DOTALL | re.MULTILINE)
 
@@ -89,7 +89,7 @@ def capture_def(line: str, fh: type(open)) -> dict:
                     # assign 'params' name with optional initializer; 'types' mapping name to type
                     res['params'] = []
                     for [a, b, c] in params2:
-                        res['params'].append(a if c is '' else '{}={}'.format(a, c))
+                        res['params'].append(a if c == '' else '{}={}'.format(a, c))
                         res['types'][a] = b
                 else:
                     pass  # ignored: no parameters
