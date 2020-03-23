@@ -1,0 +1,146 @@
+\subsection*{Tweet object}
+
+
+\begin{DoxyItemize}
+\item On backend/twitter/examples/tweet\+\_\+object.\+json
+\item How to add to mongo\+: 
+\begin{DoxyCode}
+> use twitter
+> db.createCollection("tweets")
+> db.tweets.insert([<content on backend/twitter/examples/tweet\_object.json>])
+\end{DoxyCode}
+
+\end{DoxyItemize}
+
+\subsection*{User object}
+
+
+\begin{DoxyItemize}
+\item On backend/twitter/examples/user\+\_\+object.\+json
+\item How to add to mongo\+: 
+\begin{DoxyCode}
+> use twitter
+> db.createCollection("users")
+> db.users.insert([<content on backend/twitter/examples/users\_object.json>])
+\end{DoxyCode}
+
+\end{DoxyItemize}
+
+\subsection*{A\+T\+E\+N\+T\+I\+O\+N!}
+
+
+\begin{DoxyItemize}
+\item When we are inserting a new tweet object, it is necessary that all arguments defined on the django models are placed (even if their value is set to null), because of the db integrety
+\item The twitter id\textquotesingle{}s with wish we are working on the rest api correspond to the str\+\_\+id of the tweets objects
+\end{DoxyItemize}
+
+\section*{Django Multi\+D\+BS and D\+Bs configuration}
+
+\subsection*{Useful Link}
+
+
+\begin{DoxyItemize}
+\item \href{https://docs.djangoproject.com/en/3.0/topics/db/multi-db/}{\tt https\+://docs.\+djangoproject.\+com/en/3.\+0/topics/db/multi-\/db/}
+\end{DoxyItemize}
+
+\subsection*{Makemigrations and migrate operations}
+
+
+\begin{DoxyItemize}
+\item Now its necessary define which db you want to do migrate operation, because default DB it is not defined
+\item DB Names are defined on D\+A\+T\+A\+B\+A\+S\+ES dictionary (keys) on settings.\+py
+\end{DoxyItemize}
+
+
+\begin{DoxyCode}
+$ rm -rf api/migrations
+$ python3 manage.py makemigrations api
+$ python3 manage.py migrate --database postgres <or>  python3 manage.py migrate --database mongo 
+\end{DoxyCode}
+
+
+\subsection*{Mongo}
+
+
+\begin{DoxyItemize}
+\item Create user (for development)
+\end{DoxyItemize}
+\begin{DoxyEnumerate}
+\item Create a user admin (to manage other users) 
+\begin{DoxyCode}
+$ mongo
+$ use admin;
+$     db.createUser(
+      \{
+        user: "admin",
+        pwd: "admin",
+        roles: [ \{ role: "root", db: "admin" \} ]
+      \}
+    )
+\end{DoxyCode}
+
+\item Using admin user, create another user (django user) 
+\begin{DoxyCode}
+$ mongo --port 27017 -u "admin" -p "admin" --authenticationDatabase "admin"
+$ use twitter;
+$     db.createUser(
+      \{
+        user: "admin",
+        pwd: "admin",
+        roles: [ \{ role: "dbOwner" , db: "twitter" \} ]
+      \}
+    )
+\end{DoxyCode}
+
+\end{DoxyEnumerate}
+\begin{DoxyItemize}
+\item Access DB (after user creation) 
+\begin{DoxyCode}
+mongo --port 27017 -u "admin" -p "admin" --authenticationDatabase "twitter"
+\end{DoxyCode}
+
+\end{DoxyItemize}
+
+\subsection*{Postgres}
+
+
+\begin{DoxyItemize}
+\item Create user (for development) 
+\begin{DoxyCode}
+$ sudo su postgres -c psql
+# create database postgres;
+# create user admin with password 'admin';
+# GRANT ALL PRIVILEGES ON DATABASE postgres TO admin;
+# \(\backslash\)c postgres
+# GRANT ALL ON ALL TABLES IN SCHEMA public to admin;
+# GRANT ALL ON ALL SEQUENCES IN SCHEMA public to admin;
+# GRANT ALL ON ALL FUNCTIONS IN SCHEMA public to admin;
+\end{DoxyCode}
+
+\item Access DB (after user creation) 
+\begin{DoxyCode}
+$ psql -d twitter\_postgres -U admin -W 
+\end{DoxyCode}
+
+\end{DoxyItemize}
+
+\section*{Policies Object}
+
+
+\begin{DoxyItemize}
+\item Items\+:
+\begin{DoxyItemize}
+\item id \+: int
+\item A\+P\+I\+\_\+type \+: str (T\+W\+I\+T\+T\+ER OR I\+N\+S\+T\+A\+G\+R\+AM)
+\item filter \+: str (U\+S\+E\+R\+N\+A\+ME OR K\+E\+Y\+W\+O\+R\+DS)
+\item name \+: str
+\item tags \+: str\mbox{[}\mbox{]}
+\item bots \+: int\mbox{[}\mbox{]}
+\end{DoxyItemize}
+\item Example in dictionary 
+\begin{DoxyCode}
+\{ "id" : 1, "API\_type": "Twitter", "filter": "Target", "name": "Politica", "tags": ["PSD", "CDS"], "bots":
+       [1, 2] \}
+\end{DoxyCode}
+ 
+\end{DoxyItemize}

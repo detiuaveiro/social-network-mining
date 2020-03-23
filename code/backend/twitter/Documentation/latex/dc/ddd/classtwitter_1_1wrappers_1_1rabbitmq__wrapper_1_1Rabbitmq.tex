@@ -1,0 +1,110 @@
+\hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq}{}\section{twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq Class Reference}
+\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq}\index{twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq@{twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq}}
+
+
+Class representing Rabbit MQ.  
+
+
+
+
+Inheritance diagram for twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=229pt]{da/d15/classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a62d86eb0c3c5f086500ef0097f9efd65}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, host=R\+A\+B\+B\+I\+T\+M\+Q\+\_\+\+U\+RL, port=R\+A\+B\+B\+I\+T\+M\+Q\+\_\+\+P\+O\+RT, vhost=V\+H\+O\+ST, username=R\+A\+B\+B\+I\+T\+M\+Q\+\_\+\+U\+S\+E\+R\+N\+A\+ME, pika\+\_\+credentials=pika.\+Plain\+Credentials(username, password) self.\+pika\+\_\+parameters=pika.\+Connection\+Parameters(host=host, port=port, virtual\+\_\+host=vhost, credentials=pika\+\_\+credentials, heartbeat=600, blocked\+\_\+connection\+\_\+timeout=300) self.\+reconnection\+\_\+attempt=0 self.\+M\+A\+X\+\_\+\+R\+E\+C\+O\+N\+N\+E\+C\+T\+I\+O\+NS=10 self.\+connection=None self.\+channel=None self.\+\_\+\+\_\+setup() \#\# \# Set up function, will, start, the, connection, create, all, necessary, exchanges, and, respective, bindings, from, the, def, \+\_\+\+\_\+setup, self)
+\begin{DoxyCompactList}\small\item\em Create a Rabbit MQ instance which represents a connection to a Rabbit MQ server. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a910cadec1f119ffca78becc55af22a43}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a910cadec1f119ffca78becc55af22a43}} 
+def \hyperlink{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a910cadec1f119ffca78becc55af22a43}{received\+\_\+message\+\_\+handler} (self, channel, method, properties, body)
+\begin{DoxyCompactList}\small\item\em Function to rewrite on the class that inherits this class. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aa9419b8984be09e42873e11572e93139}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aa9419b8984be09e42873e11572e93139}} 
+{\bfseries connection}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a049721cef6898206c8e6dab244b144fd}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a049721cef6898206c8e6dab244b144fd}} 
+{\bfseries channel}
+\end{DoxyCompactItemize}
+\subsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aff19e59d7fd9025f21972e331a1fdfde}{\+\_\+send} (self, routing\+\_\+key, message)
+\begin{DoxyCompactList}\small\item\em Routes the message to corresponding channel. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a430a4af33557422e4a0575323b6d7027}{\+\_\+receive} (self, queue\+\_\+name=\textquotesingle{}A\+PI\textquotesingle{})
+\begin{DoxyCompactList}\small\item\em Receives messages and puts them in the queue given from the argument. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aeb0b7d3eee2a07ca9b795924e2af584c}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aeb0b7d3eee2a07ca9b795924e2af584c}} 
+def \hyperlink{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aeb0b7d3eee2a07ca9b795924e2af584c}{\+\_\+close} (self)
+\begin{DoxyCompactList}\small\item\em Close the connection with the Rabbit MQ server. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Class representing Rabbit MQ. 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a62d86eb0c3c5f086500ef0097f9efd65}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a62d86eb0c3c5f086500ef0097f9efd65}} 
+\index{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq@{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}!twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq@{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+init\+\_\+\+\_\+()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{host = {\ttfamily RABBITMQ\+\_\+URL},  }\item[{}]{port = {\ttfamily RABBITMQ\+\_\+PORT},  }\item[{}]{vhost = {\ttfamily VHOST},  }\item[{}]{username = {\ttfamily RABBITMQ\+\_\+USERNAME},  }\item[{}]{pika\+\_\+credentials = {\ttfamily pika.PlainCredentials(username,~password)
+~~~~~~~~self.pika\+\_\+parameters~=~pika.ConnectionParameters(
+~~~~~~~~~~~~host=host,
+~~~~~~~~~~~~port=port,
+~~~~~~~~~~~~virtual\+\_\+host=vhost,
+~~~~~~~~~~~~credentials=pika\+\_\+credentials,
+~~~~~~~~~~~~heartbeat=600,
+~~~~~~~~~~~~blocked\+\_\+connection\+\_\+timeout=300
+~~~~~~~~)
+
+~~~~~~~~self.reconnection\+\_\+attempt~=~0
+~~~~~~~~self.MAX\+\_\+RECONNECTIONS~=~10
+~~~~~~~~self.connection~=~None
+~~~~~~~~self.channel~=~None
+~~~~~~~~self.\+\_\+\+\_\+setup()
+~~~~
+~~~~\#\#~~~~~~~~~
+~~~~\#~~~~~~~~~Set~up~function},  }\item[{}]{will,  }\item[{}]{start,  }\item[{}]{the,  }\item[{}]{connection,  }\item[{}]{create,  }\item[{}]{all,  }\item[{}]{necessary,  }\item[{}]{exchanges,  }\item[{}]{and,  }\item[{}]{respective,  }\item[{}]{bindings,  }\item[{}]{from,  }\item[{}]{the,  }\item[{}]{def,  }\item[{}]{\+\_\+\+\_\+setup,  }\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Create a Rabbit MQ instance which represents a connection to a Rabbit MQ server. 
+
+\subsubsection*{Parameters }
+
+host \+: str Hostname port \+: int Port Number vhost \+: str Virtual host used to avoid conflicts between instances username \+: str Username for authentication password \+: str Password for authentication 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a430a4af33557422e4a0575323b6d7027}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a430a4af33557422e4a0575323b6d7027}} 
+\index{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq@{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq}!\+\_\+receive@{\+\_\+receive}}
+\index{\+\_\+receive@{\+\_\+receive}!twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq@{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq}}
+\subsubsection{\texorpdfstring{\+\_\+receive()}{\_receive()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq.\+\_\+receive (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{queue\+\_\+name = {\ttfamily \textquotesingle{}API\textquotesingle{}} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Receives messages and puts them in the queue given from the argument. 
+
+\subsubsection*{params\+: }
+
+queue\+\_\+name \+: (string) Name of the queue to be declared \mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aff19e59d7fd9025f21972e331a1fdfde}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aff19e59d7fd9025f21972e331a1fdfde}} 
+\index{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq@{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq}!\+\_\+send@{\+\_\+send}}
+\index{\+\_\+send@{\+\_\+send}!twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq@{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq}}
+\subsubsection{\texorpdfstring{\+\_\+send()}{\_send()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq.\+\_\+send (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{routing\+\_\+key,  }\item[{}]{message }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Routes the message to corresponding channel. 
+
+\subsubsection*{params\+: }
+
+routing\+\_\+key\+: (string) routing key to bding to queue message\+: (Dictionary) dictionary to be stringified and sent 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+wrappers/rabbitmq\+\_\+wrapper.\+py\end{DoxyCompactItemize}

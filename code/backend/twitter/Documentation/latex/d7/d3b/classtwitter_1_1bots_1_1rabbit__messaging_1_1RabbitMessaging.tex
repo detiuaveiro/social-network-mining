@@ -1,0 +1,114 @@
+\hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging}{}\section{twitter.\+bots.\+rabbit\+\_\+messaging.\+Rabbit\+Messaging Class Reference}
+\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging}\index{twitter.\+bots.\+rabbit\+\_\+messaging.\+Rabbit\+Messaging@{twitter.\+bots.\+rabbit\+\_\+messaging.\+Rabbit\+Messaging}}
+
+
+Inheritance diagram for twitter.\+bots.\+rabbit\+\_\+messaging.\+Rabbit\+Messaging\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=228pt]{d9/d46/classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a34c66d4ac88da28a2bd316ff79edf262}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a34c66d4ac88da28a2bd316ff79edf262}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+}
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a191a98366932a439235d21008d942267}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a191a98366932a439235d21008d942267}} 
+{\bfseries vhost}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a6b30781862012f4ca02c57b581e4561f}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a6b30781862012f4ca02c57b581e4561f}} 
+{\bfseries settings}
+\end{DoxyCompactItemize}
+\subsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_aa1f0c32cb8d52910117c7db2a070a708}{\+\_\+\+\_\+reconnect\+\_\+messaging} (function)
+\begin{DoxyCompactList}\small\item\em Decorator to try to reconnect multiple times if the connection to Rabbit\+MQ fails. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a3eb61ddf0a04971eb7ac7494bbc9012e}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a3eb61ddf0a04971eb7ac7494bbc9012e}} 
+def {\bfseries \+\_\+\+\_\+connect} (self)
+\item 
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a90cec3aa9d23d01e1bc04949226b2837}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a90cec3aa9d23d01e1bc04949226b2837}} 
+def \hyperlink{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a90cec3aa9d23d01e1bc04949226b2837}{\+\_\+setup\+\_\+messaging} (self)
+\begin{DoxyCompactList}\small\item\em Private method for setting up the messaging connections. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a82b3f62dcb3c12e53c03678128038832}{\+\_\+send\+\_\+message} (self, data, send\+\_\+to)
+\begin{DoxyCompactList}\small\item\em Function to publish a message on one of the rabbit\+MQ\textquotesingle{}s exchanges. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a9c1185869b76c0f456bda928697fec04}{\+\_\+receive\+\_\+message} (self, receive\+\_\+from)
+\begin{DoxyCompactList}\small\item\em Function to get a message from a specific rabbit\+MQ exchange. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_af0701a7ad3de6c4dd98be35fa9d47a20}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_af0701a7ad3de6c4dd98be35fa9d47a20}} 
+{\bfseries \+\_\+\+\_\+url}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a047b1f1a7ce84927fc0a160639ce7c6a}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a047b1f1a7ce84927fc0a160639ce7c6a}} 
+{\bfseries \+\_\+\+\_\+username}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_af9b7145cb0f727efcaaff5cd53dc1247}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_af9b7145cb0f727efcaaff5cd53dc1247}} 
+{\bfseries \+\_\+\+\_\+password}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a2884151e1f7af496aa9e1601224a25da}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a2884151e1f7af496aa9e1601224a25da}} 
+{\bfseries \+\_\+\+\_\+reconnect\+\_\+max\+\_\+iterations}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_ac39e8e980f3c2b517b1a7e287938f2aa}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_ac39e8e980f3c2b517b1a7e287938f2aa}} 
+{\bfseries \+\_\+\+\_\+messaging}
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_aa1f0c32cb8d52910117c7db2a070a708}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_aa1f0c32cb8d52910117c7db2a070a708}} 
+\index{twitter\+::bots\+::rabbit\+\_\+messaging\+::\+Rabbit\+Messaging@{twitter\+::bots\+::rabbit\+\_\+messaging\+::\+Rabbit\+Messaging}!\+\_\+\+\_\+reconnect\+\_\+messaging@{\+\_\+\+\_\+reconnect\+\_\+messaging}}
+\index{\+\_\+\+\_\+reconnect\+\_\+messaging@{\+\_\+\+\_\+reconnect\+\_\+messaging}!twitter\+::bots\+::rabbit\+\_\+messaging\+::\+Rabbit\+Messaging@{twitter\+::bots\+::rabbit\+\_\+messaging\+::\+Rabbit\+Messaging}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+reconnect\+\_\+messaging()}{\_\_reconnect\_messaging()}}
+{\footnotesize\ttfamily def twitter.\+bots.\+rabbit\+\_\+messaging.\+Rabbit\+Messaging.\+\_\+\+\_\+reconnect\+\_\+messaging (\begin{DoxyParamCaption}\item[{}]{function }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Decorator to try to reconnect multiple times if the connection to Rabbit\+MQ fails. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em function} & () function to decorate \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a9c1185869b76c0f456bda928697fec04}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a9c1185869b76c0f456bda928697fec04}} 
+\index{twitter\+::bots\+::rabbit\+\_\+messaging\+::\+Rabbit\+Messaging@{twitter\+::bots\+::rabbit\+\_\+messaging\+::\+Rabbit\+Messaging}!\+\_\+receive\+\_\+message@{\+\_\+receive\+\_\+message}}
+\index{\+\_\+receive\+\_\+message@{\+\_\+receive\+\_\+message}!twitter\+::bots\+::rabbit\+\_\+messaging\+::\+Rabbit\+Messaging@{twitter\+::bots\+::rabbit\+\_\+messaging\+::\+Rabbit\+Messaging}}
+\subsubsection{\texorpdfstring{\+\_\+receive\+\_\+message()}{\_receive\_message()}}
+{\footnotesize\ttfamily def twitter.\+bots.\+rabbit\+\_\+messaging.\+Rabbit\+Messaging.\+\_\+receive\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{receive\+\_\+from }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Function to get a message from a specific rabbit\+MQ exchange. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em receive\+\_\+from} & (str) where to get the data; corresponds to a str key in self.\+settings, where that key maps to an object with the exchange and routing key values \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a82b3f62dcb3c12e53c03678128038832}\label{classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging_a82b3f62dcb3c12e53c03678128038832}} 
+\index{twitter\+::bots\+::rabbit\+\_\+messaging\+::\+Rabbit\+Messaging@{twitter\+::bots\+::rabbit\+\_\+messaging\+::\+Rabbit\+Messaging}!\+\_\+send\+\_\+message@{\+\_\+send\+\_\+message}}
+\index{\+\_\+send\+\_\+message@{\+\_\+send\+\_\+message}!twitter\+::bots\+::rabbit\+\_\+messaging\+::\+Rabbit\+Messaging@{twitter\+::bots\+::rabbit\+\_\+messaging\+::\+Rabbit\+Messaging}}
+\subsubsection{\texorpdfstring{\+\_\+send\+\_\+message()}{\_send\_message()}}
+{\footnotesize\ttfamily def twitter.\+bots.\+rabbit\+\_\+messaging.\+Rabbit\+Messaging.\+\_\+send\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data,  }\item[{}]{send\+\_\+to }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Function to publish a message on one of the rabbit\+MQ\textquotesingle{}s exchanges. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & (json) data to publish in json format \\
+\hline
+{\em send\+\_\+to} & (str) where to publish the data; corresponds to a str key in self.\+settings, where that key maps to an object with the exchange and routing key values \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+bots/rabbit\+\_\+messaging.\+py\end{DoxyCompactItemize}
