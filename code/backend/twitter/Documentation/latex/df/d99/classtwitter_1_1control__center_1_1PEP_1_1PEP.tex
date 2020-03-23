@@ -1,0 +1,70 @@
+\hypertarget{classtwitter_1_1control__center_1_1PEP_1_1PEP}{}\section{twitter.\+control\+\_\+center.\+P\+E\+P.\+P\+EP Class Reference}
+\label{classtwitter_1_1control__center_1_1PEP_1_1PEP}\index{twitter.\+control\+\_\+center.\+P\+E\+P.\+P\+EP@{twitter.\+control\+\_\+center.\+P\+E\+P.\+P\+EP}}
+
+
+Policy Enforcement Point Class who connects to the P\+DP -\/ Policy Decision Point and forwards its result to the bot.  
+
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PEP_1_1PEP_a39f16437e59b0aba7094713042e0a6a6}\label{classtwitter_1_1control__center_1_1PEP_1_1PEP_a39f16437e59b0aba7094713042e0a6a6}} 
+def \hyperlink{classtwitter_1_1control__center_1_1PEP_1_1PEP_a39f16437e59b0aba7094713042e0a6a6}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self)
+\begin{DoxyCompactList}\small\item\em It may need the P\+DP to be passed as argument, but for now it\textquotesingle{}s creating a new object every time. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PEP_1_1PEP_af13289593fcd0c6d2e945b9431642120}\label{classtwitter_1_1control__center_1_1PEP_1_1PEP_af13289593fcd0c6d2e945b9431642120}} 
+def \hyperlink{classtwitter_1_1control__center_1_1PEP_1_1PEP_af13289593fcd0c6d2e945b9431642120}{first\+\_\+time\+\_\+policy} (self)
+\begin{DoxyCompactList}\small\item\em If a bot has just arrived to twitter, it must be handed a list of initial users for it to follow The list is decided by the P\+DP, and there\textquotesingle{}s no need for extra params, since it\textquotesingle{}s pretty much chosen at random, for now. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1control__center_1_1PEP_1_1PEP_a77d6cfa9b9fed7164b8c370b7147922f}{receive\+\_\+message} (self, msg)
+\begin{DoxyCompactList}\small\item\em The receive message applies to when a request comes to this point, for now, the \hyperlink{classtwitter_1_1control__center_1_1PEP_1_1PEP}{P\+EP} will start by forwarding that message After receiving the response from the P\+DP object, it will enforce a behaviour based on the response. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1control__center_1_1PEP_1_1PEP_ad3d661b529e2bd004eda5e3746dab298}{enforce} (self, data)
+\begin{DoxyCompactList}\small\item\em The enforce method will simply turn the response into a boolean value the bot can understand. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PEP_1_1PEP_a240eab8688830086e20637c393743af7}\label{classtwitter_1_1control__center_1_1PEP_1_1PEP_a240eab8688830086e20637c393743af7}} 
+{\bfseries pdp}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Policy Enforcement Point Class who connects to the P\+DP -\/ Policy Decision Point and forwards its result to the bot. 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PEP_1_1PEP_ad3d661b529e2bd004eda5e3746dab298}\label{classtwitter_1_1control__center_1_1PEP_1_1PEP_ad3d661b529e2bd004eda5e3746dab298}} 
+\index{twitter\+::control\+\_\+center\+::\+P\+E\+P\+::\+P\+EP@{twitter\+::control\+\_\+center\+::\+P\+E\+P\+::\+P\+EP}!enforce@{enforce}}
+\index{enforce@{enforce}!twitter\+::control\+\_\+center\+::\+P\+E\+P\+::\+P\+EP@{twitter\+::control\+\_\+center\+::\+P\+E\+P\+::\+P\+EP}}
+\subsubsection{\texorpdfstring{enforce()}{enforce()}}
+{\footnotesize\ttfamily def twitter.\+control\+\_\+center.\+P\+E\+P.\+P\+E\+P.\+enforce (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+
+
+The enforce method will simply turn the response into a boolean value the bot can understand. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & a dictionaru containing the result of the P\+DP\textquotesingle{}s logic\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Boolean permitting/denying the behaviour 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PEP_1_1PEP_a77d6cfa9b9fed7164b8c370b7147922f}\label{classtwitter_1_1control__center_1_1PEP_1_1PEP_a77d6cfa9b9fed7164b8c370b7147922f}} 
+\index{twitter\+::control\+\_\+center\+::\+P\+E\+P\+::\+P\+EP@{twitter\+::control\+\_\+center\+::\+P\+E\+P\+::\+P\+EP}!receive\+\_\+message@{receive\+\_\+message}}
+\index{receive\+\_\+message@{receive\+\_\+message}!twitter\+::control\+\_\+center\+::\+P\+E\+P\+::\+P\+EP@{twitter\+::control\+\_\+center\+::\+P\+E\+P\+::\+P\+EP}}
+\subsubsection{\texorpdfstring{receive\+\_\+message()}{receive\_message()}}
+{\footnotesize\ttfamily def twitter.\+control\+\_\+center.\+P\+E\+P.\+P\+E\+P.\+receive\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{msg }\end{DoxyParamCaption})}
+
+
+
+The receive message applies to when a request comes to this point, for now, the \hyperlink{classtwitter_1_1control__center_1_1PEP_1_1PEP}{P\+EP} will start by forwarding that message After receiving the response from the P\+DP object, it will enforce a behaviour based on the response. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & -\/ a dictionary containing the message to be passed on \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+control\+\_\+center/P\+E\+P.\+py\end{DoxyCompactItemize}

@@ -1,0 +1,60 @@
+\section*{Run Neo4j on docker}
+
+
+\begin{DoxyEnumerate}
+\item Pull a neo4j docker image -\/ version 3.\+5.\+15 (it is not the latest because , open\+S\+SL gives error with latest version) 
+\begin{DoxyCode}
+docker pull neo4j:3.5.15
+\end{DoxyCode}
+
+\item Create neo4j volumes for docker 
+\begin{DoxyCode}
+neo4j
+    conf
+    import
+    plugins
+
+mkdir ~/neo4j
+mkdir ~/neo4j/conf
+mkdir ~/neo4j/import
+mkdir ~/neo4j/plugins
+\end{DoxyCode}
+
+\item Download and move a apoc.\+jar to plugins folder $\sim$/neo4j/plugins
+\end{DoxyEnumerate}
+\begin{DoxyItemize}
+\item \href{https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/tag/3.5.0.9}{\tt Apoc.\+jar}
+\end{DoxyItemize}
+\begin{DoxyEnumerate}
+\item Download and move a neo4 config file to conf folder $\sim$/neo4j/conf
+\end{DoxyEnumerate}
+\begin{DoxyItemize}
+\item \href{http://s000.tinyupload.com/index.php?file_id=06009987256241638153}{\tt neo4j config file}
+\end{DoxyItemize}
+\begin{DoxyEnumerate}
+\item Run follow command 
+\begin{DoxyCode}
+docker run --name twitter\_neo4j -p7474:7474 -p 7687:7687 -v $HOME/neo4j/plugins:/plugins  -v 
+       $HOME/neo4j/conf:/conf  -v $HOME/neo4j/import:/import --user 1000:1000  neo4j:3.5.15 
+\end{DoxyCode}
+
+\item Access to localhost\+:7474 and change password
+\end{DoxyEnumerate}
+\begin{DoxyItemize}
+\item Default credentials
+\begin{DoxyItemize}
+\item Username \+: neo4j
+\item Password \+: neo4j
+\end{DoxyItemize}
+\end{DoxyItemize}
+\begin{DoxyEnumerate}
+\item In case you run a export process using apoc, they will be written on $\sim$/neo4j/import folder
+\end{DoxyEnumerate}
+
+\section*{Convert neo4j bots string ids to Integer ids}
+
+
+\begin{DoxyCode}
+MATCH (n:Bot) Set n.id = toInt(n.id)
+\end{DoxyCode}
+ 

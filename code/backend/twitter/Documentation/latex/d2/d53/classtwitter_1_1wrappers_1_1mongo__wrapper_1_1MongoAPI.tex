@@ -1,0 +1,240 @@
+\hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI}{}\section{twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+PI Class Reference}
+\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI}\index{twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+PI@{twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+PI}}
+
+
+Mongo Wrapper.  
+
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_afe7e92fefbe19be0561e810302fb4611}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_afe7e92fefbe19be0561e810302fb4611}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self)
+\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_ad1adb6d5aa5e20cc43b77ab11d6403a3}{verify\+\_\+integrity} (self, collection, document)
+\begin{DoxyCompactList}\small\item\em Verifies if the document to be inserted has the same structure as the other documents in the collection. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a7c5d38f4ab2e2680224d47278b01d3bb}{get\+\_\+count} (self, collection, data=\{\})
+\begin{DoxyCompactList}\small\item\em Gets the total number of documents in a given collection. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a3f6edee30773ed114e48e32d54d45574}{insert\+\_\+users} (self, data)
+\begin{DoxyCompactList}\small\item\em Inserts a new single document into our Users Collection. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a83f45c0a62f892db52f103756a523716}{insert\+\_\+tweets} (self, data)
+\begin{DoxyCompactList}\small\item\em Inserts a new single document into our Tweets Collection. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_af601222e36a6c0b6e131f788388ef992}{insert\+\_\+messages} (self, data)
+\begin{DoxyCompactList}\small\item\em Inserts a new single document into our Messages Collection. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_aa4b9a6fb625844e6b78072b8818affd7}{update\+\_\+users} (self, match, new\+\_\+data, all=True)
+\begin{DoxyCompactList}\small\item\em Updates one or many documents on Users Collection. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a2b622e0eb9a3f45ecdf4b5f620f0231e}{update\+\_\+tweets} (self, match, new\+\_\+data, all=True)
+\begin{DoxyCompactList}\small\item\em Updates one or many documents on Tweets Collection. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a731dfdca8eac58b3b2b052e0a28bffcd}{update\+\_\+messages} (self, match, new\+\_\+data, all=True)
+\begin{DoxyCompactList}\small\item\em Updates one or many documents on Messages Collection. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_aba0464a1d64aee45155401dd766d0d7e}{search}
+\begin{DoxyCompactList}\small\item\em Searches the a collection by a given search query. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a67a94b824415d1f71214935251f77a58}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a67a94b824415d1f71214935251f77a58}} 
+{\bfseries client}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_ad0c0cdc04fa5352dafc6f90f2e39b682}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_ad0c0cdc04fa5352dafc6f90f2e39b682}} 
+{\bfseries users}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a47a3a708904c23154a9eee64b4b694c9}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a47a3a708904c23154a9eee64b4b694c9}} 
+{\bfseries tweets}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_ad7ba1ef520ca7913137e8c2dcfbd26d4}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_ad7ba1ef520ca7913137e8c2dcfbd26d4}} 
+{\bfseries messages}
+\end{DoxyCompactItemize}
+\subsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a055a4f6364a27238fd68ba3f86391a80}{\+\_\+\+\_\+export\+\_\+data} (self, data, export\+\_\+type)
+\begin{DoxyCompactList}\small\item\em Exports a given array of documents into a csv or json. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Mongo Wrapper. 
+
+Class that acts as a wrapper for all methods related to our Mongo DB 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a055a4f6364a27238fd68ba3f86391a80}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a055a4f6364a27238fd68ba3f86391a80}} 
+\index{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}!\+\_\+\+\_\+export\+\_\+data@{\+\_\+\+\_\+export\+\_\+data}}
+\index{\+\_\+\+\_\+export\+\_\+data@{\+\_\+\+\_\+export\+\_\+data}!twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+export\+\_\+data()}{\_\_export\_data()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+P\+I.\+\_\+\+\_\+export\+\_\+data (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data,  }\item[{}]{export\+\_\+type }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Exports a given array of documents into a csv or json. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & An array of documents to export \\
+\hline
+{\em export\+\_\+type} & The type of the file we want to export to \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a7c5d38f4ab2e2680224d47278b01d3bb}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a7c5d38f4ab2e2680224d47278b01d3bb}} 
+\index{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}!get\+\_\+count@{get\+\_\+count}}
+\index{get\+\_\+count@{get\+\_\+count}!twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}}
+\subsubsection{\texorpdfstring{get\+\_\+count()}{get\_count()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+P\+I.\+get\+\_\+count (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{collection,  }\item[{}]{data = {\ttfamily \{\}} }\end{DoxyParamCaption})}
+
+
+
+Gets the total number of documents in a given collection. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em collection} & The collection we want to count the documents in \\
+\hline
+{\em data} & The params we want the counted documents to have. By default it counts all documents \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\+: The number of documents in a given collection 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_af601222e36a6c0b6e131f788388ef992}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_af601222e36a6c0b6e131f788388ef992}} 
+\index{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}!insert\+\_\+messages@{insert\+\_\+messages}}
+\index{insert\+\_\+messages@{insert\+\_\+messages}!twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}}
+\subsubsection{\texorpdfstring{insert\+\_\+messages()}{insert\_messages()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+P\+I.\+insert\+\_\+messages (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+
+
+Inserts a new single document into our Messages Collection. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & The document to be inserted. Should be in the form of a dictionary \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a83f45c0a62f892db52f103756a523716}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a83f45c0a62f892db52f103756a523716}} 
+\index{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}!insert\+\_\+tweets@{insert\+\_\+tweets}}
+\index{insert\+\_\+tweets@{insert\+\_\+tweets}!twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}}
+\subsubsection{\texorpdfstring{insert\+\_\+tweets()}{insert\_tweets()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+P\+I.\+insert\+\_\+tweets (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+
+
+Inserts a new single document into our Tweets Collection. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & The document to be inserted. Should be in the form of a dictionary \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a3f6edee30773ed114e48e32d54d45574}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a3f6edee30773ed114e48e32d54d45574}} 
+\index{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}!insert\+\_\+users@{insert\+\_\+users}}
+\index{insert\+\_\+users@{insert\+\_\+users}!twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}}
+\subsubsection{\texorpdfstring{insert\+\_\+users()}{insert\_users()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+P\+I.\+insert\+\_\+users (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+
+
+Inserts a new single document into our Users Collection. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & The document to be inserted. Should be in the form of a dictionary \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_aba0464a1d64aee45155401dd766d0d7e}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_aba0464a1d64aee45155401dd766d0d7e}} 
+\index{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}!search@{search}}
+\index{search@{search}!twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}}
+\subsubsection{\texorpdfstring{search()}{search()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+P\+I.\+search (\begin{DoxyParamCaption}\item[{}]{if,  }\item[{}]{collection,  }\item[{}]{not,  }\item[{}]{in,  }\item[{}]{users,  }\item[{}]{tweets,  }\item[{}]{messages }\end{DoxyParamCaption})}
+
+
+
+Searches the a collection by a given search query. 
+
+Can also export to a json or csv \begin{DoxyVerb}    @param collection: Specifies the collection we want to query
+    @param query: The search query we're using. By default it finds all documents
+    @param fields: Specifies the fields we want to show on the query result
+    @param single: Whether we want to search only for one document or for all that match the query. By default
+    we search for all
+    @param export_type: Specifies whether or not to export the result. Can either be None, json or csv
+    @return: The search result\end{DoxyVerb}
+ \mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a731dfdca8eac58b3b2b052e0a28bffcd}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a731dfdca8eac58b3b2b052e0a28bffcd}} 
+\index{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}!update\+\_\+messages@{update\+\_\+messages}}
+\index{update\+\_\+messages@{update\+\_\+messages}!twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}}
+\subsubsection{\texorpdfstring{update\+\_\+messages()}{update\_messages()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+P\+I.\+update\+\_\+messages (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{match,  }\item[{}]{new\+\_\+data,  }\item[{}]{all = {\ttfamily True} }\end{DoxyParamCaption})}
+
+
+
+Updates one or many documents on Messages Collection. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em match} & The params the documents we want to update must fulfill \\
+\hline
+{\em new\+\_\+data} & The new data we want to place \\
+\hline
+{\em all} & Whether we want to update all or just the first document found \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a2b622e0eb9a3f45ecdf4b5f620f0231e}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_a2b622e0eb9a3f45ecdf4b5f620f0231e}} 
+\index{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}!update\+\_\+tweets@{update\+\_\+tweets}}
+\index{update\+\_\+tweets@{update\+\_\+tweets}!twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}}
+\subsubsection{\texorpdfstring{update\+\_\+tweets()}{update\_tweets()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+P\+I.\+update\+\_\+tweets (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{match,  }\item[{}]{new\+\_\+data,  }\item[{}]{all = {\ttfamily True} }\end{DoxyParamCaption})}
+
+
+
+Updates one or many documents on Tweets Collection. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em match} & The params the documents we want to update must fulfill \\
+\hline
+{\em new\+\_\+data} & The new data we want to place \\
+\hline
+{\em all} & Whether we want to update all or just the first document found \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_aa4b9a6fb625844e6b78072b8818affd7}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_aa4b9a6fb625844e6b78072b8818affd7}} 
+\index{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}!update\+\_\+users@{update\+\_\+users}}
+\index{update\+\_\+users@{update\+\_\+users}!twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}}
+\subsubsection{\texorpdfstring{update\+\_\+users()}{update\_users()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+P\+I.\+update\+\_\+users (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{match,  }\item[{}]{new\+\_\+data,  }\item[{}]{all = {\ttfamily True} }\end{DoxyParamCaption})}
+
+
+
+Updates one or many documents on Users Collection. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em match} & The params the documents we want to update must fulfill \\
+\hline
+{\em new\+\_\+data} & The new data we want to place \\
+\hline
+{\em all} & Whether we want to update all or just the first document found \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_ad1adb6d5aa5e20cc43b77ab11d6403a3}\label{classtwitter_1_1wrappers_1_1mongo__wrapper_1_1MongoAPI_ad1adb6d5aa5e20cc43b77ab11d6403a3}} 
+\index{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}!verify\+\_\+integrity@{verify\+\_\+integrity}}
+\index{verify\+\_\+integrity@{verify\+\_\+integrity}!twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI@{twitter\+::wrappers\+::mongo\+\_\+wrapper\+::\+Mongo\+A\+PI}}
+\subsubsection{\texorpdfstring{verify\+\_\+integrity()}{verify\_integrity()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+mongo\+\_\+wrapper.\+Mongo\+A\+P\+I.\+verify\+\_\+integrity (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{collection,  }\item[{}]{document }\end{DoxyParamCaption})}
+
+
+
+Verifies if the document to be inserted has the same structure as the other documents in the collection. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em collection} & The collection we want to insert the document into \\
+\hline
+{\em document} & The document we want to insert \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\+: True or false wether the integrity is verified or not 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+wrappers/mongo\+\_\+wrapper.\+py\end{DoxyCompactItemize}

@@ -16,11 +16,16 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path
+from rest_framework_swagger.views import get_swagger_view
+
 
 from api.views import users, bots, tweets, policies, network
 
+schema_view = get_swagger_view(title='TwitterBots API')
 
 urlpatterns = [
+    url('documentation/', schema_view),
+
     path('admin/', admin.site.urls),
 
     path("twitter/users", users.twitter_users, name="twitter_users"),

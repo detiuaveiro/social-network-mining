@@ -1,0 +1,252 @@
+\hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI}{}\section{twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+PI Class Reference}
+\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI}\index{twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+PI@{twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+PI}}
+
+
+Postgre\+S\+QL.  
+
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a18adcc26af89165719564d5f90d5baa2}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a18adcc26af89165719564d5f90d5baa2}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self)
+\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a6b2b617a04ade9f12c63996210b2287b}{insert\+\_\+tweet} (self, data)
+\begin{DoxyCompactList}\small\item\em Attempts to insert a new Tweet item into the database. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_ae94da23c6824c6db14d62624eee98325}{insert\+\_\+user} (self, data)
+\begin{DoxyCompactList}\small\item\em Attempts to insert a new User item into the database. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a772c1a47184e165cfe9958c78a97a146}{search\+\_\+tweet} (self, params=None)
+\begin{DoxyCompactList}\small\item\em Searches and returns all Tweets if no data is specified, or the specific tweet matching the given parameters. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a84fa6c90c91f88a68284fba6812b043f}{search\+\_\+user} (self, params=None)
+\begin{DoxyCompactList}\small\item\em Searches and returns all Users if no data is specified, or the specific tweet matching the given parameters. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a85bdfe473c1bd0bd29e11c059e7cb3dc}{search\+\_\+logs} (self, params=None, limit=None)
+\begin{DoxyCompactList}\small\item\em Searches and returns all logs if no data is specified, or the specific logs matching the parameters. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_aeac23865a14e4f32e90cb7daa4a03e2b}{search\+\_\+policies} (self, params=None, limit=None)
+\begin{DoxyCompactList}\small\item\em Searches and returns all policies if no data is specified, or the specific policies matching the parameters. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_ae0a6d7340ffc3d83829308940a296393}{insert\+\_\+log} (self, data)
+\begin{DoxyCompactList}\small\item\em Attempts to insert a new Log item into the database. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a97ea1442f99c7a75f996024dd3e3da8c}{insert\+\_\+policy} (self, data)
+\begin{DoxyCompactList}\small\item\em Attempts to insert a new Log item into the database. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a93b51196b75f21a7061a027a0b530bf0}{delete\+\_\+policy} (self, policy\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Deletes the policy with the given id. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_aa32ee622eb02190f09ec38919123bbb5}{update\+\_\+policy} (self, policy\+\_\+id, params)
+\begin{DoxyCompactList}\small\item\em Updates the policy with the specified policy id, changing the params specified. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_afadde44f92f712763ef7d0aeaea2ef0f}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_afadde44f92f712763ef7d0aeaea2ef0f}} 
+{\bfseries conn}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_aed05e237c349e83bbcb76eccaf4f56df}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_aed05e237c349e83bbcb76eccaf4f56df}} 
+{\bfseries api\+\_\+types}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_ad5c56fa3b0421230409f1a4268fcfa26}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_ad5c56fa3b0421230409f1a4268fcfa26}} 
+{\bfseries filters}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Postgre\+S\+QL. 
+
+Encompasses methods used for all A\+PI and P\+DP interactions with our Postgre\+S\+QL DB. 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a93b51196b75f21a7061a027a0b530bf0}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a93b51196b75f21a7061a027a0b530bf0}} 
+\index{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}!delete\+\_\+policy@{delete\+\_\+policy}}
+\index{delete\+\_\+policy@{delete\+\_\+policy}!twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}}
+\subsubsection{\texorpdfstring{delete\+\_\+policy()}{delete\_policy()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+P\+I.\+delete\+\_\+policy (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{policy\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Deletes the policy with the given id. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em policy\+\_\+id} & The id of the policy we want to delete \\
+\hline
+{\em limit} & An optional parameter specifying the amount of logs to be retrieved\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The query\textquotesingle{}s result or error 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_ae0a6d7340ffc3d83829308940a296393}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_ae0a6d7340ffc3d83829308940a296393}} 
+\index{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}!insert\+\_\+log@{insert\+\_\+log}}
+\index{insert\+\_\+log@{insert\+\_\+log}!twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}}
+\subsubsection{\texorpdfstring{insert\+\_\+log()}{insert\_log()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+P\+I.\+insert\+\_\+log (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+
+
+Attempts to insert a new Log item into the database. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & The data of the item we want to insert. Should have \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A success or failure message (\{success\+: True/\+False ; error\+: None/\+Error\}) 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a97ea1442f99c7a75f996024dd3e3da8c}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a97ea1442f99c7a75f996024dd3e3da8c}} 
+\index{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}!insert\+\_\+policy@{insert\+\_\+policy}}
+\index{insert\+\_\+policy@{insert\+\_\+policy}!twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}}
+\subsubsection{\texorpdfstring{insert\+\_\+policy()}{insert\_policy()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+P\+I.\+insert\+\_\+policy (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+
+
+Attempts to insert a new Log item into the database. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & The data of the item we want to insert. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A success or failure message (\{success\+: True/\+False ; error\+: None/\+Error\}) 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a6b2b617a04ade9f12c63996210b2287b}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a6b2b617a04ade9f12c63996210b2287b}} 
+\index{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}!insert\+\_\+tweet@{insert\+\_\+tweet}}
+\index{insert\+\_\+tweet@{insert\+\_\+tweet}!twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}}
+\subsubsection{\texorpdfstring{insert\+\_\+tweet()}{insert\_tweet()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+P\+I.\+insert\+\_\+tweet (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+
+
+Attempts to insert a new Tweet item into the database. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & The data of the item we want to insert. Should have -\/ tweet\+\_\+id, user\+\_\+id, likes, retweets \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A success or failure message (\{success\+: True/\+False ; error\+: None/\+Error\}) 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_ae94da23c6824c6db14d62624eee98325}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_ae94da23c6824c6db14d62624eee98325}} 
+\index{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}!insert\+\_\+user@{insert\+\_\+user}}
+\index{insert\+\_\+user@{insert\+\_\+user}!twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}}
+\subsubsection{\texorpdfstring{insert\+\_\+user()}{insert\_user()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+P\+I.\+insert\+\_\+user (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+
+
+Attempts to insert a new User item into the database. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & The collection we want to insert the document into \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A success or failure message (\{success\+: True/\+False ; error\+: None/\+Error\}) 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a85bdfe473c1bd0bd29e11c059e7cb3dc}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a85bdfe473c1bd0bd29e11c059e7cb3dc}} 
+\index{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}!search\+\_\+logs@{search\+\_\+logs}}
+\index{search\+\_\+logs@{search\+\_\+logs}!twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}}
+\subsubsection{\texorpdfstring{search\+\_\+logs()}{search\_logs()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+P\+I.\+search\+\_\+logs (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{params = {\ttfamily None},  }\item[{}]{limit = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Searches and returns all logs if no data is specified, or the specific logs matching the parameters. 
+
+Can also specify the amount of logs to be retrieved. Data retrieved is ordered by the most recent
+
+
+\begin{DoxyParams}{Parameters}
+{\em params} & The parameters we want to query. Right now only bot\+\_\+id is supported \\
+\hline
+{\em limit} & An optional parameter specifying the amount of logs to be retrieved\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The query\textquotesingle{}s result or error 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_aeac23865a14e4f32e90cb7daa4a03e2b}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_aeac23865a14e4f32e90cb7daa4a03e2b}} 
+\index{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}!search\+\_\+policies@{search\+\_\+policies}}
+\index{search\+\_\+policies@{search\+\_\+policies}!twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}}
+\subsubsection{\texorpdfstring{search\+\_\+policies()}{search\_policies()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+P\+I.\+search\+\_\+policies (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{params = {\ttfamily None},  }\item[{}]{limit = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Searches and returns all policies if no data is specified, or the specific policies matching the parameters. 
+
+Can also specify the amount of poliecies to be retrieved.
+
+
+\begin{DoxyParams}{Parameters}
+{\em params} & The parameters we want to query. Right now only bot\+\_\+id is supported \\
+\hline
+{\em limit} & An optional parameter specifying the amount of logs to be retrieved\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The query\textquotesingle{}s result or error 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a772c1a47184e165cfe9958c78a97a146}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a772c1a47184e165cfe9958c78a97a146}} 
+\index{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}!search\+\_\+tweet@{search\+\_\+tweet}}
+\index{search\+\_\+tweet@{search\+\_\+tweet}!twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}}
+\subsubsection{\texorpdfstring{search\+\_\+tweet()}{search\_tweet()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+P\+I.\+search\+\_\+tweet (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{params = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Searches and returns all Tweets if no data is specified, or the specific tweet matching the given parameters. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em params} & The parameters we want to query \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The query\textquotesingle{}s result or error 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a84fa6c90c91f88a68284fba6812b043f}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_a84fa6c90c91f88a68284fba6812b043f}} 
+\index{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}!search\+\_\+user@{search\+\_\+user}}
+\index{search\+\_\+user@{search\+\_\+user}!twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}}
+\subsubsection{\texorpdfstring{search\+\_\+user()}{search\_user()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+P\+I.\+search\+\_\+user (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{params = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Searches and returns all Users if no data is specified, or the specific tweet matching the given parameters. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em params} & The parameters we want to query \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The query\textquotesingle{}s result or error 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_aa32ee622eb02190f09ec38919123bbb5}\label{classtwitter_1_1wrappers_1_1postgresql__wrapper_1_1PostgresAPI_aa32ee622eb02190f09ec38919123bbb5}} 
+\index{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}!update\+\_\+policy@{update\+\_\+policy}}
+\index{update\+\_\+policy@{update\+\_\+policy}!twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI@{twitter\+::wrappers\+::postgresql\+\_\+wrapper\+::\+Postgres\+A\+PI}}
+\subsubsection{\texorpdfstring{update\+\_\+policy()}{update\_policy()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+postgresql\+\_\+wrapper.\+Postgres\+A\+P\+I.\+update\+\_\+policy (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{policy\+\_\+id,  }\item[{}]{params }\end{DoxyParamCaption})}
+
+
+
+Updates the policy with the specified policy id, changing the params specified. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em params} & The parameters we want to update. \\
+\hline
+{\em policy\+\_\+id} & The id of the policy we want to update \\
+\hline
+{\em limit} & An optional parameter specifying the amount of logs to be retrieved\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The query\textquotesingle{}s result or error 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+wrappers/postgresql\+\_\+wrapper.\+py\end{DoxyCompactItemize}

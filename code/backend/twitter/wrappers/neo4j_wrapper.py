@@ -1,3 +1,6 @@
+## @package twitter.wrappers
+# coding: UTF-8
+
 import logging
 from neo4j import GraphDatabase
 import credentials

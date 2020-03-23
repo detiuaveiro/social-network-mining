@@ -1,0 +1,140 @@
+\hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP}{}\section{twitter.\+control\+\_\+center.\+P\+D\+P.\+P\+DP Class Reference}
+\label{classtwitter_1_1control__center_1_1PDP_1_1PDP}\index{twitter.\+control\+\_\+center.\+P\+D\+P.\+P\+DP@{twitter.\+control\+\_\+center.\+P\+D\+P.\+P\+DP}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{classtwitter_1_1control__center_1_1PDP_1_1PDP_adf406e4b2ad47c65c563ccc7eccaf871}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self)
+\item 
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_af72d3a9d5544d71cf6d96369e79d0d37}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_af72d3a9d5544d71cf6d96369e79d0d37}} 
+def {\bfseries receive\+\_\+request} (self, data)
+\item 
+def \hyperlink{classtwitter_1_1control__center_1_1PDP_1_1PDP_ad40264a760a1bdcb7563cb71955bb7f9}{evaluate} (self, msg)
+\item 
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_ae0c0a77717da7489004c0b34b9fec771}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_ae0c0a77717da7489004c0b34b9fec771}} 
+def {\bfseries send\+\_\+response} (self, msg)
+\item 
+def \hyperlink{classtwitter_1_1control__center_1_1PDP_1_1PDP_a5ac3bf5edb6f1913f09aecf0fe1ccc7f}{get\+\_\+first\+\_\+time\+\_\+list} (self)
+\item 
+def \hyperlink{classtwitter_1_1control__center_1_1PDP_1_1PDP_af6e05300883ddb19bcd9c6047e000ec1}{analyze\+\_\+tweet\+\_\+like} (self, data)
+\item 
+def \hyperlink{classtwitter_1_1control__center_1_1PDP_1_1PDP_ae173efc2c97b103ad0fbb0484c27835a}{analyze\+\_\+tweet\+\_\+retweet} (self, data)
+\item 
+def \hyperlink{classtwitter_1_1control__center_1_1PDP_1_1PDP_acbac2033b2853b89b3ee19ed040586e8}{analyze\+\_\+tweet\+\_\+reply} (self, data)
+\item 
+def \hyperlink{classtwitter_1_1control__center_1_1PDP_1_1PDP_ab9d69b04d93fc8b6fead61fd98991c22}{analyze\+\_\+follow\+\_\+user} (self, data)
+\item 
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_ac3d2ce5166ecab928b14d231b322523f}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_ac3d2ce5166ecab928b14d231b322523f}} 
+def {\bfseries close} (self)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_ac625eb8534bd8073613e9cccb21f1999}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_ac625eb8534bd8073613e9cccb21f1999}} 
+{\bfseries mongo}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_aba6c617ea663cbe89a36c4a879f0dda1}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_aba6c617ea663cbe89a36c4a879f0dda1}} 
+{\bfseries neo4j}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_afa535f42bb7f0e2e73f7acae08723756}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_afa535f42bb7f0e2e73f7acae08723756}} 
+{\bfseries postgres}
+\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_adf406e4b2ad47c65c563ccc7eccaf871}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_adf406e4b2ad47c65c563ccc7eccaf871}} 
+\index{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}!twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+init\+\_\+\+\_\+()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def twitter.\+control\+\_\+center.\+P\+D\+P.\+P\+D\+P.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Here starts the connections with the other DB wrappers
+\end{DoxyVerb}
+ 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_ab9d69b04d93fc8b6fead61fd98991c22}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_ab9d69b04d93fc8b6fead61fd98991c22}} 
+\index{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}!analyze\+\_\+follow\+\_\+user@{analyze\+\_\+follow\+\_\+user}}
+\index{analyze\+\_\+follow\+\_\+user@{analyze\+\_\+follow\+\_\+user}!twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}}
+\subsubsection{\texorpdfstring{analyze\+\_\+follow\+\_\+user()}{analyze\_follow\_user()}}
+{\footnotesize\ttfamily def twitter.\+control\+\_\+center.\+P\+D\+P.\+P\+D\+P.\+analyze\+\_\+follow\+\_\+user (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Algorithm to analyse if a bot should follow
+Takes the current statistics and turns them into a real value
+
+@param: data - dictionary containing the data of the bot and the tweet it wants to like
+@returns: float that will then be compared to the threshold previously defined
+\end{DoxyVerb}
+ \mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_af6e05300883ddb19bcd9c6047e000ec1}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_af6e05300883ddb19bcd9c6047e000ec1}} 
+\index{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}!analyze\+\_\+tweet\+\_\+like@{analyze\+\_\+tweet\+\_\+like}}
+\index{analyze\+\_\+tweet\+\_\+like@{analyze\+\_\+tweet\+\_\+like}!twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}}
+\subsubsection{\texorpdfstring{analyze\+\_\+tweet\+\_\+like()}{analyze\_tweet\_like()}}
+{\footnotesize\ttfamily def twitter.\+control\+\_\+center.\+P\+D\+P.\+P\+D\+P.\+analyze\+\_\+tweet\+\_\+like (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Algorithm to analyse if a bot should like a Tweet
+Takes the current statistics and turns them into a real value
+
+@param: data - dictionary containing the data of the bot and the tweet it wants to like
+@returns: float that will then be compared to the threshold previously defined
+\end{DoxyVerb}
+ \mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_acbac2033b2853b89b3ee19ed040586e8}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_acbac2033b2853b89b3ee19ed040586e8}} 
+\index{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}!analyze\+\_\+tweet\+\_\+reply@{analyze\+\_\+tweet\+\_\+reply}}
+\index{analyze\+\_\+tweet\+\_\+reply@{analyze\+\_\+tweet\+\_\+reply}!twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}}
+\subsubsection{\texorpdfstring{analyze\+\_\+tweet\+\_\+reply()}{analyze\_tweet\_reply()}}
+{\footnotesize\ttfamily def twitter.\+control\+\_\+center.\+P\+D\+P.\+P\+D\+P.\+analyze\+\_\+tweet\+\_\+reply (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Algorithm to analyse if a bot should reply
+Takes the current statistics and turns them into a real value
+
+@param: data - dictionary containing the data of the bot and the tweet it wants to like
+@returns: float that will then be compared to the threshold previously defined
+\end{DoxyVerb}
+ \mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_ae173efc2c97b103ad0fbb0484c27835a}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_ae173efc2c97b103ad0fbb0484c27835a}} 
+\index{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}!analyze\+\_\+tweet\+\_\+retweet@{analyze\+\_\+tweet\+\_\+retweet}}
+\index{analyze\+\_\+tweet\+\_\+retweet@{analyze\+\_\+tweet\+\_\+retweet}!twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}}
+\subsubsection{\texorpdfstring{analyze\+\_\+tweet\+\_\+retweet()}{analyze\_tweet\_retweet()}}
+{\footnotesize\ttfamily def twitter.\+control\+\_\+center.\+P\+D\+P.\+P\+D\+P.\+analyze\+\_\+tweet\+\_\+retweet (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Algorithm to analyse if a bot should retweet a Tweet
+Takes the current statistics and turns them into a real value
+
+@param: data - dictionary containing the data of the bot and the tweet it wants to like
+@returns: float that will then be compared to the threshold previously defined
+\end{DoxyVerb}
+ \mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_ad40264a760a1bdcb7563cb71955bb7f9}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_ad40264a760a1bdcb7563cb71955bb7f9}} 
+\index{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}!evaluate@{evaluate}}
+\index{evaluate@{evaluate}!twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}}
+\subsubsection{\texorpdfstring{evaluate()}{evaluate()}}
+{\footnotesize\ttfamily def twitter.\+control\+\_\+center.\+P\+D\+P.\+P\+D\+P.\+evaluate (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{msg }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Workflow of this function:
+    1. pre-processing of request (filter, prepare db request, etc)
+    2. request to DB
+    3. get request from DB
+    4. post-processing of response (clean response from db, etc)
+    5. DECIDE (PERMIT, DENY)
+
+@param msg : dict
+    Dictionary with necessary fields to perform the query.
+    Something of this form: { "type" : action, data }
+
+@return response:
+    A response with either "DENY" or "PERMIT"
+\end{DoxyVerb}
+ \mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_a5ac3bf5edb6f1913f09aecf0fe1ccc7f}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_a5ac3bf5edb6f1913f09aecf0fe1ccc7f}} 
+\index{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}!get\+\_\+first\+\_\+time\+\_\+list@{get\+\_\+first\+\_\+time\+\_\+list}}
+\index{get\+\_\+first\+\_\+time\+\_\+list@{get\+\_\+first\+\_\+time\+\_\+list}!twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}}
+\subsubsection{\texorpdfstring{get\+\_\+first\+\_\+time\+\_\+list()}{get\_first\_time\_list()}}
+{\footnotesize\ttfamily def twitter.\+control\+\_\+center.\+P\+D\+P.\+P\+D\+P.\+get\+\_\+first\+\_\+time\+\_\+list (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}When a bot connects for the first time to Twitter, he'll have to start following people This is the old way:
+having a set list of possible users and the bot will follow a random group from those followers In future
+iterations we may alter this so that there are possible branches a bot could start with: politics,
+football fan, etc., each branch with a list of possible users to follow
+
+@return: List of users the bot will start following
+\end{DoxyVerb}
+ 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+control\+\_\+center/P\+D\+P.\+py\end{DoxyCompactItemize}
