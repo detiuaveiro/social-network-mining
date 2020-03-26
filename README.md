@@ -109,6 +109,7 @@ Then use the command to start the web app on port 3000:
  ```
 
  - On the server, it is necessary to run the bots with the environment variable `PROXY` with the proxy value (the default value is the localhost value)
+ - More info about how to configure ToR with python on [link](https://medium.com/@jasonrigden/using-tor-with-the-python-request-library-79015b2606cb)
 
 
 ## Server Deploy
