@@ -20,13 +20,14 @@ if __name__ == "__main__":
 		DATA_EXCHANGE: MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY)
 	}
 
-	consumer_key = os.environ.get('CONSUMER_KEY')
-	consumer_secret = os.environ.get('CONSUMER_SECRET')
-	token = os.environ.get('TOKEN')
-	token_secret = os.environ.get('TOKEN_SECRET')
+	consumer_key = os.environ.get('CONSUMER_KEY', '')
+	consumer_secret = os.environ.get('CONSUMER_SECRET', '')
+	token = os.environ.get('TOKEN', '')
+	token_secret = os.environ.get('TOKEN_SECRET', '')
+	proxy = os.environ.get('proxy', 'socks5h://localhost:9050')
 
 	twitter_auth = tweepy.OAuthHandler(consumer_key=consumer_key, consumer_secret=consumer_secret)
 	twitter_auth.set_access_token(key=token, secret=token_secret)
 	bot = TwitterBot(RABBITMQ_FULL_HTTP_URL, RABBITMQ_USERNAME, RABBITMQ_PASSWORD, VHOST, messaging_settings, bot_id,
-					 tweepy.API(auth_handler=twitter_auth, wait_on_rate_limit=True))
+					 tweepy.API(auth_handler=twitter_auth, wait_on_rate_limit=True, proxy=proxy))
 	bot.run()
