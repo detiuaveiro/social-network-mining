@@ -20,7 +20,7 @@ POSTGRES_DB = os.environ.get('POSTGRES_DB', 'twitter')
 POSTGRES_USERNAME = os.environ.get('POSTGRES_USERNAME', 'admin')
 POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD', 'admin')
 
-# -----------------------------------------------------------
+# ----------------------------------------------------------- 
 # RABBITMQ
 # -----------------------------------------------------------
 RABBITMQ_URL = os.environ.get('RABBITMQ_URL', 'localhost')
