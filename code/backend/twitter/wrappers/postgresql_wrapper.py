@@ -1,3 +1,6 @@
+## @package twitter.wrappers
+# coding: UTF-8
+
 import psycopg2
 import logging
 

@@ -1,3 +1,6 @@
+## @package twitter.bots
+# coding: UTF-8
+
 import logging
 from typing import List, Union
 
