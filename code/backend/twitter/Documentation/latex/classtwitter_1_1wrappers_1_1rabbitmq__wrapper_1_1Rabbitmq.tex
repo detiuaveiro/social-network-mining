@@ -1,0 +1,80 @@
+\hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq}{}\section{twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq Class Reference}
+\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq}\index{twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq@{twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq}}
+
+
+Inheritance diagram for twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=229pt]{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aa137a552cf99777a1effb7737d475663}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, host=R\+A\+B\+B\+I\+T\+M\+Q\+\_\+\+U\+RL, port=R\+A\+B\+B\+I\+T\+M\+Q\+\_\+\+P\+O\+RT, vhost=V\+H\+O\+ST, username=R\+A\+B\+B\+I\+T\+M\+Q\+\_\+\+U\+S\+E\+R\+N\+A\+ME, password=R\+A\+B\+B\+I\+T\+M\+Q\+\_\+\+P\+A\+S\+S\+W\+O\+RD)
+\item 
+def \hyperlink{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a910cadec1f119ffca78becc55af22a43}{received\+\_\+message\+\_\+handler} (self, channel, method, properties, body)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_acb67b1c76dadbfd84d08e019ea1dd20b}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_acb67b1c76dadbfd84d08e019ea1dd20b}} 
+{\bfseries pika\+\_\+parameters}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a0dddc4b7768bbb614e6fabb0cb629ab7}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a0dddc4b7768bbb614e6fabb0cb629ab7}} 
+{\bfseries reconnection\+\_\+attempt}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aaf674e6a136bc8be2dc27ef320641156}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aaf674e6a136bc8be2dc27ef320641156}} 
+{\bfseries M\+A\+X\+\_\+\+R\+E\+C\+O\+N\+N\+E\+C\+T\+I\+O\+NS}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aa9419b8984be09e42873e11572e93139}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aa9419b8984be09e42873e11572e93139}} 
+{\bfseries connection}
+\item 
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a049721cef6898206c8e6dab244b144fd}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a049721cef6898206c8e6dab244b144fd}} 
+{\bfseries channel}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\begin{DoxyVerb}Class representing Rabbit MQ\end{DoxyVerb}
+ 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aa137a552cf99777a1effb7737d475663}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_aa137a552cf99777a1effb7737d475663}} 
+\index{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq@{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}!twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq@{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+init\+\_\+\+\_\+()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{host = {\ttfamily RABBITMQ\+\_\+URL},  }\item[{}]{port = {\ttfamily RABBITMQ\+\_\+PORT},  }\item[{}]{vhost = {\ttfamily VHOST},  }\item[{}]{username = {\ttfamily RABBITMQ\+\_\+USERNAME},  }\item[{}]{password = {\ttfamily RABBITMQ\+\_\+PASSWORD} }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Create a Rabbit MQ instance which represents a connection to a Rabbit MQ server
+
+Parameters
+----------
+host : str
+    Hostname
+port : int
+    Port Number
+vhost : str
+    Virtual host used to avoid conflicts between instances
+username : str
+    Username for authentication
+password : str
+    Password for authentication
+\end{DoxyVerb}
+ 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a910cadec1f119ffca78becc55af22a43}\label{classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq_a910cadec1f119ffca78becc55af22a43}} 
+\index{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq@{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq}!received\+\_\+message\+\_\+handler@{received\+\_\+message\+\_\+handler}}
+\index{received\+\_\+message\+\_\+handler@{received\+\_\+message\+\_\+handler}!twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq@{twitter\+::wrappers\+::rabbitmq\+\_\+wrapper\+::\+Rabbitmq}}
+\subsubsection{\texorpdfstring{received\+\_\+message\+\_\+handler()}{received\_message\_handler()}}
+{\footnotesize\ttfamily def twitter.\+wrappers.\+rabbitmq\+\_\+wrapper.\+Rabbitmq.\+received\+\_\+message\+\_\+handler (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{channel,  }\item[{}]{method,  }\item[{}]{properties,  }\item[{}]{body }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Function to rewrite on the class that inherits this class
+\end{DoxyVerb}
+ 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+wrappers/rabbitmq\+\_\+wrapper.\+py\end{DoxyCompactItemize}

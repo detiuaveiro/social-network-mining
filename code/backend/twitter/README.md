@@ -104,3 +104,17 @@ $ psql -d twitter_postgres -U admin -W
 ```
 { "id" : 1, "API_type": "Twitter", "filter": "Target", "name": "Politica", "tags": ["PSD", "CDS"], "bots": [1, 2] }
 ```
+
+# Documentation
+## Swagger
+You can check the documentation created for the REST API through the link:
+ - *URL*/documentation
+It should automatically change without any further commands
+
+## Doxyfile
+You can check the documentation created for the other python modules by searching for the index.html file in the Documentation subdirectory
+
+To redo the documentation, use the command:
+```
+$ doxygen Doxyfile
+```

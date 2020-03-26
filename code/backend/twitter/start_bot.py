@@ -1,3 +1,5 @@
+## @package twitter
+
 import os
 
 from bots.rabbit_messaging import MessagingSettings
