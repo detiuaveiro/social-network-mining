@@ -24,7 +24,7 @@ if __name__ == "__main__":
 	consumer_secret = os.environ.get('CONSUMER_SECRET', '')
 	token = os.environ.get('TOKEN', '')
 	token_secret = os.environ.get('TOKEN_SECRET', '')
-	proxy = os.environ.get('proxy', 'socks5h://localhost:9050')
+	proxy = os.environ.get('PROXY', 'socks5h://localhost:9050')
 
 	twitter_auth = tweepy.OAuthHandler(consumer_key=consumer_key, consumer_secret=consumer_secret)
 	twitter_auth.set_access_token(key=token, secret=token_secret)

@@ -100,6 +100,16 @@ Then use the command to start the web app on port 3000:
  $ cypher-shell            # to set new password
  ```
 
+## Configure ToR (necessary on the deployment server and on the programmers machines)
+ - Instalation and setting:
+ ```bash
+ $ sudo apt-get install tor         # instalation on Debian systems
+ $ sudo pacman -S tor               # instalation on Arch systems
+ $ sudo systemctl start tor         # on the deployment server is recomended to enable the service instead of starting it each time the machine boots
+ ```
+
+ - On the server, it is necessary to run the bots with the environment variable `PROXY` with the proxy value (the default value is the localhost value)
+
 
 ## Server Deploy
  - First, it's necessary to make a pull request to github with the tag `deploy` with the code we want to deploy next to the server. This will trigger the deploy workflow, that will create new images of the code to be deployed.
