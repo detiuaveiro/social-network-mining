@@ -88,3 +88,6 @@ cache_*.json
 
 # Django
 migrations/
+
+# sonnarqube
+.scannerwork/
