@@ -1,1 +1,0 @@
-Não pusemos foreign key na tabela tweet para o atributo user_id para evitar edge case em que registamos um tweet antes de utilizarmos o user
