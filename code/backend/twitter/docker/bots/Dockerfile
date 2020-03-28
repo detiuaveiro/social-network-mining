@@ -5,6 +5,7 @@ MAINTAINER Pedro Escaleira
 RUN apt-get update
 RUN apt-get install -y tar git curl nano vim wget net-tools build-essential
 RUN apt-get install -y python3 python3-dev python-distribute python3-pip python-pip
+RUN apt-get install tor
 
 WORKDIR /twitter
 
@@ -28,4 +29,5 @@ ENV TOKEN=$TOKEN
 ENV TOKEN_SECRET=$TOKEN_SECRET
 
 # run
+CMD [ "systemctl", "start", "tor" ]
 CMD [ "python3", "start_bot.py" ]
