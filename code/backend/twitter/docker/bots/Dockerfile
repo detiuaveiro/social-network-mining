@@ -29,5 +29,4 @@ ENV TOKEN=$TOKEN
 ENV TOKEN_SECRET=$TOKEN_SECRET
 
 # run
-CMD [ "systemctl", "start", "tor" ]
 CMD [ "python3", "start_bot.py" ]
