@@ -19,6 +19,8 @@ var searchData=
   ['_5fclose',['_close',['../dc/ddd/classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq.html#aeb0b7d3eee2a07ca9b795924e2af584c',1,'twitter::wrappers::rabbitmq_wrapper::Rabbitmq']]],
   ['_5freceive',['_receive',['../dc/ddd/classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq.html#a430a4af33557422e4a0575323b6d7027',1,'twitter::wrappers::rabbitmq_wrapper::Rabbitmq']]],
   ['_5freceive_5fmessage',['_receive_message',['../d7/d3b/classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging.html#a9c1185869b76c0f456bda928697fec04',1,'twitter::bots::rabbit_messaging::RabbitMessaging']]],
+  ['_5fscore_5ffor_5fpolicies',['_score_for_policies',['../d6/d66/classtwitter_1_1control__center_1_1PDP_1_1PDP.html#ab3d879dc9a07fad8632ec8db1ecc93c8',1,'twitter::control_center::PDP::PDP']]],
+  ['_5fscore_5ffor_5frelation',['_score_for_relation',['../d6/d66/classtwitter_1_1control__center_1_1PDP_1_1PDP.html#ab958d1ecb98242eace6e2b55f61fefa2',1,'twitter::control_center::PDP::PDP']]],
   ['_5fsend',['_send',['../dc/ddd/classtwitter_1_1wrappers_1_1rabbitmq__wrapper_1_1Rabbitmq.html#aff19e59d7fd9025f21972e331a1fdfde',1,'twitter::wrappers::rabbitmq_wrapper::Rabbitmq']]],
   ['_5fsend_5fmessage',['_send_message',['../d7/d3b/classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging.html#a82b3f62dcb3c12e53c03678128038832',1,'twitter::bots::rabbit_messaging::RabbitMessaging']]],
   ['_5fsetup_5fmessaging',['_setup_messaging',['../d7/d3b/classtwitter_1_1bots_1_1rabbit__messaging_1_1RabbitMessaging.html#a90cec3aa9d23d01e1bc04949226b2837',1,'twitter::bots::rabbit_messaging::RabbitMessaging']]],
