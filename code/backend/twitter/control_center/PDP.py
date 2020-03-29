@@ -366,7 +366,8 @@ class PDP:
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
 		"""
-		# This was not implemented last year
+		# TODO -> o mesmo que nas duas funções acima, mas verificar nos logs se o bot já deu reply ao tweet pedido:
+		#  nesse caso, obviamente não deixar fazer o reply.
 		return 0
 
 	def analyze_follow_user(self, data):
