@@ -62,7 +62,9 @@ class PDP:
 		if it's a REQUEST_FOLLOW_USER, check the rules to see if it is accepted
 		if it's a first time user, give some usernames
 		'''
-		if msg["type"] == PoliciesTypes.REQUEST_TWEET_LIKE:
+		msg_type = msg["type"]
+
+		if msg_type == PoliciesTypes.REQUEST_TWEET_LIKE:
 			'''
 			bot_id
 			user_id
@@ -73,8 +75,7 @@ class PDP:
 			'''
 			res = self.analyze_tweet_like(msg)
 			evaluate_answer = res > THRESHOLD_LIKE
-
-		elif msg["type"] == PoliciesTypes.REQUEST_TWEET_RETWEET:
+		elif msg_type == PoliciesTypes.REQUEST_TWEET_RETWEET:
 			'''
 			bot_id
 			user_id
@@ -85,8 +86,7 @@ class PDP:
 			'''
 			res = self.analyze_tweet_retweet(msg)
 			evaluate_answer = res > THRESHOLD_LIKE
-
-		elif msg["type"] == PoliciesTypes.REQUEST_TWEET_REPLY:
+		elif msg_type == PoliciesTypes.REQUEST_TWEET_REPLY:
 			'''
 			bot_id 
 			user_id       
@@ -99,8 +99,7 @@ class PDP:
 			'''
 			res = self.analyze_tweet_reply(msg)
 			evaluate_answer = True
-
-		elif msg["type"] == PoliciesTypes.REQUEST_FOLLOW_USER:
+		elif msg_type == PoliciesTypes.REQUEST_FOLLOW_USER:
 			'''
 			bot_id
 			user_id
@@ -124,7 +123,6 @@ class PDP:
 						return PERMIT
 			'''
 			evaluate_answer = self.analyze_follow_user(msg)
-
 		if evaluate_answer:
 			return self.send_response({"response": "PERMIT"})
 		else:

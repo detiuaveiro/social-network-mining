@@ -1,6 +1,8 @@
 import json
 import logging
+import random
 
+from control_center.text_generator import DumbReplier, DumbReplierTypes
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
@@ -258,17 +260,20 @@ class Control_Center(Rabbitmq):
 		})
 
 		if request_accepted:
-			log.info("Like request accepted")
+			log.info("Reply request accepted")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": f"REPLY REQUEST ACCEPTED: {data['bot_id']} and {data['data']['id']} \
 				for tweet {data['data']['id']}"
 			})
-			self.send(
-				data['bot_id'], ServerToBot.POST_TWEET,
-				data['data']['id'])
+
+			replier = DumbReplier(random.choice(list(DumbReplierTypes.__members__.values())))
+			self.send(data['bot_id'], ServerToBot.POST_TWEET, {
+				"reply_to": data['data']['id'],
+				"reply_text": replier.generate_response(data['data']['text'])
+			})
 		else:
-			log.warning("Like request denied")
+			log.warning("Reply request denied")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": f"REPLY REQUEST DENIED: {data['bot_id']} and {data['data']['id']} \
