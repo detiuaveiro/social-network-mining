@@ -33,7 +33,6 @@ class PDP:
 		self.mongo = MongoAPI()
 		self.neo4j = Neo4jAPI()
 		self.postgres = PostgresAPI()
-		pass
 
 	def receive_request(self, data):
 		# Leaving this as a simple function call, leaving the room for handling the data available
@@ -192,16 +191,11 @@ class PDP:
 
 		@returns True or False depending if the bot was indeed targeted
 		"""
-		for mentions in data["tweet_entities"]["user_mentions"]:
-			if mentions["screen_name"] in policy["bots"]:
+		for mention in data["tweet_entities"]["user_mentions"]:
+			if mention["id"] in policy["bots"]:
 				return True
 
-		user = self.mongo.find(
-			collection="users",
-			query={"id": data["user_id"]},
-			single=True
-		)
-		return user in policy["bots"]
+		return data["user_id"] in policy["bots"]
 
 	def _tweet_has_keywords(self, policy, data):
 		"""
