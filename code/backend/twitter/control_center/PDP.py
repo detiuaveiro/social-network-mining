@@ -216,17 +216,14 @@ class PDP:
 
 		return False
 
-	def analyze_tweet_like(self, data):
+	def _score_for_relation(self, data):
 		"""
-		Algorithm to analyse if a bot should like a Tweet
-		Takes the current statistics and turns them into a real value
+		Algorithm to attribute a score if there's a follow relationship between the user and the bot
 
-		@param: data - dictionary containing the data of the bot and the tweet it wants to like
-		@returns: float that will then be compared to the threshold previously defined
+		@param: data - dictionary containing the data of the bot and the tweet to be analyzed
+		@returns: float corresponding for the constant attributed to the situation
 		"""
 
-		heuristic_value = 0
-		# Verify if there's a relation between the bot and the user
 		type1 = "Bot" if self.neo4j.check_bot_exists(data["bot_id"]) else "User"
 		type2 = "Bot" if self.neo4j.check_bot_exists(data["user_id"]) else "User"
 		relation_exists = self.neo4j.check_relationship_exists({
@@ -235,10 +232,17 @@ class PDP:
 			"id_2": data["user_id"],
 			"type_2": type2
 		})
-		if relation_exists:
-			heuristic_value += BOT_FOLLOWS_USER
+		return BOT_FOLLOWS_USER if relation_exists else 0
 
-		# Next we check if the bot and the user have some policies in common
+	def _score_for_policies(self, data):
+		"""
+		Algorithm to atribute a score for the relation the bot and the user have with the policies
+		If the bot is being targeted by some policy, or if the tweet has a special keyword, it will return the
+		appropriate score
+
+		@param: data - dictionary containing the data of the bot and the tweet to be analyzed
+		@returns: float corresponding for the constant attributed to the situation
+		"""
 		policy_list = self.postgres.search_policies({
 			"bot_id": data["bot_id"]
 		})
@@ -250,13 +254,32 @@ class PDP:
 					# Check if our bot is being targeted
 
 					if self._bot_is_targeted(policy, data):
-						heuristic_value += POLICY_USER_IS_TARGETED
+						return POLICY_USER_IS_TARGETED
 
 				elif policy["filter"] == "Keywords":
 					# Check if tweet has any important keywords (be it a hashtag or a commonly found word)
 
 					if self._tweet_has_keywords(policy, data):
-						heuristic_value += POLICY_KEYWORDS_MATCHES
+						return POLICY_KEYWORDS_MATCHES
+
+		return 0
+
+	def analyze_tweet_like(self, data):
+		"""
+		Algorithm to analyse if a bot should like a Tweet
+		Takes the current statistics and turns them into a real value
+
+		@param: data - dictionary containing the data of the bot and the tweet it wants to like
+		@returns: float that will then be compared to the threshold previously defined
+		"""
+
+		heuristic_value = 0
+
+		# Verify if there's a relation between the bot and the user
+		heuristic_value += self._score_for_relation(data)
+
+		# Next we check if the bot and the user have some policies in common
+		heuristic_value += self._score_for_policies(data)
 
 		# We then check if the bot has retweeted the tweet
 		bot_logs = self.postgres.search_logs({"bot_id": data["bot_id"]})
@@ -300,33 +323,10 @@ class PDP:
 
 		heuristic_value = 0
 		# Verify if there's a relation between the bot and the user
-		type1 = "Bot" if self.neo4j.check_bot_exists(data["bot_id"]) else "User"
-		type2 = "Bot" if self.neo4j.check_bot_exists(data["user_id"]) else "User"
-		relation_exists = self.neo4j.check_relationship_exists({
-			"id_1": data["bot_id"],
-			"type_1": type1,
-			"id_2": data["user_id"],
-			"type_2": type2
-		})
+		heuristic_value += self._score_for_relation(data)
 
 		# Next we check if the bot and the user have some policies in common
-		policy_list = self.postgres.search_policies({
-			"bot_id": data["bot_id"]
-		})
-
-		if policy_list['success']:
-			for policy in policy_list['data']:
-				if policy["filter"] == "Target":
-					# Check if our bot is being targeted
-
-					if self._bot_is_targeted(policy, data):
-						heuristic_value += POLICY_USER_IS_TARGETED
-
-				elif policy["filter"] == "Keywords":
-					# Check if tweet has any important keywords (be it a hashtag or a commonly found word)
-
-					if self._tweet_has_keywords(policy, data):
-						heuristic_value += POLICY_KEYWORDS_MATCHES
+		heuristic_value += self._score_for_policies(data)
 
 		# We then check if the bot has retweeted the tweet
 		bot_logs = self.postgres.search_logs({"bot_id": data["bot_id"]})
