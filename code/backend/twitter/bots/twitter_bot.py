@@ -165,7 +165,9 @@ class TwitterBot(RabbitMessaging):
 				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_LIKE)
 			if not tweet.retweeted:
 				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_RETWEET)
-			# if not tweet.
+
+			# ask to reply to tweet
+			self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_REPLY)
 
 			if not jump_users:
 				tweet_user = tweet.user
@@ -321,6 +323,9 @@ class TwitterBot(RabbitMessaging):
 		try:
 			tweet: Status = self._twitter_api.update_status(**args)
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
+
+			if reply_id:
+				self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
 		except TweepError as error:
 			logger.error(f"Error posting a new tweet: {error}")
 
@@ -350,9 +355,6 @@ class TwitterBot(RabbitMessaging):
 					elif task_type == messages_types.ServerToBot.FIND_FOLLOWERS:
 						pass
 					elif task_type == messages_types.ServerToBot.POST_TWEET:
-						args = {}
-						if task_params['data']:
-							args['']
 						self.__post_tweet(**task_params)
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")

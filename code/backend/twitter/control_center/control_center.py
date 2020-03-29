@@ -269,8 +269,8 @@ class Control_Center(Rabbitmq):
 
 			replier = DumbReplier(random.choice(list(DumbReplierTypes.__members__.values())))
 			self.send(data['bot_id'], ServerToBot.POST_TWEET, {
-				"reply_to": data['data']['id'],
-				"reply_text": replier.generate_response(data['data']['text'])
+				"reply_id": data['data']['id'],
+				"text": replier.generate_response(data['data']['text'])
 			})
 		else:
 			log.warning("Reply request denied")
