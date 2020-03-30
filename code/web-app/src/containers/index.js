@@ -1,3 +1,4 @@
 import DefaultLayout from './DefaultLayout';
+import LandingLayout from './LandingPageLayout';
 
-export { DefaultLayout };
+export { DefaultLayout, LandingLayout };
