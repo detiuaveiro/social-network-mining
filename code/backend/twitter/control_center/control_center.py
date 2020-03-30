@@ -1,8 +1,6 @@
-## @package twitter.control_center
-# coding: UTF-8
-
 import json
 import logging
+
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
@@ -10,6 +8,7 @@ from wrappers.rabbitmq_wrapper import Rabbitmq
 
 from control_center.enums import MessageTypes, ResponseTypes, PoliciesTypes
 from control_center.PEP import PEP
+from bots.messages_types import ServerToBot, BotToServer
 
 import log_actions
 
@@ -21,7 +20,7 @@ handler.setFormatter(logging.Formatter(
 log.addHandler(handler)
 
 
-class DBWriter(Rabbitmq):
+class Control_Center(Rabbitmq):
 	"""
 	Class to smulate the behaviour of a bot:
 	On receiving a message from a message broker, this class will act accordingly
@@ -34,7 +33,7 @@ class DBWriter(Rabbitmq):
 
 		super().__init__()
 
-		self.postgress_client = PostgresAPI()
+		self.postgres_client = PostgresAPI()
 		self.mongo_client = MongoAPI()
 		self.neo4j_client = Neo4jAPI()
 		self.pep = PEP()
@@ -42,43 +41,43 @@ class DBWriter(Rabbitmq):
 	def action(self, message):
 		message_type = message['type']
 
-		if message_type == MessageTypes.USER_FOLLOWED:
+		if message_type == BotToServer.EVENT_USER_FOLLOWED:
 			self.follow_user(message)
 
-		elif message_type == MessageTypes.TWEET_LIKED:
+		elif message_type == BotToServer.EVENT_TWEET_LIKED:
 			self.like_tweet(message)
 
-		elif message_type == MessageTypes.TWEET_RETWEETDED:
+		elif message_type == BotToServer.EVENT_TWEET_RETWEETED:
 			self.retweet(message)
 
-		elif message_type == MessageTypes.TWEET_REPLIED:
+		elif message_type == BotToServer.EVENT_TWEET_REPLIED:
 			self.reply_tweet(message)
 
-		elif message_type == MessageTypes.REQUEST_TWEET_LIKE:
+		elif message_type == BotToServer.QUERY_TWEET_LIKE:
 			self.request_tweet_like(message)
 
-		elif message_type == MessageTypes.REQUEST_TWEET_RETWEET:
+		elif message_type == BotToServer.QUERY_TWEET_RETWEET:
 			self.request_retweet(message)
 
-		elif message_type == MessageTypes.REQUEST_TWEET_REPLY:
+		elif message_type == BotToServer.QUERY_TWEET_REPLY:
 			self.request_tweet_reply(message)
 
-		elif message_type == MessageTypes.REQUEST_FOLLOW_USER:
+		elif message_type == BotToServer.QUERY_FOLLOW_USER:
 			self.request_follow_user(message)
 
-		elif message_type == MessageTypes.SAVE_USER:
+		elif message_type == BotToServer.SAVE_USER:
 			self.save_user(message)
 
-		elif message_type == MessageTypes.SAVE_TWEET:
+		elif message_type == BotToServer.SAVE_TWEET:
 			self.save_tweet(message)
 
-		elif message_type == MessageTypes.SAVE_DIRECT_MESSAGES:
+		elif message_type == BotToServer.SAVE_DIRECT_MESSAGES:
 			self.save_dm(message)
 
-		elif message_type == MessageTypes.ERROR_BOT:
+		elif message_type == BotToServer.EVENT_USER_BLOCKED:
 			self.error(message)
 
-		elif message_type == MessageTypes.FIND_FOLLOWERS:
+		elif message_type == BotToServer.SAVE_FOLLOWERS:
 			self.find_followers(message)
 
 	# Need DB API now
@@ -105,7 +104,7 @@ class DBWriter(Rabbitmq):
 			log.info("The bot already follows the user")
 			return
 		self.neo4j_client.add_relationship(relationship)
-		self.postgress_client.insert_log({
+		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": log_actions.FOLLOW,
 			"target_id": {data['data']['id']}
@@ -118,7 +117,7 @@ class DBWriter(Rabbitmq):
 
 		@param data dict with the bot id and the tweet he liked
 		"""
-		self.postgress_client.insert_log({
+		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": log_actions.TWEET_LIKE,
 			"target_id": {data['data']['id']}
@@ -131,7 +130,7 @@ class DBWriter(Rabbitmq):
 
 		@param data: dict containing bot and the tweet he retweeted
 		"""
-		self.postgress_client.insert_log({
+		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": log_actions.RETWEET,
 			"target_id": {data['data']['id']}
@@ -144,7 +143,7 @@ class DBWriter(Rabbitmq):
 
 		@param data: dict contaning bot and the reply they made
 		"""
-		self.postgress_client.insert_log({
+		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": log_actions.TWEET_REPLY,
 			"target_id": {data['data']['id']}
@@ -160,7 +159,7 @@ class DBWriter(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 		log.info("Request a like to a tweet")
-		self.postgress_client.insert_log({
+		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": log_actions.LIKE_REQ,
 			"target_id": {data['data']['id']}
@@ -177,18 +176,18 @@ class DBWriter(Rabbitmq):
 
 		if request_accepted:
 			log.info("Like request accepted")
-			self.postgress_client.insert_log({
+			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.LIKE_REQ_ACCEPT,
 				"target_id": {data['data']['id']}
 			})
 			self.send(
-				data['bot_id'], ResponseTypes.LIKE_TWEETS,
+				data['bot_id'], ServerToBot.LIKE_TWEETS,
 				data['data']['id']
 			)
 		else:
 			log.warning("Like request denied")
-			self.postgress_client.insert_log({
+			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.LIKE_REQ_DENY,
 				"target_id": {data['data']['id']}
@@ -220,18 +219,18 @@ class DBWriter(Rabbitmq):
 
 		if request_accepted:
 			log.info("Retweet request accepted")
-			self.postgress_client.insert_log({
+			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.RETWEET_REQ_ACCEPT,
 				"target_id": {data['data']['id']}
 			})
 			self.send(
 				data['bot_id'],
-				ResponseTypes.RETWEET_TWEETS, data['data']['id']
+				ServerToBot.RETWEET_TWEETS, data['data']['id']
 			)
 		else:
 			log.warning("Retweet request denied")
-			self.postgress_client.insert_log({
+			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.RETWEET_REQ_DENY,
 				"target_id": {data['data']['id']}
@@ -266,17 +265,17 @@ class DBWriter(Rabbitmq):
 
 		if request_accepted:
 			log.info("Like request accepted")
-			self.postgress_client.insert_log({
+			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.REPLY_REQ_ACCEPT,
 				"target_id": {data['data']['id']}
 			})
 			self.send(
-				data['bot_id'], ResponseTypes.POST_TWEETS,
+				data['bot_id'], ServerToBot.POST_TWEET,
 				data['data']['id'])
 		else:
 			log.warning("Like request denied")
-			self.postgress_client.insert_log({
+			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.RETWEET_REQ_DENY,
 				"target_id": {data['data']['id']}
@@ -305,14 +304,14 @@ class DBWriter(Rabbitmq):
 
 		if request_accepted:
 			log.info("Like request accepted")
-			self.postgress_client.insert_log({
+			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ_ACCEPT,
 				"target_id": {data['data']['id']}
 			})
 			self.send(
 				data['bot_id'],
-				ResponseTypes.FOLLOW_USERS,
+				ServerToBot.FOLLOW_USERS,
 				{
 					"type": "id",
 					"data": [data['data']['id']]
@@ -320,7 +319,7 @@ class DBWriter(Rabbitmq):
 			)
 		else:
 			log.warning("Like request denied")
-			self.postgress_client.insert_log({
+			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ_DENY,
 				"target_id": {data['data']['id']}
@@ -344,7 +343,7 @@ class DBWriter(Rabbitmq):
 			follow_list = self.pep.first_time_policy()
 			self.send(
 				data["bot_id"],
-				ResponseTypes.FOLLOW_USERS,
+				ServerToBot.FOLLOW_USERS,
 				{
 					"type": "screen_name",
 					"data": follow_list,
@@ -381,7 +380,7 @@ class DBWriter(Rabbitmq):
 						"name": data['data']['name'],
 						"username": data['data']['screen_name']
 					})
-					self.postgress_client.insert_log({
+					self.postgres_client.insert_log({
 						"bot_id": data["bot_id"],
 						"action": log_actions.UPDATE_USER,
 						"target_id": {data['data']['id']}
@@ -395,12 +394,12 @@ class DBWriter(Rabbitmq):
 						"name": data['data']['name'],
 						"username": data['data']['screen_name']
 					})
-					self.postgress_client.insert_log({
+					self.postgres_client.insert_log({
 						"bot_id": data["bot_id"],
 						"action": log_actions.INSERT_USER,
 						"target_id": {data['data']['id']}
 					})
-				self.postgress_client.insert_user({
+				self.postgres_client.insert_user({
 					"user_id": data["data"]["id"],
 					"followers": data["data"]["followers_count"],
 					"following": data["data"]["friends_count"]
@@ -426,7 +425,7 @@ class DBWriter(Rabbitmq):
 				new_data=data["data"],
 				all=False
 			)
-			self.postgress_client.insert_log({
+			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.UPDATE_TWEET,
 				"target_id": {data['data']['id']}
@@ -434,12 +433,12 @@ class DBWriter(Rabbitmq):
 		else:
 			log.info("Inserting tweet")
 			self.mongo_client.insert_tweets(data['data'])
-			self.postgress_client.insert_log({
+			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.INSERT_TWEET,
 				"target_id": {data['data']['id']}
 			})
-		self.postgress_client.insert_tweet({
+		self.postgres_client.insert_tweet({
 			"tweet_id": data['data']['id'],
 			"user_id": data['data']['user'],
 			"likes": data['data']['favorite_count'],
@@ -463,7 +462,7 @@ class DBWriter(Rabbitmq):
 			)
 			if not message_exists:
 				log.info("NEW MESSAGE")
-				self.postgress_client.insert_log({
+				self.postgres_client.insert_log({
 					"bot_id": data["bot_id"],
 					"action": log_actions.INSERT_MESSAGE,
 					"target_id": {data['data']['id']}
@@ -477,7 +476,7 @@ class DBWriter(Rabbitmq):
 
 		@param data: dict with the id of a bot and the error object
 		"""
-		self.postgress_client.insert_log({
+		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": f"Error occured for {data['data']}"
 		})
@@ -493,7 +492,7 @@ class DBWriter(Rabbitmq):
 		"""
 		log.info("Starting to create the Follow Relationship")
 		for follower in data["data"]:
-			self.postgress_client.insert_log({
+			self.postgres_client.insert_log({
 				"id_bot": data['bot_id'],
 				"action": f"Save list of followers for {follower}"
 			})
