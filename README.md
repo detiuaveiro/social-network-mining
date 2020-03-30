@@ -14,6 +14,9 @@ $ cd web-app
 $ npm install
 $ npm install @material-ui/core
 $ npm install react-device-detect --save
+$ npm install jquery
+$ npm i react-countup
+$ npm i react-visibility-sensor
 ```
 Then use the command to start the web app on port 3000:
 `$ npm start`
