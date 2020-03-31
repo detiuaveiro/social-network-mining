@@ -283,7 +283,25 @@ class PDP:
 		heuristic_value += self._score_for_policies(data)
 
 		# We then check if the bot has retweeted the tweet
-		bot_logs = self.postgres.search_logs({"bot_id": data["bot_id"]})
+		bot_logs = self.postgres.search_logs({
+			"bot_id": data["bot_id"],
+			"action": log_actions.RETWEET,
+			"target_id": data["tweet_id"]
+		})
+		if bot_logs['success']:
+			heuristic_value = heuristic_value + BOT_RETWEETED_TWEET if heuristic_value < 0.8 else 1
+
+		# We now check if the tweet is suspiciously recent
+		user_tweet = self.mongo.find(
+			collection="tweets",
+			query={"id": tweet},
+			single=True
+		)
+		bot_logs = self.postgres.search_logs({
+			"bot_id": data["bot_id"],
+			"action": log_actions.RETWEET,
+			"target_id": data["tweet_id"]
+		})
 		for log in bot_logs['data']:
 			# Log Structure: "ACTION: bot_id and tweet_id
 			log_elems = log['action'].split(": ")
@@ -297,11 +315,7 @@ class PDP:
 					break
 			elif "TWEET LIKE" == action:
 				bot, tweet = users.split(" and ")
-				user_tweet = self.mongo.find(
-					collection="tweets",
-					query={"id": tweet},
-					single=True
-				)
+
 				if user_tweet == data["user_id"]:
 					date = log["timestamp"]
 					now = datetime.datetime.now()
