@@ -215,7 +215,7 @@ class PostgresAPI:
 		try:
 			cursor = self.conn.cursor()
 
-			query = "select * from logs "
+			query = "select id_bot, action, target_id, timestamp from logs "
 
 			if params is not None:
 				query += "WHERE "
