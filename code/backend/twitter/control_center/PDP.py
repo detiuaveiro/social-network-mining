@@ -291,32 +291,21 @@ class PDP:
 		if bot_logs['success']:
 			heuristic_value = heuristic_value + BOT_RETWEETED_TWEET if heuristic_value < 0.8 else 1
 
-		# We now check if the tweet is suspiciously recent
-		user_tweet = self.mongo.find(
-			collection="tweets",
-			query={"id": tweet},
-			single=True
-		)
+		# We now check if the last recorded like from a tweet of this user was too recent
+
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
-			"action": log_actions.RETWEET,
-			"target_id": data["tweet_id"]
+			"action": log_actions.TWEET_LIKE
 		})
-		for log in bot_logs['data']:
-			# Log Structure: "ACTION: bot_id and tweet_id
-			log_elems = log['action'].split(": ")
-			if len(log_elems) != 2:
-				continue
-			action, users = log_elems
-			if "RETWEET" == action:
-				bot, tweet = users.split(" and ")
-				if tweet == data["tweet_id"]:
-					heuristic_value = heuristic_value + BOT_RETWEETED_TWEET if heuristic_value < 0.8 else 1
-					break
-			elif "TWEET LIKE" == action:
-				bot, tweet = users.split(" and ")
-
-				if user_tweet == data["user_id"]:
+		if bot_logs['success']:
+			for log in bot_logs['data']:
+				user_of_tweet_liked = self.mongo.find(
+					collection="tweets",
+					query={"id": log["target_id"]},
+					params=["user"],
+					single=True
+				)
+				if user_of_tweet_liked == data["user_id"]:
 					date = log["timestamp"]
 					now = datetime.datetime.now()
 					if (now - date).seconds < PENALTY_LIKED_RECENTLY_LARGE_INTERVAL:
@@ -343,27 +332,29 @@ class PDP:
 		# Next we check if the bot and the user have some policies in common
 		heuristic_value += self._score_for_policies(data)
 
-		# We then check if the bot has retweeted the tweet
-		bot_logs = self.postgres.search_logs({"bot_id": data["bot_id"]})
-		for log in bot_logs['data']:
-			# Log Structure: "ACTION: bot_id and tweet_id
-			log_elems = log['action'].split(": ")
-			if len(log_elems) != 2:
-				continue
-			action, users = log_elems
-			if "TWEET LIKE" == action:
-				bot, tweet = users.split(" and ")
-				if tweet == data["tweet_id"]:
-					heuristic_value = heuristic_value + BOT_LIKED_TWEET if heuristic_value < 0.7 else 1
-					break
-			elif "RETWEET" == action:
-				bot, tweet = users.split(" and ")
-				user_tweet = self.mongo.find(
+		# We then check if the bot has liked the tweet
+		bot_logs = self.postgres.search_logs({
+			"bot_id": data["bot_id"],
+			"action": log_actions.TWEET_LIKE,
+			"target_id": data["tweet_id"]
+		})
+		if bot_logs["success"]:
+			heuristic_value = heuristic_value + BOT_LIKED_TWEET if heuristic_value < 0.7 else 1
+
+		# Finally check if the bot already retweeted something from the user too recently
+		bot_logs = self.postgres.search_logs({
+			"bot_id": data["bot_id"],
+			"action": log_actions.RETWEET
+		})
+		if bot_logs['success']:
+			for log in bot_logs['data']:
+				user_of_retweet = self.mongo.find(
 					collection="tweets",
-					query={"id": tweet},
+					query={"id": log["target_id"]},
+					params=["user"],
 					single=True
 				)
-				if user_tweet == data["user_id"]:
+				if user_of_retweet == data["user_id"]:
 					date = log["timestamp"]
 					now = datetime.datetime.now()
 					if (now - date).seconds < PENALTY_RETWEETED_USER_RECENTLY_INTERVAL:

@@ -6,7 +6,7 @@ from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
 from wrappers.rabbitmq_wrapper import Rabbitmq
 
-from control_center.enums import MessageTypes, ResponseTypes, PoliciesTypes
+from control_center.policies_types import PoliciesTypes
 from control_center.PEP import PEP
 from bots.messages_types import ServerToBot, BotToServer
 
