@@ -4,10 +4,11 @@
 import random
 import datetime
 import json
-from wrappers.mongo_wrapper import *
-from wrappers.neo4j_wrapper import *
-from wrappers.postgresql_wrapper import *
-from control_center.policies_types import *
+from wrappers.mongo_wrapper import MongoAPI
+from wrappers.neo4j_wrapper import Neo4jAPI
+from wrappers.postgresql_wrapper import PostgresAPI
+from control_center.enums import PoliciesTypes
+import log_actions
 
 # Constants used below for the Heuristics
 THRESHOLD_LIKE = 0.4
