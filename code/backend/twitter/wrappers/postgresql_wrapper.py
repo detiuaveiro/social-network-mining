@@ -220,7 +220,7 @@ class PostgresAPI:
 			if params is not None:
 				query += "WHERE "
 				if "bot_id" in params:
-					query += f"bot_id={str(params['bot_id'])} AND "
+					query += f"id_bot={str(params['bot_id'])} AND "
 				if "target_id" in params:
 					query += f"target_id={str(params['target_id'])} AND "
 				if "action" in params:
@@ -320,9 +320,9 @@ class PostgresAPI:
 
 			insertion_query = "INSERT INTO logs "
 			if "target_id" in data:
-				insertion_query += f"(bot_id, action, target_id) values {tuple([data[key] for key in data])}; "
+				insertion_query += f"(id_bot, action, target_id) values {tuple([data[key] for key in data])}; "
 			else:
-				insertion_query += f"(bot_id, action) values {tuple([data[key] for key in data])}; "
+				insertion_query += f"(id_bot, action) values {tuple([data[key] for key in data])}; "
 
 			cursor.execute(insertion_query)
 			self.conn.commit()
