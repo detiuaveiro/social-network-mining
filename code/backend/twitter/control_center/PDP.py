@@ -302,7 +302,7 @@ class PDP:
 				user_of_tweet_liked = self.mongo.find(
 					collection="tweets",
 					query={"id": log["target_id"]},
-					params=["user"],
+					fields=["user"],
 					single=True
 				)
 				if user_of_tweet_liked == data["user_id"]:
@@ -351,7 +351,7 @@ class PDP:
 				user_of_retweet = self.mongo.find(
 					collection="tweets",
 					query={"id": log["target_id"]},
-					params=["user"],
+					fields=["user"],
 					single=True
 				)
 				if user_of_retweet == data["user_id"]:
