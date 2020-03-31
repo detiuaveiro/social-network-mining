@@ -5,10 +5,12 @@ from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
 from wrappers.rabbitmq_wrapper import Rabbitmq
-from control_center.policies_types import PoliciesTypes
+
+from control_center.enums import MessageTypes, ResponseTypes, PoliciesTypes
 from control_center.PEP import PEP
 from bots.messages_types import ServerToBot, BotToServer
 
+import log_actions
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.INFO)
@@ -104,7 +106,8 @@ class Control_Center(Rabbitmq):
 		self.neo4j_client.add_relationship(relationship)
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"FOLLOW: {data['bot_id']} and {data['data']['id']}"
+			"action": log_actions.FOLLOW,
+			"target_id": {data['data']['id']}
 		})
 
 	def like_tweet(self, data):
@@ -116,7 +119,8 @@ class Control_Center(Rabbitmq):
 		"""
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"TWEET LIKED: {data['bot_id']} and {data['data']['id']}"
+			"action": log_actions.TWEET_LIKE,
+			"target_id": {data['data']['id']}
 		})
 
 	def retweet(self, data):
@@ -128,7 +132,8 @@ class Control_Center(Rabbitmq):
 		"""
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"RETWEET: {data['bot_id']} and {data['data']['id']}"
+			"action": log_actions.RETWEET,
+			"target_id": {data['data']['id']}
 		})
 
 	def reply_tweet(self, data):
@@ -140,7 +145,8 @@ class Control_Center(Rabbitmq):
 		"""
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"TWEET REPLIED: {data['bot_id']} and {data['data']['id']}"
+			"action": log_actions.TWEET_REPLY,
+			"target_id": {data['data']['id']}
 		})
 
 	def request_tweet_like(self, data):
@@ -155,8 +161,8 @@ class Control_Center(Rabbitmq):
 		log.info("Request a like to a tweet")
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"REQUEST LIKE: {data['bot_id']} and {data['data']['id']} \
-			for tweet {data['data']['id']}"
+			"action": log_actions.LIKE_REQ,
+			"target_id": {data['data']['id']}
 		})
 
 		request_accepted = self.pep.receive_message({
@@ -172,8 +178,8 @@ class Control_Center(Rabbitmq):
 			log.info("Like request accepted")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"REQUEST LIKE ACCEPTED: {data['bot_id']} and {data['data']['id']} \
-				for tweet {data['data']['id']}"
+				"action": log_actions.LIKE_REQ_ACCEPT,
+				"target_id": {data['data']['id']}
 			})
 			self.send(
 				data['bot_id'], ServerToBot.LIKE_TWEETS,
@@ -183,8 +189,8 @@ class Control_Center(Rabbitmq):
 			log.warning("Like request denied")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"REQUEST LIKE DENIED: {data['bot_id']} and {data['data']['id']} \
-				for tweet {data['data']['id']}"
+				"action": log_actions.LIKE_REQ_DENY,
+				"target_id": {data['data']['id']}
 			})
 
 	def request_retweet(self, data):
@@ -197,10 +203,10 @@ class Control_Center(Rabbitmq):
 		2param data: dict containing the bot id and the tweet id
 		"""
 		log.info("Request a retweeting a tweet")
-		self.postgres_client.insert_log({
-			"bot_id": data["bot_id"],
-			"action": f"RETWEET REQUEST: {data['bot_id']} and {data['data']['user']} \
-			for tweet {data['data']['id']}"
+		self.postgress_client.insert_log({
+				"bot_id": data["bot_id"],
+				"action": log_actions.RETWEET_REQ,
+				"target_id": {data['data']['id']}
 		})
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_RETWEET,
@@ -215,8 +221,8 @@ class Control_Center(Rabbitmq):
 			log.info("Retweet request accepted")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"RETWEET REQUEST ACCEPTED: {data['bot_id']} and {data['data']['user']} \
-				for tweet {data['data']['id']}"
+				"action": log_actions.RETWEET_REQ_ACCEPT,
+				"target_id": {data['data']['id']}
 			})
 			self.send(
 				data['bot_id'],
@@ -226,8 +232,8 @@ class Control_Center(Rabbitmq):
 			log.warning("Retweet request denied")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"RETWEET REQUEST DENIED: {data['bot_id']} and {data['data']['user']} \
-				for tweet {data['data']['id']}"
+				"action": log_actions.RETWEET_REQ_DENY,
+				"target_id": {data['data']['id']}
 			})
 
 	def request_tweet_reply(self, data):
@@ -240,10 +246,10 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 		log.info("Request a reply to a tweet")
-		self.postgres_client.insert_log({
-			"bot_id": data["bot_id"],
-			"action": f"REPLY REQUEST: {data['bot_id']} and {data['data']['id']} \
-			for tweet {data['data']['id']}"
+		self.postgress_client.insert_log({
+				"bot_id": data["bot_id"],
+				"action": log_actions.REPLY_REQ,
+				"target_id": {data['data']['id']}
 		})
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_REPLY,
@@ -261,8 +267,8 @@ class Control_Center(Rabbitmq):
 			log.info("Like request accepted")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"REPLY REQUEST ACCEPTED: {data['bot_id']} and {data['data']['id']} \
-				for tweet {data['data']['id']}"
+				"action": log_actions.REPLY_REQ_ACCEPT,
+				"target_id": {data['data']['id']}
 			})
 			self.send(
 				data['bot_id'], ServerToBot.POST_TWEET,
@@ -271,8 +277,8 @@ class Control_Center(Rabbitmq):
 			log.warning("Like request denied")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"REPLY REQUEST DENIED: {data['bot_id']} and {data['data']['id']} \
-				for tweet {data['data']['id']}"
+				"action": log_actions.RETWEET_REQ_DENY,
+				"target_id": {data['data']['id']}
 			})
 
 	def request_follow_user(self, data):
@@ -285,9 +291,10 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 		log.info("Request a like to a tweet")
-		self.postgres_client.insert_log({
-			"bot_id": data["bot_id"],
-			"action": f"FOLLOW REQUEST: {data['bot_id']} and {data['data']['id']}"
+		self.postgress_client.insert_log({
+				"bot_id": data["bot_id"],
+				"action": log_actions.FOLLOW_REQ,
+				"target_id": {data['data']['id']}
 		})
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
@@ -299,7 +306,8 @@ class Control_Center(Rabbitmq):
 			log.info("Like request accepted")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"FOLLOW REQUEST ACCEPTED: {data['bot_id']} and {data['data']['id']}"
+				"action": log_actions.FOLLOW_REQ_ACCEPT,
+				"target_id": {data['data']['id']}
 			})
 			self.send(
 				data['bot_id'],
@@ -313,7 +321,8 @@ class Control_Center(Rabbitmq):
 			log.warning("Like request denied")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"FOLLOW REQUEST DENIED: {data['bot_id']} and {data['data']['id']}"
+				"action": log_actions.FOLLOW_REQ_DENY,
+				"target_id": {data['data']['id']}
 			})
 
 	def save_user(self, data):
@@ -373,7 +382,8 @@ class Control_Center(Rabbitmq):
 					})
 					self.postgres_client.insert_log({
 						"bot_id": data["bot_id"],
-						"action": f"Updating info for {data['data']['id']}"
+						"action": log_actions.UPDATE_USER,
+						"target_id": {data['data']['id']}
 					})
 
 				else:
@@ -386,7 +396,8 @@ class Control_Center(Rabbitmq):
 					})
 					self.postgres_client.insert_log({
 						"bot_id": data["bot_id"],
-						"action": f"Inserting info for {data['data']['user']}"
+						"action": log_actions.INSERT_USER,
+						"target_id": {data['data']['id']}
 					})
 				self.postgres_client.insert_user({
 					"user_id": data["data"]["id"],
@@ -416,14 +427,16 @@ class Control_Center(Rabbitmq):
 			)
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Updating tweet for {data['data']['id']}"
+				"action": log_actions.UPDATE_TWEET,
+				"target_id": {data['data']['id']}
 			})
 		else:
 			log.info("Inserting tweet")
 			self.mongo_client.insert_tweets(data['data'])
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": f"Inserting tweet for {data['data']['id']}"
+				"action": log_actions.INSERT_TWEET,
+				"target_id": {data['data']['id']}
 			})
 		self.postgres_client.insert_tweet({
 			"tweet_id": data['data']['id'],
@@ -451,7 +464,8 @@ class Control_Center(Rabbitmq):
 				log.info("NEW MESSAGE")
 				self.postgres_client.insert_log({
 					"bot_id": data["bot_id"],
-					"action": f"Inserting new message {message}"
+					"action": log_actions.INSERT_MESSAGE,
+					"target_id": {data['data']['id']}
 				})
 				self.mongo_client.insert_messages(message)
 
