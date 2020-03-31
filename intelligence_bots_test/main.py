@@ -13,7 +13,7 @@ def main():
         ScrapperEntity('_CDSPP', 10000, 'CDS')
     ]
 
-    data_collector.init(params, n_jobs=2)
+    data_collector.init(params, n_jobs=4)
 
     dataPS = data_collector.merge_data_per_label("PS")
     dataPSD = data_collector.merge_data_per_label("PSD")
