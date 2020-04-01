@@ -113,6 +113,10 @@ class Classifier:
         tokenized_input = np.array([tokenize(input_string)])
         return self.classifier.predict(self.tfidf.transform(tokenized_input).toarray())
 
+    def confidence(self, input_string):
+        tokenized_input = np.array([tokenize(input_string)])
+        return self.classifier.predict_proba(self.tfidf.transform(tokenized_input).toarray())
+
 
 class DecisionTree(Classifier):
     def __init__(self, x, y, depth=3, max_features='auto'):
@@ -121,6 +125,7 @@ class DecisionTree(Classifier):
 
 class KNeighbors(Classifier):
     def __init__(self, x, y, n_neighbors, weights='distance', algorithm='auto', verbose=False):
+        self.n_neighbors = n_neighbors
         super().__init__(KNeighborsClassifier(n_neighbors=n_neighbors, weights=weights, algorithm=algorithm, n_jobs=-1),
                          x, y)
 
@@ -156,11 +161,11 @@ def tokenize(text):
     tokens = [w.lower() for w in tokens]
     table = str.maketrans('', '', string.punctuation)
     words = [w.translate(table) for w in tokens]
-    stop_words = set(stopwords.words('english'))
+    stop_words = set(stopwords.words('portuguese'))
     stop_words.add('https')
 
     lemmatizer = WordNetLemmatizer()
-    words = [lemmatizer.lemmatize(w, pos="v") for w in words if not w in stop_words and len(w) > 1]
+    words = [lemmatizer.lemmatize(w, pos="v") for w in words if w not in stop_words]
 
     return ' '.join(words)
 
@@ -175,3 +180,14 @@ def save_classifier(classifier, file_name=None, classifier_folder='classifiers')
 def open_classifier(file_name, classifier_folder='classifiers'):
     with open(f'{classifier_folder}/{file_name}', 'rb') as output:
         return pickle.load(output)
+
+
+def multi_classifier_predict(classifier_list, input_string):
+    label_counter = {}
+    for classifier in classifier_list:
+        label = classifier.predict_with_input(input_string)[0]
+
+        if label not in label_counter:
+            label_counter[label] = 0
+        label_counter[label] += max(classifier.confidence(input_string)[0])
+    return label_counter
