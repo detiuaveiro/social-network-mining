@@ -13,6 +13,7 @@ import log_actions
 # Constants used below for the Heuristics
 THRESHOLD_LIKE = 0.4
 THRESHOLD_RETWEET = 0.6
+THRESHOLD_REPLY = 0.5
 POLICY_KEYWORDS_MATCHES = 0.2
 POLICY_USER_IS_TARGETED = 0.4
 PENALTY_LIKED_RECENTLY_SMALL = -0.35
@@ -20,10 +21,14 @@ PENALTY_LIKED_RECENTLY_SMALL_INTERVAL = 10
 PENALTY_LIKED_RECENTLY_LARGE = -0.65
 PENALTY_LIKED_RECENTLY_LARGE_INTERVAL = 5
 PENALTY_RETWEETED_USER_RECENTLY = -0.5
-PENALTY_RETWEETED_USER_RECENTLY_INTERVAL = 43200
+PENALTY_RETWEETED_USER_RECENTLY_INTERVAL = 43200                # 12 hours
+PENALTY_REPLIED_USER_RECENTLY_INTERVAL = 24*60*60               # a day
+PENALTY_REPLIED_USER_RECENTLY = -0.5
 BOT_FOLLOWS_USER = 0.3
 BOT_RETWEETED_TWEET = 0.2
 BOT_LIKED_TWEET = 0.3
+
+LIMIT_REPLY_LOGS_QUANTITY = 1000
 
 
 class PDP:
@@ -87,7 +92,7 @@ class PDP:
 				- from entities, fetch hashtags and mentions
 			'''
 			res = self.analyze_tweet_retweet(msg)
-			evaluate_answer = res > THRESHOLD_LIKE
+			evaluate_answer = res > THRESHOLD_RETWEET
 		elif msg_type == PoliciesTypes.REQUEST_TWEET_REPLY:
 			'''
 			bot_id 
@@ -99,8 +104,7 @@ class PDP:
 			tweet_in_reply_to_user_id_str
 			tweet_in_reply_to_screen_name
 			'''
-			res = self.analyze_tweet_reply(msg)
-			evaluate_answer = True
+			evaluate_answer = self.analyze_tweet_reply(msg) > THRESHOLD_REPLY
 		elif msg_type == PoliciesTypes.REQUEST_FOLLOW_USER:
 			'''
 			bot_id
@@ -314,7 +318,6 @@ class PDP:
 		return heuristic_value
 
 	def analyze_tweet_retweet(self, data):
-
 		"""
 		Algorithm to analyse if a bot should retweet a Tweet
 		Takes the current statistics and turns them into a real value
@@ -368,9 +371,52 @@ class PDP:
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
 		"""
-		# TODO -> o mesmo que nas duas funções acima, mas verificar nos logs se o bot já deu reply ao tweet pedido:
-		#  nesse caso, obviamente não deixar fazer o reply.
-		return 0
+		"""
+				Algorithm to analyse if a bot should retweet a Tweet
+				Takes the current statistics and turns them into a real value
+
+				@param: data - dictionary containing the data of the bot and the tweet it wants to like
+				@returns: float that will then be compared to the threshold previously defined
+				"""
+
+		# first, we verify if the bot already replied to the tweet
+		bot_logs = self.postgres.search_logs({
+			"bot_id": data["bot_id"],
+			"action": log_actions.TWEET_REPLY,
+			"target_id": data["tweet_id"]
+		})
+		if not bot_logs["success"] or bot_logs['data']:
+			return 0
+
+		heuristic_value = 0
+		# Verify if there's a relation between the bot and the user
+		heuristic_value += self._score_for_relation(data)
+
+		# Next we check if the bot and the user have some policies in common
+		heuristic_value += self._score_for_policies(data)
+
+		# Finally check if the bot already replied to the user recently
+		bot_logs = self.postgres.search_logs({
+			"bot_id": data["bot_id"],
+			"action": log_actions.TWEET_REPLY
+		}, limit=LIMIT_REPLY_LOGS_QUANTITY)
+
+		if bot_logs['success']:
+			for log in bot_logs['data']:
+				user_of_reply = self.mongo.find(
+					collection="tweets",
+					query={"id": log["target_id"]},
+					fields=["user"],
+					single=True
+				)
+				if user_of_reply == data["user_id"]:
+					date = log["timestamp"]
+					now = datetime.datetime.now()
+					if (now - date).seconds < PENALTY_REPLIED_USER_RECENTLY_INTERVAL:
+						heuristic_value += PENALTY_REPLIED_USER_RECENTLY
+						break
+
+		return heuristic_value
 
 	def analyze_follow_user(self, data):
 		"""
