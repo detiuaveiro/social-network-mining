@@ -3,8 +3,7 @@ import { Redirect, Route, Switch } from "react-router-dom";
 import * as router from "react-router-dom";
 import { Container } from "reactstrap";
 
-import logo from "../../assets/img/brand/logo.svg";
-import sygnet from "../../assets/img/brand/sygnet.svg";
+import logo from "../../assets/img/brand/logo_white.png";
 
 import {
   AppAside,
@@ -52,15 +51,9 @@ class DefaultLayout extends Component {
                 <AppNavbarBrand
                   full={{
                     src: logo,
-                    width: 89,
-                    height: 89,
-                    alt: "CoreUI Logo"
-                  }}
-                  minimized={{
-                    src: sygnet,
-                    width: 30,
-                    height: 30,
-                    alt: "CoreUI Logo"
+                    width: 120,
+                    height: 103,
+                    alt: "Logo"
                   }}
                 />
               </BrowserView>
@@ -92,7 +85,7 @@ class DefaultLayout extends Component {
                       />
                     ) : null;
                   })}
-                  <Redirect from="/" to="/dashboard" />
+                  <Redirect from="/" to="/dash/home" />
                 </Switch>
               </Suspense>
             </Container>
