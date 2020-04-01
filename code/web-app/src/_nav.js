@@ -2,41 +2,40 @@ export default {
   items: [
     {
       name: 'Home',
-      url: '/dashboard',
+      url: '/dash/home',
       icon: 'fas fa-home fa-10x',
     },
     {
       name: 'Bots',
-      url: '/bots',
+      url: '/dash/bots',
       icon: 'fas fa-robot',
     },
     {
       name: 'Influencers',
-      url: '/influencers',
+      url: '/dash/influencers',
       icon: 'fas fa-user-tag',
     },
     {
       name: 'Network',
-      url: '/network',
+      url: '/dash/network',
       icon: 'fas fa-project-diagram',
     },
     {
       name: 'Statistics',
-      url: '/statistics',
+      url: '/dash/statistics',
       icon: 'fas fa-chart-bar',
     },
     {
       name: 'Reports',
-      url: '/reports',
+      url: '/dash/reports',
       icon: 'fas fa-file-alt',
     },
     {
       name: 'Leave',
-      url: 'https://coreui.io/react/',
+      url: '/',
       icon: 'fas fa-sign-out-alt',
       class: 'mt-auto',
       variant: 'danger',
-      attributes: { target: '_blank', rel: "noopener" },
     },
     /*
     {
