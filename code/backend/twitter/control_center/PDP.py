@@ -395,6 +395,7 @@ class PDP:
 		# Next we check if the bot and the user have some policies in common
 		heuristic_value += self._score_for_policies(data)
 
+		print(heuristic_value)
 		# Finally check if the bot already replied to the user recently
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
@@ -416,7 +417,7 @@ class PDP:
 						heuristic_value += PENALTY_REPLIED_USER_RECENTLY
 						break
 
-		return heuristic_value
+		return 0.7
 
 	def analyze_follow_user(self, data):
 		"""

@@ -248,11 +248,11 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 		log.info("Request a reply to a tweet")
-		self.postgress_client.insert_log({
-				"bot_id": data["bot_id"],
-				"action": log_actions.REPLY_REQ,
-				"target_id": data['data']['id']
-		})
+		# self.postgress_client.insert_log({
+		# 		"bot_id": data["bot_id"],
+		# 		"action": log_actions.REPLY_REQ,
+		# 		"target_id": data['data']['id']
+		# })
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_REPLY,
 			"bot_id": data['bot_id'],

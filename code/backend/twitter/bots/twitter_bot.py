@@ -110,7 +110,6 @@ class TwitterBot(RabbitMessaging):
 			logger.error(f"Error verifying credentials: {error}")
 			exit(1)
 
-		self._id = self._twitter_api.me().id
 		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
 		self.__send_user(self.user)
 
