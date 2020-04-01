@@ -78,7 +78,7 @@ class TwitterBot(RabbitMessaging):
 		self.__send_data(user._json, messages_types.BotToServer.SAVE_USER)
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
-		logger.debug(f"Sending {tweet}")
+		logger.debug(f"Sending {tweet} with message_type <{message_type.name}>")
 		self.__send_data(self.__get_tweet_dict(tweet), message_type)
 
 	def __send_data(self, data, message_type: messages_types.BotToServer):
@@ -110,7 +110,8 @@ class TwitterBot(RabbitMessaging):
 			logger.error(f"Error verifying credentials: {error}")
 			exit(1)
 
-		logger.debug(f"Sending our user to {DATA_EXCHANGE}")
+		self._id = self._twitter_api.me().id
+		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
 		self.__send_user(self.user)
 
 		logger.info("Reading home timeline")
@@ -235,7 +236,7 @@ class TwitterBot(RabbitMessaging):
 
 			try:
 				user.follow()
-				logger.info(f"Followed User tih id <{user.id}>")
+				logger.info(f"Followed User with id <{user.id}>")
 				self.__send_event(user._json, messages_types.BotToServer.EVENT_USER_FOLLOWED)
 			except TweepError as error:
 				if error.api_code == FOLLOW_USER_ERROR_CODE:
@@ -326,6 +327,8 @@ class TwitterBot(RabbitMessaging):
 
 			if reply_id:
 				self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
+
+			logger.debug("Tweet posted with success")
 		except TweepError as error:
 			logger.error(f"Error posting a new tweet: {error}")
 
