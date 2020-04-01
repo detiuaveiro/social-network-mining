@@ -378,7 +378,6 @@ class PDP:
 				@param: data - dictionary containing the data of the bot and the tweet it wants to like
 				@returns: float that will then be compared to the threshold previously defined
 				"""
-
 		# first, we verify if the bot already replied to the tweet
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
