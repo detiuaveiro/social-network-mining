@@ -358,7 +358,7 @@ class Control_Center(Rabbitmq):
 				})
 			self.mongo_client.insert_users(data["data"])
 			self.neo4j_client.add_bot(
-				{"id": data["data"]['id'], "name": data['data']['name'], "username": data['data']['screen_name']})
+				{"id": data['bot_id'], "name": data['bot_name'], "username": data['bot_screen_name']})
 		else:
 
 			is_bot = self.neo4j_client.check_bot_exists(data["data"]["id"])
