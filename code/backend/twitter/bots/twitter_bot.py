@@ -26,6 +26,8 @@ logger.addHandler(handler)
 class TwitterBot(RabbitMessaging):
 	def __init__(self, url, username, password, vhost, messaging_settings, bot_id, api: tweepy.API):
 		super().__init__(url, username, password, vhost, messaging_settings)
+		self._name: str = 'bot'
+		self._screen_name: str = 'bot'
 		self._id = bot_id
 		self._twitter_api = api
 		self.user: User
@@ -65,6 +67,8 @@ class TwitterBot(RabbitMessaging):
 		self._send_message(to_json({
 			'type': message_type,
 			'bot_id': self._id,
+			'bot_name': self._name,
+			'bot_screen_name': self._screen_name,
 			'timestamp': current_time(),
 			'data': data
 		}), exchange)
@@ -106,6 +110,9 @@ class TwitterBot(RabbitMessaging):
 		try:
 			self.user = self._twitter_api.verify_credentials()
 			logger.info(f"Logged in as:{self.user}")
+
+			self._name = self._twitter_api.me().name
+			self._screen_name = self._twitter_api.me().screen_name
 		except TweepError as error:
 			logger.error(f"Error verifying credentials: {error}")
 			exit(1)
