@@ -10,7 +10,7 @@ from credentials import TASKS_EXCHANGE, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PR
 	RABBITMQ_FULL_HTTP_URL
 
 if __name__ == "__main__":
-	bot_id = os.environ.get('BOT_ID', 1)
+	bot_id = os.environ.get('BOT_ID')
 
 	messaging_settings = {
 		TASKS_EXCHANGE: MessagingSettings(exchange=TASKS_EXCHANGE, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}.{bot_id}",
