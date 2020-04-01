@@ -5,7 +5,7 @@ import numpy as np
 from utils import tokenize
 
 
-def merge_data_per_label(label, tweets_folder='tweets'):
+def merge_data_per_label(label, tweets_folder='tweets_dataset'):
     path = f'{tweets_folder}/{label}'
 
     label_files = [f for f in listdir(path)]
@@ -33,6 +33,7 @@ def convert_raw_data(path_file):
 
 
 def init(entities, n_jobs=2):
+
     pool = Pool(processes=n_jobs)
     current_workers = []
 
@@ -48,5 +49,4 @@ def init(entities, n_jobs=2):
             current_workers = [c for c in current_workers if not c.ready()]
             if not tasks_queue.empty():
                 task = tasks_queue.get()
-                print(task)
                 current_workers.append(pool.apply_async(task.get_tweets))

@@ -33,7 +33,7 @@ def is_reply(tweet):
     return False
 
 
-def download_tweets(label, file_path, username=None, limit=None, include_replies=False,
+def download_tweets(file_path, username=None, limit=None, include_replies=False,
                     strip_usertags=False, strip_hashtags=False):
     """Download public Tweets from a given Twitter account
     into a format suitable for training with AI text generation tools.
