@@ -327,6 +327,7 @@ class PostgresAPI:
 			cursor.execute(insertion_query)
 			self.conn.commit()
 			cursor.close()
+			log.debug(f"Inserted log <{insertion_query}> on database")
 		except psycopg2.Error as error:
 			self.conn.rollback()
 
