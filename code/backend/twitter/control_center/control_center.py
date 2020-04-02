@@ -104,11 +104,6 @@ class Control_Center(Rabbitmq):
             log.info("The bot already follows the user")
             return
 
-        # Code
-        self.send(data["bot_id"], ServerToBot.FOLLOW_USERS, {
-            
-        })
-
         self.neo4j_client.add_relationship(relationship)
         self.postgres_client.insert_log({
             "bot_id": data["bot_id"],
@@ -315,6 +310,13 @@ class Control_Center(Rabbitmq):
                 "action": log_actions.FOLLOW_REQ_ACCEPT,
                 "target_id": {data['data']['id']}
             })
+
+            # Code
+            self.send(data["bot_id"], ServerToBot.FOLLOW_USERS, {
+                "type": "id",
+                "data": [data['data']['id']]
+            })
+            """
             self.send(
                 data['bot_id'],
                 ServerToBot.FOLLOW_USERS,
@@ -323,6 +325,7 @@ class Control_Center(Rabbitmq):
                     "data": [data['data']['id']]
                 }
             )
+            """
         else:
             log.warning("Like request denied")
             self.postgres_client.insert_log({
