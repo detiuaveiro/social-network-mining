@@ -11,6 +11,7 @@ FOLLOW_USER_ERROR_CODE = 161
 # -----------------------------------------------------------
 
 MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE = 3
+MAX_NUMBER_TWEETS_FOLLOWING_DECESION = 5
 
 
 # -----------------------------------------------------------
