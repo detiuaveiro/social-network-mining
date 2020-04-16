@@ -337,6 +337,8 @@ class PostgresAPI:
 				"Error: " + str(error)
 			)
 
+			log.error("Error at inserting: " + str(data))
+
 			return {"success": False, "error": error}
 		except Exception as error:
 			self.conn.rollback()
@@ -345,6 +347,8 @@ class PostgresAPI:
 			log.error(
 				"Error: " + str(error)
 			)
+
+			log.error("Error at inserting: " + str(data))
 
 			return {"success": False, "error": error}
 
