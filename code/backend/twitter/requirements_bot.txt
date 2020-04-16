@@ -16,3 +16,5 @@ six==1.14.0
 soupsieve==2.0
 tweepy==3.8.0
 urllib3==1.25.8
+twint==2.1.16
+fire==0.3.0
