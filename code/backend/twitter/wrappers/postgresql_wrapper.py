@@ -215,11 +215,20 @@ class PostgresAPI:
 		try:
 			cursor = self.conn.cursor()
 
-			query = f"select * from logs " \
-				f"{'WHERE' if params is not None else ''} " \
-				f"{'id_bot=' + str(params['bot_id']) if params is not None and 'bot_id' in params.keys() else ''} " \
-				f"ORDER BY timestamp DESC " \
-				f"{'limit ' + str(limit) if limit is not None else ''} ;"
+			query = "select id_bot, action, target_id, timestamp from logs "
+
+			if params is not None:
+				query += "WHERE "
+				if "bot_id" in params:
+					query += f"id_bot={str(params['bot_id'])} AND "
+				if "target_id" in params:
+					query += f"target_id={str(params['target_id'])} AND "
+				if "action" in params:
+					query += f"action='{str(params['action'])}' AND "
+				query = query[:-4]
+
+			query += f"ORDER BY timestamp DESC " \
+			f"{'limit ' + str(limit) if limit is not None else ''} ;"
 
 			cursor.execute(query)
 
@@ -233,7 +242,7 @@ class PostgresAPI:
 
 			for tuple in data:
 				result.append(
-					{"id_bot": tuple[0], "timestamp": tuple[1], "action": tuple[2]})
+					{"bot_id": tuple[0], "action": tuple[1], "target_id": tuple[2], "timestamp": tuple[3]})
 
 			return {"success": True, "data": result}
 		except psycopg2.Error as error:
@@ -308,11 +317,17 @@ class PostgresAPI:
 		"""
 		try:
 			cursor = self.conn.cursor()
-			cursor.execute(
-				"INSERT INTO logs (timestamp, id_bot, action) values (DEFAULT,%s,%s);",
-				(data["bot_id"], data["action"]))
+
+			insertion_query = "INSERT INTO logs "
+			if "target_id" in data:
+				insertion_query += f"(id_bot, action, target_id) values {tuple([data[key] for key in data])}; "
+			else:
+				insertion_query += f"(id_bot, action) values {tuple([data[key] for key in data])}; "
+
+			cursor.execute(insertion_query)
 			self.conn.commit()
 			cursor.close()
+			log.debug(f"Inserted log <{insertion_query}> on database")
 		except psycopg2.Error as error:
 			self.conn.rollback()
 

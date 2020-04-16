@@ -125,6 +125,12 @@ Private Member Functions</h2></td></tr>
 <tr class="memitem:a66187cf251e70e9f579406e45eb16137"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d66/classtwitter_1_1control__center_1_1PDP_1_1PDP.html#a66187cf251e70e9f579406e45eb16137">_tweet_has_keywords</a> (self, policy, data)</td></tr>
 <tr class="memdesc:a66187cf251e70e9f579406e45eb16137"><td class="mdescLeft">&#160;</td><td class="mdescRight">Private function to check if a tweet uses any important keywords, be it hashtags or commonly found words.  <a href="#a66187cf251e70e9f579406e45eb16137">More...</a><br /></td></tr>
 <tr class="separator:a66187cf251e70e9f579406e45eb16137"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab958d1ecb98242eace6e2b55f61fefa2"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d66/classtwitter_1_1control__center_1_1PDP_1_1PDP.html#ab958d1ecb98242eace6e2b55f61fefa2">_score_for_relation</a> (self, data)</td></tr>
+<tr class="memdesc:ab958d1ecb98242eace6e2b55f61fefa2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Algorithm to attribute a score if there's a follow relationship between the user and the bot.  <a href="#ab958d1ecb98242eace6e2b55f61fefa2">More...</a><br /></td></tr>
+<tr class="separator:ab958d1ecb98242eace6e2b55f61fefa2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3d879dc9a07fad8632ec8db1ecc93c8"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d66/classtwitter_1_1control__center_1_1PDP_1_1PDP.html#ab3d879dc9a07fad8632ec8db1ecc93c8">_score_for_policies</a> (self, data)</td></tr>
+<tr class="memdesc:ab3d879dc9a07fad8632ec8db1ecc93c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Algorithm to atribute a score for the relation the bot and the user have with the policies If the bot is being targeted by some policy, or if the tweet has a special keyword, it will return the appropriate score.  <a href="#ab3d879dc9a07fad8632ec8db1ecc93c8">More...</a><br /></td></tr>
+<tr class="separator:ab3d879dc9a07fad8632ec8db1ecc93c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="adf406e4b2ad47c65c563ccc7eccaf871"></a>
@@ -196,6 +202,94 @@ Private Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True or False depending if the bot was indeed targeted </dd></dl>
+
+</div>
+</div>
+<a id="ab3d879dc9a07fad8632ec8db1ecc93c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3d879dc9a07fad8632ec8db1ecc93c8">&#9670;&nbsp;</a></span>_score_for_policies()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">def twitter.control_center.PDP.PDP._score_for_policies </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Algorithm to atribute a score for the relation the bot and the user have with the policies If the bot is being targeted by some policy, or if the tweet has a special keyword, it will return the appropriate score. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname"></td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab958d1ecb98242eace6e2b55f61fefa2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab958d1ecb98242eace6e2b55f61fefa2">&#9670;&nbsp;</a></span>_score_for_relation()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">def twitter.control_center.PDP.PDP._score_for_relation </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Algorithm to attribute a score if there's a follow relationship between the user and the bot. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname"></td><td></td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

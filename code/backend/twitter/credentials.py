@@ -7,8 +7,8 @@ MONGO_URL = os.environ.get('MONGO_URL', 'localhost')
 MONGO_PORT = 27017
 MONGO_FULL_URL = f"{MONGO_URL}:{MONGO_PORT}"
 MONGO_DB = os.environ.get('MONGO_DB', 'twitter')
-MONGO_USERNAME = os.environ.get('MONGO_USERNAME', 'admin')
-MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD', 'admin')
+MONGO_USERNAME = os.environ.get('MONGO_USERNAME', '')
+MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD', '')
 
 # -----------------------------------------------------------
 # POSTGRES 
@@ -20,7 +20,7 @@ POSTGRES_DB = os.environ.get('POSTGRES_DB', 'twitter')
 POSTGRES_USERNAME = os.environ.get('POSTGRES_USERNAME', 'admin')
 POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD', 'admin')
 
-# -----------------------------------------------------------
+# ----------------------------------------------------------- 
 # RABBITMQ
 # -----------------------------------------------------------
 RABBITMQ_URL = os.environ.get('RABBITMQ_URL', 'localhost')
