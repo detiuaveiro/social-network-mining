@@ -32,7 +32,52 @@ class Bots extends Component {
         throw new Error(response.status);
       }
     }).then(data => {
-      console.log(data)
+      if (data != null && data != {}) {
+        data = data.data
+
+        var tempBots = []
+
+        data.forEach(bot => {
+          var tempInfo = []
+          tempInfo.push("" + bot.screen_name);
+          tempInfo.push("" + bot.name);
+          tempInfo.push("" + bot.followers_count);
+          tempInfo.push("" + bot.friends_count);
+
+          tempInfo.push("Active"); // Add wether its active or not
+
+
+          tempInfo.push(
+            <Button block outline color="primary"
+              onClick={() => this.handleOpenProfile(bot)}
+            >
+              <i class="far fa-user-circle"></i>
+              <strong style={{ marginLeft: "3px" }}>Profile</strong>
+            </Button>
+          )
+
+          tempInfo.push(
+            <Button block outline color="danger"
+              onClick={() =>
+                this.handleDelete(bot)
+              }
+            >
+              <i class="far fa-trash-alt"></i>
+            </Button>
+          )
+
+          tempBots.push(tempInfo);
+        })
+
+        tempBots.sort((bot1, bot2) =>
+          bot1.screen_name > bot2.screen_name ? 1 : -1
+        );
+
+        this.setState({
+          error: false,
+          bots: tempBots
+        })
+      }
     }).catch(error => {
       console.log("error: " + error);
       this.setState({
@@ -40,6 +85,14 @@ class Bots extends Component {
         bots: []
       })
     });
+  }
+
+  handleDelete(bot) {
+    console.log(bot)
+  }
+
+  handleOpenProfile(bot) {
+    console.log(bot)
   }
 
   loading = () => <div className="animated fadeIn pt-1 text-center">Loading...</div>
@@ -161,13 +214,15 @@ class Bots extends Component {
                         lineHeight: "1"
                       }
                     }} > Registered Accounts</h4>
-                    <Button block outline color="light" style={{ width: "10%" }}>Add new</Button>
+                    <Button block outline color="light" style={{
+                      width: "150px", marginTop:"15px"
+                    }}>Add new</Button>
                   </CardHeader>
                   <CardBody>
                     <Table
                       tableHeaderColor="primary"
-                      tableHead={["Username", "Name", "Followers", "Following", ""]}
-                      tableData={[]}
+                      tableHead={["Username", "Name", "Followers", "Following", "Status", "", ""]}
+                      tableData={this.state.bots}
                     />
                   </CardBody>
                 </Card>
