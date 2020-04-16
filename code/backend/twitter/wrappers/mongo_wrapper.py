@@ -206,8 +206,14 @@ class MongoAPI:
             # Optionally export result
             if export_type is not None:
                 return self.__export_data(result, export_type)
-
-            return list(result) if result is not None else result
+            
+            if result is None:
+                return None
+            else:
+                if single:
+                    return dict(result)
+                else:
+                    return list(result)
         except Exception as e:
             log.error("ERROR SEARCHING FOR DOCUMENT")
             log.error("Error: " + str(e))
