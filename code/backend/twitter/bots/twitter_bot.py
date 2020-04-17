@@ -16,7 +16,7 @@ from credentials import VHOST, LOG_EXCHANGE, LOG_ROUTING_KEY, DATA_EXCHANGE, QUE
 	TASKS_QUEUE_PREFIX
 
 logger = logging.getLogger("bot-agents")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(open("bot_agent.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
@@ -78,11 +78,11 @@ class TwitterBot(RabbitMessaging):
 
 		:param user: user to send
 		"""
-		logger.debug(f"Sending {user}")
+		logger.debug(f"Sending {user.id}")
 		self.__send_data(user._json, messages_types.BotToServer.SAVE_USER)
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
-		logger.debug(f"Sending {tweet} with message_type <{message_type.name}>")
+		logger.debug(f"Sending {tweet.id} with message_type <{message_type.name}>")
 		self.__send_data(self.__get_tweet_dict(tweet), message_type)
 
 	def __send_data(self, data, message_type: messages_types.BotToServer):
@@ -118,10 +118,10 @@ class TwitterBot(RabbitMessaging):
 			exit(1)
 
 		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
-		self.__send_user(self.user)
+		self.__send_user(self.user.id)
 
 		logger.info("Reading home timeline")
-		self.__read_timeline(self.user)
+		self.__read_timeline(self.user.id)
 
 		# ver porque não está a dar (o twitter não está a deixar aceder)
 		# self.__direct_messages()
@@ -222,7 +222,7 @@ class TwitterBot(RabbitMessaging):
 				user: User = self._twitter_api.get_user(**arg_param)
 
 				if user:
-					logger.info(f"Found user: {user}")
+					logger.info(f"Found user: {user.id}")
 					self.__follow_user(user)
 			except TweepError as error:
 				logger.error(f"Unable to find user identified by [{id_type}] with <{user_id}>: {error}")
@@ -233,7 +233,7 @@ class TwitterBot(RabbitMessaging):
 
 		:param user: user to follow
 		"""
-		logger.info(f"Following user <{user}>")
+		logger.info(f"Following user <{user.id}>")
 
 		self.__send_user(user)
 
