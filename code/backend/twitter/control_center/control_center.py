@@ -501,7 +501,7 @@ class Control_Center(Rabbitmq):
 		log.info("Starting to create the Follow Relationship")
 		for follower in data["data"]:
 			self.postgres_client.insert_log({
-				"id_bot": data['bot_id'],
+				"bot_id": data['bot_id'],
 				"action": f"Save list of followers for {follower}"
 			})
 			# Verify if the follower is on the database as a user
