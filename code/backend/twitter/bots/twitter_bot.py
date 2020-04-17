@@ -141,7 +141,7 @@ class TwitterBot(RabbitMessaging):
 			return list(self._twitter_api.home_timeline(**kwargs))
 		return list(user.timeline(**kwargs))
 
-	def __read_timeline(self, user: User, jump_users: bool = False, max_depth: int = 7, current_depth: int = 0):
+	def __read_timeline(self, user: User, jump_users: bool = False, max_depth: int = 5, current_depth: int = 0):
 		"""Function to get an user's timeline tweets. At the same time, this function send to the server requests to
 			like a tweet, to retweet a tweet and also sends all users that made some tweet, but we don't know yet.
 			Also, this function is recursive, and tries to get all this data to the new users it possibility find
@@ -154,7 +154,7 @@ class TwitterBot(RabbitMessaging):
 		if current_depth == max_depth:
 			return
 
-		logger.debug(f"Reading user's <{user.__str__()}> timeline")
+		logger.debug(f"Reading user's <{user.id}> timeline")
 		tweets = self.__user_timeline_tweets(user, count=MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE)
 
 		total_read_time = self.__interpret_tweets(tweets, jump_users, max_depth, current_depth)
