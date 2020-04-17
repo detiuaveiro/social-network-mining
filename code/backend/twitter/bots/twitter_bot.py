@@ -182,7 +182,7 @@ class TwitterBot(RabbitMessaging):
 
 				user_attributes = tweet_user.__dir__()
 
-				if 'following' in user_attributes and not tweet_user.following:
+				if 'following' in user_attributes and not tweet_user.following or 'following' not in user_attributes:
 					logger.debug(f"Requesting to follow user {tweet_user.id}")
 					self.__send_user(tweet_user, messages_types.BotToServer.QUERY_FOLLOW_USER)
 
@@ -253,7 +253,7 @@ class TwitterBot(RabbitMessaging):
 					logger.error(f"Error with api_code={error.api_code}: {error}")
 
 		if not user.protected or (user.protected and user.following):
-			self.__read_timeline(user, jump_users=True)
+			self.__read_timeline(user, jump_users=False)
 
 	def __find_tweet_by_id(self, tweet_id: int) -> Union[Status, None]:
 		"""Function to find and return a tweet for a given id

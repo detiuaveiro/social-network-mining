@@ -250,6 +250,9 @@ class PDP:
 			"bot_id": data["bot_id"]
 		})
 
+		# TODO -> TIRAR ESTE PRINT E SUBSTITUIR POR UM LOG
+		print(policy_list)
+
 		if policy_list['success']:
 			for policy in policy_list["data"]:
 
@@ -434,8 +437,8 @@ class PDP:
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
 		"""
-		# This was not implemeneted last year
-		return False
+		# This was not implemented last year
+		return True
 
 	def close(self):
 		self.neo4j.close()
