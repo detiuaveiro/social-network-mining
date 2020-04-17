@@ -73,13 +73,13 @@ class TwitterBot(RabbitMessaging):
 			'data': data
 		}), exchange)
 
-	def __send_user(self, user: User):
+	def __send_user(self, user: User, message_type: messages_types.BotToServer.BotToServer):
 		"""Function to send a twitter's User object to the server
 
 		:param user: user to send
 		"""
 		logger.debug(f"Sending {user.id}")
-		self.__send_data(user._json, messages_types.BotToServer.SAVE_USER)
+		self.__send_data(user._json, message_type)
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
 		logger.debug(f"Sending {tweet.id} with message_type <{message_type.name}>")
@@ -118,7 +118,7 @@ class TwitterBot(RabbitMessaging):
 			exit(1)
 
 		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
-		self.__send_user(self.user)
+		self.__send_user(self.user, messages_types.BotToServer.SAVE_USER)
 
 		logger.info("Reading home timeline")
 		self.__read_timeline(self.user)
@@ -178,18 +178,20 @@ class TwitterBot(RabbitMessaging):
 
 			if not jump_users:
 				tweet_user = tweet.user
-				self.__send_user(tweet_user)
+				self.__send_user(tweet_user, messages_types.BotToServer.SAVE_USER)
 
 				user_attributes = tweet_user.__dir__()
+
+				if 'following' in user_attributes and not tweet_user.following:
+					logger.debug(f"Requesting to follow user {tweet_user.id}")
+					self.__send_user(tweet_user, messages_types.BotToServer.QUERY_FOLLOW_USER)
 
 				if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
 					logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
 								   f"following him, so can't read his timeline")
-					continue
 				elif 'suspended' in user_attributes and tweet_user.suspended:
 					logger.warning(f"Found user with ID={tweet_user.id} but his account was suspended, "
 								   f"so can't read his timeline")
-					continue
 				else:
 					self.__read_timeline(tweet_user, jump_users=jump_users,
 										 max_depth=max_depth, current_depth=current_depth + 1)
@@ -235,7 +237,7 @@ class TwitterBot(RabbitMessaging):
 		"""
 		logger.info(f"Following user <{user}>")
 
-		self.__send_user(user)
+		self.__send_user(user, messages_types.BotToServer.SAVE_USER)
 
 		if not user.following:
 			virtual_read_wait(user.description)

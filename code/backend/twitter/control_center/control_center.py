@@ -298,7 +298,7 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing the bot id and the tweet id
 		"""
-		log.info("Request a like to a tweet")
+		log.info("Request to follow user")
 		self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ,
@@ -311,7 +311,7 @@ class Control_Center(Rabbitmq):
 		})
 
 		if request_accepted:
-			log.info("Like request accepted")
+			log.info("Follow user request accepted")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ_ACCEPT,
@@ -326,7 +326,7 @@ class Control_Center(Rabbitmq):
 				}
 			)
 		else:
-			log.warning("Like request denied")
+			log.warning("Follow user request denied")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ_DENY,
