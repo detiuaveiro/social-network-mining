@@ -16,7 +16,7 @@ from credentials import VHOST, LOG_EXCHANGE, LOG_ROUTING_KEY, DATA_EXCHANGE, QUE
 	TASKS_QUEUE_PREFIX
 
 logger = logging.getLogger("bot-agents")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(open("bot_agent.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
