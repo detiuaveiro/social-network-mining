@@ -141,7 +141,7 @@ class TwitterBot(RabbitMessaging):
 			return list(self._twitter_api.home_timeline(**kwargs))
 		return list(user.timeline(**kwargs))
 
-	def __read_timeline(self, user: User, jump_users: bool = False, max_depth: int = 3, current_depth: int = 0):
+	def __read_timeline(self, user: User, jump_users: bool = False, max_depth: int = 7, current_depth: int = 0):
 		"""Function to get an user's timeline tweets. At the same time, this function send to the server requests to
 			like a tweet, to retweet a tweet and also sends all users that made some tweet, but we don't know yet.
 			Also, this function is recursive, and tries to get all this data to the new users it possibility find
@@ -157,6 +157,24 @@ class TwitterBot(RabbitMessaging):
 		logger.debug(f"Reading user's <{user.__str__()}> timeline")
 		tweets = self.__user_timeline_tweets(user, count=MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE)
 
+		total_read_time = self.__interpret_tweets(tweets, jump_users, max_depth, current_depth)
+		logger.debug(f"Read {user.id}'s timeline in {total_read_time} seconds")
+
+	def __search_tweets(self, keywords: list, language: str = 'pt', max_keywords: int = 3):
+		logger.info(f"Starting to search for tweets for keywords {keywords}")
+
+		total_read_time = 0
+		for i in range(max_keywords):
+			if len(keywords) > 0:
+				keyword = random.choice(keywords)
+				keywords.remove(keyword)
+
+				tweets = self._twitter_api.search(q=keyword, lang=language)
+				total_read_time += self.__interpret_tweets(tweets)
+
+		logger.debug(f"Search completed in {total_read_time} seconds")
+
+	def __interpret_tweets(self, tweets, jump_users: bool = False, max_depth: int = 3, current_depth: int = 0) -> float:
 		total_read_time = 0
 		for tweet in tweets:
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
@@ -177,25 +195,29 @@ class TwitterBot(RabbitMessaging):
 			self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_REPLY)
 
 			if not jump_users:
+				logger.info("Starting to read tweet's author")
+
 				tweet_user = tweet.user
 				self.__send_user(tweet_user, messages_types.BotToServer.SAVE_USER)
 
 				user_attributes = tweet_user.__dir__()
 
+				logger.debug(
+					f"Tweet with author info {tweet_user.following if 'following' in user_attributes else 'nothing'}")
 				if 'following' in user_attributes and not tweet_user.following or 'following' not in user_attributes:
 					logger.debug(f"Requesting to follow user {tweet_user.id}")
 					self.__send_user(tweet_user, messages_types.BotToServer.QUERY_FOLLOW_USER)
 
 				if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
 					logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
-								   f"following him, so can't read his timeline")
+					               f"following him, so can't read his timeline")
 				elif 'suspended' in user_attributes and tweet_user.suspended:
 					logger.warning(f"Found user with ID={tweet_user.id} but his account was suspended, "
-								   f"so can't read his timeline")
+					               f"so can't read his timeline")
 				else:
 					self.__read_timeline(tweet_user, jump_users=jump_users,
-										 max_depth=max_depth, current_depth=current_depth + 1)
-		logger.debug(f"Read {user.id}'s timeline in {total_read_time} seconds")
+					                     max_depth=max_depth, current_depth=current_depth + 1)
+		return total_read_time
 
 	def __direct_messages(self):
 		logger.info("Checking direct messages")
@@ -253,7 +275,7 @@ class TwitterBot(RabbitMessaging):
 					logger.error(f"Error with api_code={error.api_code}: {error}")
 
 		if not user.protected or (user.protected and user.following):
-			self.__read_timeline(user, jump_users=False)
+			self.__read_timeline(user, jump_users=False, max_depth=3)
 
 	def __find_tweet_by_id(self, tweet_id: int) -> Union[Status, None]:
 		"""Function to find and return a tweet for a given id
@@ -367,12 +389,13 @@ class TwitterBot(RabbitMessaging):
 						pass
 					elif task_type == messages_types.ServerToBot.POST_TWEET:
 						self.__post_tweet(**task_params)
+					elif task_type == messages_types.ServerToBot.KEYWORDS:
+						self.__search_tweets(keywords=task_params)
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
 				else:
 					logger.warning("There are not new messages on the tasks's queue")
-					# TODO -> VER O QUE FAZER NESTA SITUAÇÃO
-					wait(5)
+					self.__send_query([], messages_types.BotToServer.QUERY_KEYWORDS)
 			except Exception as error:
 				logger.error(f"Error on bot's loop: {error}")
 				# exit(1)

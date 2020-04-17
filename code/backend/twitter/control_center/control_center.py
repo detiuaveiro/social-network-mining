@@ -82,6 +82,9 @@ class Control_Center(Rabbitmq):
 		elif message_type == BotToServer.SAVE_FOLLOWERS:
 			self.find_followers(message)
 
+		elif message_type == BotToServer.QUERY_KEYWORDS:
+			self.send_keywords(message)
+
 	# Need DB API now
 	def follow_user(self, data):
 		"""
@@ -360,7 +363,6 @@ class Control_Center(Rabbitmq):
 			self.neo4j_client.add_bot(
 				{"id": data['bot_id'], "name": data['bot_name'], "username": data['bot_screen_name']})
 		else:
-
 			is_bot = self.neo4j_client.check_bot_exists(data["data"]["id"])
 			if is_bot:
 				log.info(
@@ -535,6 +537,23 @@ class Control_Center(Rabbitmq):
 						"id": follower_follower
 					}
 				})
+
+	def send_keywords(self, data):
+		bot_id = data["bot_id"]
+
+		policy_list = self.postgres_client.search_policies({
+			"bot_id": bot_id, "filter": "Keywords"
+		})
+
+		response = []
+		if len(policy_list) > 0:
+			response = random.choice(policy_list)["params"]
+
+		log.info(f"Sending keywords {response} to bot {response}")
+		self.send(
+			bot_id,
+			ServerToBot.KEYWORDS, response
+		)
 
 	def send(self, bot, message_type, params):
 		"""
