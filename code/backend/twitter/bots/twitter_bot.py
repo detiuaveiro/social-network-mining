@@ -73,7 +73,7 @@ class TwitterBot(RabbitMessaging):
 			'data': data
 		}), exchange)
 
-	def __send_user(self, user: User, message_type: messages_types.BotToServer.BotToServer):
+	def __send_user(self, user: User, message_type: messages_types.BotToServer):
 		"""Function to send a twitter's User object to the server
 
 		:param user: user to send
