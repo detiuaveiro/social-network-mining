@@ -73,12 +73,12 @@ class TwitterBot(RabbitMessaging):
 			'data': data
 		}), exchange)
 
-	def __send_user(self, user: User):
+	def __send_user(self, user: Union[User, int]):
 		"""Function to send a twitter's User object to the server
 
 		:param user: user to send
 		"""
-		logger.debug(f"Sending {user.id}")
+		logger.debug(f"Sending {user if type(user) == int else user.id}")
 		self.__send_data(user._json, messages_types.BotToServer.SAVE_USER)
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
