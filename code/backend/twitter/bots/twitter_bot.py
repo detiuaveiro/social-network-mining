@@ -58,7 +58,7 @@ class TwitterBot(RabbitMessaging):
 		return tweet_dict
 
 	def __send_message(self, data, message_type: messages_types.BotToServer, exchange):
-		"""Function to send a new message to the server throw rabbitMQ
+		"""Function to send a new message to the server through rabbitMQ
 
 		:param data: data to send
 		:param message_type: type of message to send to server
