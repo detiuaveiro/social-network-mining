@@ -58,7 +58,7 @@ class TwitterBot(RabbitMessaging):
 		return tweet_dict
 
 	def __send_message(self, data, message_type: messages_types.BotToServer, exchange):
-		"""Function to send a new message to the server throw rabbitMQ
+		"""Function to send a new message to the server through rabbitMQ
 
 		:param data: data to send
 		:param message_type: type of message to send to server
@@ -73,12 +73,12 @@ class TwitterBot(RabbitMessaging):
 			'data': data
 		}), exchange)
 
-	def __send_user(self, user: Union[User, int]):
+	def __send_user(self, user: User):
 		"""Function to send a twitter's User object to the server
 
 		:param user: user to send
 		"""
-		logger.debug(f"Sending {user if type(user) == int else user.id}")
+		logger.debug(f"Sending {user.id}")
 		self.__send_data(user._json, messages_types.BotToServer.SAVE_USER)
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
@@ -118,10 +118,10 @@ class TwitterBot(RabbitMessaging):
 			exit(1)
 
 		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
-		self.__send_user(self.user.id)
+		self.__send_user(self.user)
 
 		logger.info("Reading home timeline")
-		self.__read_timeline(self.user.id)
+		self.__read_timeline(self.user)
 
 		# ver porque não está a dar (o twitter não está a deixar aceder)
 		# self.__direct_messages()
@@ -222,7 +222,7 @@ class TwitterBot(RabbitMessaging):
 				user: User = self._twitter_api.get_user(**arg_param)
 
 				if user:
-					logger.info(f"Found user: {user.id}")
+					logger.info(f"Found user: {user}")
 					self.__follow_user(user)
 			except TweepError as error:
 				logger.error(f"Unable to find user identified by [{id_type}] with <{user_id}>: {error}")
@@ -233,7 +233,7 @@ class TwitterBot(RabbitMessaging):
 
 		:param user: user to follow
 		"""
-		logger.info(f"Following user <{user.id}>")
+		logger.info(f"Following user <{user}>")
 
 		self.__send_user(user)
 
