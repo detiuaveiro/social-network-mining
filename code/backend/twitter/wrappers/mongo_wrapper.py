@@ -25,9 +25,9 @@ class MongoAPI:
         log.debug("Connecting to MongoDB")
         self.client = MongoClient("mongodb://" + credentials.MONGO_FULL_URL)
 
-        self.users = self.client.snm_mongo.users
-        self.tweets = self.client.snm_mongo.tweets
-        self.messages = self.client.snm_mongo.messages
+        self.users = eval(f"self.client.{credentials.MONGO_DB}.users")
+        self.tweets = eval(f"self.client.{credentials.MONGO_DB}.tweets")
+        self.messages = eval(f"self.client.{credentials.MONGO_DB}.messages")
 
     # TODO - IMPLEMENT ME PLEASE!
     def verify_integrity(self, collection, document):
@@ -206,7 +206,7 @@ class MongoAPI:
             # Optionally export result
             if export_type is not None:
                 return self.__export_data(result, export_type)
-            
+
             if result is None:
                 return None
             else:
