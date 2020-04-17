@@ -10,14 +10,17 @@ import CardBody from "../../components/Card/CardBody";
 import CardFooter from "../../components/Card/CardFooter";
 import CardIcon from "../../components/Card/CardIcon";
 
+import BotProfile from './BotProfile';
+
 class Bots extends Component {
   constructor() {
     super();
   }
 
   state = {
-    admin: false,
+    error: false,
     bots: [],
+    bot: null
   };
 
   componentDidMount() {
@@ -75,14 +78,16 @@ class Bots extends Component {
 
         this.setState({
           error: false,
-          bots: tempBots
+          bots: tempBots,
+          bot : null
         })
       }
     }).catch(error => {
       console.log("error: " + error);
       this.setState({
         error: true,
-        bots: []
+        bots: [],
+        bot: null
       })
     });
   }
@@ -93,6 +98,11 @@ class Bots extends Component {
 
   handleOpenProfile(bot) {
     console.log(bot)
+    this.setState({
+      error: this.state.error,
+      bots: this.state.bots,
+      bot: bot
+    })
   }
 
   loading = () => <div className="animated fadeIn pt-1 text-center">Loading...</div>
@@ -145,7 +155,7 @@ class Bots extends Component {
           </Container>
         </div >
       )
-    } else {
+    } else if(this.state.bot == null) {
       return (
         <div className="animated fadeIn">
           <Container fluid>
@@ -231,6 +241,10 @@ class Bots extends Component {
           </Container>
         </div >
       );
+    }else{
+      return(
+        <BotProfile bot={this.state.bot}></BotProfile>
+      )
     }
   }
 }
