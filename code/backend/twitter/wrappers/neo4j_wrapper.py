@@ -131,7 +131,8 @@ class Neo4jAPI:
 
         log.debug(f"Run query {query}")
 
-        tx.run(query)
+        status = tx.run(query)
+        log.debug(f"Relationship creation status: {status}")
 
     def check_bot_exists(self, id):
         """Method used to check if there exists a bot with a given id
