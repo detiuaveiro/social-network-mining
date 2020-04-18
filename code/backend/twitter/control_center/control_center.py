@@ -107,6 +107,10 @@ class Control_Center(Rabbitmq):
 			"type_1": type1,
 			"type_2": type2
 		}
+
+		# add or update user in database
+		self.save_user(data)
+
 		if self.neo4j_client.check_relationship_exists(relationship):
 			log.info("The bot already follows the user")
 			return
