@@ -545,19 +545,22 @@ class Control_Center(Rabbitmq):
 
 		bot_id = data["bot_id"]
 
-		policy_list = self.postgres_client.search_policies({
+		policies = self.postgres_client.search_policies({
 			"bot_id": bot_id, "filter": "Keywords"
 		})
 
-		log.debug(f"Obtained policies: {policy_list}")
-
 		response = []
-		if len(policy_list) > 0:
-			response = random.choice(policy_list)["params"]
+		if policies['success']:
+			policy_list = policies['data']
+			log.debug(f"Obtained policies: {policy_list}")
 
-		log.debug(f"Keywords to send: {response}")
+			response = []
+			if len(policy_list) > 0:
+				response = random.choice(policy_list)["params"]
 
-		log.info(f"Sending keywords {response} to bot {response}")
+			log.debug(f"Keywords to send: {response}")
+
+			log.info(f"Sending keywords {response} to bot {response}")
 		self.send(
 			bot_id,
 			ServerToBot.KEYWORDS,
