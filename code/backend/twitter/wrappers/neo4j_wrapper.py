@@ -115,7 +115,7 @@ class Neo4jAPI:
             USER_LABEL,
         ]:
             log.error("ERROR CREATING A RELATIONSHIP")
-            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+            log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
             return
 
@@ -126,7 +126,7 @@ class Neo4jAPI:
     def __create_relationship(self, tx, data):
         log.debug("CREATING RELATIONSHIP")
 
-        result = tx.run(f"MATCH (u: $type1 { id: $id1 }), (r: $type2 { id: $id2 }) MERGE (u)-[:{FOLLOW_LABEL}]->(r)",
+        result = tx.run(f"MATCH (u: $type1 {{ id: $id1 }}), (r: $type2 {{ id: $id2 }}) MERGE (u)-[:{FOLLOW_LABEL}]->(r)",
                         type1=data['type_1'], id1=data['id_1'], type2=data['type_2'], id2=data['id_2'])
 
         log.debug(f"Created relationship:{result}")
