@@ -126,8 +126,8 @@ class Neo4jAPI:
     def __create_relationship(self, tx, data):
         log.debug("CREATING RELATIONSHIP")
 
-        result = tx.run(f"MATCH (u: $type1 {{ id: $id1 }}), (r: $type2 {{ id: $id2 }}) MERGE (u)-[:{FOLLOW_LABEL}]->(r)",
-                        type1=data['type_1'], id1=data['id_1'], type2=data['type_2'], id2=data['id_2'])
+        result = tx.run(f"MATCH (u: {data['type_1']} {{ id: $id1 }}), (r: {data['type_2']} {{ id: $id2 }}) "
+                        f"MERGE (u)-[:{FOLLOW_LABEL}]->(r)", id1=data['id_1'], id2=data['id_2'])
 
         log.debug(f"Created relationship:{result}")
 
