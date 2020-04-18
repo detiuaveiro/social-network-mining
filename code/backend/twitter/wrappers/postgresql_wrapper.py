@@ -282,7 +282,7 @@ class PostgresAPI:
 				if "filter" in params.keys():
 					if control == 1:
 						query += " AND "
-					query += 'policies.filter=' + str(params['filter'])
+					query += f"policies.filter='{params['filter']}'"
 					control = 1
 				if "bot_id" in params.keys():
 					if control == 1:
