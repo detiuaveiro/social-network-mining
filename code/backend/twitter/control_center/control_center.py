@@ -117,6 +117,8 @@ class Control_Center(Rabbitmq):
 			"target_id": data['data']['id']
 		})
 
+		log.info("Saved follow relation with success")
+
 	def like_tweet(self, data):
 		"""
 		Action to like tweet:
