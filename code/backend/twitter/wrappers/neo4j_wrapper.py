@@ -126,13 +126,10 @@ class Neo4jAPI:
     def __create_relationship(self, tx, data):
         log.debug("CREATING RELATIONSHIP")
 
-        query = f'MATCH (u: {data["type_1"]} {{ id: {str(data["id_1"])} }}), ' \
-                f'(r: {data["type_2"]} {{ id: {str(data["id_2"])} }}) MERGE (u)-[:{FOLLOW_LABEL}]->(r)'
+        result = tx.run(f"MATCH (u: $type1 { id: $id1 }), (r: $type2 { id: $id2 }) MERGE (u)-[:{FOLLOW_LABEL}]->(r)",
+                        type1=data['type_1'], id1=data['id_1'], type2=data['type_2'], id2=data['id_2'])
 
-        log.debug(f"Run query {query}")
-
-        status = tx.run(query)
-        log.debug(f"Relationship creation status: {status}")
+        log.debug(f"Created relationship:{result}")
 
     def check_bot_exists(self, id):
         """Method used to check if there exists a bot with a given id
