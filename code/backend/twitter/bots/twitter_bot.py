@@ -257,7 +257,7 @@ class TwitterBot(RabbitMessaging):
 
 		:param user: user to follow
 		"""
-		logger.info(f"Following user <{user}>")
+		logger.info(f"Following user <{user.id}>")
 
 		self.__send_user(user, messages_types.BotToServer.SAVE_USER)
 

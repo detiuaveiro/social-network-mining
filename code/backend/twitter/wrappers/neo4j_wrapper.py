@@ -129,6 +129,8 @@ class Neo4jAPI:
         query = f'MATCH (u: {data["type_1"]} {{ id: {str(data["id_1"])} }}), ' \
                 f'(r: {data["type_2"]} {{ id: {str(data["id_2"])} }}) MERGE (u)-[:{FOLLOW_LABEL}]->(r)'
 
+        log.debug(f"Run query {query}")
+
         tx.run(query)
 
     def check_bot_exists(self, id):
