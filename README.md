@@ -17,6 +17,8 @@ $ npm install react-device-detect --save
 $ npm install jquery
 $ npm i react-countup
 $ npm i react-visibility-sensor
+$ npm i react-loading
+$ npm i react-toastify
 ```
 Then use the command to start the web app on port 3000:
 `$ npm start`
