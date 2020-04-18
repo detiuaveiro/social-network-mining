@@ -16,6 +16,7 @@ import Bots from './Bots';
 
 import { CustomTooltips } from '@coreui/coreui-plugin-chartjs-custom-tooltips';
 
+import ReactLoading from "react-loading";
 
 const Widget03 = lazy(() => import('../../views/Widgets/Widget03'));
 
@@ -74,10 +75,101 @@ class BotProfile extends Component {
 
     state = {
         error: false,
-        goBack: false
+        goBack: false,
+        policies: [],
+        activities: [],
+        loading: false
     };
 
+    handleOpenPolicy(policy) {
+        console.log(policy)
+    }
+
+
+    getBotPolicies() {
+        fetch(baseURL + "policies/bots/" + this.props.bot.user_id, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).then(response => {
+            if (response.ok) return response.json();
+            else {
+                throw new Error(response.status);
+            }
+        }).then(data => {
+            if (data != null && data != {}) {
+                data = data.data
+
+                var tempPolicies = []
+
+                data.forEach(policy => {
+                    var tempInfo = []
+                    tempInfo.push("" + policy.name);
+                    tempInfo.push("" + policy.filter);
+                    tempInfo.push("" + policy.tags);
+
+                    tempInfo.push("Active"); // Add wether its active or not
+
+
+                    tempInfo.push(
+                        <Button block outline color="primary"
+                            onClick={() => this.handleOpenPolicy(policy)}
+                        >
+                            <i class="fas fa-ellipsis-h"></i>
+                            <strong style={{ marginLeft: "3px" }}>More</strong>
+                        </Button>
+                    )
+
+                    tempPolicies.push(tempInfo);
+                })
+
+                tempPolicies.sort((policy1, policy2) =>
+                    policy1.name > policy2.name ? 1 : -1
+                );
+
+                this.setState({
+                    error: this.state.error,
+                    goBack: this.state.goBack,
+                    policies: tempPolicies,
+                    activities: this.state.activities,
+                    loading: true
+                })
+            }
+        }).catch(error => {
+            console.log("error: " + error);
+            this.setState({
+                error: true,
+                goBack: true,
+                policies: this.state.policies,
+                activities: this.state.activities,
+                loading: this.state.loading
+            })
+        });
+    }
+
+
     componentDidMount() {
+        this.setState({
+            error: this.state.error,
+            goBack: this.state.goBack,
+            policies: this.state.policies,
+            activities: this.state.activities,
+            loading: true
+        })
+
+        // Get Activities
+
+        // Get Policies
+        //this.getBotPolicies()
+
+        this.setState({
+            error: this.state.error,
+            goBack: this.state.goBack,
+            policies: this.state.policies,
+            activities: this.state.activities,
+            loading: false
+        })
 
     }
 
@@ -85,16 +177,19 @@ class BotProfile extends Component {
         console.log("back")
         this.setState({
             error: this.state.error,
-            goBack: true
+            goBack: true,
+            policies: this.state.policies,
+            activities: this.state.activities,
+            loading: this.state.loading
         })
     }
 
 
-    loading = () => <div className="animated fadeIn pt-1 text-center">Loading...</div>
+    loading = () => <div className="fadeIn pt-1 text-center"><ReactLoading type={"cubes"} color="#1da1f2" /></div>
 
     render() {
         if (this.state.goBack) {
-            return (<Bots></Bots>)
+            return (<Bots />)
         }
         else if (this.state.error) {
             return (
@@ -310,10 +405,14 @@ class BotProfile extends Component {
                                         }} > Policies</h4>
                                         <Button block outline color="light" style={{
                                             width: "150px", marginTop: "15px"
-                                        }}>Edit policies</Button>
+                                        }}>Add policy</Button>
                                     </CardHeader>
                                     <CardBody>
-
+                                        <Table
+                                            tableHeaderColor="primary"
+                                            tableHead={["Name", "Type", "Tags", "Status", ""]}
+                                            tableData={[["Posted Tweet", "Published a new tweet - #id", "24/24/24", ""]]}
+                                        />
                                     </CardBody>
                                 </Card>
                             </Col>

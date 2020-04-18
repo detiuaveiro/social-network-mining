@@ -36,9 +36,11 @@
     "react-countup": "^4.3.3",
     "react-device-detect": "^1.11.14",
     "react-dom": "^16.8.6",
+    "react-loading": "^2.0.3",
     "react-router-config": "^5.0.1",
     "react-router-dom": "^5.0.1",
     "react-test-renderer": "^16.8.6",
+    "react-toastify": "^5.5.0",
     "react-visibility-sensor": "^5.1.1",
     "reactstrap": "^8.0.0",
     "simple-line-icons": "^2.4.1"
