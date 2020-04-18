@@ -43,6 +43,8 @@ class Control_Center(Rabbitmq):
 	def action(self, message):
 		message_type = message['type']
 
+		log.debug(f"Received message of type {message_type}")
+
 		if message_type == BotToServer.EVENT_USER_FOLLOWED:
 			self.follow_user(message)
 
@@ -539,20 +541,27 @@ class Control_Center(Rabbitmq):
 				})
 
 	def send_keywords(self, data):
+		log.info("Starting to sending the keywords to the bot")
+
 		bot_id = data["bot_id"]
 
 		policy_list = self.postgres_client.search_policies({
 			"bot_id": bot_id, "filter": "Keywords"
 		})
 
+		log.debug(f"Obtained policies: {policy_list}")
+
 		response = []
 		if len(policy_list) > 0:
 			response = random.choice(policy_list)["params"]
 
+		log.debug(f"Keywords to send: {response}")
+
 		log.info(f"Sending keywords {response} to bot {response}")
 		self.send(
 			bot_id,
-			ServerToBot.KEYWORDS, response
+			ServerToBot.KEYWORDS,
+			response
 		)
 
 	def send(self, bot, message_type, params):

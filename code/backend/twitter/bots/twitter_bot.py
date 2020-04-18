@@ -395,7 +395,8 @@ class TwitterBot(RabbitMessaging):
 						logger.warning(f"Received unknown task type: {task_type}")
 				else:
 					logger.warning("There are not new messages on the tasks's queue")
-					self.__send_query([], messages_types.BotToServer.QUERY_KEYWORDS)
+					self.__send_user(self._twitter_api.me(), messages_types.BotToServer.QUERY_KEYWORDS)
+					wait(2)
 			except Exception as error:
 				logger.error(f"Error on bot's loop: {error}")
 				# exit(1)
