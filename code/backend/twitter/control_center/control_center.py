@@ -208,7 +208,7 @@ class Control_Center(Rabbitmq):
 		2param data: dict containing the bot id and the tweet id
 		"""
 		log.info("Request a retweeting a tweet")
-		self.postgress_client.insert_log({
+		self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.RETWEET_REQ,
 				"target_id": data['data']['id']
@@ -302,7 +302,7 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 		log.info("Request to follow user")
-		self.postgress_client.insert_log({
+		self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ,
 				"target_id": data['data']['id']
