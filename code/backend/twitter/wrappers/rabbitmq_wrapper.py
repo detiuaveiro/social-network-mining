@@ -147,7 +147,8 @@ class Rabbitmq:
             
             log.info(" [*] Waiting for Messages. To exit press CTRL+C")
 
-            self.channel.basic_consume(queue=queue_name, on_message_callback=self.received_message_handler, auto_ack=True)
+            self.channel.basic_consume(queue=queue_name, on_message_callback=self.received_message_handler,
+                                       auto_ack=True)
             self.channel.start_consuming()
 
         except Exception as e:
