@@ -554,7 +554,6 @@ class Control_Center(Rabbitmq):
 			policy_list = policies['data']
 			log.debug(f"Obtained policies: {policy_list}")
 
-			response = []
 			if len(policy_list) > 0:
 				response = random.choice(policy_list)["params"]
 
