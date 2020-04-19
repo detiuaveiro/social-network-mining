@@ -2,8 +2,16 @@
 # coding: UTF-8
 
 import json
+import logging
+
 from control_center.PDP import PDP
 
+log = logging.getLogger('PEP')
+log.setLevel(logging.INFO)
+handler = logging.StreamHandler(open("pep.log", "w"))
+handler.setFormatter(logging.Formatter(
+	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+log.addHandler(handler)
 
 class PEP:
 	"""
@@ -22,6 +30,7 @@ class PEP:
 		If a bot has just arrived to twitter, it must be handed a list of initial users for it to follow
 		The list is decided by the PDP, and there's no need for extra params, since it's pretty much chosen at random, for now
 		"""
+		log.info("First time policy, getting list from PDP")
 		return self.pdp.get_first_time_list()
 
 	def receive_message(self, msg):
@@ -31,6 +40,7 @@ class PEP:
 
 		@param msg - a dictionary containing the message to be passed on
 		"""
+		log.info(f"Received request {msg}")
 		data = self.pdp.receive_request(msg)
 		return self.enforce(json.loads(data))
 
@@ -44,6 +54,7 @@ class PEP:
 		"""
 
 		if "response" in data:
+			log.info("Response arrived")
 			return data["response"] != "DENY"
-
+		log.warning("Data came with no response")
 		return False
