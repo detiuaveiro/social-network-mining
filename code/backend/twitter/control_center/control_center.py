@@ -42,6 +42,7 @@ class Control_Center(Rabbitmq):
 
 	def action(self, message):
 		message_type = message['type']
+		log.info(f"Received new action: {message['bot_id']} wants to do {message_type.name}")
 
 		if message_type == BotToServer.EVENT_USER_FOLLOWED:
 			self.follow_user(message)
@@ -91,7 +92,7 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing bot and the user he's following
 		"""
-		log.info("A bot has started following someone")
+		log.debug(f"Bot {data['bot_id']} wants to follow {data['data']['id']}")
 		type1 = "Bot" if self.neo4j_client.check_bot_exists(
 			data["bot_id"]) else "User"
 		type2 = "Bot" if self.neo4j_client.check_bot_exists(
@@ -103,7 +104,7 @@ class Control_Center(Rabbitmq):
 			"type_2": type2
 		}
 		if self.neo4j_client.check_relationship_exists(relationship):
-			log.info("The bot already follows the user")
+			log.warn(f"Bot {data['bot_id']} already follows the user {data['data']['id']}")
 			return
 		self.neo4j_client.add_relationship(relationship)
 		self.postgres_client.insert_log({
@@ -111,6 +112,7 @@ class Control_Center(Rabbitmq):
 			"action": log_actions.FOLLOW,
 			"target_id": data['data']['id']
 		})
+		log.info(f"Bot {data['bot_id']} successfully followed the user {data['data']['id']}")
 
 	def like_tweet(self, data):
 		"""
@@ -119,11 +121,16 @@ class Control_Center(Rabbitmq):
 
 		@param data dict with the bot id and the tweet he liked
 		"""
-		self.postgres_client.insert_log({
+		result = self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": log_actions.TWEET_LIKE,
 			"target_id": data['data']['id']
 		})
+		if result['success']:
+			log.debug(f"Bot {data['bot_id']} liked tweet {data['data']['id']}")
+		else:
+			log.debug(f"Bot {data['bot_id']} could not like tweet {data['data']['id']}")
+			log.error(f"Bot like caused error {result['error']}")
 
 	def retweet(self, data):
 		"""
@@ -132,11 +139,16 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing bot and the tweet he retweeted
 		"""
-		self.postgres_client.insert_log({
+		result = self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": log_actions.RETWEET,
 			"target_id": data['data']['id']
 		})
+		if result['success']:
+			log.debug(f"Bot {data['bot_id']} retweeted {data['data']['id']}")
+		else:
+			log.debug(f"Bot {data['bot_id']} could not retweet tweet {data['data']['id']}")
+			log.error(f"Bot like caused error {result['error']}")
 
 	def reply_tweet(self, data):
 		"""
@@ -145,11 +157,16 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict contaning bot and the reply they made
 		"""
-		self.postgres_client.insert_log({
+		result = self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": log_actions.TWEET_REPLY,
 			"target_id": data['data']['id']
 		})
+		if result['success']:
+			log.debug(f"Bot {data['bot_id']} replied with {data['data']['id']}")
+		else:
+			log.debug(f"Bot {data['bot_id']} could not reply with {data['data']['id']}")
+			log.error(f"Bot like caused error {result['error']}")
 
 	def request_tweet_like(self, data):
 		"""
@@ -160,7 +177,7 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing the bot id and the tweet id
 		"""
-		log.info("Request a like to a tweet")
+		log.info(f"Bot {data['bot_id']} requests a like to tweet {data['data']['id']}")
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": log_actions.LIKE_REQ,
@@ -177,7 +194,7 @@ class Control_Center(Rabbitmq):
 		})
 
 		if request_accepted:
-			log.info("Like request accepted")
+			log.info(f"Bot {data['bot_id']} request accepted to like a tweet {data['data']['id']}")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.LIKE_REQ_ACCEPT,
@@ -188,7 +205,7 @@ class Control_Center(Rabbitmq):
 				data['data']['id']
 			)
 		else:
-			log.warning("Like request denied")
+			log.warning(f"Bot {data['bot_id']} request denied to like a tweet {data['data']['id']}")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.LIKE_REQ_DENY,
@@ -202,9 +219,9 @@ class Control_Center(Rabbitmq):
 				Adds the log to postgres_stats, for the request and its result
 				The result is based on the PDP methods
 
-		2param data: dict containing the bot id and the tweet id
+		@param data: dict containing the bot id and the tweet id
 		"""
-		log.info("Request a retweeting a tweet")
+		log.info(f"Bot {data['bot_id']} requests a retweet {data['data']['id']}")
 		self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.RETWEET_REQ,
@@ -220,7 +237,7 @@ class Control_Center(Rabbitmq):
 		})
 
 		if request_accepted:
-			log.info("Retweet request accepted")
+			log.info(f"Bot {data['bot_id']} request accepted to retweet {data['data']['id']}")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.RETWEET_REQ_ACCEPT,
@@ -231,7 +248,7 @@ class Control_Center(Rabbitmq):
 				ServerToBot.RETWEET_TWEETS, data['data']['id']
 			)
 		else:
-			log.warning("Retweet request denied")
+			log.warning(f"Bot {data['bot_id']} request denied to retweet {data['data']['id']}")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.RETWEET_REQ_DENY,
@@ -247,7 +264,8 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing the bot id and the tweet id
 		"""
-		log.info("Request a reply to a tweet")
+		log.info(f"Bot {data['bot_id']} requests a reply {data['data']['id']}")
+
 		self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.REPLY_REQ,
@@ -266,7 +284,8 @@ class Control_Center(Rabbitmq):
 		})
 
 		if request_accepted:
-			log.info("Reply request accepted")
+			log.info(f"Bot {data['bot_id']} request accepted to reply {data['data']['id']}")
+
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.REPLY_REQ_ACCEPT,
@@ -282,10 +301,10 @@ class Control_Center(Rabbitmq):
 				"text": reply_text
 			})
 		else:
-			log.warning("Reply request denied")
+			log.warning(f"Bot {data['bot_id']} request denied to reply {data['data']['id']}")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
-				"action": log_actions.RETWEET_REQ_DENY,
+				"action": log_actions.REPLY_REQ_DENY,
 				"target_id": data['data']['id']
 			})
 
@@ -298,7 +317,8 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing the bot id and the tweet id
 		"""
-		log.info("Request a like to a tweet")
+		log.info(f"Bot {data['bot_id']} requests a follow from {data['data']['id']}")
+
 		self.postgress_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ,
@@ -311,7 +331,8 @@ class Control_Center(Rabbitmq):
 		})
 
 		if request_accepted:
-			log.info("Like request accepted")
+			log.info(f"Bot {data['bot_id']} request accepted to follow {data['data']['id']}")
+
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ_ACCEPT,
@@ -326,7 +347,7 @@ class Control_Center(Rabbitmq):
 				}
 			)
 		else:
-			log.warning("Like request denied")
+			log.warning(f"Bot {data['bot_id']} request denied to follow {data['data']['id']}")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ_DENY,
@@ -342,12 +363,12 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing the id of the bot and the user object
 		"""
-		log.info("Saving User")
+		log.info(f"Saving User {data['data']['id']}")
 		log.info(
 			"First we check if the bot sending the message has been in the database")
 		exists = self.neo4j_client.check_bot_exists(data["bot_id"])
 		if not exists:
-			log.info("Bot is new to the party")
+			log.info(f"Bot {data['bot_id']} is new to the party")
 			follow_list = self.pep.first_time_policy()
 			self.send(
 				data["bot_id"],
@@ -364,7 +385,7 @@ class Control_Center(Rabbitmq):
 			is_bot = self.neo4j_client.check_bot_exists(data["data"]["id"])
 			if is_bot:
 				log.info(
-					"It's a bot that's already been registered in the database")
+					f"Bot {data['data']['id']} has already been registered in the database")
 				# Update the info of the bot
 				self.mongo_client.update_users(
 					match={"id": data["data"]['id']},
@@ -377,7 +398,7 @@ class Control_Center(Rabbitmq):
 			else:
 				if self.neo4j_client.check_user_exists(data["data"]["id"]):
 					log.info(
-						"It's a user that's already been registered in the database")
+						f"User {data['data']['id']} has already been registered in the database")
 					self.mongo_client.update_users(
 						match={"id": data["data"]['id']},
 						new_data=data["data"],
@@ -395,7 +416,8 @@ class Control_Center(Rabbitmq):
 					})
 
 				else:
-					log.info("User is new to the party")
+					log.info(
+						f"User {data['data']['id']} is new to the party")
 					self.mongo_client.insert_users(data["data"])
 					self.neo4j_client.add_user({
 						"id": data["data"]["id"],
@@ -427,7 +449,7 @@ class Control_Center(Rabbitmq):
 			single=True
 		)
 		if tweet_exists:
-			log.info("Updating tweet")
+			log.info(f"Updating tweet {data['data']['id']}")
 			self.mongo_client.update_tweets(
 				match={"id": data["data"]['id']},
 				new_data=data["data"],
@@ -439,7 +461,7 @@ class Control_Center(Rabbitmq):
 				"target_id": data['data']['id']
 			})
 		else:
-			log.info("Inserting tweet")
+			log.info(f"Inserting tweet {data['data']['id']}")
 			self.mongo_client.insert_tweets(data['data'])
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
@@ -469,7 +491,7 @@ class Control_Center(Rabbitmq):
 				single=True
 			)
 			if not message_exists:
-				log.info("NEW MESSAGE")
+				log.info(f"New message {data['data']['id']}")
 				self.postgres_client.insert_log({
 					"bot_id": data["bot_id"],
 					"action": log_actions.INSERT_MESSAGE,
@@ -488,6 +510,7 @@ class Control_Center(Rabbitmq):
 			"bot_id": data["bot_id"],
 			"action": f"Error occured for {data['data']}"
 		})
+		log.error(f"Error in trying to do action <{data['data']}>")
 
 	def find_followers(self, data):
 		"""
@@ -498,12 +521,14 @@ class Control_Center(Rabbitmq):
 		@param data: dict with the id of a bot and a second dictionary with the bot's followers' ID as keys that map
 		to his followers
 		"""
-		log.info("Starting to create the Follow Relationship")
+		log.info(f"Starting to create the Follow Relationship for bot {data['bot_id']}")
 		for follower in data["data"]:
 			self.postgres_client.insert_log({
 				"id_bot": data['bot_id'],
 				"action": f"Save list of followers for {follower}"
 			})
+			log.info(f"Save list of followers for {follower}")
+
 			# Verify if the follower is on the database as a user
 			is_user = self.neo4j_client.check_user_exists(follower)
 			is_bot = self.neo4j_client.check_bot_exists(follower)

@@ -4,6 +4,7 @@
 import random
 import datetime
 import json
+import logging
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
@@ -30,6 +31,12 @@ BOT_LIKED_TWEET = 0.3
 
 LIMIT_REPLY_LOGS_QUANTITY = 1000
 
+log = logging.getLogger('PDP')
+log.setLevel(logging.INFO)
+handler = logging.StreamHandler(open("pdp.log", "w"))
+handler.setFormatter(logging.Formatter(
+	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+log.addHandler(handler)
 
 class PDP:
 	def __init__(self):
@@ -130,8 +137,10 @@ class PDP:
 			'''
 			evaluate_answer = self.analyze_follow_user(msg)
 		if evaluate_answer:
+			log.info(f"Request to {msg_type.name} accepted")
 			return self.send_response({"response": "PERMIT"})
 		else:
+			log.warning(f"Request to {msg_type.name} denied")
 			return self.send_response({"response": "DENY"})
 
 	def send_response(self, msg):
@@ -148,33 +157,10 @@ class PDP:
 
 		@return: List of users the bot will start following
 		"""
+		log.info(f"Creating users for the bot to start following")
 		num_users = random.randint(2, 10)
-		users = [
-			"dailycristina", "PaulaNevesD", "doloresaveiro", "Corpodormente", "Manzarra",
-			"Feromonas", "DanielaRuah", "RicardoTPereira", "LuciaMoniz", "D_Morgado",
-			"ClaudiaPFVieira", "RuiSinelCordes", "DiogoBeja", "blackmirror", "13ReasonsWhy",
-			"NetflixPT", "DCComics", "gameofthrones", "cw_arrow", "CW_TheFlash",
-			"TheCW_Legends", "nbcthisisus", "lacasadepapel", "lucifernetflix",
-			"thecwsupergirl", "cw_riverdale", "hawaiifive0cbs", "cwthe100", "agentsofshield",
-			"thesimpsons", "macgyvercbs", "americancrimetv", "acsfx", "shadowhunterstv",
-			"theamericansfx", "crimminds_cbs", "KimKardashian", "khloekardashian",
-			"kourtneykardash", "KendallJenner", "KylieJenner", "KrisJenner", "pewdiepie",
-			"tim_cook", "elonmusk", "BillGates", "FCPorto", "KDTrey5", "Cristiano",
-			"hazardeden10", "PauDybala_JR", "Sporting_CP", "Dame_Lillard", "stephenasmith",
-			"RealSkipBayless", "ManCity", "juventusfc", "FCBarcelona", "realmadrid",
-			"SergioRamos", "KingJames", "katyperry", "cher", "NICKIMINAJ", "deadmau5",
-			"kanyewest", "axlrose", "patrickcarney", "vincestaples", "KillerMike",
-			"thedavidcrosby", "samantharonson", "Eminem", "pittyleone", "thesonicyouth", "bep",
-			"ladygaga", "coldplay", "britneyspears", "backstreetboys", "chilipeppers",
-			"fosterthepeople", "acdc", "arcticmonkeys", "blurofficial", "gorillaz", "greenday",
-			"linkinpark", "MCRofficial", "falloutboy", "PanicAtTheDisco", "AllTimeLow",
-			"PTXofficial", "kirstin", "StephenCurry30", "NBA", "SLBenfica", "partido_pan",
-			"ppdpsd", "psocialista", "_cdspp", "cdupcppev", "realdonaldtrump", "borisjohnson",
-			"nigel_farage", "jeremycorbyn", "theresa_may", "joebiden", "fhollande",
-			"angelamerkeicdu", "barackobama", "berniesanders", "nicolasmaduro", "vp",
-			"realxi_jinping", "mlp_officiel", "jguaido", "RuiRioPSD", "antoniocostapm",
-			"catarina_mart", "cristasassuncao", "heloisapolonia", "jairbolsonaro"
-		]
+		with open("first_time_users.csv", "r") as f:
+			users = f.read().rstrip().split("\n")
 
 		bot_list = []
 		while len(bot_list) < num_users:
@@ -235,7 +221,11 @@ class PDP:
 			"id_2": data["user_id"],
 			"type_2": type2
 		})
-		return BOT_FOLLOWS_USER if relation_exists else 0
+		if relation_exists:
+			log.info(f"Relation exists between {data['bot_id']} and {data['user_id']}")
+			return BOT_FOLLOWS_USER
+		log.info(f"Relation doesn't exist between {data['bot_id']} and {data['user_id']}")
+		return 0
 
 	def _score_for_policies(self, data):
 		"""
@@ -257,12 +247,14 @@ class PDP:
 					# Check if our bot is being targeted
 
 					if self._bot_is_targeted(policy, data):
+						log.debug(f"Bot <{data['bot_id']}> has been targeted by a policy")
 						return POLICY_USER_IS_TARGETED
 
 				elif policy["filter"] == "Keywords":
 					# Check if tweet has any important keywords (be it a hashtag or a commonly found word)
 
 					if self._tweet_has_keywords(policy, data):
+						log.debug(f"Tweet <{data['tweet_id']}> has been keywords")
 						return POLICY_KEYWORDS_MATCHES
 
 		return 0
@@ -290,7 +282,9 @@ class PDP:
 			"action": log_actions.RETWEET,
 			"target_id": data["tweet_id"]
 		})
+
 		if bot_logs['success']:
+			log.info("Bot has already retweeted the tweet")
 			heuristic_value = heuristic_value + BOT_RETWEETED_TWEET if heuristic_value < 0.8 else 1
 
 		# We now check if the last recorded like from a tweet of this user was too recent
@@ -300,19 +294,21 @@ class PDP:
 			"action": log_actions.TWEET_LIKE
 		})
 		if bot_logs['success']:
-			for log in bot_logs['data']:
+			for bot_log in bot_logs['data']:
 				user_of_tweet_liked = self.mongo.find(
 					collection="tweets",
-					query={"id": log["target_id"]},
+					query={"id": bot_log["target_id"]},
 					fields=["user"],
 					single=True
 				)
 				if user_of_tweet_liked == data["user_id"]:
-					date = log["timestamp"]
+					date = bot_log["timestamp"]
 					now = datetime.datetime.now()
 					if (now - date).seconds < PENALTY_LIKED_RECENTLY_LARGE_INTERVAL:
+						log.info("Bot has recently liked a tweet from the same user")
 						heuristic_value += PENALTY_LIKED_RECENTLY_LARGE
 					elif (now - date).seconds < PENALTY_LIKED_RECENTLY_SMALL_INTERVAL:
+						log.info("Bot has liked a tweet from the same user, but may not be that suspicious")
 						heuristic_value += PENALTY_LIKED_RECENTLY_SMALL
 
 		return heuristic_value
@@ -340,6 +336,7 @@ class PDP:
 			"target_id": data["tweet_id"]
 		})
 		if bot_logs["success"]:
+			log.info("Bot already liked the tweet")
 			heuristic_value = heuristic_value + BOT_LIKED_TWEET if heuristic_value < 0.7 else 1
 
 		# Finally check if the bot already retweeted something from the user too recently
@@ -348,17 +345,18 @@ class PDP:
 			"action": log_actions.RETWEET
 		})
 		if bot_logs['success']:
-			for log in bot_logs['data']:
+			for bot_log in bot_logs['data']:
 				user_of_retweet = self.mongo.find(
 					collection="tweets",
-					query={"id": log["target_id"]},
+					query={"id": bot_log["target_id"]},
 					fields=["user"],
 					single=True
 				)
 				if user_of_retweet == data["user_id"]:
-					date = log["timestamp"]
+					date = bot_log["timestamp"]
 					now = datetime.datetime.now()
 					if (now - date).seconds < PENALTY_RETWEETED_USER_RECENTLY_INTERVAL:
+						log.debug("Bot has recently retweet the user")
 						heuristic_value += PENALTY_RETWEETED_USER_RECENTLY
 
 		return heuristic_value
@@ -401,6 +399,7 @@ class PDP:
 			"target_id": data["tweet_id"]
 		})
 		if bot_logs["success"]:
+			log.info("Bot already liked the tweet")
 			heuristic_value = heuristic_value + BOT_LIKED_TWEET if heuristic_value < 0.7 else 1
 
 		# Finally check if the bot already replied to the user recently
@@ -410,17 +409,18 @@ class PDP:
 		}, limit=LIMIT_REPLY_LOGS_QUANTITY)
 
 		if bot_logs['success']:
-			for log in bot_logs['data']:
+			for bot_log in bot_logs['data']:
 				user_of_reply = self.mongo.find(
 					collection="tweets",
-					query={"id": log["target_id"]},
+					query={"id": bot_log["target_id"]},
 					fields=["user"],
 					single=True
 				)
 				if user_of_reply == data["user_id"]:
-					date = log["timestamp"]
+					date = bot_log["timestamp"]
 					now = datetime.datetime.now()
 					if (now - date).seconds < PENALTY_REPLIED_USER_RECENTLY_INTERVAL:
+						log.debug("Bot recently replied to another tweet from user")
 						heuristic_value += PENALTY_REPLIED_USER_RECENTLY
 						break
 
