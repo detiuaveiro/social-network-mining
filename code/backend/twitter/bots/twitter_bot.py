@@ -246,7 +246,7 @@ class TwitterBot(RabbitMessaging):
 				user: User = self._twitter_api.get_user(**arg_param)
 
 				if user:
-					logger.info(f"Found user: {user}")
+					logger.info(f"Found user: {user.id}")
 					self.__follow_user(user)
 			except TweepError as error:
 				logger.error(f"Unable to find user identified by [{id_type}] with <{user_id}>: {error}")
