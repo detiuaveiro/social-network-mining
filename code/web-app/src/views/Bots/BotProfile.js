@@ -2,7 +2,11 @@ import React, { Component, lazy, Suspense } from 'react';
 import { Bar, Line } from 'react-chartjs-2';
 
 import baseURL from '../../variables/baseURL'
-import { Container, Row, Col, Button, Pagination, PaginationItem, PaginationLink, } from 'reactstrap';
+import {
+    Container, Row, Col, Button, Pagination, PaginationItem, PaginationLink, Label,
+    Input,
+    FormGroup,
+} from 'reactstrap';
 import Table from "../../components/Table/Table.js";
 
 import Card from "../../components/Card/Card";
@@ -12,9 +16,18 @@ import CardFooter from "../../components/Card/CardFooter";
 import CardIcon from "../../components/Card/CardIcon";
 import CardAvatar from "../../components/Card/CardAvatar.js";
 
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
+
 import Bots from './Bots';
 
 import { CustomTooltips } from '@coreui/coreui-plugin-chartjs-custom-tooltips';
+
+import { ToastContainer, toast, Flip } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import ReactLoading from "react-loading";
 
@@ -78,13 +91,10 @@ class BotProfile extends Component {
         goBack: false,
         policies: [],
         activities: [],
-        loading: false
+        loading: true,
+        modal: false,
+        modalType: null
     };
-
-    handleOpenPolicy(policy) {
-        console.log(policy)
-    }
-
 
     getBotPolicies() {
         fetch(baseURL + "policies/bots/" + this.props.bot.user_id, {
@@ -148,7 +158,6 @@ class BotProfile extends Component {
         });
     }
 
-
     componentDidMount() {
         this.setState({
             error: this.state.error,
@@ -173,6 +182,81 @@ class BotProfile extends Component {
 
     }
 
+
+    // Methods //////////////////////////////////////////////////////////
+
+    handleOpenPolicy(policy) {
+        console.log(policy)
+    }
+
+    handleOpenTweet() {
+        this.setState({
+            modal: true,
+            modalType: "TWEET",
+        });
+    }
+
+    handleTypeTweet() {
+        var text = document.getElementById("tweetText").value
+
+        document.getElementById("counter").textContent = text.length + ""
+        if (text.length >= 281) {
+            document.getElementById("counter").style.color = "#f86c6b"
+            document.getElementById("tweetText").value = text.substring(0, text.length - 2);
+            document.getElementById("tweetText").value = document.getElementById("tweetText").value + text.charAt(text.length - 1);
+            document.getElementById("counter").textContent = document.getElementById("tweetText").value.length + ""
+
+        } else {
+            document.getElementById("counter").style.color = "#212121"
+        }
+    }
+
+
+    handleTweet() {
+        var text = document.getElementById("tweetText").value;
+
+        if (text == "") {
+            document.getElementById("error").style.display = ""
+            return
+        }
+
+        document.getElementById("error").style.display = "None";
+
+        //TODO: GET LATEST TWEETS
+
+
+        //TODO: ADD FAILURE OPTION
+        if (true) {
+            toast.success('🐦 New tweet successfully posted!', {
+                position: "top-center",
+                autoClose: 2500,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true
+            });
+        } else {
+            toast.error('Sorry, there was an error posting the tweet! Please try again later.', {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true
+            });
+        }
+
+        this.handleClose()
+    }
+
+    handleClose() {
+        this.setState({
+          modal: false,
+          modalType: null,
+        });
+      }
+
+
     handleGoBack() {
         console.log("back")
         this.setState({
@@ -183,6 +267,8 @@ class BotProfile extends Component {
             loading: this.state.loading
         })
     }
+
+    /////////////////////////////////////////////////////////////////////
 
 
     loading = () => <div className="fadeIn pt-1 text-center"><ReactLoading type={"cubes"} color="#1da1f2" /></div>
@@ -239,9 +325,68 @@ class BotProfile extends Component {
                 </div>
             )
         } else {
+            var modal
+            if (this.state.modal) {
+                if (this.state.modalType == "TWEET") {
+                    modal = <Dialog class="fade-in"
+                        open={this.state.modal}
+                        onClose={() => this.handleClose()}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description"
+                    >
+                        <DialogTitle id="alert-dialog-title">
+                            {"🐦 Post a tweet"}
+                        </DialogTitle>
+                        <DialogContent style={{ minWidth: "600px" }}>
+                            <Container fluid>
+                                <Row>
+                                    <Col xs="12" md="12">
+                                        <FormGroup>
+                                            <Label htmlFor="name">Tweet <span id="counter">0</span>/280</Label>
+                                            <Input type="textarea" name="textarea-input" id="tweetText" rows="9" onChange={() => this.handleTypeTweet()}
+                                                placeholder="Write a tweet" />
+                                        </FormGroup>
+                                    </Col>
+                                </Row>
+
+                                <DialogContentText>
+                                    <span id="error" style={{ display: "None", color: "#f86c6b" }}>Sorry, the tweet can't be empty!</span>
+                                </DialogContentText>
+                            </Container>
+
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={() => this.handleClose()} color="info">
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={() => this.handleTweet()}
+                                color="success"
+                                autoFocus
+                            >
+                                Confirm
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                }
+            }
+
+
+
             return (
                 <div className="animated fadeIn">
                     <Container fluid>
+                        <ToastContainer
+                            position="top-center"
+                            autoClose={2500}
+                            hideProgressBar={false}
+                            newestOnTop={false}
+                            closeOnClick
+                            rtl={false}
+                            pauseOnVisibilityChange
+                            draggable
+                            pauseOnHover
+                        />
                         <Row>
                             <Col xs="12" sm="12" md="12" style={{ marginBottom: "30px" }}>
                                 <Button block outline color="danger" onClick={() => this.handleGoBack()} style={{
@@ -377,7 +522,7 @@ class BotProfile extends Component {
                                         }} > Last tweet</h4>
                                         <Button block outline color="light" style={{
                                             width: "150px", marginTop: "15px"
-                                        }}>Post new tweet</Button>
+                                        }} onClick={() => this.handleOpenTweet()}>Post new tweet</Button>
                                     </CardHeader>
                                     <CardBody>
                                         <h5 style={{ marginTop: "15px" }}>
@@ -417,6 +562,7 @@ class BotProfile extends Component {
                                 </Card>
                             </Col>
                         </Row>
+                        {modal}
                     </Container>
                 </div>
             )

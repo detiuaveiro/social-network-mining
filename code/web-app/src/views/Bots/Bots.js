@@ -42,7 +42,7 @@ class Bots extends Component {
     error: false,
     bots: [],
     bot: null,
-    loading: false,
+    loading: true,
     modal: false,
     modalType: null,
     modalBot: null
