@@ -1,3 +1,9 @@
+# Attention! Hotfix in PostgreSQL required
+Entrei no psql pelo comando 
+``psql -U admin -W -d twitter``
+
+E escrevam o comando
+``ALTER TABLE logs ADD COLUMN target_id bigint;``
 
 # Examples
 ## Tweet object
