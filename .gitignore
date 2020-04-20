@@ -130,5 +130,3 @@ packages/react-devtools-inline/dist
 packages/react-devtools-shell/dist
 
 tweets_dataset/
-
-*.csv
