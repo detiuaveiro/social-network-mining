@@ -44,7 +44,11 @@ def {\bfseries close} (self)
 def \hyperlink{classtwitter_1_1control__center_1_1PDP_1_1PDP_a302067b5d102cbe2a5f55355bb204333}{\+\_\+bot\+\_\+is\+\_\+targeted} (self, policy, data)
 \begin{DoxyCompactList}\small\item\em Private function to check if a bot is being targeted in a policy Checks first if the bot was mentioned in the tweet, or if the user who posted the tweet is himself listed in the policy. \end{DoxyCompactList}\item 
 def \hyperlink{classtwitter_1_1control__center_1_1PDP_1_1PDP_a66187cf251e70e9f579406e45eb16137}{\+\_\+tweet\+\_\+has\+\_\+keywords} (self, policy, data)
-\begin{DoxyCompactList}\small\item\em Private function to check if a tweet uses any important keywords, be it hashtags or commonly found words. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Private function to check if a tweet uses any important keywords, be it hashtags or commonly found words. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1control__center_1_1PDP_1_1PDP_ab958d1ecb98242eace6e2b55f61fefa2}{\+\_\+score\+\_\+for\+\_\+relation} (self, data)
+\begin{DoxyCompactList}\small\item\em Algorithm to attribute a score if there\textquotesingle{}s a follow relationship between the user and the bot. \end{DoxyCompactList}\item 
+def \hyperlink{classtwitter_1_1control__center_1_1PDP_1_1PDP_ab3d879dc9a07fad8632ec8db1ecc93c8}{\+\_\+score\+\_\+for\+\_\+policies} (self, data)
+\begin{DoxyCompactList}\small\item\em Algorithm to atribute a score for the relation the bot and the user have with the policies If the bot is being targeted by some policy, or if the tweet has a special keyword, it will return the appropriate score. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Constructor \& Destructor Documentation}
@@ -79,6 +83,36 @@ Private function to check if a bot is being targeted in a policy Checks first if
 \begin{DoxyReturn}{Returns}
 True or False depending if the bot was indeed targeted 
 \end{DoxyReturn}
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_ab3d879dc9a07fad8632ec8db1ecc93c8}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_ab3d879dc9a07fad8632ec8db1ecc93c8}} 
+\index{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}!\+\_\+score\+\_\+for\+\_\+policies@{\+\_\+score\+\_\+for\+\_\+policies}}
+\index{\+\_\+score\+\_\+for\+\_\+policies@{\+\_\+score\+\_\+for\+\_\+policies}!twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}}
+\subsubsection{\texorpdfstring{\+\_\+score\+\_\+for\+\_\+policies()}{\_score\_for\_policies()}}
+{\footnotesize\ttfamily def twitter.\+control\+\_\+center.\+P\+D\+P.\+P\+D\+P.\+\_\+score\+\_\+for\+\_\+policies (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Algorithm to atribute a score for the relation the bot and the user have with the policies If the bot is being targeted by some policy, or if the tweet has a special keyword, it will return the appropriate score. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em } & \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_ab958d1ecb98242eace6e2b55f61fefa2}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_ab958d1ecb98242eace6e2b55f61fefa2}} 
+\index{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}!\+\_\+score\+\_\+for\+\_\+relation@{\+\_\+score\+\_\+for\+\_\+relation}}
+\index{\+\_\+score\+\_\+for\+\_\+relation@{\+\_\+score\+\_\+for\+\_\+relation}!twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}}
+\subsubsection{\texorpdfstring{\+\_\+score\+\_\+for\+\_\+relation()}{\_score\_for\_relation()}}
+{\footnotesize\ttfamily def twitter.\+control\+\_\+center.\+P\+D\+P.\+P\+D\+P.\+\_\+score\+\_\+for\+\_\+relation (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Algorithm to attribute a score if there\textquotesingle{}s a follow relationship between the user and the bot. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em } & \\
+\hline
+\end{DoxyParams}
 \mbox{\Hypertarget{classtwitter_1_1control__center_1_1PDP_1_1PDP_a66187cf251e70e9f579406e45eb16137}\label{classtwitter_1_1control__center_1_1PDP_1_1PDP_a66187cf251e70e9f579406e45eb16137}} 
 \index{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}!\+\_\+tweet\+\_\+has\+\_\+keywords@{\+\_\+tweet\+\_\+has\+\_\+keywords}}
 \index{\+\_\+tweet\+\_\+has\+\_\+keywords@{\+\_\+tweet\+\_\+has\+\_\+keywords}!twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP@{twitter\+::control\+\_\+center\+::\+P\+D\+P\+::\+P\+DP}}

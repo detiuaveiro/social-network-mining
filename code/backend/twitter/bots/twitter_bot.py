@@ -26,6 +26,8 @@ logger.addHandler(handler)
 class TwitterBot(RabbitMessaging):
 	def __init__(self, url, username, password, vhost, messaging_settings, bot_id, api: tweepy.API):
 		super().__init__(url, username, password, vhost, messaging_settings)
+		self._name: str = 'bot'
+		self._screen_name: str = 'bot'
 		self._id = bot_id
 		self._twitter_api = api
 		self.user: User
@@ -56,7 +58,7 @@ class TwitterBot(RabbitMessaging):
 		return tweet_dict
 
 	def __send_message(self, data, message_type: messages_types.BotToServer, exchange):
-		"""Function to send a new message to the server throw rabbitMQ
+		"""Function to send a new message to the server through rabbitMQ
 
 		:param data: data to send
 		:param message_type: type of message to send to server
@@ -65,6 +67,8 @@ class TwitterBot(RabbitMessaging):
 		self._send_message(to_json({
 			'type': message_type,
 			'bot_id': self._id,
+			'bot_name': self._name,
+			'bot_screen_name': self._screen_name,
 			'timestamp': current_time(),
 			'data': data
 		}), exchange)
@@ -78,7 +82,7 @@ class TwitterBot(RabbitMessaging):
 		self.__send_data(user._json, messages_types.BotToServer.SAVE_USER)
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
-		logger.debug(f"Sending {tweet}")
+		logger.debug(f"Sending {tweet} with message_type <{message_type.name}>")
 		self.__send_data(self.__get_tweet_dict(tweet), message_type)
 
 	def __send_data(self, data, message_type: messages_types.BotToServer):
@@ -106,11 +110,14 @@ class TwitterBot(RabbitMessaging):
 		try:
 			self.user = self._twitter_api.verify_credentials()
 			logger.info(f"Logged in as:{self.user}")
+
+			self._name = self._twitter_api.me().name
+			self._screen_name = self._twitter_api.me().screen_name
 		except TweepError as error:
 			logger.error(f"Error verifying credentials: {error}")
 			exit(1)
 
-		logger.debug(f"Sending our user to {DATA_EXCHANGE}")
+		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
 		self.__send_user(self.user)
 
 		logger.info("Reading home timeline")
@@ -165,6 +172,9 @@ class TwitterBot(RabbitMessaging):
 				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_LIKE)
 			if not tweet.retweeted:
 				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_RETWEET)
+
+			# ask to reply to tweet
+			self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_REPLY)
 
 			if not jump_users:
 				tweet_user = tweet.user
@@ -232,7 +242,7 @@ class TwitterBot(RabbitMessaging):
 
 			try:
 				user.follow()
-				logger.info(f"Followed User tih id <{user.id}>")
+				logger.info(f"Followed User with id <{user.id}>")
 				self.__send_event(user._json, messages_types.BotToServer.EVENT_USER_FOLLOWED)
 			except TweepError as error:
 				if error.api_code == FOLLOW_USER_ERROR_CODE:
@@ -320,6 +330,11 @@ class TwitterBot(RabbitMessaging):
 		try:
 			tweet: Status = self._twitter_api.update_status(**args)
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
+
+			if reply_id:
+				self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
+
+			logger.debug("Tweet posted with success")
 		except TweepError as error:
 			logger.error(f"Error posting a new tweet: {error}")
 
