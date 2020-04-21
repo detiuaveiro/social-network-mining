@@ -251,10 +251,10 @@ class BotProfile extends Component {
 
     handleClose() {
         this.setState({
-          modal: false,
-          modalType: null,
+            modal: false,
+            modalType: null,
         });
-      }
+    }
 
 
     handleGoBack() {
@@ -290,33 +290,11 @@ class BotProfile extends Component {
                                         </h3>
                                     </CardHeader>
                                     <CardBody>
+                                        <p>Sorry, an error has occured! Please try again shortly</p>
+
                                         <Button block outline color="danger" onClick={() => this.handleGoBack()} style={{
                                             width: "150px", marginTop: "15px"
                                         }}><i class="fas fa-chevron-left"></i> Go Back</Button>
-                                    </CardBody>
-                                </Card>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col xs="12" sm="12" md="12">
-                                <Card>
-                                    <CardHeader color="primary">
-                                        <h4 style={{
-                                            color: "#FFFFFF",
-                                            marginTop: "0px",
-                                            minHeight: "auto",
-                                            marginBottom: "3px",
-                                            textDecoration: "none",
-                                            "& small": {
-                                                color: "#777",
-                                                fontSize: "65%",
-                                                fontWeight: "400",
-                                                lineHeight: "1"
-                                            }
-                                        }} > Registered Accounts</h4>
-                                    </CardHeader>
-                                    <CardBody>
-                                        <p>Sorry, an error has occured! Please try again shortly</p>
                                     </CardBody>
                                 </Card>
                             </Col>
