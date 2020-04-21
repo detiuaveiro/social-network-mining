@@ -49,10 +49,6 @@ class Widget03 extends Component {
             <div className="text-value">{vals[1]}</div>
             <div className="text-uppercase text-muted small">{keys[1]}</div>
           </div>
-          <div>
-            <div className="text-value">{vals[2]}</div>
-            <div className="text-uppercase text-muted small">{keys[2]}</div>
-          </div>
         </div>
       </div>
     );
