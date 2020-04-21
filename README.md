@@ -19,7 +19,10 @@ $ npm i react-countup
 $ npm i react-visibility-sensor
 $ npm i react-loading
 $ npm i react-toastify
+$ npm install d3@^5.5.0
+$ npm install react-d3-graph
 ```
+You'll also need to update the file: node\_modules/react-d3-graph/Graph.js line 593 (width: this.state.config.width TO width: "100%")
 Then use the command to start the web app on port 3000:
 `$ npm start`
 

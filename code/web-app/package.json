@@ -22,6 +22,7 @@
     "chart.js": "^2.8.0",
     "classnames": "^2.2.6",
     "core-js": "^3.1.4",
+    "d3": "^5.16.0",
     "enzyme": "^3.10.0",
     "enzyme-adapter-react-16": "^1.14.0",
     "flag-icon-css": "^3.3.0",
@@ -34,16 +35,20 @@
     "react-app-polyfill": "^1.0.1",
     "react-chartjs-2": "^2.7.6",
     "react-countup": "^4.3.3",
+    "react-d3-graph": "^2.4.1",
     "react-device-detect": "^1.11.14",
     "react-dom": "^16.8.6",
+    "react-graph-vis": "^1.0.5",
     "react-loading": "^2.0.3",
     "react-router-config": "^5.0.1",
     "react-router-dom": "^5.0.1",
+    "react-sigma": "^1.2.34",
     "react-test-renderer": "^16.8.6",
     "react-toastify": "^5.5.0",
     "react-visibility-sensor": "^5.1.1",
     "reactstrap": "^8.0.0",
-    "simple-line-icons": "^2.4.1"
+    "simple-line-icons": "^2.4.1",
+    "vis-react": "^0.5.1"
   },
   "devDependencies": {
     "react-scripts": "^3.4.1"
