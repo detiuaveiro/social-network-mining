@@ -78,7 +78,7 @@ class TwitterBot(RabbitMessaging):
 
 		:param user: user to send
 		"""
-		logger.debug(f"Sending {user.id}")
+		logger.debug(f"Sending {user.id} with message type {message_type}")
 		self.__send_data(user._json, message_type)
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
