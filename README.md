@@ -147,3 +147,22 @@ mongoimport --db twitter --collection users --file scripts/mongodb/users.json -u
 ```bash
 psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql 
 ```
+
+- neo4j
+```bash
+  CALL apoc.load.json("user.json")
+  YIELD value
+  MERGE (p:User {name: value.n.properties.name, id: value.n.properties.id, username: value.n.properties.username})
+```
+```bash
+  CALL apoc.load.json("bot.json")
+  YIELD value
+  MERGE (p:Bot {name: value.n.properties.name, id: value.n.properties.id, username: value.n.properties.username})
+```
+```bash
+  CALL apoc.load.json("follow.json")
+  YIELD value
+  MATCH(p:Bot {id:value.p.start.properties.id})
+  MATCH(u: User {id:toInteger(value.p.end.properties.id)})
+  CREATE (p)-[:FOLLOWS]->(u)
+```
