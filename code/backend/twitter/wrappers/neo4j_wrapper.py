@@ -311,7 +311,7 @@ class Neo4jAPI:
 
         result = tx.run(f"MATCH (r:{TWEET_LABEL} {{ id:$id }}) RETURN r", id=data)
 
-        return len(result) != 0
+        return len(result.data()) != 0
 
     def update_user(self, data):
         """Method used to update a given user
@@ -507,7 +507,7 @@ class Neo4jAPI:
             data['id_2'] = data['reply']
 
             # Caller for transactional unit of work
-            return session.write_transaction(self.__create_relationship, data)
+            return session.write_transaction(self.__delete_rel, data)
 
     def delete_relationship(self, data):
         """Method used to delete a given bot
@@ -550,6 +550,30 @@ class Neo4jAPI:
                 f' DELETE r'
 
         tx.run(query)
+
+    def search_tweets(self, tweet=None):
+        """Method used to search for a given tweet
+
+        @param tweet: The params of the bot we want to look for. By default we look for all bots
+        """
+
+        with self.driver.session as session:
+            return session.write_transaction(self.__search_tweet, tweet)
+
+    def __search_tweet(self, tx, tweet):
+        log.debug("SEARCHING TWEET")
+
+        query = f"MATCH (r: {TWEET_LABEL}"
+        if tweet is not None:
+            query += "{id: " + tweet + "}"
+
+        query += ") RETURN r"
+
+        result = []
+        for i in tx.run(query):
+            result.append(dict(i.items()[0][1]))
+
+        return result
 
     def search_bots(self, data={}):
         """Method used to search for a given bot
@@ -612,6 +636,102 @@ class Neo4jAPI:
 
         return result
 
+    def check_writer_relationship(self, data):
+        """Method used to delete WRITE relationship
+
+        @param data: The params of the new relationship we want to create. Should include a tweet_id, a user_id and
+        the user's type
+        """
+
+        if (
+                "tweet_id" not in data.keys()
+                or "user_id" not in data.keys()
+                or "user_type" not in data.keys()
+        ):
+            log.error("ERROR CHECKING A WRITE RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type"
+            )
+
+            return
+
+        if data["user_type"] not in [BOT_LABEL, USER_LABEL]:
+            log.error("ERROR CHECKING A WRITE RELATIONSHIP")
+            log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+
+            return
+
+        with self.driver.session() as session:
+            data['label'] = WROTE_LABEL
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet_id']
+            data['type_2'] = data['user_type']
+            data['id_2'] = data['user_id']
+
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__check_relationship, data)
+
+    def check_retweet_relationship(self, data):
+        """Method used to check a new RETWEET relationship
+
+        @param data: The params of the new relationship we want to create. Should include a tweet_id, a user_id and the
+                    user's type
+        """
+
+        if (
+                "tweet_id" not in data.keys()
+                or "user_id" not in data.keys()
+                or "user_type" not in data.keys()
+        ):
+            log.error("ERROR CHECKING A RETWEET RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type"
+            )
+
+            return
+
+        if data["user_type"] not in [BOT_LABEL, USER_LABEL]:
+            log.error("ERROR CHECKING A RETWEET RELATIONSHIP")
+            log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+
+            return
+
+        with self.driver.session() as session:
+            data['label'] = RETWEET_LABEL
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet_id']
+            data['type_2'] = data['user_type']
+            data['id_2'] = data['user_id']
+
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__check_relationship, data)
+
+    def check_reply_relationship(self, data):
+        """Method used to check a new REPLY relationship
+
+        @param data: The params of the new relationship we want to create. Should include a tweet and the reply
+        """
+        if (
+                "tweet" not in data.keys()
+                or "reply" not in data.keys()
+        ):
+            log.error("ERROR CHECK A REPLY RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - tweet and reply"
+            )
+
+            return
+
+        with self.driver.session() as session:
+            data['label'] = REPLY_LABEL
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['reply']
+
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__check_relationship, data)
+
     def check_relationship_exists(self, data):
         """Method used to check whether a relationship exists between two IDs
 
@@ -642,20 +762,18 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             # Caller for transactional unit of work
+            data['label'] = FOLLOW_LABEL
             return session.write_transaction(self.__check_relationship, data)
 
     def __check_relationship(self, tx, data):
         log.debug("VERIFYING RELATIONSHIP EXISTANCE")
 
-        query = f'MATCH (a: {data["type_1"]} {{id: {str(data["id_1"])} }})-[r:{FOLLOW_LABEL}]' \
+        query = f'MATCH (a: {data["type_1"]} {{id: {str(data["id_1"])} }})-[r:{data["label"]}]' \
                 f'->(b:{data["type_2"]} {{id: {str(data["id_2"])} }}) RETURN a, b'
 
         result = tx.run(query)
 
-        if len(result.values()) == 0:
-            return False
-        else:
-            return True
+        return len(result.values()) != 0
 
     def get_following(self, data):
         """Method used to find all accounts a given entity is following
