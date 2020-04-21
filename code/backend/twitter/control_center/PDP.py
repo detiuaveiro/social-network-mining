@@ -193,7 +193,7 @@ class PDP:
 		"""
 		for mention in data["tweet_entities"]["user_mentions"]:
 			if mention["id"] in policy["bots"]:
-				log.info(f"Bot <{data["bot_id"]}> was mentioned by user")
+				log.info(f"Bot <{data['bot_id']}> was mentioned by user")
 				return True
 		
 		if data["user_id"] in policy["bots"]:
