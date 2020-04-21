@@ -38,6 +38,7 @@ handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
 
+
 class PDP:
 	def __init__(self):
 		'''
@@ -434,7 +435,7 @@ class PDP:
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
 		"""
-		# This was not implemeneted last year
+		# This was not implemented last year
 		return False
 
 	def close(self):
