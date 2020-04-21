@@ -1,6 +1,6 @@
 ## @package twitter.control_center
 # coding: UTF-8
-
+import logging
 import random
 import datetime
 import json
@@ -29,6 +29,14 @@ BOT_RETWEETED_TWEET = 0.2
 BOT_LIKED_TWEET = 0.3
 
 LIMIT_REPLY_LOGS_QUANTITY = 1000
+
+
+log = logging.getLogger('PDP')
+log.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(open("pdp.log", "w"))
+handler.setFormatter(logging.Formatter(
+	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+log.addHandler(handler)
 
 
 class PDP:
@@ -250,6 +258,9 @@ class PDP:
 			"bot_id": data["bot_id"]
 		})
 
+		# TODO -> TIRAR ESTE PRINT E SUBSTITUIR POR UM LOG
+		log.debug(policy_list)
+
 		if policy_list['success']:
 			for policy in policy_list["data"]:
 
@@ -434,8 +445,8 @@ class PDP:
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
 		"""
-		# This was not implemeneted last year
-		return False
+		# This was not implemented last year
+		return True
 
 	def close(self):
 		self.neo4j.close()
