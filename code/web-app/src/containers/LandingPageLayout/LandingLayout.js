@@ -10,7 +10,7 @@ import './styles/css/slick.css';
 import './styles/css/font-awesome.min.css';
 import './styles/css/themify-icons.css';
 import './styles/css/ionicons.min.css';
-import './styles/css/responsive.css'
+import './styles/css/responsive.css';
 
 import './styles/style.css'
 import './styles/js/active'
