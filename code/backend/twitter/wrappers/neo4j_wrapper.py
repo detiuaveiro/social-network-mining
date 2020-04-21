@@ -115,7 +115,7 @@ class Neo4jAPI:
             USER_LABEL,
         ]:
             log.error("ERROR CREATING A RELATIONSHIP")
-            log.error(f"Error: Unaceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+            log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
             return
 
@@ -126,10 +126,10 @@ class Neo4jAPI:
     def __create_relationship(self, tx, data):
         log.debug("CREATING RELATIONSHIP")
 
-        query = f'MATCH (u: {data["type_1"]} {{ id: {str(data["id_1"])} }}), ' \
-                f'(r: {data["type_2"]} {{ id: {str(data["id_2"])} }}) MERGE (u)-[:{FOLLOW_LABEL}]->(r)'
+        result = tx.run(f"MATCH (u: {data['type_1']} {{ id: $id1 }}), (r: {data['type_2']} {{ id: $id2 }}) "
+                        f"MERGE (u)-[:{FOLLOW_LABEL}]->(r)", id1=data['id_1'], id2=data['id_2'])
 
-        tx.run(query)
+        log.debug(f"Created relationship:{result}")
 
     def check_bot_exists(self, id):
         """Method used to check if there exists a bot with a given id

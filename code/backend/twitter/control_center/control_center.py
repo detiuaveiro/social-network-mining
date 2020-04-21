@@ -15,7 +15,7 @@ from bots.messages_types import ServerToBot, BotToServer
 import log_actions
 
 log = logging.getLogger('Database Writer')
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(open("dbwritter.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
@@ -42,6 +42,8 @@ class Control_Center(Rabbitmq):
 
 	def action(self, message):
 		message_type = message['type']
+
+		log.debug(f"Received message of type {message_type}")
 
 		if message_type == BotToServer.EVENT_USER_FOLLOWED:
 			self.follow_user(message)
@@ -82,6 +84,9 @@ class Control_Center(Rabbitmq):
 		elif message_type == BotToServer.SAVE_FOLLOWERS:
 			self.find_followers(message)
 
+		elif message_type == BotToServer.QUERY_KEYWORDS:
+			self.send_keywords(message)
+
 	# Need DB API now
 	def follow_user(self, data):
 		"""
@@ -102,6 +107,10 @@ class Control_Center(Rabbitmq):
 			"type_1": type1,
 			"type_2": type2
 		}
+
+		# add or update user in database
+		self.save_user(data)
+
 		if self.neo4j_client.check_relationship_exists(relationship):
 			log.info("The bot already follows the user")
 			return
@@ -111,6 +120,8 @@ class Control_Center(Rabbitmq):
 			"action": log_actions.FOLLOW,
 			"target_id": data['data']['id']
 		})
+
+		log.info("Saved follow relation with success")
 
 	def like_tweet(self, data):
 		"""
@@ -205,7 +216,7 @@ class Control_Center(Rabbitmq):
 		2param data: dict containing the bot id and the tweet id
 		"""
 		log.info("Request a retweeting a tweet")
-		self.postgress_client.insert_log({
+		self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.RETWEET_REQ,
 				"target_id": data['data']['id']
@@ -298,8 +309,8 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing the bot id and the tweet id
 		"""
-		log.info("Request a like to a tweet")
-		self.postgress_client.insert_log({
+		log.info("Request to follow user")
+		self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ,
 				"target_id": data['data']['id']
@@ -311,7 +322,7 @@ class Control_Center(Rabbitmq):
 		})
 
 		if request_accepted:
-			log.info("Like request accepted")
+			log.info("Follow user request accepted")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ_ACCEPT,
@@ -326,7 +337,7 @@ class Control_Center(Rabbitmq):
 				}
 			)
 		else:
-			log.warning("Like request denied")
+			log.warning("Follow user request denied")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ_DENY,
@@ -360,7 +371,6 @@ class Control_Center(Rabbitmq):
 			self.neo4j_client.add_bot(
 				{"id": data['bot_id'], "name": data['bot_name'], "username": data['bot_screen_name']})
 		else:
-
 			is_bot = self.neo4j_client.check_bot_exists(data["data"]["id"])
 			if is_bot:
 				log.info(
@@ -501,7 +511,7 @@ class Control_Center(Rabbitmq):
 		log.info("Starting to create the Follow Relationship")
 		for follower in data["data"]:
 			self.postgres_client.insert_log({
-				"id_bot": data['bot_id'],
+				"bot_id": data['bot_id'],
 				"action": f"Save list of followers for {follower}"
 			})
 			# Verify if the follower is on the database as a user
@@ -535,6 +545,32 @@ class Control_Center(Rabbitmq):
 						"id": follower_follower
 					}
 				})
+
+	def send_keywords(self, data):
+		log.info("Starting to sending the keywords to the bot")
+
+		bot_id = data["bot_id"]
+
+		policies = self.postgres_client.search_policies({
+			"bot_id": bot_id, "filter": "Keywords"
+		})
+
+		response = []
+		if policies['success']:
+			policy_list = policies['data']
+			log.debug(f"Obtained policies: {policy_list}")
+
+			if len(policy_list) > 0:
+				response = random.choice(policy_list)["params"]
+
+			log.debug(f"Keywords to send: {response}")
+
+			log.info(f"Sending keywords {response} to bot {response}")
+		self.send(
+			bot_id,
+			ServerToBot.KEYWORDS,
+			response
+		)
 
 	def send(self, bot, message_type, params):
 		"""
