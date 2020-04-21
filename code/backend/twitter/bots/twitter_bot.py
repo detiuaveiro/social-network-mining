@@ -58,7 +58,7 @@ class TwitterBot(RabbitMessaging):
 		return tweet_dict
 
 	def __send_message(self, data, message_type: messages_types.BotToServer, exchange):
-		"""Function to send a new message to the server throw rabbitMQ
+		"""Function to send a new message to the server through rabbitMQ
 
 		:param data: data to send
 		:param message_type: type of message to send to server
@@ -73,16 +73,16 @@ class TwitterBot(RabbitMessaging):
 			'data': data
 		}), exchange)
 
-	def __send_user(self, user: User):
+	def __send_user(self, user: User, message_type: messages_types.BotToServer):
 		"""Function to send a twitter's User object to the server
 
 		:param user: user to send
 		"""
-		logger.debug(f"Sending {user}")
-		self.__send_data(user._json, messages_types.BotToServer.SAVE_USER)
+		logger.debug(f"Sending {user.id} with message type {message_type}")
+		self.__send_data(user._json, message_type)
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
-		logger.debug(f"Sending {tweet} with message_type <{message_type.name}>")
+		logger.debug(f"Sending {tweet.id} with message_type <{message_type.name}>")
 		self.__send_data(self.__get_tweet_dict(tweet), message_type)
 
 	def __send_data(self, data, message_type: messages_types.BotToServer):
@@ -118,7 +118,7 @@ class TwitterBot(RabbitMessaging):
 			exit(1)
 
 		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
-		self.__send_user(self.user)
+		self.__send_user(self.user, messages_types.BotToServer.SAVE_USER)
 
 		logger.info("Reading home timeline")
 		self.__read_timeline(self.user)
@@ -154,9 +154,27 @@ class TwitterBot(RabbitMessaging):
 		if current_depth == max_depth:
 			return
 
-		logger.debug(f"Reading user's <{user.__str__()}> timeline")
+		logger.debug(f"Reading user's <{user.id}> timeline")
 		tweets = self.__user_timeline_tweets(user, count=MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE)
 
+		total_read_time = self.__interpret_tweets(tweets, jump_users, max_depth, current_depth)
+		logger.debug(f"Read {user.id}'s timeline in {total_read_time} seconds")
+
+	def __search_tweets(self, keywords: list, language: str = 'pt', max_keywords: int = 3):
+		logger.info(f"Starting to search for tweets for keywords {keywords}")
+
+		total_read_time = 0
+		for i in range(max_keywords):
+			if len(keywords) > 0:
+				keyword = random.choice(keywords)
+				keywords.remove(keyword)
+
+				tweets = self._twitter_api.search(q=keyword, lang=language)
+				total_read_time += self.__interpret_tweets(tweets)
+
+		logger.debug(f"Search completed in {total_read_time} seconds")
+
+	def __interpret_tweets(self, tweets, jump_users: bool = False, max_depth: int = 3, current_depth: int = 0) -> float:
 		total_read_time = 0
 		for tweet in tweets:
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
@@ -177,23 +195,29 @@ class TwitterBot(RabbitMessaging):
 			self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_REPLY)
 
 			if not jump_users:
+				logger.info("Starting to read tweet's author")
+
 				tweet_user = tweet.user
-				self.__send_user(tweet_user)
+				self.__send_user(tweet_user, messages_types.BotToServer.SAVE_USER)
 
 				user_attributes = tweet_user.__dir__()
 
+				logger.debug(
+					f"Tweet with author info {tweet_user.following if 'following' in user_attributes else 'nothing'}")
+				if 'following' in user_attributes and not tweet_user.following or 'following' not in user_attributes:
+					logger.debug(f"Requesting to follow user {tweet_user.id}")
+					self.__send_user(tweet_user, messages_types.BotToServer.QUERY_FOLLOW_USER)
+
 				if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
 					logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
-								   f"following him, so can't read his timeline")
-					continue
+					               f"following him, so can't read his timeline")
 				elif 'suspended' in user_attributes and tweet_user.suspended:
 					logger.warning(f"Found user with ID={tweet_user.id} but his account was suspended, "
-								   f"so can't read his timeline")
-					continue
+					               f"so can't read his timeline")
 				else:
 					self.__read_timeline(tweet_user, jump_users=jump_users,
-										 max_depth=max_depth, current_depth=current_depth + 1)
-		logger.debug(f"Read {user.id}'s timeline in {total_read_time} seconds")
+					                     max_depth=max_depth, current_depth=current_depth + 1)
+		return total_read_time
 
 	def __direct_messages(self):
 		logger.info("Checking direct messages")
@@ -222,7 +246,7 @@ class TwitterBot(RabbitMessaging):
 				user: User = self._twitter_api.get_user(**arg_param)
 
 				if user:
-					logger.info(f"Found user: {user}")
+					logger.info(f"Found user: {user.id}")
 					self.__follow_user(user)
 			except TweepError as error:
 				logger.error(f"Unable to find user identified by [{id_type}] with <{user_id}>: {error}")
@@ -233,9 +257,9 @@ class TwitterBot(RabbitMessaging):
 
 		:param user: user to follow
 		"""
-		logger.info(f"Following user <{user}>")
+		logger.info(f"Following user <{user.id}>")
 
-		self.__send_user(user)
+		self.__send_user(user, messages_types.BotToServer.SAVE_USER)
 
 		if not user.following:
 			virtual_read_wait(user.description)
@@ -251,7 +275,7 @@ class TwitterBot(RabbitMessaging):
 					logger.error(f"Error with api_code={error.api_code}: {error}")
 
 		if not user.protected or (user.protected and user.following):
-			self.__read_timeline(user, jump_users=True)
+			self.__read_timeline(user, jump_users=False, max_depth=3)
 
 	def __find_tweet_by_id(self, tweet_id: int) -> Union[Status, None]:
 		"""Function to find and return a tweet for a given id
@@ -365,12 +389,14 @@ class TwitterBot(RabbitMessaging):
 						pass
 					elif task_type == messages_types.ServerToBot.POST_TWEET:
 						self.__post_tweet(**task_params)
+					elif task_type == messages_types.ServerToBot.KEYWORDS:
+						self.__search_tweets(keywords=task_params)
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
 				else:
 					logger.warning("There are not new messages on the tasks's queue")
-					# TODO -> VER O QUE FAZER NESTA SITUAÇÃO
-					wait(5)
+					self.__send_user(self._twitter_api.me(), messages_types.BotToServer.QUERY_KEYWORDS)
+					wait(2)
 			except Exception as error:
 				logger.error(f"Error on bot's loop: {error}")
 				# exit(1)
