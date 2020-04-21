@@ -13,6 +13,7 @@ handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
 
+
 class PEP:
 	"""
 	Policy Enforcement Point
