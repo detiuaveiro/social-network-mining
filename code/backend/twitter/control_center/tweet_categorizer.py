@@ -1,13 +1,22 @@
 ## @package twitter.control_center
 # coding: UTF-8
 
+from argparse import ArgumentParser
+import logging
 import pandas as pd
 import numpy as np
-import re
+import nltk
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 from sklearn.cluster import KMeans
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+
+log = logging.getLogger('Tweet Categorizer')
+log.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(open("tweet_categorizer.log", "w"))
+handler.setFormatter(logging.Formatter(
+	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+log.addHandler(handler)
 
 class TweetCategorizer:
 	"""
@@ -34,9 +43,11 @@ class TweetCategorizer:
 	def add_to_sd(self, data):
 		"""
 		Function that takes in a dictionary of data to add to its stemmed data, which will be used for the training
+		After a manual addition to the Stemmed Data, you need to train the categorizer again
 
 		@param data: dictionary that maps categories to a list of documents
 		"""
+		log.info("Adding new data to dataset")
 		for category in data:
 			for doc in data[category]:
 				dataset = pd.read_csv(doc)
@@ -51,9 +62,10 @@ class TweetCategorizer:
 		"""
 		Training function that creates the k cluster of tweets
 		"""
+		log.info("Training Cluster")
 		X = self.tv.fit_transform(self.stemmed_data)
 		self.kmeans = KMeans(n_clusters=len(self.category_list))
-		print(X.shape)
+
 		self.kmeans.fit(X)
 
 	def predict(self, tweet):
@@ -68,10 +80,20 @@ class TweetCategorizer:
 
 		label = self.kmeans.predict(Y)[0]
 
+		log.info(f"Tweet <{tweet}> has a distance of {min_eucli_distance} from the closest cluster {label}")
+
 		return self.category_list[label] if min_eucli_distance < 0.8 else "Unknown"
 
 
 if __name__ == "__main__":
+	arg_parser = ArgumentParser()
+	arg_parser.add_argument('-i', '--initial', action='store_true')
+	args = arg_parser.parse_args()
+
+	if args.initial:
+		print("init")
+		nltk.download('stopwords')
+
 	path = "/home/pedro/PI/social-network-mining/intelligence_bots_test/tweets_dataset/"
 	tc = TweetCategorizer({
 		"PS": [path+"PS/antoniocostapm_tweets.csv", path+"PS/psocialista_tweets.csv"],
