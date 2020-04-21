@@ -57,7 +57,7 @@ jobs:
         context: code/backend/twitter
         tags: "latest"
     - uses: actions/checkout@master
-    - name: Publish Bots to Registry
+    - name: Publish Control Center to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
       env:
         MONGO_URL: ${{ secrets.MONGO_URL }}
