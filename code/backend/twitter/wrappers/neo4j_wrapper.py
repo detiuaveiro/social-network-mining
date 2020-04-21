@@ -15,6 +15,10 @@ log.addHandler(handler)
 
 BOT_LABEL = "Bot"
 USER_LABEL = "User"
+TWEET_LABEL = "Tweet"
+WROTE_LABEL = "WROTE"
+RETWEET_LABEL = "RETWEETED"
+REPLY_LABEL = "REPLIED"
 FOLLOW_LABEL = "FOLLOWS"
 
 
@@ -92,6 +96,126 @@ class Neo4jAPI:
             username=data["username"],
         )
 
+    def add_tweet(self, data):
+        """
+        Method used to create a tweet in the graph
+
+        @param data: the params of the Tweet we have to create, only has to include the id
+        """
+        if "id" not in data.keys():
+            log.error("ERROR CREATING A TWEET")
+            log.debug(
+                "Error: Specified data doesn't contain necessary fields - id"
+            )
+            return
+
+        with self.driver.session() as session:
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__create_tweet, data)
+
+    def __create_tweet(self, tx, data):
+        log.debug("CREATING TWEET")
+
+        tx.run(
+            f"MERGE (:{TWEET_LABEL} {{id: $id}})",
+            id=data["id"],
+        )
+
+    def add_writer_relationship(self, data):
+        """Method used to create a new RETWEET relationship
+
+        @param data: The params of the new relationship we want to create. Should include a tweet_id and a user_id
+        """
+
+        if (
+            "tweet_id" not in data.keys()
+            or "user_id" not in data.keys()
+            or "user_type" not in data.keys()
+        ):
+            log.error("ERROR CREATING A WRITE RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type"
+            )
+
+            return
+
+        if data["user_type"] not in [BOT_LABEL, USER_LABEL]:
+            log.error("ERROR CREATING A WRITE RELATIONSHIP")
+            log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+
+            return
+
+        with self.driver.session() as session:
+            data['label'] = WROTE_LABEL
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet_id']
+            data['type_2'] = data['user_type']
+            data['id_2'] = data['user_id']
+
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__create_relationship, data)
+
+    def add_retweet_relationship(self, data):
+        """Method used to create a new RETWEET relationship
+
+        @param data: The params of the new relationship we want to create. Should include a tweet_id, a user_id and the
+                    user's type
+        """
+
+        if (
+            "tweet_id" not in data.keys()
+            or "user_id" not in data.keys()
+            or "user_type" not in data.keys()
+        ):
+            log.error("ERROR CREATING A RETWEET RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type"
+            )
+
+            return
+
+        if data["user_type"] not in [BOT_LABEL, USER_LABEL]:
+            log.error("ERROR CREATING A RETWEET RELATIONSHIP")
+            log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+
+            return
+
+        with self.driver.session() as session:
+            data['label'] = RETWEET_LABEL
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet_id']
+            data['type_2'] = data['user_type']
+            data['id_2'] = data['user_id']
+
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__create_relationship, data)
+
+    def add_reply_relationship(self, data):
+        """Method used to create a new REPLY relationship
+
+        @param data: The params of the new relationship we want to create. Should include a tweet and the reply
+        """
+        if (
+            "tweet" not in data.keys()
+            or "reply" not in data.keys()
+        ):
+            log.error("ERROR CREATING A REPLY RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - tweet and reply"
+            )
+
+            return
+
+        with self.driver.session() as session:
+            data['label'] = REPLY_LABEL
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['reply']
+
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__create_relationship, data)
+
     def add_relationship(self, data):
         """Method used to create a new FOLLOWS relationship
 
@@ -121,13 +245,14 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             # Caller for transactional unit of work
+            data['label'] = FOLLOW_LABEL
             return session.write_transaction(self.__create_relationship, data)
 
     def __create_relationship(self, tx, data):
         log.debug("CREATING RELATIONSHIP")
 
         result = tx.run(f"MATCH (u: {data['type_1']} {{ id: $id1 }}), (r: {data['type_2']} {{ id: $id2 }}) "
-                        f"MERGE (u)-[:{FOLLOW_LABEL}]->(r)", id1=data['id_1'], id2=data['id_2'])
+                        f"MERGE (u)-[:{data['label']}]->(r)", id1=data['id_1'], id2=data['id_2'])
 
         log.debug(f"Created relationship:{result}")
 
@@ -170,6 +295,23 @@ class Neo4jAPI:
             return False
         else:
             return True
+
+    def check_tweet_exists(self, id):
+        """Method used to check if there exists a tweet with a given id
+
+        @param id: The id of the tweet we want to check the existance of
+        """
+
+        with self.driver.session() as session:
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__tweet_exists, id)
+
+    def __tweet_exists(self, tx, data):
+        log.debug("CHECKING TWEET EXISTANCE")
+
+        result = tx.run(f"MATCH (r:{TWEET_LABEL} {{ id:$id }}) RETURN r", id=data)
+
+        return len(result) != 0
 
     def update_user(self, data):
         """Method used to update a given user
@@ -254,12 +396,118 @@ class Neo4jAPI:
             # Caller for transactional unit of work
             return session.write_transaction(self.__delete_node, BOT_LABEL, id)
 
+    def delete_tweet(self, id):
+        """Method used to delete a given tweet
+
+        @param id: The id of the tweet we want to delete
+        """
+
+        with self.driver.session() as session:
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__delete_node, TWEET_LABEL, id)
+
     def __delete_node(self, tx, type, id):
         log.debug("DELETING NODE")
 
         query = f'MATCH (r:{type} {{ id: {str(id)} }}) DETACH DELETE r'
 
         tx.run(query)
+
+    def delete_writer_relationship(self, data):
+        """Method used to delete RETWEET relationship
+
+        @param data: The params of the new relationship we want to create. Should include a tweet_id, a user_id and
+        the user's type
+        """
+
+        if (
+                "tweet_id" not in data.keys()
+                or "user_id" not in data.keys()
+                or "user_type" not in data.keys()
+        ):
+            log.error("ERROR DELETING A WRITE RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type"
+            )
+
+            return
+
+        if data["user_type"] not in [BOT_LABEL, USER_LABEL]:
+            log.error("ERROR DELETING A WRITE RELATIONSHIP")
+            log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+
+            return
+
+        with self.driver.session() as session:
+            data['label'] = WROTE_LABEL
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet_id']
+            data['type_2'] = data['user_type']
+            data['id_2'] = data['user_id']
+
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__delete_rel, data)
+
+    def delete_retweet_relationship(self, data):
+        """Method used to delete a new RETWEET relationship
+
+        @param data: The params of the new relationship we want to create. Should include a tweet_id, a user_id and the
+                    user's type
+        """
+
+        if (
+                "tweet_id" not in data.keys()
+                or "user_id" not in data.keys()
+                or "user_type" not in data.keys()
+        ):
+            log.error("ERROR DELETE A RETWEET RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type"
+            )
+
+            return
+
+        if data["user_type"] not in [BOT_LABEL, USER_LABEL]:
+            log.error("ERROR DELETE A RETWEET RELATIONSHIP")
+            log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+
+            return
+
+        with self.driver.session() as session:
+            data['label'] = RETWEET_LABEL
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet_id']
+            data['type_2'] = data['user_type']
+            data['id_2'] = data['user_id']
+
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__delete_rel, data)
+
+    def delete_reply_relationship(self, data):
+        """Method used to DELETE a new REPLY relationship
+
+        @param data: The params of the new relationship we want to create. Should include a tweet and the reply
+        """
+        if (
+                "tweet" not in data.keys()
+                or "reply" not in data.keys()
+        ):
+            log.error("ERROR DELETE A REPLY RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - tweet and reply"
+            )
+
+            return
+
+        with self.driver.session() as session:
+            data['label'] = REPLY_LABEL
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['reply']
+
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__create_relationship, data)
 
     def delete_relationship(self, data):
         """Method used to delete a given bot
@@ -290,13 +538,14 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             # Caller for transactional unit of work
+            data["label"] = FOLLOW_LABEL
             return session.write_transaction(self.__delete_rel, data)
 
     def __delete_rel(self, tx, data):
         log.debug("DELETING RELATIONSHIP")
 
         query = f'MATCH (a:{str(data["type_1"])} {{ id: {str(data["id_1"])} }})-' \
-                f'[r:{FOLLOW_LABEL}]->' \
+                f'[r:{data["label"]}]->' \
                 f'(b:{str(data["type_2"])} {{ id: {str(data["id_2"])} }}) ' \
                 f' DELETE r'
 
