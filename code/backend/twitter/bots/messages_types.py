@@ -11,6 +11,7 @@ class ServerToBot(IntEnum):
 	RETWEET_TWEETS = 4
 	POST_TWEET = 5
 	FIND_FOLLOWERS = 6
+	KEYWORDS = 7
 
 	def __str__(self):
 		return self.name
@@ -33,6 +34,8 @@ class BotToServer(IntEnum):
 	EVENT_USER_BLOCKED = 11
 	SAVE_FOLLOWERS = 12
 	SAVE_DIRECT_MESSAGES = 13
+
+	QUERY_KEYWORDS = 14
 
 	def __str__(self):
 		return self.name
