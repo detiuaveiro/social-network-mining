@@ -1,6 +1,6 @@
 ## @package twitter.control_center
 # coding: UTF-8
-
+import logging
 import random
 import datetime
 import json
@@ -33,6 +33,14 @@ LIMIT_REPLY_LOGS_QUANTITY = 1000
 
 log = logging.getLogger('PDP')
 log.setLevel(logging.INFO)
+handler = logging.StreamHandler(open("pdp.log", "w"))
+handler.setFormatter(logging.Formatter(
+	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+log.addHandler(handler)
+
+
+log = logging.getLogger('PDP')
+log.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(open("pdp.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
@@ -167,6 +175,8 @@ class PDP:
 		while len(bot_list) < num_users:
 			index = random.randint(0, len(users) - 1)
 			bot_list.append(users.pop(index))
+		
+		log.info("Sending first time list: " + ", ".join(bot_list))
 
 		return bot_list
 
@@ -183,9 +193,14 @@ class PDP:
 		"""
 		for mention in data["tweet_entities"]["user_mentions"]:
 			if mention["id"] in policy["bots"]:
+				log.info(f"Bot <{data["bot_id"]}> was mentioned by user")
 				return True
+		
+		if data["user_id"] in policy["bots"]:
+			log.info(f"Bot <{data["bot_id"]}> was targeted in the policy")
 
-		return data["user_id"] in policy["bots"]
+		log.info(f"Bot <{data["bot_id"]}> was not targeted in the policy")
+		return False
 
 	def _tweet_has_keywords(self, policy, data):
 		"""
@@ -204,6 +219,7 @@ class PDP:
 			if keyword in data["tweet_text"]:
 				return True
 
+		log.info(f"Tweet <{data['tweet_id']}> has no keywords")
 		return False
 
 	def _score_for_relation(self, data):
@@ -240,6 +256,9 @@ class PDP:
 		policy_list = self.postgres.search_policies({
 			"bot_id": data["bot_id"]
 		})
+
+		# TODO -> TIRAR ESTE PRINT E SUBSTITUIR POR UM LOG
+		log.debug(policy_list)
 
 		if policy_list['success']:
 			for policy in policy_list["data"]:
@@ -436,7 +455,7 @@ class PDP:
 		@returns: float that will then be compared to the threshold previously defined
 		"""
 		# This was not implemented last year
-		return False
+		return True
 
 	def close(self):
 		self.neo4j.close()
