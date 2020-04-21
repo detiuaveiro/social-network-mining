@@ -279,6 +279,11 @@ class PostgresAPI:
 						query += " AND "
 					query += 'api.name=\'' + params['api_name'] + '\''
 					control = 1
+				if "filter" in params.keys():
+					if control == 1:
+						query += " AND "
+					query += f"policies.filter='{params['filter']}'"
+					control = 1
 				if "bot_id" in params.keys():
 					if control == 1:
 						query += " AND "
@@ -320,9 +325,10 @@ class PostgresAPI:
 
 			insertion_query = "INSERT INTO logs "
 			if "target_id" in data:
-				insertion_query += f"(id_bot, action, target_id) values {tuple([data[key] for key in data])}; "
+				insertion_query += \
+					f"(id_bot, action, target_id) values {(data['bot_id'], data['action'], data['target_id'])};"
 			else:
-				insertion_query += f"(id_bot, action) values {tuple([data[key] for key in data])}; "
+				insertion_query += f"(id_bot, action) values {(data['bot_id'], data['action'])}; "
 
 			cursor.execute(insertion_query)
 			self.conn.commit()
@@ -336,6 +342,8 @@ class PostgresAPI:
 				"Error: " + str(error)
 			)
 
+			log.error("Error at inserting: " + str(data))
+
 			return {"success": False, "error": error}
 		except Exception as error:
 			self.conn.rollback()
@@ -344,6 +352,8 @@ class PostgresAPI:
 			log.error(
 				"Error: " + str(error)
 			)
+
+			log.error("Error at inserting: " + str(data))
 
 			return {"success": False, "error": error}
 

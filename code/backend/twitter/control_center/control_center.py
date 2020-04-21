@@ -15,7 +15,7 @@ from bots.messages_types import ServerToBot, BotToServer
 import log_actions
 
 log = logging.getLogger('Database Writer')
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(open("dbwritter.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
@@ -43,6 +43,8 @@ class Control_Center(Rabbitmq):
 	def action(self, message):
 		message_type = message['type']
 		log.info(f"Received new action: {message['bot_id']} wants to do {message_type.name}")
+
+		log.debug(f"Received message of type {message_type}")
 
 		if message_type == BotToServer.EVENT_USER_FOLLOWED:
 			self.follow_user(message)
@@ -83,6 +85,9 @@ class Control_Center(Rabbitmq):
 		elif message_type == BotToServer.SAVE_FOLLOWERS:
 			self.find_followers(message)
 
+		elif message_type == BotToServer.QUERY_KEYWORDS:
+			self.send_keywords(message)
+
 	# Need DB API now
 	def follow_user(self, data):
 		"""
@@ -103,6 +108,10 @@ class Control_Center(Rabbitmq):
 			"type_1": type1,
 			"type_2": type2
 		}
+
+		# add or update user in database
+		self.save_user(data)
+
 		if self.neo4j_client.check_relationship_exists(relationship):
 			log.warn(f"Bot {data['bot_id']} already follows the user {data['data']['id']}")
 			return
@@ -113,6 +122,8 @@ class Control_Center(Rabbitmq):
 			"target_id": data['data']['id']
 		})
 		log.info(f"Bot {data['bot_id']} successfully followed the user {data['data']['id']}")
+
+		log.info("Saved follow relation with success")
 
 	def like_tweet(self, data):
 		"""
@@ -222,7 +233,7 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 		log.info(f"Bot {data['bot_id']} requests a retweet {data['data']['id']}")
-		self.postgress_client.insert_log({
+		self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.RETWEET_REQ,
 				"target_id": data['data']['id']
@@ -317,9 +328,10 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing the bot id and the tweet id
 		"""
+		
 		log.info(f"Bot {data['bot_id']} requests a follow from {data['data']['id']}")
 
-		self.postgress_client.insert_log({
+		self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ,
 				"target_id": data['data']['id']
@@ -381,7 +393,6 @@ class Control_Center(Rabbitmq):
 			self.neo4j_client.add_bot(
 				{"id": data['bot_id'], "name": data['bot_name'], "username": data['bot_screen_name']})
 		else:
-
 			is_bot = self.neo4j_client.check_bot_exists(data["data"]["id"])
 			if is_bot:
 				log.info(
@@ -524,7 +535,7 @@ class Control_Center(Rabbitmq):
 		log.info(f"Starting to create the Follow Relationship for bot {data['bot_id']}")
 		for follower in data["data"]:
 			self.postgres_client.insert_log({
-				"id_bot": data['bot_id'],
+				"bot_id": data['bot_id'],
 				"action": f"Save list of followers for {follower}"
 			})
 			log.info(f"Save list of followers for {follower}")
@@ -560,6 +571,32 @@ class Control_Center(Rabbitmq):
 						"id": follower_follower
 					}
 				})
+
+	def send_keywords(self, data):
+		log.info("Starting to sending the keywords to the bot")
+
+		bot_id = data["bot_id"]
+
+		policies = self.postgres_client.search_policies({
+			"bot_id": bot_id, "filter": "Keywords"
+		})
+
+		response = []
+		if policies['success']:
+			policy_list = policies['data']
+			log.debug(f"Obtained policies: {policy_list}")
+
+			if len(policy_list) > 0:
+				response = random.choice(policy_list)["params"]
+
+			log.debug(f"Keywords to send: {response}")
+
+			log.info(f"Sending keywords {response} to bot {response}")
+		self.send(
+			bot_id,
+			ServerToBot.KEYWORDS,
+			response
+		)
 
 	def send(self, bot, message_type, params):
 		"""
