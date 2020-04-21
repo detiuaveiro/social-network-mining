@@ -197,9 +197,9 @@ class PDP:
 				return True
 		
 		if data["user_id"] in policy["bots"]:
-			log.info(f"Bot <{data["bot_id"]}> was targeted in the policy")
+			log.info(f"Bot <{data['bot_id']}> was targeted in the policy")
 
-		log.info(f"Bot <{data["bot_id"]}> was not targeted in the policy")
+		log.info(f"Bot <{data['bot_id']}> was not targeted in the policy")
 		return False
 
 	def _tweet_has_keywords(self, policy, data):
