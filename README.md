@@ -132,6 +132,7 @@ Then use the command to start the web app on port 3000:
  $ docker container run --env-file ~/PI_2020/env_vars/rest.env --publish 7000:7000 --detach --name rest docker.pkg.github.com/detiuaveiro/social-network-mining/rest                # run the rest container
  $ docker container run --env-file ~/PI_2020/env_vars/bot.env --network host --detach --name bot docker.pkg.github.com/detiuaveiro/social-network-mining/bot                # run the bot container
  $ docker container run --env-file ~/PI_2020/env_vars/control_center.env --detach --name control_center docker.pkg.github.com/detiuaveiro/social-network-mining/control_center                # run the control center container
+ 
  ```
  - Also, it's necessary to have a `watchtower` container running on the server, that will deploy automaticly all the images created with the `deploy github workflow`:
  ```bash
