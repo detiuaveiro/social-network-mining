@@ -9,10 +9,9 @@ def twitter_network(_):
     error_messages = []
     success_messages = []
     status = HTTP_200_OK
-    data = []
 
     success, data, message = queries.twitter_network()
-    print(data)
+
     if success:
         success_messages.append(message)
     else:
