@@ -12,6 +12,7 @@ class ServerToBot(IntEnum):
 	POST_TWEET = 5
 	FIND_FOLLOWERS = 6
 	KEYWORDS = 7
+	GET_TWEET_BY_ID = 8
 
 	def __str__(self):
 		return self.name

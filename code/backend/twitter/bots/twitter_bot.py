@@ -277,6 +277,16 @@ class TwitterBot(RabbitMessaging):
 		if not user.protected or (user.protected and user.following):
 			self.__read_timeline(user, jump_users=False, max_depth=3)
 
+	def __get_tweet_by_id(self, tweet_id: int):
+		"""
+		Function to get the full tweet object by its id, and send it to the control center
+		:param tweet_id: id of the tweet we want to send to the control center
+		"""
+
+		logger.info(f"Getting tweet of id {tweet_id}")
+		self.__send_tweet(self.__find_tweet_by_id(tweet_id), messages_types.BotToServer.SAVE_TWEET)
+
+
 	def __find_tweet_by_id(self, tweet_id: int) -> Union[Status, None]:
 		"""Function to find and return a tweet for a given id
 
@@ -391,6 +401,8 @@ class TwitterBot(RabbitMessaging):
 						self.__post_tweet(**task_params)
 					elif task_type == messages_types.ServerToBot.KEYWORDS:
 						self.__search_tweets(keywords=task_params)
+					elif task_type == messages_types.ServerToBot.GET_TWEET_BY_ID:
+						self.__get_tweet_by_id(tweet_id=task_params)
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
 				else:
