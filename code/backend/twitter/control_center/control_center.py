@@ -460,6 +460,7 @@ class Control_Center(Rabbitmq):
 			single=True
 		)
 		if not tweet_exists:
+			log.debug(f"Inserting blank tweet with id {data['id']}")
 			self.neo4j_client.add_tweet({"id": data["id"]})
 			is_bot = self.neo4j_client.check_bot_exists(data["user"])
 			self.neo4j_client.add_write_relationship({
@@ -469,7 +470,8 @@ class Control_Center(Rabbitmq):
 			})
 			blank_tweet = mongo_utils.BLANK_TWEET
 			blank_tweet["id"] = data["id"]
-			self.mongo_client.insert_tweets()
+			blank_tweet["user"] = data["user"]
+			self.mongo_client.insert_tweets(blank_tweet)
 
 	def save_tweet(self, data):
 		"""
@@ -527,8 +529,8 @@ class Control_Center(Rabbitmq):
 
 			elif "is_quote_status" in data["data"] and data["data"]["is_quote_status"]:
 				self.__save_blank_tweet_if_exists(data={
-					data["id"]: data["data"]["is_quote_status"],
-					data["user"]: ""
+					data["id"]: data["data"]["quote_status_id"],
+					data["user"]: data["data"]["quote_author_id"]
 				})
 				self.neo4j_client.add_retweet_relationship({
 					"tweet": data["data"]["id"],
