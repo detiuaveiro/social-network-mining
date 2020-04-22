@@ -83,10 +83,7 @@ DATABASES = {
     'mongo': {
         'ENGINE': 'djongo',
         'NAME': MONGO_DB,
-        'HOST': MONGO_URL,
-        'PORT': MONGO_PORT,
-        'USER': MONGO_USERNAME,
-        'PASSWORD': MONGO_PASSWORD,
+        'HOST': "mongodb://" + MONGO_FULL_URL,
     },
     'postgres': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
