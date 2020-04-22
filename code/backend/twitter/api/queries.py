@@ -370,13 +370,13 @@ def twitter_bot_messages(id):
 # Network
 def twitter_sub_network(queries):
     try:
-        print(queries)
+
         data = {}
         for label, identifier, query in queries:
-            if identifier not in data:
+            if label not in data:
                 data[label] = {}
-            data[label] = {identifier: neo4j.export_query(query)}
 
+            data[label][identifier] = neo4j.export_query(query)
         return True, data, "Subgrafo da rede obtido com sucesso"
     except AttributeError as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
