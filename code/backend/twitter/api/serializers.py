@@ -52,6 +52,7 @@ class Log(serializers.Serializer):
     id_bot = serializers.IntegerField()
     timestamp = serializers.DateTimeField()
     action = serializers.CharField()
+    target_id = serializers.IntegerField()
 
 
 class Url(serializers.Serializer):
