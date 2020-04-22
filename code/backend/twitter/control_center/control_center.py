@@ -466,6 +466,8 @@ class Control_Center(Rabbitmq):
 			blank_tweet["id"] = data["id"]
 			blank_tweet["user"] = data["user"]
 			self.mongo_client.insert_tweets(blank_tweet)
+			return data["id"]
+		return None
 
 	def save_tweet(self, data):
 		"""
@@ -497,13 +499,16 @@ class Control_Center(Rabbitmq):
 				"target_id": data['data']['id']
 			})
 		else:
-			log.info(f"Inserting tweet {data['data']['id']}")
-			self.mongo_client.insert_tweets(data['data'])
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.INSERT_TWEET,
 				"target_id": data['data']['id']
 			})
+
+			log.info(f"Inserting tweet {data['data']['id']} on Mongo")
+			self.mongo_client.insert_tweets(data['data'])
+
+			log.info(f"Inserting tweet {data['data']['id']} on Neo4j")
 			self.neo4j_client.add_tweet({
 				"id": data['data']['id']
 			})
@@ -515,18 +520,21 @@ class Control_Center(Rabbitmq):
 			})
 
 			if "in_reply_to_status_id" in data["data"] and data["data"]["in_reply_to_status_id"] is not None:
-				self.__save_blank_tweet_if_exists(data={
+				log.info(f"Tweet was a reply to some other tweet, must insert the reply relation too")
+				search_tweet_id = self.__save_blank_tweet_if_exists(data={
 					data["id"]: data["data"]["in_reply_to_status_id"],
 					data["user"]: data["data"]["in_reply_to_user_id"]
 				})
+
 				self.neo4j_client.add_reply_relationship({
 					"reply": data["data"]["id"],
 					"tweet": data["data"]["in_reply_to_status_id"]
 				})
-				search_tweet_id = data["data"]["in_reply_to_status_id"]
 
 			elif "is_quote_status" in data["data"] and data["data"]["is_quote_status"]:
-				self.__save_blank_tweet_if_exists(data={
+				log.info(f"Tweet was a reply to some other tweet, must insert the retweet relation too")
+
+				search_tweet_id = self.__save_blank_tweet_if_exists(data={
 					data["id"]: data["data"]["quote_status_id"],
 					data["user"]: data["data"]["quote_author_id"]
 				})
@@ -534,7 +542,8 @@ class Control_Center(Rabbitmq):
 					"tweet": data["data"]["id"],
 					"quoted_tweet": data["data"]["quoted_status_id"]
 				})
-				search_tweet_id = data["data"]["quoted_status_id"]
+
+		log.info(f"Inserting tweet {data['data']['id']} on Postgres")
 
 		self.postgres_client.insert_tweet({
 			"tweet_id": data['data']['id'],
@@ -544,6 +553,7 @@ class Control_Center(Rabbitmq):
 		})
 
 		if search_tweet_id is not None:
+			log.info(f"Have to get information on the tweet {data['search_tweet_id']}")
 			self.send(
 				bot=data["bot_id"],
 				message_type=ServerToBot.GET_TWEET_BY_ID,
