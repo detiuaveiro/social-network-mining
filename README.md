@@ -152,12 +152,12 @@ psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql
 
 - neo4j
 ```bash
-  CALL apoc.load.json("user.json")
+  CALL apoc.load.json("users.json")
   YIELD value
   MERGE (p:User {name: value.n.properties.name, id: value.n.properties.id, username: value.n.properties.username})
 ```
 ```bash
-  CALL apoc.load.json("bot.json")
+  CALL apoc.load.json("bots.json")
   YIELD value
   MERGE (p:Bot {name: value.n.properties.name, id: value.n.properties.id, username: value.n.properties.username})
 ```
