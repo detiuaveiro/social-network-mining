@@ -2,7 +2,18 @@ import React, { Component } from 'react';
 
 import { Graph } from "react-d3-graph";
 
-import { Container, Row, Col, Button } from 'reactstrap';
+import {
+  Container, Row, Col, Button, Form,
+  FormGroup,
+  FormText,
+  FormFeedback,
+  Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButtonDropdown,
+  InputGroupText,
+  Label,
+} from 'reactstrap';
 import Card from "../../components/Card/Card";
 import CardHeader from "../../components/Card/CardHeader";
 import CardBody from "../../components/Card/CardBody";
@@ -26,9 +37,8 @@ class Network extends Component {
   state = {
     error: false,
     loading: false,
-    modal: false,
-    modalType: null,
-    modalNode: null,
+    info: false,
+    infoNode: null,
 
     data: {
       nodes: [{ id: "Harry", type: "bot" }, { id: "Sally", type: "bot" }, { id: "Alice", type: "user" }],
@@ -118,57 +128,33 @@ class Network extends Component {
 
   onClickNode = id => {
     this.setState({
-      modal: true,
-      modalType: "INFO",
-      modalNode: id
+      info: true,
+      infoNode: id
     });
   };
   /////////////////////////////////////////////////////////////////////
 
 
   // Methods //////////////////////////////////////////////////////////
-  handleClose() {
-    this.setState({
-      modal: false,
-      modalType: null,
-      modalNode: null
-    });
-  }
+
   /////////////////////////////////////////////////////////////////////
 
   render() {
-    var modal
-    if (this.state.modal) {
-      if (this.state.modalType == "INFO") {
-        modal = <Dialog class="fade-in"
-          open={this.state.modal}
-          onClose={() => this.handleClose()}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">
-            {"👤 Info about " + this.state.modalNode}
-          </DialogTitle>
-          <DialogContent style={{ minWidth: "600px" }}>
-            <Container fluid>
-              <Row>
-                <Col xs="12" md="12">
-                  <DialogContentText>
-                    <span id="error">Sorry, the tweet can't be empty!</span>
-                  </DialogContentText>
-                </Col>
-              </Row>
-            </Container>
-
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => this.handleClose()} color="info">
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-      }
+    var infoCard
+    if (this.state.info) {
+      infoCard =
+        <Card>
+          <CardHeader color="primary">
+            <h3 style={{ color: "white" }}>
+              <strong>Info</strong>
+            </h3>
+          </CardHeader>
+          <CardBody>
+            <p>No info has been selected</p>
+          </CardBody>
+        </Card>
     }
+
     return (
       <div className="animated fadeIn">
 
@@ -185,6 +171,15 @@ class Network extends Component {
                   </h5>
                 </CardHeader>
                 <CardBody>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col xs="12" sm="12" md="9">
+              <Card>
+                <CardBody>
                   <Graph
                     id="graph-id"
                     data={this.state.data}
@@ -195,9 +190,53 @@ class Network extends Component {
                 </CardBody>
               </Card>
             </Col>
+            <Col xs="12" sm="12" md="3">
+              <Card>
+                <CardHeader color="primary">
+                  <h3 style={{ color: "white" }}>
+                    <strong>Search filters</strong>
+                  </h3>
+                </CardHeader>
+                <CardBody>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup check>
+                        <Input className="form-check-input" type="checkbox" id="inline-checkbox1" name="inline-checkbox1" value="option1" />
+                        <Label className="form-check-label" check htmlFor="inline-checkbox1">Hide bots</Label>
+                      </FormGroup>
+                    </Col>
+                    <Col md="6">
+                      <FormGroup check>
+                        <Input className="form-check-input" type="checkbox" id="inline-checkbox2" name="inline-checkbox2" value="option2" />
+                        <Label className="form-check-label" check htmlFor="inline-checkbox2">Hide users</Label>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "25px" }}>
+                    <Col md="6" style={{ alignItems: "center" }}>
+                      <Button
+                        style={{ minWidth: "100%" }}
+                        color="success"
+                      >
+                        Search
+                    </Button>
+                    </Col>
+                    <Col md="6">
+                      <Button style={{ minWidth: "100%" }}
+                        color="info">
+                        Reset
+                  </Button>
+                    </Col>
+                  </Row>
+
+
+                </CardBody>
+              </Card>
+              {infoCard}
+            </Col>
           </Row>
         </Container>
-        {modal}
       </div>
     );
   }

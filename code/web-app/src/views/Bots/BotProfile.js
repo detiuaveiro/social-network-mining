@@ -97,7 +97,7 @@ class BotProfile extends Component {
     };
 
     getBotPolicies() {
-        fetch(baseURL + "policies/bots/" + this.props.bot.user_id, {
+        fetch("http://localhost:8000/policies/bots/1131301906679324672/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -170,7 +170,7 @@ class BotProfile extends Component {
         // Get Activities
 
         // Get Policies
-        //this.getBotPolicies()
+        this.getBotPolicies()
 
         this.setState({
             error: this.state.error,
