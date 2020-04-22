@@ -42,7 +42,7 @@ def twitter_user(id):
 def twitter_users_stats():
     try:
         return True, [serializers.UserStats(us).data for us in UserStats.objects.all()], \
-            "Sucesso a obter as estatisticas de todos os utilizadores"
+               "Sucesso a obter as estatisticas de todos os utilizadores"
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_users_stats.__name__} -> {e}")
         return False, None, f"Erro as estatisticas de todos os utilizadores"
@@ -51,7 +51,7 @@ def twitter_users_stats():
 def twitter_user_stats(id):
     try:
         return True, serializers.UserStats(UserStats.objects.get(user_id=id)).data, \
-            "Sucesso a obter as estatisticas do utilizador pedido"
+               "Sucesso a obter as estatisticas do utilizador pedido"
     except UserStats.DoesNotExist:
         return False, None, f"Não existe nenhum utilizador com o id {id} na base de dados de estatisticas"
     except Exception as e:
@@ -132,7 +132,7 @@ def twitter_tweet(id):
 def twitter_tweet_stats(id):
     try:
         return True, serializers.TweetStats(TweetStats.objects.get(tweet_id=id)).data, \
-            "Sucesso a obter as estatisticas do tweet de id pedido"
+               "Sucesso a obter as estatisticas do tweet de id pedido"
     except TweetStats.DoesNotExist:
         return False, None, f"Não existem estatísticas do tweet de id {id} na base de dados"
     except Exception as e:
@@ -365,3 +365,22 @@ def twitter_bot_messages(id):
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_bot_messages.__name__} -> {e}")
         return False, None, f"Erro a obter as mensagens privadas dos bot com id {id}"
+
+
+# Network
+def twitter_sub_network(queries):
+    try:
+        print(queries)
+        data = {}
+        for label, identifier, query in queries:
+            if identifier not in data:
+                data[label] = {}
+            data[label] = {identifier: neo4j.export_query(query)}
+
+        return True, data, "Subgrafo da rede obtido com sucesso"
+    except AttributeError as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
+        return False, None, str(e)
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
+        return False, None, "Erro ao obter um sub-grafo da rede"
