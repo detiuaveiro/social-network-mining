@@ -77,6 +77,7 @@ class Log(models.Model):
     id_bot = models.IntegerField(primary_key=True)
     timestamp = models.DateTimeField()
     action = models.TextField()
+    target_id = models.BigIntegerField()
 
     class Meta:
         managed = True
