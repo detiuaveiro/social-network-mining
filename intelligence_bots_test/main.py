@@ -30,8 +30,7 @@ def main():
         ScrapperEntity('cristasassuncao', limit, 'CDS')
     ]
 
-    """
-    data_collector.init(params, n_jobs=2)
+    # data_collector.init(params, n_jobs=4)
 
     
     dataPS = data_collector.merge_data_per_label("PS")

@@ -1,6 +1,6 @@
 ## @package twitter.control_center
 # coding: UTF-8
-
+import logging
 import random
 import datetime
 import json
@@ -34,6 +34,14 @@ BOT_RETWEETED_TWEET = 0.2
 BOT_LIKED_TWEET = 0.3
 
 LIMIT_REPLY_LOGS_QUANTITY = 1000
+
+
+log = logging.getLogger('PDP')
+log.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(open("pdp.log", "w"))
+handler.setFormatter(logging.Formatter(
+	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+log.addHandler(handler)
 
 
 class PDP:

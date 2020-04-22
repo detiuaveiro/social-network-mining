@@ -15,7 +15,7 @@ from bots.messages_types import ServerToBot, BotToServer
 import log_actions
 
 log = logging.getLogger('Database Writer')
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(open("dbwritter.log", "w"))
 handler.setFormatter(logging.Formatter(
     "[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))

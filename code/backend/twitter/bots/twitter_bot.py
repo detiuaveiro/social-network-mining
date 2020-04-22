@@ -289,7 +289,7 @@ class TwitterBot(RabbitMessaging):
                 user.follow()
                 logger.info(f"Followed User with id <{user.id}>")
                 self.__send_event(user._json, messages_types.BotToServer.EVENT_USER_FOLLOWED)
-                print("OK DEU CRL XD!")
+                
             except TweepError as error:
                 if error.api_code == FOLLOW_USER_ERROR_CODE:
                     logger.error(f"Unable to follow User with id <{user.id}>: {error}")
