@@ -22,6 +22,7 @@ class TweetCategorizer:
 	"""
 	Class dedicated to categorize tweets it receives
 	"""
+
 	def __init__(self, training_data):
 		"""
 		Constructor that needs the initial training data to start categorizing
@@ -53,7 +54,8 @@ class TweetCategorizer:
 				dataset = pd.read_csv(doc)
 				for line_index in range(len(dataset)):
 					stemmed_array = dataset['tweets'][line_index].split()
-					stemmed = [self.ps.stem(word) for word in stemmed_array if word not in set(stopwords.words('portuguese'))]
+					stemmed = [self.ps.stem(word) for word in stemmed_array if
+					           word not in set(stopwords.words('portuguese'))]
 					stemmed = ' '.join(stemmed)
 					self.stemmed_data.append(stemmed)
 			self.category_list.append(category)
@@ -86,18 +88,20 @@ class TweetCategorizer:
 
 
 if __name__ == "__main__":
+	"""
+	Simple Test
+	"""
 	arg_parser = ArgumentParser()
 	arg_parser.add_argument('-i', '--initial', action='store_true')
 	args = arg_parser.parse_args()
 
 	if args.initial:
-		print("init")
 		nltk.download('stopwords')
 
 	path = "/home/pedro/PI/social-network-mining/intelligence_bots_test/tweets_dataset/"
 	tc = TweetCategorizer({
-		"PS": [path+"PS/antoniocostapm_tweets.csv", path+"PS/psocialista_tweets.csv"],
-		"PSD": [path+"PSD/ppdpsd_tweets.csv", path+"PSD/RuiRioPSD_tweets.csv"]
+		"PS": [path + "PS/antoniocostapm_tweets.csv", path + "PS/psocialista_tweets.csv"],
+		"PSD": [path + "PSD/ppdpsd_tweets.csv", path + "PSD/RuiRioPSD_tweets.csv"]
 	})
 	label = tc.predict("O primeiro-ministro, @antoniocostapm, \
 anunciou que o Governo deu parecer favorável à proposta de \
