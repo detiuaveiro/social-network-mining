@@ -12,6 +12,7 @@ import {
   InputGroupAddon,
   InputGroupButtonDropdown,
   InputGroupText,
+  Pagination, PaginationItem, PaginationLink,
   Label,
 } from 'reactstrap';
 import Card from "../../components/Card/Card";
@@ -23,6 +24,8 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+
+import Table from "../../components/Table/Table.js";
 
 import { ToastContainer, toast, Flip } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -198,6 +201,27 @@ class Network extends Component {
                   </h3>
                 </CardHeader>
                 <CardBody>
+                  <Row>
+                    <Table style={{ paddingTop: "0px" }}
+                      tableHeaderColor="primary"
+                      tableHead={["Log", "Description"]}
+                      tableData={[["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"]]}
+                    />
+                    <Pagination>
+                      <PaginationItem>
+                        <PaginationLink previous tag="button"></PaginationLink>
+                      </PaginationItem>
+                      <PaginationItem active>
+                        <PaginationLink tag="button">1</PaginationLink>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationLink tag="button">2</PaginationLink>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationLink next tag="button"></PaginationLink>
+                      </PaginationItem>
+                    </Pagination>
+                  </Row>
                   <Row>
                     <Col md="6">
                       <FormGroup check>
