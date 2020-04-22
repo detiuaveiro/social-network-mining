@@ -46,10 +46,7 @@ class Control_Center(Rabbitmq):
 
 		log.debug(f"Received message of type {message_type}")
 
-		if message_type == BotToServer.EVENT_USER_FOLLOWED:
-			self.follow_user(message)
-
-		elif message_type == BotToServer.EVENT_TWEET_LIKED:
+		if message_type == BotToServer.EVENT_TWEET_LIKED:
 			self.like_tweet(message)
 
 		elif message_type == BotToServer.EVENT_TWEET_RETWEETED:
@@ -89,7 +86,7 @@ class Control_Center(Rabbitmq):
 			self.send_keywords(message)
 
 	# Need DB API now
-	def follow_user(self, data):
+	def __follow_user(self, data):
 		"""
 		Action to follow user:
 				Calls neo4j to add new relation between bot and user
@@ -109,11 +106,8 @@ class Control_Center(Rabbitmq):
 			"type_2": type2
 		}
 
-		# add or update user in database
-		self.save_user(data)
-
 		if self.neo4j_client.check_relationship_exists(relationship):
-			log.warn(f"Bot {data['bot_id']} already follows the user {data['data']['id']}")
+			log.warning(f"Bot {data['bot_id']} already follows the user {data['data']['id']}")
 			return
 		self.neo4j_client.add_relationship(relationship)
 		self.postgres_client.insert_log({
@@ -377,72 +371,77 @@ class Control_Center(Rabbitmq):
 		"""
 
 		log.info("Saving User")
-		log.info("First we check if the bot sending the message has been in the database")
+		
+
 		exists = self.neo4j_client.check_bot_exists(data["bot_id"])
 		if not exists:
 			log.info(f"Bot {data['bot_id']} is new to the party")
+
+			# save bot to mongo and neo4j
+			self.neo4j_client.add_bot({
+				"id": data['bot_id'],
+				"name": data['bot_name'],
+				"username": data['bot_screen_name']
+			})
+
+			# we send the list of initial users to follow
 			follow_list = self.pep.first_time_policy()
-			self.send(
-				data["bot_id"],
-				ServerToBot.FOLLOW_USERS,
-				{
-					"type": "screen_name",
-					"data": follow_list,
-				})
-			self.mongo_client.insert_users(data["data"])
-			self.neo4j_client.add_bot(
-				{"id": data['bot_id'], "name": data['bot_name'], "username": data['bot_screen_name']})
+			self.send(data["bot_id"], ServerToBot.FOLLOW_USERS, {
+				"type": "screen_name",
+				"data": follow_list,
+			})
+
+		is_bot = self.neo4j_client.check_bot_exists(data["data"]["id"])
+		if is_bot:
+			log.info("It's a bot that's already been registered in the database")
+			# Update the info of the bot
+			self.mongo_client.update_users(
+				match={"id": data["data"]['id']},
+				new_data=data["data"],
+				all=False
+			)
+			self.neo4j_client.update_bot(
+				{"id": data["data"]['id'], "name": data['data']['name'], "username": data['data']['screen_name']})
 		else:
-			is_bot = self.neo4j_client.check_bot_exists(data["data"]["id"])
-			if is_bot:
-				log.info("It's a bot that's already been registered in the database")
-				# Update the info of the bot
+			if self.neo4j_client.check_user_exists(data["data"]["id"]):
+				log.info(f"User {data['data']['id']} has already been registered in the database")
 				self.mongo_client.update_users(
 					match={"id": data["data"]['id']},
 					new_data=data["data"],
 					all=False
 				)
-				self.neo4j_client.update_bot(
-					{"id": data["data"]['id'], "name": data['data']['name'], "username": data['data']['screen_name']})
-			else:
-				if self.neo4j_client.check_user_exists(data["data"]["id"]):
-					log.info(
-						f"User {data['data']['id']} has already been registered in the database")
-					self.mongo_client.update_users(
-						match={"id": data["data"]['id']},
-						new_data=data["data"],
-						all=False
-					)
-					self.neo4j_client.update_user({
-						"id": data["data"]["id"],
-						"name": data['data']['name'],
-						"username": data['data']['screen_name']
-					})
-					self.postgres_client.insert_log({
-						"bot_id": data["bot_id"],
-						"action": log_actions.UPDATE_USER,
-						"target_id": data['data']['id']
-					})
-
-				else:
-					log.info(
-						f"User {data['data']['id']} is new to the party")
-					self.mongo_client.insert_users(data["data"])
-					self.neo4j_client.add_user({
-						"id": data["data"]["id"],
-						"name": data['data']['name'],
-						"username": data['data']['screen_name']
-					})
-					self.postgres_client.insert_log({
-						"bot_id": data["bot_id"],
-						"action": log_actions.INSERT_USER,
-						"target_id": data['data']['id']
-					})
-				self.postgres_client.insert_user({
-					"user_id": data["data"]["id"],
-					"followers": data["data"]["followers_count"],
-					"following": data["data"]["friends_count"]
+				self.neo4j_client.update_user({
+					"id": data["data"]["id"],
+					"name": data['data']['name'],
+					"username": data['data']['screen_name']
 				})
+				self.postgres_client.insert_log({
+					"bot_id": data["bot_id"],
+					"action": log_actions.UPDATE_USER,
+					"target_id": data['data']['id']
+				})
+			else:
+				log.info(
+					f"User {data['data']['id']} is new to the party")
+				self.mongo_client.insert_users(data["data"])
+				self.neo4j_client.add_user({
+					"id": data["data"]["id"],
+					"name": data['data']['name'],
+					"username": data['data']['screen_name']
+				})
+				self.postgres_client.insert_log({
+					"bot_id": data["bot_id"],
+					"action": log_actions.INSERT_USER,
+					"target_id": data['data']['id']
+				})
+			self.postgres_client.insert_user({
+				"user_id": data["data"]["id"],
+				"followers": data["data"]["followers_count"],
+				"following": data["data"]["friends_count"]
+			})
+
+		if 'following' in :
+			self.__follow_user(data)
 
 	def save_tweet(self, data):
 		"""
