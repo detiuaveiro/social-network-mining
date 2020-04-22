@@ -4,6 +4,7 @@ from django.db.models import Max
 from api.models import *
 import api.serializers as serializers
 from api import neo4j
+import json
 
 logger = logging.getLogger('queries')
 
@@ -392,3 +393,16 @@ def twitter_sub_network(queries):
     except Exception as e:
         logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
         return False, None, "Erro ao obter um sub-grafo da rede"
+
+def twitter_network():
+    """
+    Returns neo4j full network
+    Returns: status(boolean), data, message(string)
+    """
+
+    try:
+        data = json.loads(neo4j.export_network("json"))
+        return True, data, f"Sucesso a obter os dados da rede"
+    except Exception as e:
+        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_network.__name__} -> {e}")
+        return False, None, f"Erro a obter os dados da rede"
