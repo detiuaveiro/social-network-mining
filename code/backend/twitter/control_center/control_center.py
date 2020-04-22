@@ -89,7 +89,7 @@ class Control_Center(Rabbitmq):
 	def __follow_user(self, user1_id, user2_id, user1_is_bot=False):
 		"""
 		Action to follow user:
-				Calls neo4j to add new relation between bot and user
+				Calls neo4j to add new relation between user (bot or normal user) and user
 				Calls postgres_stats to add new log with the action details
 
 		@param data: dict containing bot and the user he's following
