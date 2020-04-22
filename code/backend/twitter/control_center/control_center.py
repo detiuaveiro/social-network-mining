@@ -348,14 +348,14 @@ class Control_Center(Rabbitmq):
 		"""
 		Stores info about a user:
 				Calls the neo4j and the mongo object to update or store the user be it a bot or a user)
-				Adds the log of the operation to postgress_stats
+				Adds the log of the operation to postgres_stats
 				If the user is a bot, must also call the Policy API object
 
 		@param data: dict containing the id of the bot and the user object
 		"""
+
 		log.info("Saving User")
-		log.info(
-			"First we check if the bot sending the message has been in the database")
+		log.info("First we check if the bot sending the message has been in the database")
 		exists = self.neo4j_client.check_bot_exists(data["bot_id"])
 		if not exists:
 			log.info("Bot is new to the party")
@@ -373,8 +373,7 @@ class Control_Center(Rabbitmq):
 		else:
 			is_bot = self.neo4j_client.check_bot_exists(data["data"]["id"])
 			if is_bot:
-				log.info(
-					"It's a bot that's already been registered in the database")
+				log.info("It's a bot that's already been registered in the database")
 				# Update the info of the bot
 				self.mongo_client.update_users(
 					match={"id": data["data"]['id']},
@@ -383,7 +382,6 @@ class Control_Center(Rabbitmq):
 				)
 				self.neo4j_client.update_bot(
 					{"id": data["data"]['id'], "name": data['data']['name'], "username": data['data']['screen_name']})
-
 			else:
 				if self.neo4j_client.check_user_exists(data["data"]["id"]):
 					log.info(
