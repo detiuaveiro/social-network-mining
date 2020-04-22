@@ -4,6 +4,7 @@
 import logging
 from neo4j import GraphDatabase
 import credentials
+import json
 
 log = logging.getLogger("Neo4j")
 log.setLevel(logging.DEBUG)
@@ -23,7 +24,7 @@ class Neo4jAPI:
         log.debug("Connecting to Neo4j")
         self.driver = GraphDatabase.driver(
             "bolt://" + FULL_URL,
-            auth=(credentials.NEO4J_USERNAME, credentials.NEO4J_PASSWORD),
+            auth=(credentials.NEO4J_USERNAME, credentials.NEO4J_PASSWORD), encrypted=False
         )
 
     def close(self):
@@ -477,6 +478,37 @@ class Neo4jAPI:
             result.append(dict(i.items()[0][1]))
 
         return result
+
+    def export_query(self, query, export_type="json"):
+
+        if export_type not in ["json", "csv", "graphml"]:
+            log.error("ERROR EXPORTING RESULT")
+            log.error(
+                "Error: ",
+                "Specified export type not supported. Please use json, csv or graphml",
+            )
+
+            return
+
+        with self.driver.session() as session:
+            result = session.write_transaction(self.__export_query, export_type, query)
+
+            output = result.data()[0]["data"]
+
+            if export_type == "json":
+                output = "[" + output.replace("\n", ",") + "]"
+
+            if output == '':
+                raise AttributeError('Export data is empty')
+
+            print(output)
+
+            return json.loads(output)
+
+    def __export_query(self, tx, export_type, query):
+        log.debug("EXPORTING QUERY NETWORK")
+
+        return tx.run(f"CALL apoc.export.{export_type}.query(\"{query}\",null,{{useTypes:true, stream:true}})")
 
     def export_network(self, export_type="graphml"):
         """Method used to export the entire database

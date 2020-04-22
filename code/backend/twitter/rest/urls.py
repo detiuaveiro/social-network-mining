@@ -18,7 +18,6 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework_swagger.views import get_swagger_view
 
-
 from api.views import users, bots, tweets, policies, network
 
 schema_view = get_swagger_view(title='TwitterBots API')
@@ -38,7 +37,8 @@ urlpatterns = [
     path("twitter/users/export", users.twitter_users_export, name="twitter_users_export"),
 
     path("twitter/network", network.twitter_network, name="twitter_network"),
-    path("twitter/network/export", network.twitter_network_export, name="twitter_network_export"),
+    path("twitter/sub_network", network.twitter_sub_network, name="twitter_sub_network"),
+    url(r"^twitter/network/export/$", network.twitter_network_export, name="twitter_network_export"),
 
     path("twitter/create", bots.twitter_create, name="twitter_create"),
     path("twitter/stats", bots.twitter_stats, name="twitter_stats"),
