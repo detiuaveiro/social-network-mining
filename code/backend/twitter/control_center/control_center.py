@@ -162,12 +162,6 @@ class Control_Center(Rabbitmq):
 			log.debug(f"Bot {data['bot_id']} could not retweet tweet {data['data']['id']}")
 			log.error(f"Bot like caused error {result['error']}")
 
-		self.neo4j_client.add_retweet_relationship({
-			"tweet_id": data['data']['id'],
-			"user_id": data["bot_id"],
-			"user_type": neo4j_labels.BOT_LABEL
-		})
-
 	def reply_tweet(self, data):
 		"""
 		Action to reply a tweet:
@@ -487,6 +481,9 @@ class Control_Center(Rabbitmq):
 			query={"id": data["data"]["id"]},
 			single=True
 		)
+
+		search_tweet_id = None
+
 		if tweet_exists:
 			log.info(f"Updating tweet {data['data']['id']}")
 			self.mongo_client.update_tweets(
@@ -526,6 +523,7 @@ class Control_Center(Rabbitmq):
 					"reply": data["data"]["id"],
 					"tweet": data["data"]["in_reply_to_status_id"]
 				})
+				search_tweet_id = data["data"]["in_reply_to_status_id"]
 
 			elif "is_quote_status" in data["data"] and data["data"]["is_quote_status"]:
 				self.__save_blank_tweet_if_exists(data={
@@ -536,6 +534,7 @@ class Control_Center(Rabbitmq):
 					"tweet": data["data"]["id"],
 					"quoted_tweet": data["data"]["quoted_status_id"]
 				})
+				search_tweet_id = data["data"]["quoted_status_id"]
 
 		self.postgres_client.insert_tweet({
 			"tweet_id": data['data']['id'],
@@ -543,6 +542,13 @@ class Control_Center(Rabbitmq):
 			"likes": data['data']['favorite_count'],
 			"retweets": data['data']['retweet_count']
 		})
+
+		if search_tweet_id is not None:
+			self.send(
+				bot=data["bot_id"],
+				message_type=ServerToBot.GET_TWEET_BY_ID,
+				params=search_tweet_id
+			)
 
 	def save_dm(self, data):
 		"""
