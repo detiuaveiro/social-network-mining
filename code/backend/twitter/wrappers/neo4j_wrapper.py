@@ -21,7 +21,6 @@ RETWEET_LABEL = "RETWEETED"
 REPLY_LABEL = "REPLIED"
 FOLLOW_LABEL = "FOLLOWS"
 
-
 class Neo4jAPI:
     def __init__(self, FULL_URL=credentials.NEO4J_FULL_URL):
         log.debug("Connecting to Neo4j")
@@ -122,9 +121,10 @@ class Neo4jAPI:
         )
 
     def add_writer_relationship(self, data):
-        """Method used to create a new RETWEET relationship
+        """Method used to create a new WRITE relationship
 
-        @param data: The params of the new relationship we want to create. Should include a tweet_id and a user_id
+        @param data: The params of the new relationship we want to create. Should include a tweet_id, a user_id and
+        the user's type
         """
 
         if (
@@ -775,6 +775,35 @@ class Neo4jAPI:
 
         return len(result.values()) != 0
 
+    def get_tweet_network(self, tweet_id, relation=[]):
+        log.debug(f"Getting network of <{tweet_id}>")
+
+        if not self.check_tweet_exists(tweet_id):
+            log.error("ERROR GETTING TWEET NETWORK")
+            log.error(f"Error: <{tweet_id}> is not in the neo4j database")
+            return
+
+        with self.driver.session() as session:
+            filter_relation = ""
+            if len(relation) != 0:
+                filter_relation = ":"
+                filter_relation += "|:".join(relation)
+
+            session.write_transaction(self.__get_tweet_network, tweet_id, filter_relation)
+
+    def __get_tweet_network(self, tx, tweet_id, relation):
+        log.debug("GETTING TWEET NETWORK")
+
+        query = f"MATCH (a {{id: {tweet_id} }})-" \
+                f"[r{relation}]->(b) RETURN a,r,b"
+
+        log.debug(f"Executing {query}")
+
+        result = tx.run(query)
+
+        log.debug(f"Result is: {result}")
+        return result
+
     def get_following(self, data):
         """Method used to find all accounts a given entity is following
 
@@ -889,6 +918,7 @@ class Neo4jAPI:
 
 if __name__ == "__main__":
     neo = Neo4jAPI()
+
     # neo.add_bot({"id":0,"name":"Jonas","username":"Jonas_Pistolas"})
     # neo.add_user({"id":0,"name":"DS","username":"FenixD.S"})
     # neo.add_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
