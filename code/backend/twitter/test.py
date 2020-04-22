@@ -1,7 +1,15 @@
 from wrappers.neo4j_wrapper import Neo4jAPI
+from wrappers.mongo_wrapper import MongoAPI
 
 if __name__ == "__main__":
+	mongo = MongoAPI()
 	neo = Neo4jAPI()
+
+	print(mongo.search(
+		collection="tweets",
+		query={"is_quote_status": True},
+		fields=["in_reply_to_status_id"]
+	))
 
 	neo.add_user({"id": 0, "name": "DS", "username": "FenixD.S"})
 	neo.add_tweet({"id": 1})
@@ -31,4 +39,3 @@ if __name__ == "__main__":
 	neo.delete_retweet_relationship({"tweet_id": 1, "user_id": 2, "user_type": "User"})
 	neo.delete_reply_relationship({"tweet": 1, "reply": 3})
 
-	print(neo.get_tweet_network(1))
