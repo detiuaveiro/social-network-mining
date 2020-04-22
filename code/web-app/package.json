@@ -42,6 +42,7 @@
     "react-loading": "^2.0.3",
     "react-router-config": "^5.0.1",
     "react-router-dom": "^5.0.1",
+    "react-select": "^3.1.0",
     "react-sigma": "^1.2.34",
     "react-test-renderer": "^16.8.6",
     "react-toastify": "^5.5.0",
