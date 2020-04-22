@@ -169,7 +169,9 @@ class TwitterBot(RabbitMessaging):
 				keyword = random.choice(keywords)
 				keywords.remove(keyword)
 
-				tweets = self._twitter_api.search(q=keyword, lang=language)
+				# get tweets in portuguese and from Portugal (center of Portugal and a radius equal form the center
+				# to the most distant point)
+				tweets = self._twitter_api.search(q=keyword, lang=language, geocode="39.557191,-8.1,300km")
 				total_read_time += self.__interpret_tweets(tweets)
 
 		logger.debug(f"Search completed in {total_read_time} seconds")
