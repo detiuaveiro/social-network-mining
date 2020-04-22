@@ -497,12 +497,7 @@ class Neo4jAPI:
 
             if export_type == "json":
                 output = "[" + output.replace("\n", ",") + "]"
-
-            if output == '':
-                raise AttributeError('Export data is empty')
-
-            print(output)
-
+            
             return json.loads(output)
 
     def __export_query(self, tx, export_type, query):
