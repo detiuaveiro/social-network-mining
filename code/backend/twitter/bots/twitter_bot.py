@@ -259,15 +259,13 @@ class TwitterBot(RabbitMessaging):
 		"""
 		logger.info(f"Following user <{user.id}>")
 
-		self.__send_user(user, messages_types.BotToServer.SAVE_USER)
-
 		if not user.following:
 			virtual_read_wait(user.description)
 
 			try:
 				user.follow()
 				logger.info(f"Followed User with id <{user.id}>")
-				self.__send_event(user._json, messages_types.BotToServer.EVENT_USER_FOLLOWED)
+				self.__send_user(user, messages_types.BotToServer.SAVE_USER)
 			except TweepError as error:
 				if error.api_code == FOLLOW_USER_ERROR_CODE:
 					logger.error(f"Unable to follow User with id <{user.id}>: {error}")
