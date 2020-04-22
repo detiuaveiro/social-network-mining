@@ -41,8 +41,10 @@ def queries_generator(ids_list, depth_list, show_bots, show_users, label):
     for i in range(len(ids_list)):
         _id = ids_list[i]
         _depth = depth_list[i]
-        query = f"match result=(entity1:{label} {{ id : \'{_id}\' }})-[:FOLLOWS*{_depth}]->(entity2) where " \
+        query = f"match result=(entity1:{label} {{ id : {_id} }})-[:FOLLOWS*{_depth}]->(entity2) where " \
                 f"{nodes_label_choice(show_bots, show_users)} return result"
+
+
         queries.append(("bots", _id, query))
 
     return queries
@@ -52,12 +54,15 @@ def cypher_query_generator(request_params):
     show_bots = bool(int(request_params.get('show_bots', '1')))
     show_users = bool(int(request_params.get('show_users', '1')))
 
-    bots_id = request_params.getlist('bots_id', [])
+    bots_id = [f"'{i}'" for i in request_params.getlist('bots_id', [])]
     bots_depth = args_validator(bots_id, request_params.getlist('bots_depth', []), "bots")
     bot_queries = queries_generator(bots_id, bots_depth, show_bots, show_users, "Bot")
 
     users_id = [int(i) for i in request_params.getlist('users_id', [])]
     users_depth = args_validator(users_id, request_params.getlist('users_depth', []), "users")
     user_queries = queries_generator(users_id, users_depth, show_bots, show_users, "User")
+
+
+
 
     return list(set(bot_queries + user_queries))

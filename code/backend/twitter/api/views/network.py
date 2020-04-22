@@ -15,6 +15,14 @@ def twitter_network_export(request):
 
 @api_view(["GET"])
 def twitter_sub_network(request):
+    """
+    Get sub network
+    Args:
+        request: http request object
+
+    Returns:
+
+    """
     error_messages = []
     success_messages = []
     status = HTTP_200_OK

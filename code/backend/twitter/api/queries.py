@@ -369,6 +369,14 @@ def twitter_bot_messages(id):
 
 # Network
 def twitter_sub_network(queries):
+    """
+    Return a subgraph defined by queries clause
+    Args:
+        queries:  list of query clauses
+
+    Returns:
+
+    """
     try:
 
         data = {}
