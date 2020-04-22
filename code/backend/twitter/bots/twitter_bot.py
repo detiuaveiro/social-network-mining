@@ -335,8 +335,9 @@ class TwitterBot(RabbitMessaging):
 					logger.info(f"Tweet with id <{tweet.id}> already retweeted, no need to retweet again")
 				else:
 					logger.info(f"Retweeting Tweet with id <{tweet.id}>")
-					tweet.retweet()
-					self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_RETWEETED)
+					retweet: Status = tweet.retweet()
+					self.__send_tweet(retweet, messages_types.BotToServer.SAVE_TWEET)
+					# self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_RETWEETED)
 			except Exception as error:
 				logger.error(f"Error retweeting tweet with id <{tweet_id}>: {error}")
 
@@ -361,9 +362,8 @@ class TwitterBot(RabbitMessaging):
 		try:
 			tweet: Status = self._twitter_api.update_status(**args)
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
-
-			if reply_id:
-				self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
+			# if reply_id:
+			# 	self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
 
 			logger.debug("Tweet posted with success")
 		except TweepError as error:
