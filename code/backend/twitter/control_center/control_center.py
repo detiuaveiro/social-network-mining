@@ -50,13 +50,13 @@ class Control_Center(Rabbitmq):
 			self.follow_user(message)
 
 		elif message_type == BotToServer.EVENT_TWEET_LIKED:
-			self.like_tweet(message)
+			self.__like_tweet_log(message)
 
-		elif message_type == BotToServer.EVENT_TWEET_RETWEETED:
-			self.retweet(message)
+		# elif message_type == BotToServer.EVENT_TWEET_RETWEETED:
+		# 	self.__retweet_log(message)
 
-		elif message_type == BotToServer.EVENT_TWEET_REPLIED:
-			self.reply_tweet(message)
+		# elif message_type == BotToServer.EVENT_TWEET_REPLIED:
+		# 	self.__reply_tweet_log(message)
 
 		elif message_type == BotToServer.QUERY_TWEET_LIKE:
 			self.request_tweet_like(message)
@@ -125,7 +125,7 @@ class Control_Center(Rabbitmq):
 
 		log.info("Saved follow relation with success")
 
-	def like_tweet(self, data):
+	def __like_tweet_log(self, data):
 		"""
 		Action to like tweet:
 				Calls postgres_stats to add new log
@@ -143,7 +143,7 @@ class Control_Center(Rabbitmq):
 			log.debug(f"Bot {data['bot_id']} could not like tweet {data['data']['id']}")
 			log.error(f"Bot like caused error {result['error']}")
 
-	def retweet(self, data):
+	def __retweet_log(self, data):
 		"""
 		Action to retweet:
 				Calls postgres_stats to add new log
@@ -161,7 +161,7 @@ class Control_Center(Rabbitmq):
 			log.debug(f"Bot {data['bot_id']} could not retweet tweet {data['data']['id']}")
 			log.error(f"Bot like caused error {result['error']}")
 
-	def reply_tweet(self, data):
+	def __reply_tweet_log(self, data):
 		"""
 		Action to reply a tweet:
 				Calls progres_stats to add what the bot replied and to which tweet
@@ -370,7 +370,7 @@ class Control_Center(Rabbitmq):
 		"""
 		Stores info about a user:
 				Calls the neo4j and the mongo object to update or store the user be it a bot or a user)
-				Adds the log of the operation to postgress_stats
+				Adds the log of the operation to postgres_stats
 				If the user is a bot, must also call the Policy API object
 
 		@param data: dict containing the id of the bot and the user object
@@ -450,7 +450,7 @@ class Control_Center(Rabbitmq):
 		"""
 		Stores info about a tweet:
 				Calls the mongo object to save or update a tweet
-				Adds the operation log to postgress_stats
+				Adds the operation log to postgres_stats
 
 		@param data: dict containing the id of the tweet to bee saved
 		"""
@@ -490,7 +490,7 @@ class Control_Center(Rabbitmq):
 		"""
 		Stores the info about a bot's direct messages:
 				Calls the mongo object to save or update a dm
-				Adds the operation log to postgress_stats
+				Adds the operation log to postgres_stats
 
 		@param data: dict containignt the id of the bot and the DMs
 		"""
