@@ -25,6 +25,8 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
+import Select from 'react-select';
+
 import Table from "../../components/Table/Table.js";
 
 import { ToastContainer, toast, Flip } from 'react-toastify';
@@ -42,6 +44,20 @@ class Network extends Component {
     loading: false,
     info: false,
     infoNode: null,
+
+    search: {
+      specifiedBots: [],
+      specifiedUsers: [],
+      hideBots: false,
+      hideUsers: false,
+      hideRels: false
+    },
+
+    bots: [],
+    users: [],
+
+    modalType: null,
+    modal: false,
 
     data: {
       nodes: [{ id: "Harry", type: "bot" }, { id: "Sally", type: "bot" }, { id: "Alice", type: "user" }],
@@ -139,7 +155,19 @@ class Network extends Component {
 
 
   // Methods //////////////////////////////////////////////////////////
+  handleOpenUsers() {
+    this.setState({
+      modalType: "USERS",
+      modal: true
+    });
+  }
 
+  handleClose() {
+    this.setState({
+      modalType: null,
+      modal: false
+    });
+  }
   /////////////////////////////////////////////////////////////////////
 
   render() {
@@ -156,6 +184,51 @@ class Network extends Component {
             <p>No info has been selected</p>
           </CardBody>
         </Card>
+    }
+
+    var modal
+
+    if (this.state.modalType == "USERS") {
+      modal = <Dialog class="fade-in"
+        open={this.state.modal}
+        onClose={() => this.handleClose()}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"👤 Specify user root nodes"}
+        </DialogTitle>
+        <DialogContent style={{ minWidth: "600px" }}>
+          <Container fluid>
+            <Row>
+              <Col xs="12" md="12">
+                <Table style={{ paddingTop: "0px" }}
+                  tableHeaderColor="primary"
+                  tableHead={["User name", "Twitter tag", "Specified depth", ""]}
+                  tableData={[["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"]]}
+                />
+              </Col>
+            </Row>
+
+            <DialogContentText>
+              <span id="error" style={{ display: "None", color: "#f86c6b" }}>Sorry, the tweet can't be empty!</span>
+            </DialogContentText>
+          </Container>
+
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => this.handleClose()} color="info">
+            Cancel
+              </Button>
+          <Button
+            onClick={() => this.handleTweet()}
+            color="success"
+            autoFocus
+          >
+            Confirm
+              </Button>
+        </DialogActions>
+      </Dialog>
     }
 
     return (
@@ -201,56 +274,63 @@ class Network extends Component {
                   </h3>
                 </CardHeader>
                 <CardBody>
-                  <Row>
-                    <Table style={{ paddingTop: "0px" }}
-                      tableHeaderColor="primary"
-                      tableHead={["Log", "Description"]}
-                      tableData={[["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"]]}
-                    />
-                    <Pagination>
-                      <PaginationItem>
-                        <PaginationLink previous tag="button"></PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem active>
-                        <PaginationLink tag="button">1</PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationLink tag="button">2</PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationLink next tag="button"></PaginationLink>
-                      </PaginationItem>
-                    </Pagination>
+                  <Row style={{ marginBottom: "20px" }}>
+                    <Col md="12">
+
+                      <Select
+                        defaultValue={[]}
+                        isMulti
+                        name="colors"
+                        options={[{ value: 'chocolate', label: 'Chocolate' },
+                        { value: 'strawberry', label: 'Strawberry' },
+                        { value: 'vanilla', label: 'Vanilla' }]}
+                        className="basic-multi-select"
+                        classNamePrefix="select"
+                      />
+                    </Col>
                   </Row>
                   <Row>
-                    <Col md="6">
+                    <Col md="12">
+                      <p style={{ color: "#999" }}>0 bot nodes and 0 user nodes have been specified as roots</p>
+
+                    </Col>
+                  </Row>
+
+                  <hr />
+
+                  <Row style={{ marginTop: "20px" }}>
+                    <Col md="4">
                       <FormGroup check>
                         <Input className="form-check-input" type="checkbox" id="inline-checkbox1" name="inline-checkbox1" value="option1" />
                         <Label className="form-check-label" check htmlFor="inline-checkbox1">Hide bots</Label>
                       </FormGroup>
                     </Col>
-                    <Col md="6">
+                    <Col md="4">
                       <FormGroup check>
                         <Input className="form-check-input" type="checkbox" id="inline-checkbox2" name="inline-checkbox2" value="option2" />
                         <Label className="form-check-label" check htmlFor="inline-checkbox2">Hide users</Label>
                       </FormGroup>
                     </Col>
+                    <Col md="4">
+                      <FormGroup check>
+                        <Input className="form-check-input" type="checkbox" id="inline-checkbox2" name="inline-checkbox2" value="option2" />
+                        <Label className="form-check-label" check htmlFor="inline-checkbox2">Hide links</Label>
+                      </FormGroup>
+                    </Col>
                   </Row>
+
+                  <hr />
 
                   <Row style={{ marginTop: "25px" }}>
                     <Col md="6" style={{ alignItems: "center" }}>
-                      <Button
-                        style={{ minWidth: "100%" }}
-                        color="success"
-                      >
-                        Search
-                    </Button>
+                      <Button block outline color="danger"
+
+                      > Reset</Button>
                     </Col>
                     <Col md="6">
-                      <Button style={{ minWidth: "100%" }}
-                        color="info">
-                        Reset
-                  </Button>
+                      <Button block outline color="success"
+
+                      > Search</Button>
                     </Col>
                   </Row>
 
@@ -261,6 +341,7 @@ class Network extends Component {
             </Col>
           </Row>
         </Container>
+        {modal}
       </div>
     );
   }
