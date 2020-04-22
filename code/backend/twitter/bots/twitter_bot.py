@@ -123,8 +123,8 @@ class TwitterBot(RabbitMessaging):
 		logger.info("Reading home timeline")
 		self.__read_timeline(self.user)
 
-		# ver porque não está a dar (o twitter não está a deixar aceder)
-		# self.__direct_messages()
+	# ver porque não está a dar (o twitter não está a deixar aceder)
+	# self.__direct_messages()
 
 	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
 		"""Function to get the 20 (default) most recent tweets (including retweets) from some user
@@ -286,7 +286,6 @@ class TwitterBot(RabbitMessaging):
 		logger.info(f"Getting tweet of id {tweet_id}")
 		self.__send_tweet(self.__find_tweet_by_id(tweet_id), messages_types.BotToServer.SAVE_TWEET)
 
-
 	def __find_tweet_by_id(self, tweet_id: int) -> Union[Status, None]:
 		"""Function to find and return a tweet for a given id
 
@@ -388,7 +387,8 @@ class TwitterBot(RabbitMessaging):
 					logger.debug(f"Received task <{task}>")
 
 					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
-						logger.warning(f"Not processing {messages_types.ServerToBot.FIND_BY_KEYWORDS} with {task_params}")
+						logger.warning(
+							f"Not processing {messages_types.ServerToBot.FIND_BY_KEYWORDS} with {task_params}")
 					elif task_type == messages_types.ServerToBot.FOLLOW_USERS:
 						self.__follow_users(id_type=task_params['type'], data=task_params['data'])
 					elif task_type == messages_types.ServerToBot.LIKE_TWEETS:
@@ -411,4 +411,4 @@ class TwitterBot(RabbitMessaging):
 					wait(2)
 			except Exception as error:
 				logger.error(f"Error on bot's loop: {error}")
-				# exit(1)
+			# exit(1)
