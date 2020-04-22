@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
 import { Graph } from "react-d3-graph";
+import baseURL from '../../variables/baseURL'
 
 import {
   Container, Row, Col, Button, Form,
@@ -129,6 +130,58 @@ class Network extends Component {
       "height": 700,
     }
   };
+
+  getBaseNetwork() {
+    fetch(baseURL + "twitter/network",{
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+        data = data.data
+        
+        var tempNodes = []
+        var tempLinks = []
+        data.forEach(item => {
+          if(item.type == "node"){
+            var tempItem = {}
+            tempItem['node_id'] = item.id
+            tempItem['name'] = item.properties.name
+            tempItem['username'] = "@" + item.properties.username
+            tempNodes.push(tempItem)
+          }
+        })
+
+
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        error: true,
+      })
+    });
+  }
+
+  componentDidMount() {
+    this.setState({
+      loading: true
+    })
+
+    // Get Network
+    this.getBaseNetwork()
+
+
+    this.setState({
+      loading: false
+    })
+
+  }
 
 
   loading = () => <div className="fadeIn pt-1 text-center"><ReactLoading type={"cubes"} color="#1da1f2" /></div>
@@ -276,7 +329,7 @@ class Network extends Component {
                 <CardBody>
                   <Row style={{ marginBottom: "20px" }}>
                     <Col md="12">
-
+                      <h5 style={{ color: "#1fa8dd" }}><strong>Bot root nodes</strong></h5>
                       <Select
                         defaultValue={[]}
                         isMulti
@@ -291,8 +344,36 @@ class Network extends Component {
                   </Row>
                   <Row>
                     <Col md="12">
-                      <p style={{ color: "#999" }}>0 bot nodes and 0 user nodes have been specified as roots</p>
+                      <FormGroup>
+                        <Label htmlFor="name">Bot node depth</Label>
+                        <Input type="text" id="name" placeholder="0" required />
+                      </FormGroup>
+                    </Col>
+                  </Row>
 
+                  <hr />
+
+                  <Row style={{ marginBottom: "20px" }}>
+                    <Col md="12">
+                      <h5 style={{ color: "#1fa8dd" }}><strong>User root nodes</strong></h5>
+                      <Select
+                        defaultValue={[]}
+                        isMulti
+                        name="colors"
+                        options={[{ value: 'chocolate', label: 'Chocolate' },
+                        { value: 'strawberry', label: 'Strawberry' },
+                        { value: 'vanilla', label: 'Vanilla' }]}
+                        className="basic-multi-select"
+                        classNamePrefix="select"
+                      />
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="12">
+                      <FormGroup>
+                        <Label htmlFor="name">User node depth</Label>
+                        <Input type="text" id="name" placeholder="0" required />
+                      </FormGroup>
                     </Col>
                   </Row>
 
@@ -337,7 +418,7 @@ class Network extends Component {
 
                 </CardBody>
               </Card>
-              {infoCard}
+
             </Col>
           </Row>
         </Container>

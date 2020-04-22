@@ -97,7 +97,7 @@ class BotProfile extends Component {
     };
 
     getBotPolicies() {
-        fetch("http://localhost:8000/policies/bots/1131301906679324672/", {
+        fetch(baseURL + "policies/bots/" + this.props.data.id + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
