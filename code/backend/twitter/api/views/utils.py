@@ -53,7 +53,7 @@ def cypher_query_generator(request_params):
     show_bots = bool(int(request_params.get('show_bots', '1')))
     show_users = bool(int(request_params.get('show_users', '1')))
 
-    bots_id = [f"'{i}'" for i in request_params.getlist('bots_id', [])]
+    bots_id = [int(i) for i in request_params.getlist('bots_id', [])]
     bots_depth = args_validator(bots_id, request_params.getlist('bots_depth', []), "bots")
     bot_queries = queries_generator(bots_id, bots_depth, show_bots, show_users, "Bot")
 
