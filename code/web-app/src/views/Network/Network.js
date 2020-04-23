@@ -35,6 +35,7 @@ import { ToastContainer, toast, Flip } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import ReactLoading from "react-loading";
+import ReactPaginate from 'react-paginate';
 
 
 
@@ -65,19 +66,20 @@ class Network extends Component {
         shape: 'dot',
 
         font: {
+          color: '#000',
+          strokeWidth: 5,
           size: 20,
-          color: '#000'
         },
       },
       physics: {
         enabled: true,
         barnesHut: {
-          gravitationalConstant: -8000,
+          gravitationalConstant: -12000,
           centralGravity: 0.6,
         }
       },
 
-      height: "700px",
+      height: "895px",
     },
     events: {
       doubleClick: function (event) {
@@ -95,7 +97,8 @@ class Network extends Component {
           animation: {
             duration: 100,
             easingFunction: 'linear'
-          }})
+          }
+        })
       }
     }
   }
@@ -182,7 +185,10 @@ class Network extends Component {
 
 
   // Graph methods //////////////////////////////////////////////////////////
-
+  handlePageClick = data => {
+    let selected = data.selected;
+    console.log(selected)
+  };
   /////////////////////////////////////////////////////////////////////
 
 
@@ -245,7 +251,104 @@ class Network extends Component {
               <Card>
                 <CardHeader color="primary">
                   <h3 style={{ color: "white" }}>
-                    <strong>Search filters</strong>
+                    <strong>Filters</strong>
+                  </h3>
+                </CardHeader>
+                <CardBody>
+                  <Row style={{ marginBottom: "20px" }}>
+                    <Col md="12">
+                      <h5 style={{ color: "#1fa8dd" }}><strong>Find node</strong></h5>
+                      <Select
+                        defaultValue={[]}
+                        name="colors"
+                        options={[{ value: 'chocolate', label: 'Chocolate' },
+                        { value: 'strawberry', label: 'Strawberry' },
+                        { value: 'vanilla', label: 'Vanilla' }]}
+                        className="basic-single"
+                        classNamePrefix="select"
+                      />
+                    </Col>
+                  </Row>
+
+                  <hr />
+
+                  <Row>
+                    <Col md="12">
+                      <h5 style={{ color: "#1fa8dd" }}><strong>Number of nodes per page</strong></h5>
+                      <Row>
+                        <Col md="8" sm="12" xm="12">
+                          <FormGroup>
+                            <Input type="text" id="name" placeholder="0" required />
+                          </FormGroup>
+                        </Col>
+                        <Col md="4" sm="12" xm="12">
+                          <Button block outline color="primary"
+
+                          > Confirm</Button>
+                        </Col>
+
+                      </Row>
+
+
+
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="12">
+                      <ReactPaginate
+                        previousLabel={'<'}
+                        nextLabel={'>'}
+                        breakLabel={'...'}
+
+                        pageCount={10}
+                        marginPagesDisplayed={2}
+                        pageRangeDisplayed={1}
+
+                        breakClassName={'page-item'}
+                        breakLinkClassName={'page-link'}
+                        containerClassName={'pagination'}
+                        pageClassName={'page-item'}
+                        pageLinkClassName={'page-link'}
+                        previousClassName={'page-item'}
+                        previousLinkClassName={'page-link'}
+                        nextClassName={'page-item'}
+                        nextLinkClassName={'page-link'}
+                        activeClassName={'active'}
+                      />
+
+                    </Col>
+                  </Row>
+
+                  <hr />
+
+                  <Row style={{ marginTop: "20px" }}>
+                    <Col md="4">
+                      <FormGroup check>
+                        <Input className="form-check-input" type="checkbox" id="inline-checkbox1" name="inline-checkbox1" value="option1" />
+                        <Label className="form-check-label" check htmlFor="inline-checkbox1">Hide bots</Label>
+                      </FormGroup>
+                    </Col>
+                    <Col md="4">
+                      <FormGroup check>
+                        <Input className="form-check-input" type="checkbox" id="inline-checkbox2" name="inline-checkbox2" value="option2" />
+                        <Label className="form-check-label" check htmlFor="inline-checkbox2">Hide users</Label>
+                      </FormGroup>
+                    </Col>
+                    <Col md="4">
+                      <FormGroup check>
+                        <Input className="form-check-input" type="checkbox" id="inline-checkbox2" name="inline-checkbox2" value="option2" />
+                        <Label className="form-check-label" check htmlFor="inline-checkbox2">Hide links</Label>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+
+                </CardBody>
+              </Card>
+
+              <Card>
+                <CardHeader color="primary">
+                  <h3 style={{ color: "white" }}>
+                    <strong>Options</strong>
                   </h3>
                 </CardHeader>
                 <CardBody>
@@ -301,29 +404,6 @@ class Network extends Component {
 
                   <hr />
 
-                  <Row style={{ marginTop: "20px" }}>
-                    <Col md="4">
-                      <FormGroup check>
-                        <Input className="form-check-input" type="checkbox" id="inline-checkbox1" name="inline-checkbox1" value="option1" />
-                        <Label className="form-check-label" check htmlFor="inline-checkbox1">Hide bots</Label>
-                      </FormGroup>
-                    </Col>
-                    <Col md="4">
-                      <FormGroup check>
-                        <Input className="form-check-input" type="checkbox" id="inline-checkbox2" name="inline-checkbox2" value="option2" />
-                        <Label className="form-check-label" check htmlFor="inline-checkbox2">Hide users</Label>
-                      </FormGroup>
-                    </Col>
-                    <Col md="4">
-                      <FormGroup check>
-                        <Input className="form-check-input" type="checkbox" id="inline-checkbox2" name="inline-checkbox2" value="option2" />
-                        <Label className="form-check-label" check htmlFor="inline-checkbox2">Hide links</Label>
-                      </FormGroup>
-                    </Col>
-                  </Row>
-
-                  <hr />
-
                   <Row style={{ marginTop: "25px" }}>
                     <Col md="6" style={{ alignItems: "center" }}>
                       <Button block outline color="danger"
@@ -336,7 +416,6 @@ class Network extends Component {
                       > Search</Button>
                     </Col>
                   </Row>
-
 
                 </CardBody>
               </Card>
