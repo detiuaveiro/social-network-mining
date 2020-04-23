@@ -79,7 +79,7 @@ def twitter_bot(_, id):
 
 
 @api_view(["GET"])
-def twitter_bot_logs(_, id, limit=None):
+def twitter_bot_logs(_, id, entries_per_page=None, page=None):
     """
     Returns all logs from a bot identified by his id
     :param id: bot's id
@@ -89,7 +89,7 @@ def twitter_bot_logs(_, id, limit=None):
     success_messages = []
     status = HTTP_200_OK
 
-    success, data, message = queries.twitter_bot_logs(id, int(limit) if limit and limit.isdigit() else None)
+    success, data, message = queries.twitter_bot_logs(id, entries_per_page, page)
     if success:
         success_messages.append(message)
     else:
