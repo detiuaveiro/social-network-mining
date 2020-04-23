@@ -31,6 +31,8 @@ urlpatterns = [
 	path("twitter/users/stats", users.twitter_users_stats, name="twitter_users_stats"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/$", users.twitter_user, name="twitter_user"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/tweets/$", users.twitter_user_tweets, name="twitter_user_tweets"),
+	url(r"^twitter/users/(?P<id>[0-9]+)/tweets/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
+	    users.twitter_user_tweets, name="twitter_user_tweets"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/followers/$", users.twitter_user_followers, name="twitter_user_followers"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/following/$", users.twitter_user_following, name="twitter_user_following"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/stats/$", users.twitter_user_stats, name="twitter_user_stats"),
