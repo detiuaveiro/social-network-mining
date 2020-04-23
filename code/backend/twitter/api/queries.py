@@ -63,12 +63,14 @@ def twitter_user_stats(id):
 		return False, None, f"Erro as estatisticas do utilizador de id {id}"
 
 
-def twitter_user_tweets(id):
+def twitter_user_tweets(id, entries_per_page, page):
 	try:
 		user_tweets = Tweet.objects.filter(user=id).order_by('-created_at')
 
-		return True, [serializers.Tweet(tweet).data for tweet in
-		              user_tweets], "Sucesso a obter todos os tweets do utilizador pedido"
+		data = paginator_factory(user_tweets, entries_per_page, page)
+		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]
+
+		return True, data, "Sucesso a obter todos os tweets do utilizador pedido"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_user_tweets.__name__} -> {e}")
 		return False, None, f"Erro a obter os tweets do utilizador de id {id}"
