@@ -6,8 +6,9 @@ def paginator_factory(query_data, entries_per_page, page):
 	page = int(page) if page is not None else 1
 
 	data = {}
-	paginator = None
+
 	if entries_per_page > 0:
+		paginator = None
 
 		try:
 			paginator = Paginator(query_data, entries_per_page)
@@ -23,5 +24,8 @@ def paginator_factory(query_data, entries_per_page, page):
 		data['num_pages'] = paginator.num_pages
 		data['next_page'] = page + 1 if page + 1 <= paginator.num_pages else 1
 		data['previous_page'] = page - 1 if page - 1 > 0 else paginator.num_pages
-	
+
+	else:
+		raise ValueError("Invalid value for entries_per_page parameter. Should be greater than 0")
+
 	return data

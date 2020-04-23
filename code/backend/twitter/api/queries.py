@@ -71,6 +71,11 @@ def twitter_user_tweets(id, entries_per_page, page):
 		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]
 
 		return True, data, "Sucesso a obter todos os tweets do utilizador pedido"
+	
+	except ValueError as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_user_tweets.__name__} -> {e}")
+		return False, None, str(e)
+
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_user_tweets.__name__} -> {e}")
 		return False, None, f"Erro a obter os tweets do utilizador de id {id}"
@@ -316,13 +321,17 @@ def twitter_bot_logs(id, entries_per_page, page):
 	:return: status(boolean), data, message(string)
 	"""
 	try:
-		logs = Log.objects.filter(id_bot=id)
+		logs = Log.objects.filter(id_bot=id).order_by('-timestamp')
 
 		data = paginator_factory(logs, entries_per_page, page)
 
 		data['entries'] = [serializers.Log(log).data for log in data['entries']]
 
 		return True, data, f"Sucesso a obter os logs do bot com ID {id}"
+
+	except ValueError as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_bot_logs.__name__} ->  {e}")
+		return False, None, str(e)
 
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_bot_logs.__name__} ->  {e}")
