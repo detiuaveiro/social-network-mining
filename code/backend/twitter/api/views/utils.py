@@ -41,7 +41,7 @@ def queries_generator(ids_list, depth_list, show_bots, show_users, label):
     for i in range(len(ids_list)):
         _id = ids_list[i]
         _depth = depth_list[i]
-        query = f"match result=(entity1:{label} {{ id : {_id} }})-[:FOLLOWS*{_depth}]->(entity2) where " \
+        query = f"match result=(entity1:{label} {{ id : {_id} }})-[:FOLLOWS*0..{_depth}]->(entity2) where " \
                 f"{nodes_label_choice(show_bots, show_users)} return result"
 
         queries.append(query)
