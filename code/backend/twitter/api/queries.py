@@ -393,7 +393,7 @@ def twitter_sub_network(queries):
 	try:
 		data = []
 		for query in queries:
-			data.append(neo4j.export_query(query))
+			data += [entry['result'] for entry in neo4j.export_query(query)]
 
 		return True, data, "Subgrafo da rede obtido com sucesso"
 	except AttributeError as e:
