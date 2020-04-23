@@ -52,7 +52,8 @@ def twitter_users_stats():
 
 def twitter_user_stats(id):
     try:
-        return True, serializers.UserStats(UserStats.objects.get(user_id=id)).data, \
+
+        return True, [serializers.UserStats(user).data for user in UserStats.objects.filter(user_id=id)], \
                "Sucesso a obter as estatisticas do utilizador pedido"
     except UserStats.DoesNotExist:
         return False, None, f"Não existe nenhum utilizador com o id {id} na base de dados de estatisticas"
@@ -133,7 +134,7 @@ def twitter_tweet(id):
 
 def twitter_tweet_stats(id):
     try:
-        return True, serializers.TweetStats(TweetStats.objects.get(tweet_id=id)).data, \
+        return True, [serializers.TweetStats(tweet).data for tweet in TweetStats.objects.filter(tweet_id=id)], \
                "Sucesso a obter as estatisticas do tweet de id pedido"
     except TweetStats.DoesNotExist:
         return False, None, f"Não existem estatísticas do tweet de id {id} na base de dados"

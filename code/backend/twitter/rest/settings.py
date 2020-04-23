@@ -82,10 +82,8 @@ DATABASES = {
     'mongo': {
         'ENGINE': 'djongo',
         'NAME': MONGO_DB,
-        'HOST': MONGO_URL,
-        'PORT': MONGO_PORT,
-        'USER': MONGO_USERNAME,
-        'PASSWORD': MONGO_PASSWORD,
+        'HOST': "mongodb://" + MONGO_FULL_URL,
+
     },
     'postgres': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -115,9 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
-}
+REST_FRAMEWORK = {'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'}
 
 CORS_ORIGIN_ALLOW_ALL = True
 
