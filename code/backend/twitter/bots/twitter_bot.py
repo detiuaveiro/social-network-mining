@@ -169,7 +169,9 @@ class TwitterBot(RabbitMessaging):
 				keyword = random.choice(keywords)
 				keywords.remove(keyword)
 
-				tweets = self._twitter_api.search(q=keyword, lang=language)
+				# get tweets in portuguese and from Portugal (center of Portugal and a radius equal form the center
+				# to the most distant point)
+				tweets = self._twitter_api.search(q=keyword, lang=language, geocode="39.557191,-8.1,300km")
 				total_read_time += self.__interpret_tweets(tweets)
 
 		logger.debug(f"Search completed in {total_read_time} seconds")
@@ -259,15 +261,13 @@ class TwitterBot(RabbitMessaging):
 		"""
 		logger.info(f"Following user <{user.id}>")
 
-		self.__send_user(user, messages_types.BotToServer.SAVE_USER)
-
 		if not user.following:
 			virtual_read_wait(user.description)
 
 			try:
 				user.follow()
 				logger.info(f"Followed User with id <{user.id}>")
-				self.__send_event(user._json, messages_types.BotToServer.EVENT_USER_FOLLOWED)
+				self.__send_user(user, messages_types.BotToServer.SAVE_USER)
 			except TweepError as error:
 				if error.api_code == FOLLOW_USER_ERROR_CODE:
 					logger.error(f"Unable to follow User with id <{user.id}>: {error}")
@@ -337,8 +337,9 @@ class TwitterBot(RabbitMessaging):
 					logger.info(f"Tweet with id <{tweet.id}> already retweeted, no need to retweet again")
 				else:
 					logger.info(f"Retweeting Tweet with id <{tweet.id}>")
-					tweet.retweet()
-					self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_RETWEETED)
+					retweet: Status = tweet.retweet()
+					self.__send_tweet(retweet, messages_types.BotToServer.SAVE_TWEET)
+					# self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_RETWEETED)
 			except Exception as error:
 				logger.error(f"Error retweeting tweet with id <{tweet_id}>: {error}")
 
@@ -363,9 +364,8 @@ class TwitterBot(RabbitMessaging):
 		try:
 			tweet: Status = self._twitter_api.update_status(**args)
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
-
-			if reply_id:
-				self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
+			# if reply_id:
+			# 	self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
 
 			logger.debug("Tweet posted with success")
 		except TweepError as error:
