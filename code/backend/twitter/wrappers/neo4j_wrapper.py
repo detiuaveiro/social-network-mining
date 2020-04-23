@@ -4,7 +4,8 @@
 import logging
 from neo4j import GraphDatabase
 import credentials
-from neo4j_labels import BOT_LABEL, USER_LABEL, TWEET_LABEL, WROTE_LABEL, RETWEET_LABEL, REPLY_LABEL, FOLLOW_LABEL
+from neo4j_labels import BOT_LABEL, USER_LABEL, TWEET_LABEL, WROTE_LABEL,\
+    RETWEET_LABEL, REPLY_LABEL, FOLLOW_LABEL, QUOTE_LABEL
 
 log = logging.getLogger("Neo4j")
 log.setLevel(logging.DEBUG)
@@ -152,23 +153,59 @@ class Neo4jAPI:
     def add_retweet_relationship(self, data):
         """Method used to create a new RETWEET relationship
 
+        @param data: The params of the new relationship we want to create. Should include a tweet_id, a user_id and
+        the user's type
+        """
+
+        if (
+            "tweet_id" not in data.keys()
+            or "user_id" not in data.keys()
+            or "user_type" not in data.keys()
+        ):
+            log.error("ERROR CREATING A RETWEET RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type"
+            )
+
+            return
+
+        if data["user_type"] not in [BOT_LABEL, USER_LABEL]:
+            log.error("ERROR CREATING A RETWEET RELATIONSHIP")
+            log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+
+            return
+
+        with self.driver.session() as session:
+            data['label'] = RETWEET_LABEL
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet_id']
+            data['type_2'] = data['user_type']
+            data['id_2'] = data['user_id']
+
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__create_relationship, data)
+
+    def add_quote_relationship(self, data):
+        """Method used to create a new QUOTE relationship
+
         @param data: The params of the new relationship we want to create. Should include a tweet_id and the
         quoted_tweet
         """
 
         if (
             "tweet_id" not in data.keys()
-            or "quoted_tweet" in data.keys()
+            or "quoted_tweet" not in data.keys()
         ):
-            log.error("ERROR CREATING A RETWEET RELATIONSHIP")
+            log.error("ERROR CREATING A QUOTE RELATIONSHIP")
             log.error(
                 "Error: Specified data doesn't contain necessary fields - tweet_id and quoted_tweet"
             )
+            log.error(data)
 
             return
 
         with self.driver.session() as session:
-            data['label'] = RETWEET_LABEL
+            data['label'] = QUOTE_LABEL
             data['type_1'] = TWEET_LABEL
             data['id_1'] = data['tweet_id']
             data['type_2'] = TWEET_LABEL
@@ -203,16 +240,16 @@ class Neo4jAPI:
             # Caller for transactional unit of work
             return session.write_transaction(self.__create_relationship, data)
 
-    def add_relationship(self, data):
+    def add_follow_relationship(self, data):
         """Method used to create a new FOLLOWS relationship
 
         @param data: The params of the new relationship we want to create. Should include a type_1, type_2, id_1, id_2
         """
         if (
-                "id_1" not in data.keys()
-                or "id_2" not in data.keys()
-                or "type_1" not in data.keys()
-                or "type_2" not in data.keys()
+                "from_id" not in data.keys()
+                or "to_id" not in data.keys()
+                or "type_from" not in data.keys()
+                or "type_to" not in data.keys()
         ):
             log.error("ERROR CREATING A RELATIONSHIP")
             log.error(
@@ -401,7 +438,7 @@ class Neo4jAPI:
         tx.run(query)
 
     def delete_writer_relationship(self, data):
-        """Method used to delete RETWEET relationship
+        """Method used to delete WRITE relationship
 
         @param data: The params of the new relationship we want to create. Should include a tweet_id, a user_id and
         the user's type
@@ -436,7 +473,42 @@ class Neo4jAPI:
             return session.write_transaction(self.__delete_rel, data)
 
     def delete_retweet_relationship(self, data):
-        """Method used to delete a new RETWEET relationship
+        """Method used to delete RETWEET relationship
+
+        @param data: The params of the new relationship we want to create. Should include a tweet_id, a user_id and
+        the user's type
+        """
+
+        if (
+                "tweet_id" not in data.keys()
+                or "user_id" not in data.keys()
+                or "user_type" not in data.keys()
+        ):
+            log.error("ERROR DELETING A RETWEET RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type"
+            )
+
+            return
+
+        if data["user_type"] not in [BOT_LABEL, USER_LABEL]:
+            log.error("ERROR DELETING A RETWEET RELATIONSHIP")
+            log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
+
+            return
+
+        with self.driver.session() as session:
+            data['label'] = RETWEET_LABEL
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet_id']
+            data['type_2'] = data['user_type']
+            data['id_2'] = data['user_id']
+
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__delete_rel, data)
+
+    def delete_quote_relationship(self, data):
+        """Method used to delete a new QUOTE relationship
 
         @param data: The params of the new relationship we want to create. Should include a tweet_id and the
         quoted_tweet
@@ -444,9 +516,9 @@ class Neo4jAPI:
 
         if (
                 "tweet_id" not in data.keys()
-                or "quoted_tweet" in data.keys()
+                or "quoted_tweet" not in data.keys()
         ):
-            log.error("ERROR DELETING A RETWEET RELATIONSHIP")
+            log.error("ERROR DELETING A QUOTE RELATIONSHIP")
             log.error(
                 "Error: Specified data doesn't contain necessary fields - tweet_id and quoted_tweet"
             )
@@ -454,7 +526,7 @@ class Neo4jAPI:
             return
 
         with self.driver.session() as session:
-            data['label'] = RETWEET_LABEL
+            data['label'] = QUOTE_LABEL
             data['type_1'] = TWEET_LABEL
             data['id_1'] = data['tweet_id']
             data['type_2'] = data['user_type']
@@ -489,7 +561,7 @@ class Neo4jAPI:
             # Caller for transactional unit of work
             return session.write_transaction(self.__delete_rel, data)
 
-    def delete_relationship(self, data):
+    def delete_follow_relationship(self, data):
         """Method used to delete a given bot
 
         @param data: The params of the new relationship we want to delete. Should include a type_1, type_2, id_1, id_2
@@ -652,20 +724,27 @@ class Neo4jAPI:
             return session.write_transaction(self.__check_relationship, data)
 
     def check_retweet_relationship(self, data):
-        """Method used to check a new RETWEET relationship
+        """Method used to delete RETWEET relationship
 
-        @param data: The params of the new relationship we want to check. Should include a tweet_id and the
-        quoted_tweet
+        @param data: The params of the new relationship we want to create. Should include a tweet_id, a user_id and
+        the user's type
         """
 
         if (
                 "tweet_id" not in data.keys()
-                or "quoted_tweet" in data.keys()
+                or "user_id" not in data.keys()
+                or "user_type" not in data.keys()
         ):
             log.error("ERROR CHECKING A RETWEET RELATIONSHIP")
             log.error(
-                "Error: Specified data doesn't contain necessary fields - tweet_id and quoted_tweet"
+                "Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type"
             )
+
+            return
+
+        if data["user_type"] not in [BOT_LABEL, USER_LABEL]:
+            log.error("ERROR CHECKING A RETWEET RELATIONSHIP")
+            log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 
             return
 
@@ -675,6 +754,35 @@ class Neo4jAPI:
             data['id_1'] = data['tweet_id']
             data['type_2'] = data['user_type']
             data['id_2'] = data['user_id']
+
+            # Caller for transactional unit of work
+            return session.write_transaction(self.__check_relationship, data)
+
+    def check_quote_relationship(self, data):
+        """Method used to check a new QUOTE relationship
+
+        @param data: The params of the new relationship we want to check. Should include a tweet_id and the
+        quoted_tweet
+        """
+
+        if (
+                "tweet_id" not in data.keys()
+                or "quoted_tweet" not in data.keys()
+        ):
+            log.error("ERROR CHECKING A QUOTE RELATIONSHIP")
+            log.error(
+                "Error: Specified data doesn't contain necessary fields - tweet_id and quoted_tweet"
+            )
+            log.error(data)
+
+            return
+
+        with self.driver.session() as session:
+            data['label'] = QUOTE_LABEL
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet_id']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['quoted_tweet']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__check_relationship, data)
@@ -705,7 +813,7 @@ class Neo4jAPI:
             # Caller for transactional unit of work
             return session.write_transaction(self.__check_relationship, data)
 
-    def check_relationship_exists(self, data):
+    def check_follow_exists(self, data):
         """Method used to check whether a relationship exists between two IDs
 
         @param data: The params of the entities involved in the relationshi+ we want to look for. Should include
@@ -896,7 +1004,7 @@ if __name__ == "__main__":
 
     # neo.add_bot({"id":0,"name":"Jonas","username":"Jonas_Pistolas"})
     # neo.add_user({"id":0,"name":"DS","username":"FenixD.S"})
-    # neo.add_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
+    # neo.add_follow_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
 
     # print(neo.check_bot_exists(0))
     # print(neo.check_user_exists(0))
@@ -928,5 +1036,5 @@ if __name__ == "__main__":
     # neo.export_network("json")
 
     # neo.delete_user(0)
-    # neo.delete_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
+    # neo.delete_follow_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
     neo.close()

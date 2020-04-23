@@ -232,7 +232,7 @@ class PDP:
 
 		type1 = "Bot" if self.neo4j.check_bot_exists(data["bot_id"]) else "User"
 		type2 = "Bot" if self.neo4j.check_bot_exists(data["user_id"]) else "User"
-		relation_exists = self.neo4j.check_relationship_exists({
+		relation_exists = self.neo4j.check_follow_exists({
 			"id_1": data["bot_id"],
 			"type_1": type1,
 			"id_2": data["user_id"],

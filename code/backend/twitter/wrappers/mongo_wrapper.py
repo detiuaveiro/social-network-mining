@@ -23,7 +23,6 @@ class MongoAPI:
 
     def __init__(self):
         log.debug("Connecting to MongoDB")
-        print(credentials.MONGO_FULL_URL)
         self.client = MongoClient("mongodb://" + credentials.MONGO_FULL_URL)
 
         self.users = eval(f"self.client.{credentials.MONGO_DB}.users")
