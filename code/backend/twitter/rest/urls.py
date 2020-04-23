@@ -18,49 +18,49 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework_swagger.views import get_swagger_view
 
-
 from api.views import users, bots, tweets, policies, network
 
 schema_view = get_swagger_view(title='TwitterBots API')
 
 urlpatterns = [
-    url('documentation/', schema_view),
+	url('documentation/', schema_view),
 
-    path('admin/', admin.site.urls),
+	path('admin/', admin.site.urls),
 
-    path("twitter/users", users.twitter_users, name="twitter_users"),
-    path("twitter/users/stats", users.twitter_users_stats, name="twitter_users_stats"),
-    url(r"^twitter/users/(?P<id>[0-9]+)/$", users.twitter_user, name="twitter_user"),
-    url(r"^twitter/users/(?P<id>[0-9]+)/tweets/$", users.twitter_user_tweets, name="twitter_user_tweets"),
-    url(r"^twitter/users/(?P<id>[0-9]+)/followers/$", users.twitter_user_followers, name="twitter_user_followers"),
-    url(r"^twitter/users/(?P<id>[0-9]+)/following/$", users.twitter_user_following, name="twitter_user_following"),
-    url(r"^twitter/users/(?P<id>[0-9]+)/stats/$", users.twitter_user_stats, name="twitter_user_stats"),
-    path("twitter/users/export", users.twitter_users_export, name="twitter_users_export"),
+	path("twitter/users", users.twitter_users, name="twitter_users"),
+	path("twitter/users/stats", users.twitter_users_stats, name="twitter_users_stats"),
+	url(r"^twitter/users/(?P<id>[0-9]+)/$", users.twitter_user, name="twitter_user"),
+	url(r"^twitter/users/(?P<id>[0-9]+)/tweets/$", users.twitter_user_tweets, name="twitter_user_tweets"),
+	url(r"^twitter/users/(?P<id>[0-9]+)/followers/$", users.twitter_user_followers, name="twitter_user_followers"),
+	url(r"^twitter/users/(?P<id>[0-9]+)/following/$", users.twitter_user_following, name="twitter_user_following"),
+	url(r"^twitter/users/(?P<id>[0-9]+)/stats/$", users.twitter_user_stats, name="twitter_user_stats"),
+	path("twitter/users/export", users.twitter_users_export, name="twitter_users_export"),
+	url(r"^twitter/bots/(?P<id>[0-9]+)/tweets_by_day/$", users.twitter_tweets_by_day, name="twitter_tweets_by_day"),
 
-    path("twitter/network", network.twitter_network, name="twitter_network"),
-    path("twitter/network/export", network.twitter_network_export, name="twitter_network_export"),
+	path("twitter/network", network.twitter_network, name="twitter_network"),
+	path("twitter/network/export", network.twitter_network_export, name="twitter_network_export"),
 
-    path("twitter/create", bots.twitter_create, name="twitter_create"),
-    path("twitter/stats", bots.twitter_stats, name="twitter_stats"),
-    path("twitter/bots", bots.twitter_bots, name="twitter_bots"),
-    url(r"^twitter/bots/(?P<id>[0-9]+)/$", bots.twitter_bot, name="twitter_bot"),
-    url(r"^twitter/bots/(?P<id>[0-9]+)/logs/(?P<limit>[0-9]+)/$", bots.twitter_bot_logs, name="twitter_bot_logs"),
-    url(r"^twitter/bots/(?P<id>[0-9]+)/messages/$", bots.twitter_bot_messages, name="twitter_bot_messages"),
+	path("twitter/create", bots.twitter_create, name="twitter_create"),
+	path("twitter/stats", bots.twitter_stats, name="twitter_stats"),
+	path("twitter/bots", bots.twitter_bots, name="twitter_bots"),
+	url(r"^twitter/bots/(?P<id>[0-9]+)/$", bots.twitter_bot, name="twitter_bot"),
+	url(r"^twitter/bots/(?P<id>[0-9]+)/logs/(?P<limit>[0-9]+)/$", bots.twitter_bot_logs, name="twitter_bot_logs"),
+	url(r"^twitter/bots/(?P<id>[0-9]+)/messages/$", bots.twitter_bot_messages, name="twitter_bot_messages"),
 
-    path(r"twitter/tweets/all", tweets.twitter_tweets, name="twitter_tweets"),
-    url(r"^twitter/tweets/all/(?P<limit>[0-9]+)/$", tweets.twitter_tweets, name="twitter_tweets"),
-    path("twitter/tweets/export", tweets.twitter_tweets_export, name="twitter_tweets_export"),
-    path("twitter/tweets/stats", tweets.twitter_tweets_stats, name="twitter_tweets_stats"),
-    url(r"^twitter/tweets/(?P<id>[0-9]+)/$", tweets.twitter_tweet, name="twitter_tweet"),
-    url(r"^twitter/tweets/(?P<id>[0-9]+)/stats/$", tweets.twitter_tweet_stats, name="twitter_tweet_stats"),
-    url(r"^twitter/tweets/(?P<id>[0-9]+)/replies/$", tweets.twitter_tweet_replies, name="twitter_tweet_replies"),
+	path(r"twitter/tweets/all", tweets.twitter_tweets, name="twitter_tweets"),
+	url(r"^twitter/tweets/all/(?P<limit>[0-9]+)/$", tweets.twitter_tweets, name="twitter_tweets"),
+	path("twitter/tweets/export", tweets.twitter_tweets_export, name="twitter_tweets_export"),
+	path("twitter/tweets/stats", tweets.twitter_tweets_stats, name="twitter_tweets_stats"),
+	url(r"^twitter/tweets/(?P<id>[0-9]+)/$", tweets.twitter_tweet, name="twitter_tweet"),
+	url(r"^twitter/tweets/(?P<id>[0-9]+)/stats/$", tweets.twitter_tweet_stats, name="twitter_tweet_stats"),
+	url(r"^twitter/tweets/(?P<id>[0-9]+)/replies/$", tweets.twitter_tweet_replies, name="twitter_tweet_replies"),
 
-    path("policies", policies.policies, name="policies"),
-    url(r"^policies/(?P<id>[0-9]+)/$", policies.policy, name="policy"),
-    url(r"^policies/bots/(?P<id>[0-9]+)/$", policies.bot_policies, name="bot_policies"),
-    path("policies/add", policies.add_policy, name="add_policy"),
-    url(r"^policies/remove/(?P<id>[0-9]+)/$", policies.remove_policy, name="remove_policy"),
-    url(r"^policies/update/(?P<id>[0-9]+)/$", policies.update_policy, name="update_policy"),
-    url(r"^policies/instagram", policies.instagram_policies, name="instagram_policies"),
-    path("policies/twitter", policies.twitter_policies, name="twitter_policies"),
+	path("policies", policies.policies, name="policies"),
+	url(r"^policies/(?P<id>[0-9]+)/$", policies.policy, name="policy"),
+	url(r"^policies/bots/(?P<id>[0-9]+)/$", policies.bot_policies, name="bot_policies"),
+	path("policies/add", policies.add_policy, name="add_policy"),
+	url(r"^policies/remove/(?P<id>[0-9]+)/$", policies.remove_policy, name="remove_policy"),
+	url(r"^policies/update/(?P<id>[0-9]+)/$", policies.update_policy, name="update_policy"),
+	url(r"^policies/instagram", policies.instagram_policies, name="instagram_policies"),
+	path("policies/twitter", policies.twitter_policies, name="twitter_policies"),
 ]
