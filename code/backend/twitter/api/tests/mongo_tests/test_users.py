@@ -73,4 +73,4 @@ def test_unsuccessfully_twitter_user_tweets_request(error_catcher, factory, db):
 	path = reverse('twitter_user_tweets', kwargs={'id': 1})
 	request = factory.get(path)
 	response = users.twitter_user_tweets(request, id=1)
-	assert is_response_empty(response)
+	assert is_response_unsuccessful(response)
