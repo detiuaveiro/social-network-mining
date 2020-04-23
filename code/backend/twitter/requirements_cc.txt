@@ -3,10 +3,12 @@ cffi==1.14.0
 chardet==3.0.4
 googletrans==2.4.0
 idna==2.9
+joblib==0.14.1
 neo4j-driver==1.7.6
 neobolt==1.7.16
 neotime==1.7.4
 nltk==3.4.5
+pandas==1.0.3
 pika==1.1.0
 psycopg2-binary==2.8.4
 pycparser==2.20
@@ -14,5 +16,7 @@ pymongo==3.10.1
 pytz==2019.3
 rabbitmq==0.2.0
 requests==2.23.0
+scikit-learn==0.22.2.post1
 six==1.14.0
+sklearn==0.0
 urllib3==1.25.8

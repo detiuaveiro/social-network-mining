@@ -36,7 +36,7 @@ class Tweet(djongo_models.Model):
     tweet_id = djongo_models.IntegerField(db_column="id")
     user = djongo_models.IntegerField()
     is_quote_status = djongo_models.BooleanField()
-    quoted_status_id = djongo_models.IntegerField(null=True, blank=True)
+    # quoted_status_id = djongo_models.IntegerField(null=True, blank=True)
     in_reply_to_screen_name = djongo_models.TextField(null=True, blank=True)
     in_reply_to_user_id = djongo_models.IntegerField(null=True, blank=True)
     in_reply_to_status_id = djongo_models.IntegerField(null=True, blank=True)
@@ -77,6 +77,7 @@ class Log(models.Model):
     id_bot = models.IntegerField(primary_key=True)
     timestamp = models.DateTimeField()
     action = models.TextField()
+    target_id = models.BigIntegerField()
 
     class Meta:
         managed = True
