@@ -273,7 +273,7 @@ class Neo4jAPI:
             return session.write_transaction(self.__create_relationship, data)
 
     def __create_relationship(self, tx, data):
-        log.debug("CREATING RELATIONSHIP")
+        log.debug(f"CREATING RELATIONSHIP <{data['label']}>")
 
         result = tx.run(f"MATCH (u: {data['from_type']} {{ id: $id1 }}), (r: {data['to_type']} {{ id: $id2 }}) "
                         f"MERGE (u)-[:{data['label']}]->(r)", id1=data['from_id'], id2=data['to_id'])

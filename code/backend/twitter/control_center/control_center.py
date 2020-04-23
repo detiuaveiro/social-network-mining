@@ -606,7 +606,7 @@ class Control_Center(Rabbitmq):
 					})
 
 			elif "is_quote_status" in data["data"] and data["data"]["is_quote_status"]:
-				log.info(f"Tweet was a reply to some other tweet, must insert the quote relation too")
+				log.info(f"Tweet was quoting some other tweet, must insert the quote relation too")
 
 				self.save_tweet(data={
 					"bot_id": data["bot_id"],

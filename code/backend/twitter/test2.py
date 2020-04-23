@@ -444,4 +444,9 @@ tweet = {
 	"lang" : "en"
 }
 
+cc.save_tweet({
+	"bot_id": 31868,
+	"data": tweet
+})
+
 cc.close()
