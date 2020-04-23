@@ -120,11 +120,14 @@ class TwitterBot(RabbitMessaging):
 		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
 		self.__send_user(self.user, messages_types.BotToServer.SAVE_USER)
 
+		logger.info(f"Sending the last 200 followers of our bot")
+		self.__get_followers(user_id=self._id)
+
 		logger.info("Reading home timeline")
 		self.__read_timeline(self.user)
 
-		# ver porque não está a dar (o twitter não está a deixar aceder)
-		# self.__direct_messages()
+	# ver porque não está a dar (o twitter não está a deixar aceder)
+	# self.__direct_messages()
 
 	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
 		"""Function to get the 20 (default) most recent tweets (including retweets) from some user
@@ -169,7 +172,9 @@ class TwitterBot(RabbitMessaging):
 				keyword = random.choice(keywords)
 				keywords.remove(keyword)
 
-				tweets = self._twitter_api.search(q=keyword, lang=language)
+				# get tweets in portuguese and from Portugal (center of Portugal and a radius equal form the center
+				# to the most distant point)
+				tweets = self._twitter_api.search(q=keyword, lang=language, geocode="39.557191,-8.1,300km")
 				total_read_time += self.__interpret_tweets(tweets)
 
 		logger.debug(f"Search completed in {total_read_time} seconds")
@@ -259,15 +264,13 @@ class TwitterBot(RabbitMessaging):
 		"""
 		logger.info(f"Following user <{user.id}>")
 
-		self.__send_user(user, messages_types.BotToServer.SAVE_USER)
-
 		if not user.following:
 			virtual_read_wait(user.description)
 
 			try:
 				user.follow()
 				logger.info(f"Followed User with id <{user.id}>")
-				self.__send_event(user._json, messages_types.BotToServer.EVENT_USER_FOLLOWED)
+				self.__send_user(user, messages_types.BotToServer.SAVE_USER)
 			except TweepError as error:
 				if error.api_code == FOLLOW_USER_ERROR_CODE:
 					logger.error(f"Unable to follow User with id <{user.id}>: {error}")
@@ -276,6 +279,31 @@ class TwitterBot(RabbitMessaging):
 
 		if not user.protected or (user.protected and user.following):
 			self.__read_timeline(user, jump_users=False, max_depth=3)
+
+	def __get_followers(self, user_id: int):
+		"""
+		Function to get follower of some user
+
+		Note: for now, it just gets the last 200 followers per user. TODO -> get all users maybe
+		:param user_id: user's id of whom we want to get the followers
+		"""
+		logger.info(f"Start to get the follower of user with id {user_id}")
+		followers = self._twitter_api.followers(id=user_id, count=200)
+
+		logger.info(f"Sending followers of user {user_id} to the control center")
+		self.__send_data({
+			'id': user_id,
+			'followers': [follower._json for follower in followers]
+		}, messages_types.BotToServer.SAVE_FOLLOWERS)
+
+	def __get_tweet_by_id(self, tweet_id: int):
+		"""
+		Function to get the full tweet object by its id, and send it to the control center
+		:param tweet_id: id of the tweet we want to send to the control center
+		"""
+
+		logger.info(f"Getting tweet of id {tweet_id}")
+		self.__send_tweet(self.__find_tweet_by_id(tweet_id), messages_types.BotToServer.SAVE_TWEET)
 
 	def __find_tweet_by_id(self, tweet_id: int) -> Union[Status, None]:
 		"""Function to find and return a tweet for a given id
@@ -328,8 +356,9 @@ class TwitterBot(RabbitMessaging):
 					logger.info(f"Tweet with id <{tweet.id}> already retweeted, no need to retweet again")
 				else:
 					logger.info(f"Retweeting Tweet with id <{tweet.id}>")
-					tweet.retweet()
-					self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_RETWEETED)
+					retweet: Status = tweet.retweet()
+					self.__send_tweet(retweet, messages_types.BotToServer.SAVE_TWEET)
+					# self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_RETWEETED)
 			except Exception as error:
 				logger.error(f"Error retweeting tweet with id <{tweet_id}>: {error}")
 
@@ -354,9 +383,8 @@ class TwitterBot(RabbitMessaging):
 		try:
 			tweet: Status = self._twitter_api.update_status(**args)
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
-
-			if reply_id:
-				self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
+			# if reply_id:
+			# 	self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
 
 			logger.debug("Tweet posted with success")
 		except TweepError as error:
@@ -378,7 +406,8 @@ class TwitterBot(RabbitMessaging):
 					logger.debug(f"Received task <{task}>")
 
 					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
-						logger.warning(f"Not processing {messages_types.ServerToBot.FIND_BY_KEYWORDS} with {task_params}")
+						logger.warning(
+							f"Not processing {messages_types.ServerToBot.FIND_BY_KEYWORDS} with {task_params}")
 					elif task_type == messages_types.ServerToBot.FOLLOW_USERS:
 						self.__follow_users(id_type=task_params['type'], data=task_params['data'])
 					elif task_type == messages_types.ServerToBot.LIKE_TWEETS:
@@ -391,12 +420,19 @@ class TwitterBot(RabbitMessaging):
 						self.__post_tweet(**task_params)
 					elif task_type == messages_types.ServerToBot.KEYWORDS:
 						self.__search_tweets(keywords=task_params)
+					elif task_type == messages_types.ServerToBot.GET_TWEET_BY_ID:
+						self.__get_tweet_by_id(tweet_id=task_params)
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
 				else:
 					logger.warning("There are not new messages on the tasks's queue")
+
+					logger.info("Update the control center with the users who follow us")
+					self.__get_followers(user_id=self._id)
+
+					logger.info("Ask control center for keywords to search new tweets")
 					self.__send_user(self._twitter_api.me(), messages_types.BotToServer.QUERY_KEYWORDS)
 					wait(2)
 			except Exception as error:
 				logger.error(f"Error on bot's loop: {error}")
-				# exit(1)
+			# exit(1)

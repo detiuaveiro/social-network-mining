@@ -23,7 +23,7 @@ class Neo4jAPI:
         log.debug("Connecting to Neo4j")
         self.driver = GraphDatabase.driver(
             "bolt://" + FULL_URL,
-            auth=(credentials.NEO4J_USERNAME, credentials.NEO4J_PASSWORD),
+            auth=(credentials.NEO4J_USERNAME, credentials.NEO4J_PASSWORD), encrypted=False
         )
 
     def close(self):

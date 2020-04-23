@@ -40,17 +40,21 @@ def test_unsuccessfully_twitter_stats_request(error_catcher, factory, db):
 
 @catch_exception
 def test_successful_twitter_bot_logs_request(error_catcher, factory, logs):
-    limit = 1
-    path = reverse('twitter_bot_logs', kwargs={'id': 1, 'limit': limit})
+    entries_per_page = 1
+    page = 1
+    path = reverse('twitter_bot_logs', kwargs={'id': 1, 'entries_per_page': entries_per_page, 'page': page})
     request = factory.get(path)
-    response = bots.twitter_bot_logs(request, id=1, limit=str(limit))
-    assert is_response_successful(response) and len(response.data['data']) == limit
+    response = bots.twitter_bot_logs(request, id=1, entries_per_page=str(entries_per_page), page=str(page))
+    assert is_response_successful(response)
 
 
 @catch_exception
 def test_unsuccessfully_twitter_bot_logs_request(error_catcher, factory, db):
-    limit = 1
-    path = reverse('twitter_bot_logs', kwargs={'id': 1, 'limit': limit})
+    entries_per_page = 1
+    page = 1
+    path = reverse('twitter_bot_logs', kwargs={'id': 1, 'entries_per_page': entries_per_page, 'page': page})
     request = factory.get(path)
-    response = bots.twitter_bot_logs(request, id=1, limit=str(limit))
-    assert is_response_empty(response)
+    response = bots.twitter_bot_logs(request, id=1, entries_per_page=str(entries_per_page), page=str(page))
+
+    assert response.status_code == 200 and len(response.data['error_messages']) == 0 and \
+        len(response.data['success_messages']) > 0 and response.data['data']['entries'] == []
