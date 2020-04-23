@@ -382,29 +382,27 @@ def twitter_bot_messages(id):
 
 # Network
 def twitter_sub_network(queries):
-    """
-    Return a subgraph defined by queries clause
-    Args:
-        queries:  list of query clauses
+	"""
+	Return a subgraph defined by queries clause
+	Args:
+		queries:  list of query clauses
 
-    Returns:
+	Returns:
 
-    """
-    try:
+	"""
+	try:
+		data = []
+		for query in queries:
+			data.append(neo4j.export_query(query))
 
-        data = {}
-        for label, identifier, query in queries:
-            if label not in data:
-                data[label] = {}
+		return True, data, "Subgrafo da rede obtido com sucesso"
+	except AttributeError as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
+		return False, None, str(e)
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
+		return False, None, "Erro ao obter um sub-grafo da rede"
 
-            data[label][identifier] = neo4j.export_query(query)
-        return True, data, "Subgrafo da rede obtido com sucesso"
-    except AttributeError as e:
-        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
-        return False, None, str(e)
-    except Exception as e:
-        logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
-        return False, None, "Erro ao obter um sub-grafo da rede"
 
 def twitter_network():
 	"""
