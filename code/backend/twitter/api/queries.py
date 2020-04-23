@@ -5,7 +5,8 @@ from api.models import *
 import api.serializers as serializers
 from api import neo4j
 import json
-from django.core.paginator import Paginator
+
+from api.queries_utils import paginator_factory
 
 logger = logging.getLogger('queries')
 
@@ -304,19 +305,19 @@ def policy_by_service(service):
         return False, None, f"Erro a obter as politicas do {service}"
 
 
-def twitter_bot_logs(id, limit):
+def twitter_bot_logs(id, entries_per_page, page):
     """
     Return all logs from a bot
     :param id: bot id
+    :param limit: number of logs
     :return: status(boolean), data, message(string)
     """
     try:
         logs = Log.objects.filter(id_bot=id)
 
-        paginator = Paginator(logs, 5)
-        logs = paginator.page(1)
+        data = paginator_factory(logs, entries_per_page, page)
 
-        data = [serializers.Log(log).data for log in (logs if not limit or limit > len(logs) else logs[:limit])]
+        data['entries'] = [serializers.Log(log).data for log in data['entries']]
 
         return True, data, f"Sucesso a obter os logs do bot com ID {id}"
 
