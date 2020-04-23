@@ -143,10 +143,10 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             data['label'] = WROTE_LABEL
-            data['from_type'] = data['user_type']
-            data['from_id'] = data['user_id']
-            data['to_type'] = TWEET_LABEL
-            data['to_id'] = data['tweet_id']
+            data['type_1'] = data['user_type']
+            data['id_1'] = data['user_id']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['tweet_id']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__create_relationship, data)
@@ -178,10 +178,10 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             data['label'] = RETWEET_LABEL
-            data['to_type'] = TWEET_LABEL
-            data['to_id'] = data['tweet_id']
-            data['from_type'] = data['user_type']
-            data['from_id'] = data['user_id']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['tweet_id']
+            data['type_1'] = data['user_type']
+            data['id_1'] = data['user_id']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__create_relationship, data)
@@ -207,10 +207,10 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             data['label'] = QUOTE_LABEL
-            data['from_type'] = TWEET_LABEL
-            data['from_id'] = data['tweet_id']
-            data['to_type'] = TWEET_LABEL
-            data['to_id'] = data['quoted_tweet']
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet_id']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['quoted_tweet']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__create_relationship, data)
@@ -233,10 +233,10 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             data['label'] = REPLY_LABEL
-            data['to_type'] = TWEET_LABEL
-            data['to_id'] = data['tweet']
-            data['from_type'] = TWEET_LABEL
-            data['from_id'] = data['reply']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['tweet']
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['reply']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__create_relationship, data)
@@ -244,22 +244,22 @@ class Neo4jAPI:
     def add_follow_relationship(self, data):
         """Method used to create a new FOLLOWS relationship
 
-        @param data: The params of the new relationship we want to create. Should include a from_type, to_type, from_id, to_id
+        @param data: The params of the new relationship we want to create. Should include a type_1, type_2, id_1, id_2
         """
         if (
-                "from_id" not in data.keys()
-                or "to_id" not in data.keys()
-                or "from_type" not in data.keys()
-                or "to_type" not in data.keys()
+                "id_1" not in data.keys()
+                or "id_2" not in data.keys()
+                or "type_1" not in data.keys()
+                or "type_2" not in data.keys()
         ):
             log.error("ERROR CREATING A RELATIONSHIP")
             log.error(
-                "Error: Specified data doesn't contain necessary fields - from_type, type_to, from_id, to_id"
+                "Error: Specified data doesn't contain necessary fields - type_1, type_to, id_1, id_2"
             )
 
             return
 
-        if data["from_type"] not in [BOT_LABEL, USER_LABEL] or data["to_type"] not in [
+        if data["type_1"] not in [BOT_LABEL, USER_LABEL] or data["type_2"] not in [
             BOT_LABEL,
             USER_LABEL,
         ]:
@@ -276,8 +276,8 @@ class Neo4jAPI:
     def __create_relationship(self, tx, data):
         log.debug(f"CREATING RELATIONSHIP <{data['label']}>")
 
-        result = tx.run(f"MATCH (u: {data['from_type']} {{ id: $id1 }}), (r: {data['to_type']} {{ id: $id2 }}) "
-                        f"MERGE (u)-[:{data['label']}]->(r)", id1=data['from_id'], id2=data['to_id'])
+        result = tx.run(f"MATCH (u: {data['type_1']} {{ id: $id1 }}), (r: {data['type_2']} {{ id: $id2 }}) "
+                        f"MERGE (u)-[:{data['label']}]->(r)", id1=data['id_1'], id2=data['id_2'])
 
         log.debug(f"Created relationship:{result}")
 
@@ -465,10 +465,10 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             data['label'] = WROTE_LABEL
-            data['to_type'] = TWEET_LABEL
-            data['to_id'] = data['tweet_id']
-            data['from_type'] = data['user_type']
-            data['from_id'] = data['user_id']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['tweet_id']
+            data['type_1'] = data['user_type']
+            data['id_1'] = data['user_id']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__delete_rel, data)
@@ -500,10 +500,10 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             data['label'] = RETWEET_LABEL
-            data['to_type'] = TWEET_LABEL
-            data['to_id'] = data['tweet_id']
-            data['from_type'] = data['user_type']
-            data['from_id'] = data['user_id']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['tweet_id']
+            data['type_1'] = data['user_type']
+            data['id_1'] = data['user_id']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__delete_rel, data)
@@ -528,10 +528,10 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             data['label'] = QUOTE_LABEL
-            data['from_type'] = TWEET_LABEL
-            data['from_id'] = data['tweet_id']
-            data['to_type'] = TWEET_LABEL
-            data['to_id'] = data['quoted_tweet']
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet_id']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['quoted_tweet']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__delete_rel, data)
@@ -554,10 +554,10 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             data['label'] = REPLY_LABEL
-            data['to_type'] = TWEET_LABEL
-            data['to_id'] = data['tweet']
-            data['from_type'] = TWEET_LABEL
-            data['from_id'] = data['reply']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['tweet']
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['reply']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__delete_rel, data)
@@ -565,22 +565,22 @@ class Neo4jAPI:
     def delete_follow_relationship(self, data):
         """Method used to delete a given bot
 
-        @param data: The params of the new relationship we want to delete. Should include a from_type, to_type, from_id, to_id
+        @param data: The params of the new relationship we want to delete. Should include a type_1, type_2, id_1, id_2
         """
         if (
-                "from_id" not in data.keys()
-                or "to_id" not in data.keys()
-                or "from_type" not in data.keys()
-                or "to_type" not in data.keys()
+                "id_1" not in data.keys()
+                or "id_2" not in data.keys()
+                or "type_1" not in data.keys()
+                or "type_2" not in data.keys()
         ):
             log.error("ERROR DELETING A RELATIONSHIP")
             log.error(
-                "Error: Specified data doesn't contain necessary fields - from_type, to_type, from_id, to_id"
+                "Error: Specified data doesn't contain necessary fields - type_1, type_2, id_1, id_2"
             )
 
             return
 
-        if data["from_type"] not in [BOT_LABEL, USER_LABEL] or data["to_type"] not in [
+        if data["type_1"] not in [BOT_LABEL, USER_LABEL] or data["type_2"] not in [
             BOT_LABEL,
             USER_LABEL,
         ]:
@@ -597,9 +597,9 @@ class Neo4jAPI:
     def __delete_rel(self, tx, data):
         log.debug("DELETING RELATIONSHIP")
 
-        query = f'MATCH (a:{str(data["from_type"])} {{ id: {str(data["from_id"])} }})-' \
+        query = f'MATCH (a:{str(data["type_1"])} {{ id: {str(data["id_1"])} }})-' \
                 f'[r:{data["label"]}]->' \
-                f'(b:{str(data["to_type"])} {{ id: {str(data["to_id"])} }}) ' \
+                f'(b:{str(data["type_2"])} {{ id: {str(data["id_2"])} }}) ' \
                 f' DELETE r'
 
         tx.run(query)
@@ -716,10 +716,10 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             data['label'] = WROTE_LABEL
-            data['to_type'] = TWEET_LABEL
-            data['to_id'] = data['tweet_id']
-            data['from_type'] = data['user_type']
-            data['from_id'] = data['user_id']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['tweet_id']
+            data['type_1'] = data['user_type']
+            data['id_1'] = data['user_id']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__check_relationship, data)
@@ -751,10 +751,10 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             data['label'] = RETWEET_LABEL
-            data['to_type'] = TWEET_LABEL
-            data['to_id'] = data['tweet_id']
-            data['from_type'] = data['user_type']
-            data['from_id'] = data['user_id']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['tweet_id']
+            data['type_1'] = data['user_type']
+            data['id_1'] = data['user_id']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__check_relationship, data)
@@ -780,10 +780,10 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             data['label'] = QUOTE_LABEL
-            data['from_type'] = TWEET_LABEL
-            data['from_id'] = data['tweet_id']
-            data['to_type'] = TWEET_LABEL
-            data['to_id'] = data['quoted_tweet']
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['tweet_id']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['quoted_tweet']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__check_relationship, data)
@@ -806,10 +806,10 @@ class Neo4jAPI:
 
         with self.driver.session() as session:
             data['label'] = REPLY_LABEL
-            data['to_type'] = TWEET_LABEL
-            data['to_id'] = data['tweet']
-            data['from_type'] = TWEET_LABEL
-            data['from_id'] = data['reply']
+            data['type_2'] = TWEET_LABEL
+            data['id_2'] = data['tweet']
+            data['type_1'] = TWEET_LABEL
+            data['id_1'] = data['reply']
 
             # Caller for transactional unit of work
             return session.write_transaction(self.__check_relationship, data)
@@ -818,22 +818,22 @@ class Neo4jAPI:
         """Method used to check whether a relationship exists between two IDs
 
         @param data: The params of the entities involved in the relationshi+ we want to look for. Should include
-            a from_type, to_type, from_id, to_id
+            a type_1, type_2, id_1, id_2
         """
         if (
-                "from_id" not in data.keys()
-                or "to_id" not in data.keys()
-                or "from_type" not in data.keys()
-                or "to_type" not in data.keys()
+                "id_1" not in data.keys()
+                or "id_2" not in data.keys()
+                or "type_1" not in data.keys()
+                or "type_2" not in data.keys()
         ):
             log.error("ERROR CHECKING RELATIONSHIP")
             log.debug(
-                "Error: Specified data doesn't contain necessary fields - from_type, to_type, from_id, to_id"
+                "Error: Specified data doesn't contain necessary fields - type_1, type_2, id_1, id_2"
             )
 
             return
 
-        if data["from_type"] not in [BOT_LABEL, USER_LABEL] or data["to_type"] not in [
+        if data["type_1"] not in [BOT_LABEL, USER_LABEL] or data["type_2"] not in [
             BOT_LABEL,
             USER_LABEL,
         ]:
@@ -850,8 +850,8 @@ class Neo4jAPI:
     def __check_relationship(self, tx, data):
         log.debug("VERIFYING RELATIONSHIP EXISTANCE")
 
-        query = f'MATCH (a: {data["from_type"]} {{id: {str(data["from_id"])} }})-[r:{data["label"]}]' \
-                f'->(b:{data["to_type"]} {{id: {str(data["to_id"])} }}) RETURN a, b'
+        query = f'MATCH (a: {data["type_1"]} {{id: {str(data["id_1"])} }})-[r:{data["label"]}]' \
+                f'->(b:{data["type_2"]} {{id: {str(data["id_2"])} }}) RETURN a, b'
 
         result = tx.run(query)
 
@@ -1000,7 +1000,7 @@ if __name__ == "__main__":
 
     # neo.add_bot({"id":0,"name":"Jonas","username":"Jonas_Pistolas"})
     # neo.add_user({"id":0,"name":"DS","username":"FenixD.S"})
-    # neo.add_follow_relationship({"from_id": 0, "to_id": 0, "from_type": BOT_LABEL, "to_type": USER_LABEL})
+    # neo.add_follow_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
 
     # print(neo.check_bot_exists(0))
     # print(neo.check_user_exists(0))
@@ -1012,7 +1012,7 @@ if __name__ == "__main__":
 
     # print(neo.search_bots({"name":"bot lindo"}))
     # print(neo.search_users({"id":0}))
-    # print(neo.check_relationship_exists({"id_1": 0, "to_id": 0, "type_1": BOT_LABEL, "to_type": USER_LABEL}))
+    # print(neo.check_relationship_exists({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL}))
 
     # print(neo.get_following({"type": BOT_LABEL, "id": 0}))
     # print(neo.get_followers({"type": USER_LABEL, "id": 0}))
@@ -1032,5 +1032,5 @@ if __name__ == "__main__":
     # neo.export_network("json")
 
     # neo.delete_user(0)
-    # neo.delete_follow_relationship({"id_1": 0, "to_id": 0, "type_1": BOT_LABEL, "to_type": USER_LABEL})
+    # neo.delete_follow_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
     neo.close()
