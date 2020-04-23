@@ -98,10 +98,10 @@ class Control_Center(Rabbitmq):
 		type2 = self.__user_type(user2_id)
 
 		relationship = {
-			"from_id": user1_id,
-			"to_id": user2_id,
-			"from_type": type1,
-			"to_type": type2
+			"id_1": user1_id,
+			"id_2": user2_id,
+			"type_1": type1,
+			"type_2": type2
 		}
 
 		if self.neo4j_client.check_follow_exists(relationship):
