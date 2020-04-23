@@ -4,12 +4,9 @@
 import logging
 from neo4j import GraphDatabase
 import credentials
-<<<<<<< HEAD
 from neo4j_labels import BOT_LABEL, USER_LABEL, TWEET_LABEL, WROTE_LABEL,\
     RETWEET_LABEL, REPLY_LABEL, FOLLOW_LABEL, QUOTE_LABEL
-=======
 import json
->>>>>>> f0a4702049bcf0a93998f6387869d9b087ad7dca
 
 log = logging.getLogger("Neo4j")
 log.setLevel(logging.DEBUG)
