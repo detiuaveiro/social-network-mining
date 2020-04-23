@@ -5,6 +5,7 @@ from api.models import *
 import api.serializers as serializers
 from api import neo4j
 import json
+from django.core.paginator import Paginator
 
 logger = logging.getLogger('queries')
 
@@ -310,7 +311,12 @@ def twitter_bot_logs(id, limit):
     """
     try:
         logs = Log.objects.filter(id_bot=id)
+
+        paginator = Paginator(logs, 5)
+        logs = paginator.page(1)
+
         data = [serializers.Log(log).data for log in (logs if not limit or limit > len(logs) else logs[:limit])]
+
         return True, data, f"Sucesso a obter os logs do bot com ID {id}"
 
     except Exception as e:
