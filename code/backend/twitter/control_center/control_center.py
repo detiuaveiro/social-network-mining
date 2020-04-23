@@ -93,8 +93,8 @@ class Control_Center(Rabbitmq):
 				Calls postgres_stats to add new log with the action details
 		"""
 		log.debug(f"User {user1_id} is following {user2_id}")
-		type1 = "Bot" if self.__user_is_bot(user1_id) else "User"
-		type2 = "Bot" if self.__user_is_bot(user2_id) else "User"
+		type1 = self.__user_is_bot(user1_id)
+		type2 = self.__user_is_bot(user2_id)
 
 		relationship = {
 			"id_1": user1_id,
@@ -380,7 +380,7 @@ class Control_Center(Rabbitmq):
 
 		user, bot_id = data["data"], data["bot_id"]
 
-		exists = self.__user_is_bot(bot_id)
+		exists = self.neo4j_client.check_bot_exists(bot_id)
 		if not exists:
 			log.info(f"Bot {bot_id} is new to the party")
 
@@ -398,7 +398,7 @@ class Control_Center(Rabbitmq):
 				"data": follow_list,
 			})
 
-		is_bot = self.__user_is_bot(user["id"])
+		is_bot = self.neo4j_client.check_bot_exists(user["id"])
 		if is_bot:
 			log.info("It's a bot that's already been registered in the database")
 			# Update the info of the bot
@@ -544,7 +544,7 @@ class Control_Center(Rabbitmq):
 		followers = data['data']['followers']
 
 		log.info(f"Starting to create the Follow Relationship for user {user_id}")
-		is_bot = self.__user_is_bot(user_id)
+		is_bot = self.neo4j_client.check_bot_exists(user_id)
 
 		for follower in followers:
 			if is_bot:
@@ -591,8 +591,14 @@ class Control_Center(Rabbitmq):
 			response
 		)
 
-	def __user_is_bot(self, user_id):
-		return self.neo4j_client.check_bot_exists(user_id)
+	def __user_is_bot(self, user_id: int) -> str:
+		if self.neo4j_client.check_bot_exists(user_id):
+			return "Bot"
+		elif self.neo4j_client.check_user_exists(user_id):
+			return "User"
+
+		log.warning(f"User with id <{user_id}> isn't neither a bot or a user")
+		return ""
 
 	def send(self, bot, message_type, params):
 		"""
