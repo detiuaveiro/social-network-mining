@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import ReactDOM from "react-dom";
-import Graph from "react-graph-vis";
 
 import baseURL from '../../variables/baseURL'
 
@@ -36,7 +34,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import ReactLoading from "react-loading";
 
-
+import { Graph } from "react-d3-graph";
 
 class Network extends Component {
   constructor(props) {
@@ -44,61 +42,104 @@ class Network extends Component {
   }
 
   state = {
-    graph: {
-      nodes: [],
-      edges: []
+    error: false,
+    loading: false,
+    info: false,
+    infoNode: null,
+
+    search: {
+      specifiedBots: [],
+      specifiedUsers: [],
+      hideBots: false,
+      hideUsers: false,
+      hideRels: false
     },
-    options: {
-      autoResize: true,
-      layout: {
-        hierarchical: false
-      },
-      edges: {
-        color: "#000000",
-        font: {
-          size: 13,
-          color: '#999'
-        },
-      },
-      nodes: {
-        size: 30,
-        shape: 'dot',
 
-        font: {
-          size: 20,
-          color: '#000'
-        },
-      },
-      physics: {
-        enabled: true,
-        barnesHut: {
-          gravitationalConstant: -8000,
-          centralGravity: 0.6,
-        }
-      },
+    bots: [],
+    users: [],
 
-      height: "700px",
+    modalType: null,
+    modal: false,
+
+    data: {
+      nodes: [{ id: "oof" }],
+      links: [],
+      focusedNodeId: null
     },
-    events: {
-      doubleClick: function (event) {
-        var { nodes, edges } = event;
-        console.log("Selected nodes:");
-        console.log(nodes);
-        console.log("Selected edges:");
-        console.log(edges);
-      },
-      click: function (event) {
-        var { nodes, edges } = event;
 
-        this.focus(nodes[0], {
-          scale: 1.3,
-          animation: {
-            duration: 100,
-            easingFunction: 'linear'
-          }})
-      }
+    config: {
+      "automaticRearrangeAfterDropNode": false,
+      "collapsible": false,
+      "directed": true,
+      "focusAnimationDuration": 1,
+      "focusZoom": 6,
+      "height": 400,
+      "highlightDegree": 1,
+      "highlightOpacity": 0.3,
+      "linkHighlightBehavior": false,
+      "maxZoom": 8,
+      "minZoom": 0.1,
+      "nodeHighlightBehavior": true,
+      "panAndZoom": false,
+      "staticGraph": false,
+      "staticGraphWithDragAndDrop": false,
+      "d3": {
+        "alphaTarget": 0.05,
+        "gravity": -25,
+        "linkLength": 100,
+        "linkStrength": 1,
+        "disableLinkForce": false
+      },
+      "node": {
+        "color": "#1da1f2",
+        "fontColor": "black",
+        "fontSize": 8,
+        "fontWeight": "bold",
+        "highlightColor": "SAME",
+        "highlightFontSize": 8,
+        "highlightFontWeight": "normal",
+        "highlightStrokeColor": "SAME",
+        "highlightStrokeWidth": "SAME",
+        "labelProperty": "name",
+        "mouseCursor": "pointer",
+        "opacity": 1,
+        "renderLabel": true,
+        "size": 200,
+        "strokeColor": "none",
+        "strokeWidth": 1.5,
+        "svg": "",
+        "symbolType": "circle"
+      },
+      "link": {
+        "color": "#d3d3d3",
+        "fontColor": "grey",
+        "fontSize": 8,
+        "fontWeight": "bold",
+        "highlightColor": "#1da1f2",
+        "highlightFontSize": 8,
+        "highlightFontWeight": "normal",
+        "labelProperty": "label",
+        "mouseCursor": "pointer",
+        "opacity": 1,
+        "renderLabel": true,
+        "semanticStrokeWidth": false,
+        "strokeWidth": 1.5,
+        "markerHeight": 6,
+        "markerWidth": 6
+      },
+
+      "height": 700,
     }
-  }
+  };
+
+  decorateGraphNodesWithInitialPositioning = nodes => {
+    return nodes.map(n =>
+      Object.assign({}, n, {
+        x: n.x || Math.floor(Math.random() * 500),
+        y: n.y || Math.floor(Math.random() * 500),
+      })
+    );
+  };
 
   getBaseNetwork() {
     fetch(baseURL + "twitter/network", {
@@ -125,7 +166,6 @@ class Network extends Component {
             tempItem['name'] = item.properties.name
             tempItem['real_id'] = item.properties.id
             tempItem['username'] = "@" + item.properties.username
-            tempItem['label'] = item.properties.name
             tempItem['type'] = item.labels[0]
 
             if (tempItem['type'] == "User") {
@@ -137,8 +177,8 @@ class Network extends Component {
           } else {
             var tempItem = {}
             tempItem['id'] = item.id
-            tempItem['from'] = item.start.id
-            tempItem['to'] = item.end.id
+            tempItem['source'] = item.start.id
+            tempItem['target'] = item.end.id
             tempItem['label'] = item.label
 
             tempLinks.push(tempItem)
@@ -146,9 +186,10 @@ class Network extends Component {
         })
 
         this.setState({
-          graph: {
+          data: {
             nodes: tempNodes,
-            edges: tempLinks,
+            links: tempLinks,
+            focusedNodeId: this.state.data.focusedNodeId
           }
         })
 
@@ -182,12 +223,39 @@ class Network extends Component {
 
 
   // Graph methods //////////////////////////////////////////////////////////
+  onDoubleClickNode = id => {
+    this.setState({
+      data: {
+        nodes: this.state.data.nodes,
+        links: this.state.data.links,
+        focusedNodeId: id
+      }
+    });
+  };
 
+  onClickNode = id => {
+    this.setState({
+      info: true,
+      infoNode: id
+    });
+  };
   /////////////////////////////////////////////////////////////////////
 
 
   // Methods //////////////////////////////////////////////////////////
+  handleOpenUsers() {
+    this.setState({
+      modalType: "USERS",
+      modal: true
+    });
+  }
 
+  handleClose() {
+    this.setState({
+      modalType: null,
+      modal: false
+    });
+  }
   /////////////////////////////////////////////////////////////////////
 
   render() {
@@ -206,10 +274,60 @@ class Network extends Component {
         </Card>
     }
 
+    var modal
 
+    if (this.state.modalType == "USERS") {
+      modal = <Dialog class="fade-in"
+        open={this.state.modal}
+        onClose={() => this.handleClose()}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"👤 Specify user root nodes"}
+        </DialogTitle>
+        <DialogContent style={{ minWidth: "600px" }}>
+          <Container fluid>
+            <Row>
+              <Col xs="12" md="12">
+                <Table style={{ paddingTop: "0px" }}
+                  tableHeaderColor="primary"
+                  tableHead={["User name", "Twitter tag", "Specified depth", ""]}
+                  tableData={[["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"]]}
+                />
+              </Col>
+            </Row>
+
+            <DialogContentText>
+              <span id="error" style={{ display: "None", color: "#f86c6b" }}>Sorry, the tweet can't be empty!</span>
+            </DialogContentText>
+          </Container>
+
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => this.handleClose()} color="info">
+            Cancel
+              </Button>
+          <Button
+            onClick={() => this.handleTweet()}
+            color="success"
+            autoFocus
+          >
+            Confirm
+              </Button>
+        </DialogActions>
+      </Dialog>
+    }
     var graph
     if (this.loading) {
-      graph = <Graph graph={this.state.graph} options={this.state.options} events={this.state.events} id="graph" />
+      graph =
+        <Graph
+          id="graph-id"
+          data={this.state.data}
+          config={this.state.config}
+          onClickNode={this.onClickNode}
+          onDoubleClickNode={this.onDoubleClickNode}
+        />
     } else {
       graph = <ReactLoading type={"cubes"} color="#1da1f2" />
     }
@@ -344,6 +462,7 @@ class Network extends Component {
             </Col>
           </Row>
         </Container>
+        {modal}
       </div>
     );
   }
