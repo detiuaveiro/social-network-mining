@@ -6,14 +6,14 @@ from api.views.utils import create_response
 
 
 @api_view(["GET"])
-def twitter_users(request):
+def twitter_users(request, entries_per_page=None, page=None):
 	"""Returns all the users saved on the mongo database
 	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_users()
+	success, data, message = queries.twitter_users(entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
@@ -25,14 +25,14 @@ def twitter_users(request):
 
 
 @api_view(["GET"])
-def twitter_users_stats(request):
+def twitter_users_stats(request, entries_per_page=None, page=None):
 	"""Get all users status saved on postgres
 """
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_users_stats()
+	success, data, message = queries.twitter_users_stats(entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
@@ -124,7 +124,7 @@ def twitter_user_following(request, id):
 
 
 @api_view(["GET"])
-def twitter_user_stats(request, id):
+def twitter_user_stats(request, id, entries_per_page=None, page=None):
 	"""Function to get all stats of a requested user
 :param id: user's id whom we want the stats
 """
@@ -132,7 +132,7 @@ def twitter_user_stats(request, id):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_user_stats(int(id))
+	success, data, message = queries.twitter_user_stats(int(id), entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
