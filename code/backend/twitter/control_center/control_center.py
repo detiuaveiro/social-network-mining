@@ -43,7 +43,7 @@ class Control_Center(Rabbitmq):
 
 	def action(self, message):
 		message_type = message['type']
-		log.info(f"Received new action: {message['bot_id']} wants to do {message_type.name}")
+		log.info(f"Received new action: {message['bot_id']} wants to do {message_type}")
 
 		log.debug(f"Received message of type {message_type}")
 
@@ -81,23 +81,21 @@ class Control_Center(Rabbitmq):
 			self.error(message)
 
 		elif message_type == BotToServer.SAVE_FOLLOWERS:
-			self.find_followers(message)
+			self.__add_followers(message)
 
 		elif message_type == BotToServer.QUERY_KEYWORDS:
 			self.send_keywords(message)
 
 	# Need DB API now
-	def __follow_user(self, user1_id, user2_id, user1_is_bot=False):
+	def __follow_user(self, user1_id, user2_id):
 		"""
 		Action to follow user:
 				Calls neo4j to add new relation between user (bot or normal user) and user
 				Calls postgres_stats to add new log with the action details
-
-		@param data: dict containing bot and the user he's following
 		"""
 		log.debug(f"User {user1_id} is following {user2_id}")
-		type1 = "Bot" if self.neo4j_client.check_bot_exists(user1_id) else "User"
-		type2 = "Bot" if self.neo4j_client.check_bot_exists(user2_id) else "User"
+		type1 = self.__user_is_bot(user1_id)
+		type2 = self.__user_is_bot(user2_id)
 
 		relationship = {
 			"id_1": user1_id,
@@ -111,13 +109,20 @@ class Control_Center(Rabbitmq):
 			return
 		self.neo4j_client.add_follow_relationship(relationship)
 
-		if user1_is_bot:
+		if type1 == "Bot":
 			self.postgres_client.insert_log({
 				"bot_id": user1_id,
 				"action": log_actions.FOLLOW,
-				"target_id": user2_id
+				"target_id": user1_id
 			})
 			log.info(f"Bot {user1_id} successfully followed the user {user2_id}")
+		if type2 == "Bot":
+			self.postgres_client.insert_log({
+				"bot_id": user2_id,
+				"action": log_actions.FOLLOW,
+				"target_id": user2_id
+			})
+			log.info(f"Bot {user2_id} successfully followed the user {user1_id}")
 
 		log.info("Saved follow relation with success")
 
@@ -447,7 +452,7 @@ class Control_Center(Rabbitmq):
 			})
 
 		if 'following' in user:
-			self.__follow_user(bot_id, user['id'], user1_is_bot=True)
+			self.__follow_user(bot_id, user['id'])
 
 	def __save_blank_tweet_if_exists(self, data):
 		tweet_exists = self.mongo_client.search(
@@ -597,11 +602,11 @@ class Control_Center(Rabbitmq):
 		"""
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Error occured for {data['data']}"
+			"action": f"ERROR: {data['data']}"
 		})
 		log.error(f"Error in trying to do action <{data['data']}>")
 
-	def find_followers(self, data):
+	def __add_followers(self, data):
 		"""
 		Function that writes the follow relationship on the Neo4j API database;
 		The function will also request for the bot who sent the message to follow the users who follow
@@ -610,45 +615,31 @@ class Control_Center(Rabbitmq):
 		@param data: dict with the id of a bot and a second dictionary with the bot's followers' ID as keys that map
 		to his followers
 		"""
-		log.info(f"Starting to create the Follow Relationship for bot {data['bot_id']}")
-		for follower in data["data"]:
-			self.postgres_client.insert_log({
-				"bot_id": data['bot_id'],
-				"action": f"Save list of followers for {follower}"
+		bot_id = data['bot_id']
+		user_id = data['data']['id']
+		followers = data['data']['followers']
+
+		log.info(f"Starting to create the Follow Relationship for user {user_id}")
+		is_bot = self.neo4j_client.check_bot_exists(user_id)
+
+		for follower in followers:
+			if is_bot:
+				self.postgres_client.insert_log({
+					"bot_id": bot_id,
+					"action": "FOLLOWERS",
+					"target_id": follower['id']
+				})
+				log.info(f"Save list of followers for {follower['id']}")
+
+			# add or update user in databases and its relation with our bot
+			self.save_user({
+				'bot_id': bot_id,
+				'data': follower
 			})
-			log.info(f"Save list of followers for {follower}")
 
-			# Verify if the follower is on the database as a user
-			is_user = self.neo4j_client.check_user_exists(follower)
-			is_bot = self.neo4j_client.check_bot_exists(follower)
-			if not (is_user or is_bot):
-				# The follower isn't registered in the database, so that must be handled
-				self.save_user({
-					"bot_id": data["bot_id"],
-					"data": {
-						"id": int(follower),
-						"name": "",
-						"screen_name": "",
-						"followers_count": 0,
-						"friends_count": 0
-					}
-				})
+			self.__follow_user(follower['id'], user_id)
 
-			for follower_follower in data["data"][follower]:
-				follower_follower_is_user = self.neo4j_client.check_user_exists(
-					follower_follower)
-				if follower_follower_is_user:
-					self.request_follow_user({
-						"bot_id": data['bot_id'],
-						"data": {"id": follower_follower}
-					})
-
-				self.follow_user({
-					"bot_id": int(follower),
-					"data": {
-						"id": follower_follower
-					}
-				})
+			# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
 
 	def send_keywords(self, data):
 		log.info("Starting to sending the keywords to the bot")
@@ -675,6 +666,15 @@ class Control_Center(Rabbitmq):
 			ServerToBot.KEYWORDS,
 			response
 		)
+
+	def __user_is_bot(self, user_id: int) -> str:
+		if self.neo4j_client.check_bot_exists(user_id):
+			return "Bot"
+		elif self.neo4j_client.check_user_exists(user_id):
+			return "User"
+
+		log.warning(f"User with id <{user_id}> isn't neither a bot or a user")
+		return ""
 
 	def send(self, bot, message_type, params):
 		"""
