@@ -249,7 +249,7 @@ class Neo4jAPI:
                 "from_id" not in data.keys()
                 or "to_id" not in data.keys()
                 or "from_type" not in data.keys()
-                or "type_to" not in data.keys()
+                or "to_type" not in data.keys()
         ):
             log.error("ERROR CREATING A RELATIONSHIP")
             log.error(
@@ -258,7 +258,7 @@ class Neo4jAPI:
 
             return
 
-        if data["from_type"] not in [BOT_LABEL, USER_LABEL] or data["type_to"] not in [
+        if data["from_type"] not in [BOT_LABEL, USER_LABEL] or data["to_type"] not in [
             BOT_LABEL,
             USER_LABEL,
         ]:
