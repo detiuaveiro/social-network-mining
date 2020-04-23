@@ -120,6 +120,9 @@ class TwitterBot(RabbitMessaging):
 		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
 		self.__send_user(self.user, messages_types.BotToServer.SAVE_USER)
 
+		logger.info(f"Sending the last 200 followers of our bot")
+		self.__get_followers(user_id=self._id)
+
 		logger.info("Reading home timeline")
 		self.__read_timeline(self.user)
 
@@ -276,6 +279,19 @@ class TwitterBot(RabbitMessaging):
 
 		if not user.protected or (user.protected and user.following):
 			self.__read_timeline(user, jump_users=False, max_depth=3)
+
+	def __get_followers(self, user_id: int):
+		"""
+		Function to get follower of some user
+
+		Note: for now, it just gets the last 200 followers per user. TODO -> get all users maybe
+		:param user_id: user's id of whom we want to get the followers
+		"""
+		logger.info(f"Start to get the follower of user with id {user_id}")
+		followers = self._twitter_api.followers(id=user_id, count=200)
+
+		logger.info(f"Sending followers of user {user_id} to the control center")
+		self.__send_data({'id': user_id, 'followers': followers}, messages_types.BotToServer.SAVE_FOLLOWERS)
 
 	def __get_tweet_by_id(self, tweet_id: int):
 		"""
