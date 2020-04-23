@@ -563,6 +563,8 @@ class Control_Center(Rabbitmq):
 
 			self.__follow_user(follower['id'], user_id)
 
+			# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
+
 	def send_keywords(self, data):
 		log.info("Starting to sending the keywords to the bot")
 
