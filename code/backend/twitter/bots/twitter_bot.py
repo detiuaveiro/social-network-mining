@@ -291,7 +291,10 @@ class TwitterBot(RabbitMessaging):
 		followers = self._twitter_api.followers(id=user_id, count=200)
 
 		logger.info(f"Sending followers of user {user_id} to the control center")
-		self.__send_data({'id': user_id, 'followers': followers}, messages_types.BotToServer.SAVE_FOLLOWERS)
+		self.__send_data({
+			'id': user_id,
+			'followers': [follower._json for follower in followers]
+		}, messages_types.BotToServer.SAVE_FOLLOWERS)
 
 	def __get_tweet_by_id(self, tweet_id: int):
 		"""
@@ -405,8 +408,8 @@ class TwitterBot(RabbitMessaging):
 					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
 						logger.warning(
 							f"Not processing {messages_types.ServerToBot.FIND_BY_KEYWORDS} with {task_params}")
-					elif task_type == messages_types.ServerToBot.FOLLOW_USERS:
-						self.__follow_users(id_type=task_params['type'], data=task_params['data'])
+					# elif task_type == messages_types.ServerToBot.FOLLOW_USERS:
+					# 	self.__follow_users(id_type=task_params['type'], data=task_params['data'])
 					elif task_type == messages_types.ServerToBot.LIKE_TWEETS:
 						self.__like_tweet(task_params)
 					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
