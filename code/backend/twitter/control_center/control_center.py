@@ -526,7 +526,7 @@ class Control_Center(Rabbitmq):
 		"""
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"Error occured for {data['data']}"
+			"action": f"ERROR: {data['data']}"
 		})
 		log.error(f"Error in trying to do action <{data['data']}>")
 
