@@ -96,67 +96,6 @@ class BotProfile extends Component {
         modalType: null
     };
 
-    getBotPolicies() {
-        fetch(baseURL + "policies/bots/" + this.props.data.id + "/", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        }).then(response => {
-            if (response.ok) return response.json();
-            else {
-                throw new Error(response.status);
-            }
-        }).then(data => {
-            if (data != null && data != {}) {
-                data = data.data
-
-                var tempPolicies = []
-
-                data.forEach(policy => {
-                    var tempInfo = []
-                    tempInfo.push("" + policy.name);
-                    tempInfo.push("" + policy.filter);
-                    tempInfo.push("" + policy.tags);
-
-                    tempInfo.push("Active"); // Add wether its active or not
-
-
-                    tempInfo.push(
-                        <Button block outline color="primary"
-                            onClick={() => this.handleOpenPolicy(policy)}
-                        >
-                            <i class="fas fa-ellipsis-h"></i>
-                            <strong style={{ marginLeft: "3px" }}>More</strong>
-                        </Button>
-                    )
-
-                    tempPolicies.push(tempInfo);
-                })
-
-                tempPolicies.sort((policy1, policy2) =>
-                    policy1.name > policy2.name ? 1 : -1
-                );
-
-                this.setState({
-                    error: this.state.error,
-                    goBack: this.state.goBack,
-                    policies: tempPolicies,
-                    activities: this.state.activities,
-                    loading: true
-                })
-            }
-        }).catch(error => {
-            console.log("error: " + error);
-            this.setState({
-                error: true,
-                goBack: true,
-                policies: this.state.policies,
-                activities: this.state.activities,
-                loading: this.state.loading
-            })
-        });
-    }
 
     componentDidMount() {
         this.setState({
@@ -170,7 +109,6 @@ class BotProfile extends Component {
         // Get Activities
 
         // Get Policies
-        this.getBotPolicies()
 
         this.setState({
             error: this.state.error,
@@ -348,9 +286,7 @@ class BotProfile extends Component {
                     </Dialog>
                 }
             }
-
-
-
+            
             return (
                 <div className="animated fadeIn">
                     <Container fluid>
@@ -377,7 +313,7 @@ class BotProfile extends Component {
                                 <Card profile>
                                     <CardAvatar profile>
                                         <a onClick={e => e.preventDefault()}>
-                                            <img src={this.props.bot.profile_image_url_https} alt="Profile Image" style={{ minWidth: "100px" }} />
+                                            <img src={this.props.bot.profile_image_url_https.replace("normal","400x400")} alt="Profile Image" style={{ minWidth: "100px" }} />
                                         </a>
                                     </CardAvatar>
                                     <CardBody profile>
