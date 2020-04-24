@@ -168,8 +168,8 @@ class PDP:
 		"""
 		log.info(f"Creating users for the bot to start following")
 		num_users = random.randint(2, 10)
-		with open("first_time_users.csv", "r") as f:
-			users = f.read().rstrip().split("\n")
+		with open("first_time_users.json", "r") as f:
+			users = json.load(f)
 
 		bot_list = []
 		while len(bot_list) < num_users:
