@@ -37,7 +37,7 @@ class TwitterBot(RabbitMessaging):
 		return f"<TwitterBot id={self._id}, api={self._twitter_api}>"
 
 	def __send_error_suspended_log(self, error: TweepError):
-		logger.error(f"TweepyError with code=<{error.api_code}> and reason=<{error.reason}>: {error}")
+		logger.exception(f"TweepyError <{error}> with code=<{error.api_code}> and reason=<{error.reason}>: ")
 
 		if error.api_code in ACCOUNT_SUSPENDED_ERROR_CODES:
 			data = {
@@ -254,7 +254,8 @@ class TwitterBot(RabbitMessaging):
 					logger.info(f"Found user: {user.id}")
 					self.__follow_user(user)
 			except TweepError as error:
-				logger.error(f"Unable to find user identified by [{id_type}] with <{user_id}>  {error}")
+				logger.exception(f"Unable to find user identified by [{id_type}] with <{user_id}> because of error "
+				                 f"<{error}>:")
 
 	def __follow_user(self, user: User):
 		"""Function to follow a specific user. It sends the user to the server and then, if the bot doesn't follow the
@@ -273,9 +274,9 @@ class TwitterBot(RabbitMessaging):
 				self.__send_user(user, messages_types.BotToServer.SAVE_USER)
 			except TweepError as error:
 				if error.api_code == FOLLOW_USER_ERROR_CODE:
-					logger.error(f"Unable to follow User with id <{user.id}>: {error}")
+					logger.exception(f"Unable to follow User with id <{user.id}> because of error <{error}>: ")
 				else:
-					logger.error(f"Error with api_code={error.api_code}: {error}")
+					logger.exception(f"Error <{error}> with api_code={error.api_code}: ")
 
 		if not user.protected or (user.protected and user.following):
 			self.__read_timeline(user, jump_users=False, max_depth=3)
@@ -313,7 +314,7 @@ class TwitterBot(RabbitMessaging):
 		try:
 			return self._twitter_api.get_status(tweet_id)
 		except TweepError as error:
-			logger.error(f"Error finding tweet with id <{tweet_id}>: {error}")
+			logger.exception(f"Error <{error}> finding tweet with id <{tweet_id}>: ")
 			return None
 
 	def __like_tweet(self, tweet_id: int):
@@ -336,7 +337,7 @@ class TwitterBot(RabbitMessaging):
 					tweet.favorite()
 					self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_LIKED)
 			except Exception as error:
-				logger.error(f"Error liking tweet with id <{tweet_id}>: {error}")
+				logger.exception(f"Error <{error}> liking tweet with id <{tweet_id}>: ")
 
 	def __retweet_tweet(self, tweet_id: id):
 		"""Function to retweet a specific tweet, givem the id of that tweet
@@ -360,7 +361,7 @@ class TwitterBot(RabbitMessaging):
 					self.__send_tweet(retweet, messages_types.BotToServer.SAVE_TWEET)
 					# self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_RETWEETED)
 			except Exception as error:
-				logger.error(f"Error retweeting tweet with id <{tweet_id}>: {error}")
+				logger.exception(f"Error <{error}> retweeting tweet with id <{tweet_id}>: ")
 
 	def __post_tweet(self, text: str, reply_id: int = None):
 		"""Function to post a new tweet. This can or cannot be a reply to other tweet
@@ -388,7 +389,7 @@ class TwitterBot(RabbitMessaging):
 
 			logger.debug("Tweet posted with success")
 		except TweepError as error:
-			logger.error(f"Error posting a new tweet: {error}")
+			logger.exception(f"Error {error} posting a new tweet: ")
 
 	def run(self):
 		"""Bot's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
@@ -435,5 +436,5 @@ class TwitterBot(RabbitMessaging):
 					self.__send_user(self._twitter_api.me(), messages_types.BotToServer.QUERY_KEYWORDS)
 					wait(2)
 			except Exception as error:
-				logger.error(f"Error on bot's loop: {error}")
+				logger.exception(f"Error {error} on bot's loop: ")
 			# exit(1)
