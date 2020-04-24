@@ -48,9 +48,7 @@ class MongoAPI:
         """
         if collection not in ["users", "tweets", "messages"]:
             log.error("ERROR GETTING DOCUMENT COUNT")
-            log.error(
-                "Error: Unknown Collection. Please use users, tweets or messages"
-            )
+            log.error("Error: Unknown Collection. Please use users, tweets or messages")
         else:
             try:
                 if collection == "users":
@@ -59,9 +57,8 @@ class MongoAPI:
                     return self.tweets.count_documents(data)
                 else:
                     return self.messages.count_documents(data)
-            except Exception as e:
-                log.error("ERROR GETTING DOCUMENT COUNT")
-                log.error("Error: " + str(e))
+            except Exception as error:
+                log.exception(f"ERROR <{error}> GETTING DOCUMENT COUNT for data <{data}>: ")
 
     def insert_users(self, data):
         """Inserts a new single document into our Users Collection
@@ -70,11 +67,9 @@ class MongoAPI:
         """
         try:
             self.users.insert_one(data)
-            log.debug("INSERT SUCCESFUL")
-        except Exception as e:
-            log.error("ERROR INSERTING DOCUMENT")
-            log.error("Error: " + str(e))
-            log.error(data)
+            log.debug("INSERT SUCCESSFUL")
+        except Exception as error:
+            log.exception(f"ERROR <{error}> INSERTING DOCUMENT <{data}>: ")
 
     def insert_tweets(self, data):
         """Inserts a new single document into our Tweets Collection
@@ -84,10 +79,8 @@ class MongoAPI:
         try:
             self.tweets.insert_one(data)
             log.debug("INSERT SUCCESFUL")
-        except Exception as e:
-            log.error("ERROR INSERTING DOCUMENT")
-            log.error("Error: " + str(e))
-            log.error(data)
+        except Exception as error:
+            log.exception(f"ERROR <{error}> INSERTING DOCUMENT <{data}>:")
 
     def insert_messages(self, data):
         """Inserts a new single document into our Messages Collection
@@ -96,10 +89,9 @@ class MongoAPI:
         """
         try:
             self.messages.insert_one(data)
-            log.debug("INSERT SUCCESFUL")
-        except Exception as e:
-            log.error("ERROR INSERTING DOCUMENT")
-            log.error("Error: " + str(e))
+            log.debug("INSERT SUCCESSFUL")
+        except Exception as error:
+            log.exception(f"ERROR <{error}> INSERTING DOCUMENT <{data}>: ")
 
     def update_users(self, match, new_data, all=True):
         """Updates one or many documents on Users Collection
@@ -114,9 +106,8 @@ class MongoAPI:
             else:
                 self.users.update_one(match, {"$set": new_data})
             log.debug("UPDATE SUCCESSFUL")
-        except Exception as e:
-            log.error("ERROR UPDATING DOCUMENT")
-            log.error("Error: " + str(e))
+        except Exception as error:
+            log.exception(f"ERROR <{error}> UPDATING DOCUMENT with match <{match}> and data <{new_data}>: ")
 
     def update_tweets(self, match, new_data, all=True):
         """Updates one or many documents on Tweets Collection
@@ -131,9 +122,8 @@ class MongoAPI:
             else:
                 self.tweets.update_one(match, {"$set": new_data})
             log.debug("UPDATE SUCCESSFUL")
-        except Exception as e:
-            log.error("ERROR UPDATING DOCUMENT")
-            log.error("Error: " + str(e))
+        except Exception as error:
+            log.exception(f"ERROR <{error}> UPDATING DOCUMENT with match <{match}> <{new_data}>: ")
 
     def update_messages(self, match, new_data, all=True):
         """Updates one or many documents on Messages Collection
@@ -148,9 +138,8 @@ class MongoAPI:
             else:
                 self.messages.update_one(match, {"$set": new_data})
             log.debug("UPDATE SUCCESSFUL")
-        except Exception as e:
-            log.error("ERROR UPDATING DOCUMENT")
-            log.error("Error: " + str(e))
+        except Exception as error:
+            log.exception(f"ERROR <{error}> UPDATING DOCUMENT with match <{match}> and data <{new_data}>: ")
 
     def search(
             self,
@@ -172,10 +161,7 @@ class MongoAPI:
         """
         if collection not in ["users", "tweets", "messages"]:
             log.error("ERROR SEARCHING FOR DOCUMENTS")
-            log.debug(
-                "Error: ", "Unknown Collection. Please use users, tweets or messages"
-            )
-
+            log.debug("Error: ", "Unknown Collection. Please use users, tweets or messages")
             return
 
         try:
@@ -216,9 +202,8 @@ class MongoAPI:
                     return dict(result)
                 else:
                     return list(result)
-        except Exception as e:
-            log.error("ERROR SEARCHING FOR DOCUMENT")
-            log.error("Error: " + str(e))
+        except Exception as error:
+            log.exception(f"ERROR <{error}> SEARCHING FOR DOCUMENT with query <{query}>: ")
 
     def __export_data(self, data, export_type):
         """Exports a given array of documents into a csv or json
@@ -251,9 +236,7 @@ class MongoAPI:
 
         else:
             log.error("ERROR EXPORTING RESULT")
-            log.error(
-                "Error: Specified export type not supported. Please use json or csv"
-            )
+            log.error("Error: Specified export type not supported. Please use json or csv")
 
 
 if __name__ == "__main__":
