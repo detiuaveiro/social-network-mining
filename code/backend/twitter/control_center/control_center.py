@@ -594,7 +594,7 @@ class Control_Center(Rabbitmq):
 
 				if user_type == neo4j_labels.BOT_LABEL:
 					self.__reply_tweet_log({
-						"bot_id": data["data"]["user"],
+						"bot_id": data["data"]["user"]["id"],
 						"target_id": data["data"]["id"]
 					})
 
@@ -612,7 +612,7 @@ class Control_Center(Rabbitmq):
 
 				if user_type == neo4j_labels.BOT_LABEL:
 					self.__quote_tweet_log({
-						"bot_id": data["data"]["user"],
+						"bot_id": data["data"]["user"]["id"],
 						"target_id": data["data"]["id"]
 					})
 
@@ -624,13 +624,13 @@ class Control_Center(Rabbitmq):
 
 				self.neo4j_client.add_retweet_relationship({
 					"tweet_id": data["data"]["retweeted_status"]["id"],
-					"user_id": data["data"]["user"],
+					"user_id": data["data"]["user"]["id"],
 					"user_type": user_type
 				})
 
 				if user_type == neo4j_labels.BOT_LABEL:
 					self.__retweet_log({
-						"bot_id": data["data"]["user"],
+						"bot_id": data["data"]["user"]["id"],
 						"target_id": data["data"]["id"]
 					})
 
