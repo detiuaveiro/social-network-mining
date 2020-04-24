@@ -402,7 +402,7 @@ class Control_Center(Rabbitmq):
 
 		exists = self.neo4j_client.check_bot_exists(bot_id)
 		if not exists:
-			log.info(f"Bot {bot_id} is new to the party")
+			log.info(f"Bot {bot_id} is new to the party {data}")
 
 			# save bot to mongo and neo4j
 			self.neo4j_client.add_bot({
@@ -487,6 +487,8 @@ class Control_Center(Rabbitmq):
 		blank_user["id_str"] = str(data["user"])
 		self.save_user({
 			"bot_id": data["bot_id"],
+			'bot_name': data["bot_name"],
+			'bot_screen_name': data["bot_screen_name"],
 			"data": blank_user
 		})
 
@@ -515,6 +517,8 @@ class Control_Center(Rabbitmq):
 
 		self.save_tweet({
 			"bot_id": data["bot_id"],
+			'bot_name': data["bot_name"],
+			'bot_screen_name': data["bot_screen_name"],
 			"data": blank_tweet
 		})
 
@@ -571,6 +575,8 @@ class Control_Center(Rabbitmq):
 			if type(data["data"]["user"]) is dict:
 				self.save_user({
 					"bot_id": data["bot_id"],
+					'bot_name': data["bot_name"],
+					'bot_screen_name': data["bot_screen_name"],
 					"data": data["data"]["user"]
 				})
 				data["data"]["user"] = data["data"]["user"]["id"]
@@ -610,6 +616,8 @@ class Control_Center(Rabbitmq):
 
 				self.save_tweet(data={
 					"bot_id": data["bot_id"],
+					'bot_name': data["bot_name"],
+					'bot_screen_name': data["bot_screen_name"],
 					"data": data["data"]["quoted_status"]
 				})
 				self.neo4j_client.add_quote_relationship({
@@ -628,6 +636,8 @@ class Control_Center(Rabbitmq):
 
 				self.save_tweet(data={
 					"bot_id": data["bot_id"],
+					'bot_name': data["bot_name"],
+					'bot_screen_name': data["bot_screen_name"],
 					"data": data["data"]["retweeted_status"]
 				})
 
