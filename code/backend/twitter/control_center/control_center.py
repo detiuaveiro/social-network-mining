@@ -431,8 +431,7 @@ class Control_Center(Rabbitmq):
 					"target_id": user['id']
 				})
 			else:
-				log.info(
-					f"User {data['data']['id']} is new to the party")
+				log.info(f"User {data['data']['id']} is new to the party")
 				self.mongo_client.insert_users(data["data"])
 				self.neo4j_client.add_user({
 					"id": user["id"],
@@ -445,10 +444,13 @@ class Control_Center(Rabbitmq):
 					"target_id": user['id']
 				})
 			self.postgres_client.insert_user({
-				"user_id": user["id"],
+				"user_id": user['id'],
 				"followers": user["followers_count"],
 				"following": user["friends_count"]
 			})
+
+			# if it's a user, we ask the bot for it's latest followers
+			self.send(bot_id, ServerToBot.FIND_FOLLOWERS, user['id'])
 
 		if 'following' in user:
 			self.__follow_user(bot_id, user['id'])
