@@ -66,9 +66,11 @@ class TwitterBot(RabbitMessaging):
 		"""
 		self._send_message(to_json({
 			'type': message_type,
-			'bot_id': self._id,
-			'bot_name': self._name,
-			'bot_screen_name': self._screen_name,
+			'bot': {
+				'id': self._id,
+				'name': self._name,
+				'screen_name': self._screen_name
+			},
 			'timestamp': current_time(),
 			'data': data
 		}), exchange)
