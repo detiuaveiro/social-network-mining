@@ -214,7 +214,7 @@ class Control_Center(Rabbitmq):
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_LIKE,
 			"bot_id": data['bot_id'],
-			"user_id": data['data']['user'],
+			"user_id": data['data']['user']['id'],
 			"tweet_id": data['data']['id'],
 			"tweet_text": data['data']['text'],
 			"tweet_entities": data['data']['entities']
@@ -257,7 +257,7 @@ class Control_Center(Rabbitmq):
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_RETWEET,
 			"bot_id": data['bot_id'],
-			"user_id": data['data']['user'],
+			"user_id": data['data']['user']['id'],
 			"tweet_id": data['data']['id'],
 			"tweet_text": data['data']['text'],
 			"tweet_entities": data['data']['entities']
@@ -302,7 +302,7 @@ class Control_Center(Rabbitmq):
 			"type": PoliciesTypes.REQUEST_TWEET_REPLY,
 			"bot_id": data['bot_id'],
 			"tweet_id": data['data']['id'],
-			"user_id": data['data']['user'],
+			"user_id": data['data']['user']['id'],
 			"tweet_text": data['data']['text'],
 			"tweet_entities": data['data']['entities'],
 			"tweet_in_reply_to_status_id_str": data['data']['in_reply_to_status_id_str'],
@@ -570,17 +570,13 @@ class Control_Center(Rabbitmq):
 			})
 
 			new_data = data.copy()
-			if type(data["data"]["user"]) is dict:
-				new_data["data"] = data["data"]["user"]
-				self.save_user(new_data)
-				new_data["user"] = data["data"]["user"]["id"]
-			else:
-				new_data["user"] = data["data"]["user"]
+			new_data["data"] = data["data"]["user"]
+			self.save_user(new_data)
 
 			user_type = self.__save_blank_user_if_exists(data=new_data)
 
 			self.neo4j_client.add_writer_relationship({
-				"user_id": new_data["user"],
+				"user_id": data["data"]["user"]["id"],
 				"tweet_id": data["data"]["id"],
 				"user_type": user_type
 			})
@@ -598,7 +594,7 @@ class Control_Center(Rabbitmq):
 
 				if user_type == neo4j_labels.BOT_LABEL:
 					self.__reply_tweet_log({
-						"bot_id": data["data"]["user"],
+						"bot_id": data["data"]["user"]["id"],
 						"target_id": data["data"]["id"]
 					})
 
@@ -616,7 +612,7 @@ class Control_Center(Rabbitmq):
 
 				if user_type == neo4j_labels.BOT_LABEL:
 					self.__quote_tweet_log({
-						"bot_id": data["data"]["user"],
+						"bot_id": data["data"]["user"]["id"],
 						"target_id": data["data"]["id"]
 					})
 
@@ -628,13 +624,13 @@ class Control_Center(Rabbitmq):
 
 				self.neo4j_client.add_retweet_relationship({
 					"tweet_id": data["data"]["retweeted_status"]["id"],
-					"user_id": data["data"]["user"],
+					"user_id": data["data"]["user"]["id"],
 					"user_type": user_type
 				})
 
 				if user_type == neo4j_labels.BOT_LABEL:
 					self.__retweet_log({
-						"bot_id": data["data"]["user"],
+						"bot_id": data["data"]["user"]["id"],
 						"target_id": data["data"]["id"]
 					})
 
@@ -642,7 +638,7 @@ class Control_Center(Rabbitmq):
 
 		self.postgres_client.insert_tweet({
 			"tweet_id": data['data']['id'],
-			"user_id": data['data']['user'],
+			"user_id": data['data']['user']['id'],
 			"likes": data['data']['favorite_count'],
 			"retweets": data['data']['retweet_count']
 		})
