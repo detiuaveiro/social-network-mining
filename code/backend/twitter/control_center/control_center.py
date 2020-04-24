@@ -448,7 +448,7 @@ class Control_Center(Rabbitmq):
 				"following": user["friends_count"]
 			})
 
-			if 'following' in user:
+			if 'following' in user and user['following']:
 				self.__follow_user(bot_id, user['id'])
 
 	def save_tweet(self, data):
@@ -517,7 +517,7 @@ class Control_Center(Rabbitmq):
 
 	def error(self, data):
 		"""
-		Stores error that may have occured in the running of a bot:
+		Stores error that may have occurred in the running of a bot:
 				Calls the postgres stats to log the error
 
 		@param data: dict with the id of a bot and the error object
