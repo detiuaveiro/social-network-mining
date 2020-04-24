@@ -14,7 +14,7 @@ from bots.messages_types import ServerToBot, BotToServer
 
 import log_actions
 import neo4j_labels
-import mongo_utils
+from control_center import mongo_utils
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
@@ -530,7 +530,7 @@ class Control_Center(Rabbitmq):
 		Stores info about a tweet:
 				Calls the mongo object to save or update a tweet
 				Saves the tweet on the neo4j object
-				Adds the operation log to postgress_stats
+				Adds the operation log to postgres_stats
 
 		@param data: dict containing the id of the tweet to bee saved
 		"""
