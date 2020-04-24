@@ -155,9 +155,9 @@ class Control_Center(Rabbitmq):
 			"target_id": data['target_id']
 		})
 		if result['success']:
-			log.debug(f"Bot {data['bot_id']} retweeted {data['data']['id']}")
+			log.debug(f"Bot {data['bot_id']} retweeted {data['target_id']}")
 		else:
-			log.debug(f"Bot {data['bot_id']} could not retweet tweet {data['data']['id']}")
+			log.debug(f"Bot {data['bot_id']} could not retweet tweet {data['target_id']}")
 			log.error(f"Bot like caused error {result['error']}")
 
 	def __reply_tweet_log(self, data):
@@ -173,9 +173,9 @@ class Control_Center(Rabbitmq):
 			"target_id": data['target_id']
 		})
 		if result['success']:
-			log.debug(f"Bot {data['bot_id']} replied with {data['data']['id']}")
+			log.debug(f"Bot {data['bot_id']} replied with {data['target_id']}")
 		else:
-			log.debug(f"Bot {data['bot_id']} could not reply with {data['data']['id']}")
+			log.debug(f"Bot {data['bot_id']} could not reply with {data['target_id']}")
 			log.error(f"Bot like caused error {result['error']}")
 
 	def __quote_tweet_log(self, data):
@@ -191,9 +191,9 @@ class Control_Center(Rabbitmq):
 			"target_id": data['target_id']
 		})
 		if result['success']:
-			log.debug(f"Bot {data['bot_id']} replied with {data['data']['id']}")
+			log.debug(f"Bot {data['bot_id']} replied with {data['target_id']}")
 		else:
-			log.debug(f"Bot {data['bot_id']} could not reply with {data['data']['id']}")
+			log.debug(f"Bot {data['bot_id']} could not reply with {data['target_id']}")
 			log.error(f"Bot like caused error {result['error']}")
 
 	def request_tweet_like(self, data):
@@ -582,7 +582,7 @@ class Control_Center(Rabbitmq):
 			user_type = self.__save_blank_user_if_exists(data=new_data)
 
 			self.neo4j_client.add_writer_relationship({
-				"user_id": data["data"]["user"],
+				"user_id": new_data["user"],
 				"tweet_id": data["data"]["id"],
 				"user_type": user_type
 			})
