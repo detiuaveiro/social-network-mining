@@ -315,7 +315,7 @@ class PDP:
 		})
 		if bot_logs['success']:
 			for bot_log in bot_logs['data']:
-				user_of_tweet_liked = self.mongo.find(
+				user_of_tweet_liked = self.mongo.search(
 					collection="tweets",
 					query={"id": bot_log["target_id"]},
 					fields=["user"],
@@ -366,7 +366,7 @@ class PDP:
 		})
 		if bot_logs['success']:
 			for bot_log in bot_logs['data']:
-				user_of_retweet = self.mongo.find(
+				user_of_retweet = self.mongo.search(
 					collection="tweets",
 					query={"id": bot_log["target_id"]},
 					fields=["user"],
@@ -430,7 +430,7 @@ class PDP:
 
 		if bot_logs['success']:
 			for bot_log in bot_logs['data']:
-				user_of_reply = self.mongo.find(
+				user_of_reply = self.mongo.search(
 					collection="tweets",
 					query={"id": bot_log["target_id"]},
 					fields=["user"],

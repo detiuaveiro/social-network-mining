@@ -538,6 +538,7 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing the id of the tweet to bee saved
 		"""
+		log.debug(data)
 		tweet_exists = self.mongo_client.search(
 			collection="tweets",
 			query={"id": data["data"]["id"]},
@@ -572,21 +573,22 @@ class Control_Center(Rabbitmq):
 				"id": data['data']['id']
 			})
 
-			if type(data["data"]["user"]) is dict:
-				self.save_user({
-					"bot_id": data["bot_id"],
-					'bot_name': data["bot_name"],
-					'bot_screen_name': data["bot_screen_name"],
-					"data": data["data"]["user"]
-				})
-				data["data"]["user"] = data["data"]["user"]["id"]
-
-			user_type = self.__save_blank_user_if_exists(data={
+			new_data = {
 				"bot_id": data["bot_id"],
 				'bot_name': data["bot_name"],
 				'bot_screen_name': data["bot_screen_name"],
-				"user": data["data"]["user"]
-			})
+			}
+
+			if type(data["data"]["user"]) is dict:
+				new_data["data"] = data["data"]["user"]
+				self.save_user(new_data)
+				new_data["user"] = data["data"]["user"]["id"]
+			else:
+				new_data["user"] = data["data"]["user"]
+
+			user_type = self.__save_blank_user_if_exists(
+				data=new_data
+			)
 
 			self.neo4j_client.add_writer_relationship({
 				"user_id": data["data"]["user"],
@@ -596,13 +598,11 @@ class Control_Center(Rabbitmq):
 
 			if "in_reply_to_status_id" in data["data"] and data["data"]["in_reply_to_status_id"] is not None:
 				log.info(f"Tweet was a reply to some other tweet, must insert the reply relation too")
-				self.__save_blank_tweet_if_exists(data={
-					"bot_id": data["bot_id"],
-					'bot_name': data["bot_name"],
-					'bot_screen_name': data["bot_screen_name"],
-					"id": data["data"]["in_reply_to_status_id"],
-					"user": data["data"]["in_reply_to_user_id"]
-				})
+				new_data["id"] = data["data"]["in_reply_to_status_id"]
+				new_data["user"] = data["data"]["in_reply_to_user_id"]
+				self.__save_blank_tweet_if_exists(
+					data=new_data
+				)
 
 				self.neo4j_client.add_reply_relationship({
 					"reply": data["data"]["id"],
@@ -615,15 +615,16 @@ class Control_Center(Rabbitmq):
 						"target_id": data["data"]["id"]
 					})
 
-			elif "is_quote_status" in data["data"] and data["data"]["is_quote_status"]:
-				log.info(f"Tweet was quoting some other tweet, must insert the quote relation too")
+			elif (
+					"is_quote_status" in data["data"] and
+					data["data"]["is_quote_status"] and
+					"quoted_status" in data["data"]
+			):
 
-				self.save_tweet(data={
-					"bot_id": data["bot_id"],
-					'bot_name': data["bot_name"],
-					'bot_screen_name': data["bot_screen_name"],
-					"data": data["data"]["quoted_status"]
-				})
+				log.info(f"Tweet was quoting some other tweet, must insert the quote relation too")
+				new_data["data"] = data["data"]["quoted_status"]
+				self.save_tweet(data=new_data)
+
 				self.neo4j_client.add_quote_relationship({
 					"tweet_id": data["data"]["id"],
 					"quoted_tweet": data["data"]["quoted_status_id"]
@@ -637,13 +638,9 @@ class Control_Center(Rabbitmq):
 
 			elif "retweeted_status" in data["data"] and data["data"]["retweeted_status"] is not None:
 				log.info(f"Tweet was a retweet to some other tweet")
+				new_data["data"] = data["data"]["retweeted_status"]
 
-				self.save_tweet(data={
-					"bot_id": data["bot_id"],
-					'bot_name': data["bot_name"],
-					'bot_screen_name': data["bot_screen_name"],
-					"data": data["data"]["retweeted_status"]
-				})
+				self.save_tweet(data=new_data)
 
 				self.neo4j_client.add_retweet_relationship({
 					"tweet_id": data["data"]["retweeted_status"]["id"],
