@@ -89,7 +89,7 @@ def twitter_tweet_stats(request, id):
 
 
 @api_view(["GET"])
-def twitter_tweet_replies(request, id):
+def twitter_tweet_replies(request,id):
     """Returns a list of all tweets which are replies to the tweet with the given id
     :param id: tweet id in relation to which we want the replies
     """
