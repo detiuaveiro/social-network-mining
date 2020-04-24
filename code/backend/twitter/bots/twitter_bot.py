@@ -114,7 +114,7 @@ class TwitterBot(RabbitMessaging):
 			self._name = self._twitter_api.me().name
 			self._screen_name = self._twitter_api.me().screen_name
 		except TweepError as error:
-			logger.error(f"Error verifying credentials: {error}")
+			logger.exception(f"Error {error} verifying credentials:")
 			exit(1)
 
 		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
@@ -254,7 +254,7 @@ class TwitterBot(RabbitMessaging):
 					logger.info(f"Found user: {user.id}")
 					self.__follow_user(user)
 			except TweepError as error:
-				logger.error(f"Unable to find user identified by [{id_type}] with <{user_id}>: {error}")
+				logger.error(f"Unable to find user identified by [{id_type}] with <{user_id}>  {error}")
 
 	def __follow_user(self, user: User):
 		"""Function to follow a specific user. It sends the user to the server and then, if the bot doesn't follow the
@@ -403,7 +403,7 @@ class TwitterBot(RabbitMessaging):
 
 				if task:
 					task_type, task_params = task['type'], task['params']
-					logger.debug(f"Received task <{task}>")
+					logger.debug(f"Received task of type {messages_types.ServerToBot(task_type).name}: {task_params}")
 
 					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
 						logger.warning(
@@ -417,8 +417,8 @@ class TwitterBot(RabbitMessaging):
 					elif task_type == messages_types.ServerToBot.FIND_FOLLOWERS:
 						logger.info(f"The bot was asked to get the followers for user with id <{task_params}>")
 						self.__get_followers(user_id=task_params)
-					elif task_type == messages_types.ServerToBot.POST_TWEET:
-						self.__post_tweet(**task_params)
+					# elif task_type == messages_types.ServerToBot.POST_TWEET:
+					# 	self.__post_tweet(**task_params)
 					elif task_type == messages_types.ServerToBot.KEYWORDS:
 						self.__search_tweets(keywords=task_params)
 					elif task_type == messages_types.ServerToBot.GET_TWEET_BY_ID:
