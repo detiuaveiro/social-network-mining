@@ -89,20 +89,20 @@ def twitter_tweet_stats(request, id, entries_per_page=None, page=None):
 
 
 @api_view(["GET"])
-def twitter_tweet_replies(request, id):
-	"""Returns a list of all tweets which are replies to the tweet with the given id
-	:param id: tweet id in relation to which we want the replies
-	"""
-	error_messages = []
-	success_messages = []
-	status = HTTP_200_OK
+def twitter_tweet_replies(request,id):
+    """Returns a list of all tweets which are replies to the tweet with the given id
+    :param id: tweet id in relation to which we want the replies
+    """
+    error_messages = []
+    success_messages = []
+    status = HTTP_200_OK
 
-	success, data, message = queries.twitter_tweet_replies(int(id))
-	if success:
-		success_messages.append(message)
-	else:
-		error_messages.append(message)
-		status = HTTP_403_FORBIDDEN
+    success, data, message = queries.twitter_tweet_replies(int(id))
+    if success:
+        success_messages.append(message)
+    else:
+        error_messages.append(message)
+        status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-	                       success_messages=success_messages, status=status)
+    return create_response(data=data, error_messages=error_messages,
+                           success_messages=success_messages, status=status)
