@@ -45,10 +45,17 @@ class Network extends Component {
   }
 
   state = {
+    loading: false,
     graph: {
       nodes: [],
       edges: []
     },
+
+    nodesForSelect: [],
+    botsForSelect: [],
+    usersForSelect: [],
+
+
     options: {
       autoResize: true,
       layout: {
@@ -79,28 +86,26 @@ class Network extends Component {
         }
       },
 
-      height: "895px",
-    },
-    events: {
-      doubleClick: function (event) {
-        var { nodes, edges } = event;
-        console.log("Selected nodes:");
-        console.log(nodes);
-        console.log("Selected edges:");
-        console.log(edges);
+      interaction: {
+        navigationButtons: true,
+        keyboard: true
       },
-      click: function (event) {
-        var { nodes, edges } = event;
 
-        this.focus(nodes[0], {
-          scale: 1.3,
-          animation: {
-            duration: 100,
-            easingFunction: 'linear'
-          }
-        })
-      }
-    }
+      height: "850px",
+    },
+
+    graphRef: null,
+    hideBots: false,
+    hideUsers: false,
+    hideLinks: false,
+
+    allNodes: null,
+    bots: null,
+    users: null,
+    allLinks: null,
+
+    modal: false,
+    focusedUser: null,
   }
 
   getBaseNetwork() {
@@ -117,10 +122,16 @@ class Network extends Component {
     }).then(data => {
       if (data != null && data != {}) {
         data = data.data
-        console.log("oof")
 
         var tempNodes = []
         var tempLinks = []
+        var tempBots = []
+        var tempUsers = []
+        var tempNodesForSelect = []
+        var tempNodesForSelectBots = []
+        var tempNodesForSelectUsers = []
+
+
         data.forEach(item => {
           if (item.type == "node") {
             var tempItem = {}
@@ -132,11 +143,33 @@ class Network extends Component {
             tempItem['type'] = item.labels[0]
 
             if (tempItem['type'] == "User") {
-              tempItem['color'] = "#1da1f2"
+              tempItem['color'] = {
+                border: '#405de6',
+                background: "#1da1f2",
+                highlight: {
+                  border: '#4dbd74',
+                  background: '#20c997'
+                }
+              }
+
+              tempUsers.push(tempItem)
+              tempNodesForSelectUsers.push({ value: tempItem['id'], label: "(" + tempItem['type'] + " #" + tempItem['real_id'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
             } else {
-              tempItem['color'] = "#833ab4"
+              tempItem['color'] = {
+                border: '#63218f',
+                background: "#833ab4",
+                highlight: {
+                  border: '#4dbd74',
+                  background: '#20c997'
+                }
+              }
+
+              tempBots.push(tempItem)
+              tempNodesForSelectBots.push({ value: tempItem['id'], label: "(" + tempItem['type'] + " #" + tempItem['real_id'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
             }
+
             tempNodes.push(tempItem)
+            tempNodesForSelect.push({ value: tempItem['id'], label: "(" + tempItem['type'] + " #" + tempItem['real_id'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
           } else {
             var tempItem = {}
             tempItem['id'] = item.id
@@ -152,7 +185,15 @@ class Network extends Component {
           graph: {
             nodes: tempNodes,
             edges: tempLinks,
-          }
+          },
+          nodesForSelect: tempNodesForSelect,
+          botsForSelect: tempNodesForSelectBots,
+          usersForSelect: tempNodesForSelectUsers,
+
+          allNodes: tempNodes,
+          bots: tempBots,
+          users: tempUsers,
+          allLinks: tempLinks
         })
 
       }
@@ -173,7 +214,6 @@ class Network extends Component {
     // Get Network
     this.getBaseNetwork()
 
-
     this.setState({
       loading: false
     })
@@ -185,18 +225,223 @@ class Network extends Component {
 
 
   // Graph methods //////////////////////////////////////////////////////////
-  handlePageClick = data => {
-    let selected = data.selected;
-    console.log(selected)
+  resetNetwork() {
+    this.setState({ hideBots: false, hideLinks: false, hideUsers: false })
+    document.getElementById("hideBots").checked = false
+    document.getElementById("hideUsers").checked = false
+    document.getElementById("hideLinks").checked = false
+
+    if (this.state.graphRef != null) {
+      this.state.graphRef.selectNodes([])
+      this.state.graphRef.moveTo({
+        position: {x: 0, y: 0},
+        scale: 0.9,
+        animation: {
+          duration: 100,
+          easingFunction: 'linear'
+        }
+      });
+    }
+
+    this.setState({
+      loading: true
+    })
+
+    // Get Network
+    this.getBaseNetwork()
+
+    this.setState({
+      loading: false
+    })
+  }
+
+  /////////////////////////////////////////////////////////////////////
+
+
+  // Select Methods //////////////////////////////////////////////////////////
+  changeFindNode = (event) => {
+    var node = event.value
+    if (this.state.graphRef != null) {
+      try {
+        this.state.graphRef.selectNodes([node])
+        this.state.graphRef.focus(node, {
+          scale: 1.3,
+          animation: {
+            duration: 100,
+            easingFunction: 'linear'
+          }
+        })
+        
+        this.state.graphRef.moveTo({ position: this.state.graphRef.getPositions([node])[node] })
+      } catch (e) {
+
+      }
+    }
+  };
+
+  removeFocus = () => {
+    if (this.state.graphRef != null) {
+      this.state.graphRef.selectNodes([])
+      this.state.graphRef.moveTo({
+        scale: 0.9,
+        animation: {
+          duration: 100,
+          easingFunction: 'linear'
+        }
+      });
+    }
   };
   /////////////////////////////////////////////////////////////////////
 
+  // Hide Methods //////////////////////////////////////////////////////////
 
-  // Methods //////////////////////////////////////////////////////////
+  hideBots = () => {
+    this.setState({ hideBots: !this.state.hideBots }, () => {
+      if (this.state.hideBots) {
+        if (this.state.hideUsers) {
+          this.setState({
+            graph: {
+              nodes: [],
+              edges: this.state.allLinks
+            }
+          })
+        } else {
+          this.setState({
+            graph: {
+              nodes: this.state.users,
+              edges: this.state.allLinks
+            }
+          })
+        }
+      } else {
+        if (this.state.hideUsers) {
+          this.setState({
+            graph: {
+              nodes: this.state.bots,
+              edges: this.state.allLinks
+            }
+          })
+        } else {
+          this.setState({
+            graph: {
+              nodes: this.state.allNodes,
+              edges: this.state.allLinks
+            }
+          })
+        }
+      }
+
+      this.state.graphRef.body.emitter.emit('_dataChanged')
+      this.state.graphRef.redraw()
+    })
+  }
+
+  hideUsers = () => {
+    this.setState({ hideUsers: !this.state.hideUsers }, () => {
+      if (this.state.hideUsers) {
+        if (this.state.hideBots) {
+          this.setState({
+            graph: {
+              nodes: [],
+              edges: this.state.allLinks
+            }
+          })
+        } else {
+          this.setState({
+            graph: {
+              nodes: this.state.bots,
+              edges: this.state.allLinks
+            }
+          })
+        }
+      } else {
+        if (this.state.hideBots) {
+          this.setState({
+            graph: {
+              nodes: this.state.users,
+              edges: this.state.allLinks
+            }
+          })
+        } else {
+          this.setState({
+            graph: {
+              nodes: this.state.allNodes,
+              edges: this.state.allLinks
+            }
+          })
+        }
+      }
+
+      this.state.graphRef.body.emitter.emit('_dataChanged')
+      this.state.graphRef.redraw()
+    })
+  }
+
+  hideLinks = () => {
+    this.setState({ hideLinks: !this.state.hideLinks }, () => {
+      if (this.state.hideLinks) {
+        this.setState({
+          graph: {
+            nodes: this.state.graph.nodes,
+            edges: []
+          }
+        })
+      } else {
+        this.setState({
+          graph: {
+            nodes: this.state.graph.nodes,
+            edges: this.state.allLinks
+          }
+        })
+      }
+
+      this.state.graphRef.body.emitter.emit('_dataChanged')
+      this.state.graphRef.redraw()
+    })
+  }
+  /////////////////////////////////////////////////////////////////////
+
+  // Modal Methods //////////////////////////////////////////////////////////
+  handleClose() {
+    this.setState({
+      modal: false,
+      focusedUser: null,
+    });
+  }
 
   /////////////////////////////////////////////////////////////////////
 
+
   render() {
+    const events = {
+      doubleClick: function (event) {
+        var { nodes, edges } = event;
+        this.state.graphRef.selectNodes([nodes[0]])
+
+        console.log(nodes[0])
+
+        this.setState({
+          modal: true,
+          focusedUser: this.state.graph.nodes.find((element) => {
+            return element.id == nodes[0];
+          })
+        })
+      }.bind(this),
+      click: function (event) {
+        var { nodes } = event;
+
+        this.focus(nodes[0], {
+          scale: 1.3,
+          animation: {
+            duration: 100,
+            easingFunction: 'linear'
+          }
+        })
+
+        this.moveTo({ position: this.getPositions([nodes[0]])[nodes[0]] })
+      }
+    }
+
     var infoCard
     if (this.state.info) {
       infoCard =
@@ -214,11 +459,48 @@ class Network extends Component {
 
 
     var graph
-    if (this.loading) {
-      graph = <Graph graph={this.state.graph} options={this.state.options} events={this.state.events} id="graph" />
+    if (!this.state.loading) {
+      graph = <Graph graph={this.state.graph} options={this.state.options} events={events} getNetwork={network => {
+        this.setState({ graphRef: network })
+      }} />
     } else {
       graph = <ReactLoading type={"cubes"} color="#1da1f2" />
     }
+
+    var modal
+    if (this.state.modal) {
+      modal = <Dialog class="fade-in"
+        open={this.state.modal}
+        onClose={() => this.handleClose()}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          <span>{"👤 Info on " + this.state.focusedUser.name}</span><span style={{ color: "#999" }}>{" (" + this.state.focusedUser.username + ")"}</span>
+        </DialogTitle>
+        <DialogContent style={{ minWidth: "600px" }}>
+          <Container fluid>
+            <Row>
+              <Col xs="12" md="12">
+
+              </Col>
+            </Row>
+
+            <DialogContentText>
+              <span id="error" style={{ display: "None", color: "#f86c6b" }}>Sorry, the tweet can't be empty!</span>
+            </DialogContentText>
+          </Container>
+
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => this.handleClose()} color="info">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    }
+
+
     return (
       <div className="animated fadeIn">
         <Container fluid>
@@ -255,18 +537,30 @@ class Network extends Component {
                   </h3>
                 </CardHeader>
                 <CardBody>
-                  <Row style={{ marginBottom: "20px" }}>
+
+                  <Row style={{ marginBottom: "35px" }}>
                     <Col md="12">
                       <h5 style={{ color: "#1fa8dd" }}><strong>Find node</strong></h5>
-                      <Select
-                        defaultValue={[]}
-                        name="colors"
-                        options={[{ value: 'chocolate', label: 'Chocolate' },
-                        { value: 'strawberry', label: 'Strawberry' },
-                        { value: 'vanilla', label: 'Vanilla' }]}
-                        className="basic-single"
-                        classNamePrefix="select"
-                      />
+                      <Row>
+                        <Col md="9" sm="12" xm="12">
+                          <Select
+                            defaultValue={[]}
+                            id="findNode" onChange={this.changeFindNode}
+                            options={this.state.nodesForSelect}
+                            className="basic-single"
+                            classNamePrefix="select"
+                          />
+                        </Col>
+                        <Col md="3" sm="12" xm="12">
+                          <Button block outline color="danger"
+                            onClick={this.removeFocus}
+                          ><i class="fas fa-times"></i></Button>
+                        </Col>
+
+                      </Row>
+
+
+
                     </Col>
                   </Row>
 
@@ -276,25 +570,22 @@ class Network extends Component {
                     <Col md="12">
                       <h5 style={{ color: "#1fa8dd" }}><strong>Number of nodes per page</strong></h5>
                       <Row>
-                        <Col md="8" sm="12" xm="12">
+                        <Col md="9" sm="12" xm="12">
                           <FormGroup>
                             <Input type="text" id="name" placeholder="0" required />
                           </FormGroup>
                         </Col>
-                        <Col md="4" sm="12" xm="12">
+                        <Col md="3" sm="12" xm="12">
                           <Button block outline color="primary"
 
-                          > Confirm</Button>
+                          ><i class="fas fa-check"></i></Button>
                         </Col>
 
                       </Row>
-
-
-
                     </Col>
                   </Row>
-                  <Row>
-                    <Col md="12">
+                  <Row >
+                    <Col md="12" style={{ zIndex: "0" }}>
                       <ReactPaginate
                         previousLabel={'<'}
                         nextLabel={'>'}
@@ -324,19 +615,19 @@ class Network extends Component {
                   <Row style={{ marginTop: "20px" }}>
                     <Col md="4">
                       <FormGroup check>
-                        <Input className="form-check-input" type="checkbox" id="inline-checkbox1" name="inline-checkbox1" value="option1" />
+                        <Input className="form-check-input" type="checkbox" id="hideBots" name="inline-checkbox1" onChange={this.hideBots} />
                         <Label className="form-check-label" check htmlFor="inline-checkbox1">Hide bots</Label>
                       </FormGroup>
                     </Col>
                     <Col md="4">
                       <FormGroup check>
-                        <Input className="form-check-input" type="checkbox" id="inline-checkbox2" name="inline-checkbox2" value="option2" />
+                        <Input className="form-check-input" type="checkbox" id="hideUsers" name="inline-checkbox2" onChange={this.hideUsers} value="option2" />
                         <Label className="form-check-label" check htmlFor="inline-checkbox2">Hide users</Label>
                       </FormGroup>
                     </Col>
                     <Col md="4">
                       <FormGroup check>
-                        <Input className="form-check-input" type="checkbox" id="inline-checkbox2" name="inline-checkbox2" value="option2" />
+                        <Input className="form-check-input" type="checkbox" id="hideLinks" name="inline-checkbox2" onChange={this.hideLinks} value="option2" />
                         <Label className="form-check-label" check htmlFor="inline-checkbox2">Hide links</Label>
                       </FormGroup>
                     </Col>
@@ -359,9 +650,7 @@ class Network extends Component {
                         defaultValue={[]}
                         isMulti
                         name="colors"
-                        options={[{ value: 'chocolate', label: 'Chocolate' },
-                        { value: 'strawberry', label: 'Strawberry' },
-                        { value: 'vanilla', label: 'Vanilla' }]}
+                        options={this.state.botsForSelect}
                         className="basic-multi-select"
                         classNamePrefix="select"
                       />
@@ -385,9 +674,7 @@ class Network extends Component {
                         defaultValue={[]}
                         isMulti
                         name="colors"
-                        options={[{ value: 'chocolate', label: 'Chocolate' },
-                        { value: 'strawberry', label: 'Strawberry' },
-                        { value: 'vanilla', label: 'Vanilla' }]}
+                        options={this.state.usersForSelect}
                         className="basic-multi-select"
                         classNamePrefix="select"
                       />
@@ -407,7 +694,7 @@ class Network extends Component {
                   <Row style={{ marginTop: "25px" }}>
                     <Col md="6" style={{ alignItems: "center" }}>
                       <Button block outline color="danger"
-
+                        onClick={() => this.resetNetwork()}
                       > Reset</Button>
                     </Col>
                     <Col md="6">
@@ -422,6 +709,7 @@ class Network extends Component {
 
             </Col>
           </Row>
+          {modal}
         </Container>
       </div>
     );
