@@ -13,6 +13,7 @@ class ServerToBot(IntEnum):
 	FIND_FOLLOWERS = 6
 	KEYWORDS = 7
 	GET_TWEET_BY_ID = 8
+	GET_USER_BY_ID = 9
 
 	def __str__(self):
 		return self.name
