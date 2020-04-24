@@ -92,9 +92,9 @@ class Control_Center(Rabbitmq):
 				Calls neo4j to add new relation between user (bot or normal user) and user
 				Calls postgres_stats to add new log with the action details
 		"""
-		log.debug(f"User {user1_id} is following {user2_id}")
 		type1 = self.__user_is_bot(user1_id)
 		type2 = self.__user_is_bot(user2_id)
+		log.debug(f"{type1} {user1_id} is following {type2} {user2_id}")
 
 		relationship = {
 			"id_1": user1_id,
@@ -104,7 +104,7 @@ class Control_Center(Rabbitmq):
 		}
 
 		if self.neo4j_client.check_relationship_exists(relationship):
-			log.debug(f"User {user1_id} already follows the user {user2_id}")
+			log.debug(f"{type1} {user1_id} already follows the {type2} {user2_id}")
 			return
 		self.neo4j_client.add_relationship(relationship)
 
@@ -114,14 +114,14 @@ class Control_Center(Rabbitmq):
 				"action": log_actions.FOLLOW,
 				"target_id": user1_id
 			})
-			log.info(f"Bot {user1_id} successfully followed the user {user2_id}")
+			log.info(f"{type1} {user1_id} successfully followed the {type2} {user2_id}")
 		if type2 == "Bot":
 			self.postgres_client.insert_log({
 				"bot_id": user2_id,
 				"action": log_actions.FOLLOW,
 				"target_id": user2_id
 			})
-			log.info(f"Bot {user2_id} successfully followed the user {user1_id}")
+			log.info(f"{type2} {user2_id} successfully followed the {type1} {user1_id}")
 
 		log.info("Saved follow relation with success")
 
@@ -449,11 +449,8 @@ class Control_Center(Rabbitmq):
 				"following": user["friends_count"]
 			})
 
-			# if it's a user, we ask the bot for it's latest followers
-			self.send(bot_id, ServerToBot.FIND_FOLLOWERS, user['id'])
-
-		if 'following' in user:
-			self.__follow_user(bot_id, user['id'])
+			if 'following' in user:
+				self.__follow_user(bot_id, user['id'])
 
 	def save_tweet(self, data):
 		"""
