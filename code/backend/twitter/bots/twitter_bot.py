@@ -408,8 +408,8 @@ class TwitterBot(RabbitMessaging):
 					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
 						logger.warning(
 							f"Not processing {messages_types.ServerToBot.FIND_BY_KEYWORDS} with {task_params}")
-					# elif task_type == messages_types.ServerToBot.FOLLOW_USERS:
-					# 	self.__follow_users(id_type=task_params['type'], data=task_params['data'])
+					elif task_type == messages_types.ServerToBot.FOLLOW_USERS:
+						self.__follow_users(id_type=task_params['type'], data=task_params['data'])
 					elif task_type == messages_types.ServerToBot.LIKE_TWEETS:
 						self.__like_tweet(task_params)
 					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
@@ -417,8 +417,8 @@ class TwitterBot(RabbitMessaging):
 					elif task_type == messages_types.ServerToBot.FIND_FOLLOWERS:
 						logger.info(f"The bot was asked to get the followers for user with id <{task_params}>")
 						self.__get_followers(user_id=task_params)
-					# elif task_type == messages_types.ServerToBot.POST_TWEET:
-					# 	self.__post_tweet(**task_params)
+					elif task_type == messages_types.ServerToBot.POST_TWEET:
+						self.__post_tweet(**task_params)
 					elif task_type == messages_types.ServerToBot.KEYWORDS:
 						self.__search_tweets(keywords=task_params)
 					elif task_type == messages_types.ServerToBot.GET_TWEET_BY_ID:
