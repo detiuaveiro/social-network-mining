@@ -54,7 +54,7 @@ class TwitterBot(RabbitMessaging):
 
 	def __get_tweet_dict(self, tweet: Status):
 		tweet_dict = tweet._json.copy()
-		tweet_dict['user'] = tweet_dict['user']['id']
+		# tweet_dict['user'] = tweet_dict['user']['id']
 		return tweet_dict
 
 	def __send_message(self, data, message_type: messages_types.BotToServer, exchange):
