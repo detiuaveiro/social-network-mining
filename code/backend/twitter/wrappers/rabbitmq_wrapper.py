@@ -5,6 +5,7 @@ import pika
 import time
 import logging
 import json
+import traceback
 from credentials import *
 
 log = logging.getLogger('Rabbit')
@@ -152,7 +153,7 @@ class Rabbitmq:
             self.channel.start_consuming()
 
         except Exception as e:
-            log.warning("Exception detected: {0}".format(e))
+            log.error(f"Exception detected: {''.join(traceback.format_exception(None, e, e.__traceback__))}")
             log.warning("Attempting reconnection after waiting time...")
             time.sleep(WAIT_TIME)
             self.__setup()
