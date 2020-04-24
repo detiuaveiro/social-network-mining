@@ -151,9 +151,8 @@ class Rabbitmq:
             self.channel.basic_consume(queue=queue_name, on_message_callback=self.received_message_handler,
                                        auto_ack=True)
             self.channel.start_consuming()
-
         except Exception as e:
-            log.error(f"Exception detected: {''.join(traceback.format_exception(None, e, e.__traceback__))}")
+            log.exception(f"Exception <{e}> detected:")
             log.warning("Attempting reconnection after waiting time...")
             time.sleep(WAIT_TIME)
             self.__setup()

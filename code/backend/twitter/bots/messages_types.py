@@ -36,7 +36,6 @@ class BotToServer(IntEnum):
 	EVENT_USER_BLOCKED = 11
 	SAVE_FOLLOWERS = 12
 	SAVE_DIRECT_MESSAGES = 13
-
 	QUERY_KEYWORDS = 14
 
 	def __str__(self):
