@@ -544,7 +544,7 @@ class Control_Center(Rabbitmq):
 			single=True
 		)
 
-		if tweet_exists and False:
+		if tweet_exists:
 			log.info(f"Updating tweet {data['data']['id']}")
 			self.mongo_client.update_tweets(
 				match={"id": data["data"]['id']},
