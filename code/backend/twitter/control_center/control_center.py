@@ -107,20 +107,19 @@ class Control_Center(Rabbitmq):
 			return
 		self.neo4j_client.add_follow_relationship(relationship)
 
-		if type1 == "Bot":
+		if type1 == "Bot" or type2 == "Bot":
+			bot_id, user_id = (user1_id, user2_id) if type1 == "Bot" else (user2_id, user1_id)
+
 			self.postgres_client.insert_log({
-				"bot_id": user1_id,
+				"bot_id": bot_id,
 				"action": log_actions.FOLLOW,
-				"target_id": user1_id
+				"target_id": user_id
 			})
-			log.info(f"Bot {user1_id} successfully followed the user {user2_id}")
-		if type2 == "Bot":
-			self.postgres_client.insert_log({
-				"bot_id": user2_id,
-				"action": log_actions.FOLLOW,
-				"target_id": user2_id
-			})
-			log.info(f"Bot {user2_id} successfully followed the user {user1_id}")
+			log.info(f"Bot {bot_id} successfully followed the user (or bot) {user_id}")
+
+			# if the bot is following a user, we ask the bot to get the followers of that user
+			log.info(f"Asking bot with id <{bot_id}> to get the followers of the user with id {user_id}")
+			self.send(bot_id, ServerToBot.FIND_FOLLOWERS, user_id)
 
 		log.info("Saved follow relation with success")
 
@@ -448,8 +447,7 @@ class Control_Center(Rabbitmq):
 					"target_id": user['id']
 				})
 			else:
-				log.info(
-					f"User {data['data']['id']} is new to the party")
+				log.info(f"User {data['data']['id']} is new to the party")
 				self.mongo_client.insert_users(data["data"])
 				self.neo4j_client.add_user({
 					"id": user["id"],
@@ -462,13 +460,13 @@ class Control_Center(Rabbitmq):
 					"target_id": user['id']
 				})
 			self.postgres_client.insert_user({
-				"user_id": user["id"],
+				"user_id": user['id'],
 				"followers": user["followers_count"],
 				"following": user["friends_count"]
 			})
 
-		if 'following' in user:
-			self.__follow_user(bot_id, user['id'])
+			if 'following' in user and user['following']:
+				self.__follow_user(bot_id, user['id'])
 
 	def __save_blank_user_if_exists(self, data):
 		# Sometimes the full info on the user comes in the data
@@ -675,7 +673,7 @@ class Control_Center(Rabbitmq):
 
 	def error(self, data):
 		"""
-		Stores error that may have occured in the running of a bot:
+		Stores error that may have occurred in the running of a bot:
 				Calls the postgres stats to log the error
 
 		@param data: dict with the id of a bot and the error object
