@@ -47,7 +47,7 @@ class Control_Center(Rabbitmq):
 		log.debug(f"Received message of type {message_type}")
 
 		if message_type == BotToServer.EVENT_TWEET_LIKED:
-			self.like_tweet(message)
+			self.__like_tweet_log(message)
 
 		# elif message_type == BotToServer.EVENT_TWEET_RETWEETED:
 		# 	self.__retweet_log(message)
