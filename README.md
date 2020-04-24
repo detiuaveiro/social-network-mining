@@ -142,3 +142,33 @@ Then use the command to start the web app on port 3000:
  ```bash
  $ docker run --env-file PI_2020/env_vars/watchtower.env -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock -v ~/.docker/config.json:/config.json containrrr/watchtower
  ```
+
+## BDS
+- mongodb
+```bash
+mongoimport --db twitter --collection tweets --file scripts/mongodb/tweets.json -u user -p password
+mongoimport --db twitter --collection users --file scripts/mongodb/users.json -u user -p password
+```
+- postgresql
+```bash
+psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql 
+```
+
+- neo4j
+```bash
+  CALL apoc.load.json("users.json")
+  YIELD value
+  MERGE (p:User {name: value.n.properties.name, id: value.n.properties.id, username: value.n.properties.username})
+```
+```bash
+  CALL apoc.load.json("bots.json")
+  YIELD value
+  MERGE (p:Bot {name: value.n.properties.name, id: value.n.properties.id, username: value.n.properties.username})
+```
+```bash
+  CALL apoc.load.json("follow.json")
+  YIELD value
+  MATCH(p:Bot {id:value.p.start.properties.id})
+  MATCH(u: User {id:toInteger(value.p.end.properties.id)})
+  CREATE (p)-[:FOLLOWS]->(u)
+```
