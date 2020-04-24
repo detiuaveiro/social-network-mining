@@ -65,6 +65,8 @@ tweet = {
 
 cc.save_tweet({
 	"bot_id": 31868,
+	"bot_name": "fag",
+	"bot_screen_name": "FagGoT",
 	"data": tweet
 })
 
@@ -260,6 +262,8 @@ tweet = {
 
 cc.save_tweet({
 	"bot_id": 31868,
+	"bot_name": "fag",
+	"bot_screen_name": "FagGoT",
 	"data": tweet
 })
 
@@ -446,6 +450,8 @@ tweet = {
 
 cc.save_tweet({
 	"bot_id": 31868,
+	"bot_name": "fag",
+	"bot_screen_name": "FagGoT",
 	"data": tweet
 })
 
