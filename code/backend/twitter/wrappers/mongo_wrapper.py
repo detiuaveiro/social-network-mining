@@ -74,6 +74,7 @@ class MongoAPI:
         except Exception as e:
             log.error("ERROR INSERTING DOCUMENT")
             log.error("Error: " + str(e))
+            log.error(data)
 
     def insert_tweets(self, data):
         """Inserts a new single document into our Tweets Collection
@@ -86,6 +87,7 @@ class MongoAPI:
         except Exception as e:
             log.error("ERROR INSERTING DOCUMENT")
             log.error("Error: " + str(e))
+            log.error(data)
 
     def insert_messages(self, data):
         """Inserts a new single document into our Messages Collection
