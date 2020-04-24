@@ -181,7 +181,7 @@ class Control_Center(Rabbitmq):
 	def __quote_tweet_log(self, data):
 		"""
 		Action to reply a tweet:
-				Calls progres_stats to add what the bot replied and to which tweet
+				Calls postgres_stats to add what the bot replied and to which tweet
 
 		@param data: dict contaning bot and the reply they made
 		"""
@@ -195,7 +195,6 @@ class Control_Center(Rabbitmq):
 		else:
 			log.debug(f"Bot {data['bot_id']} could not reply with {data['data']['id']}")
 			log.error(f"Bot like caused error {result['error']}")
-
 
 	def request_tweet_like(self, data):
 		"""
@@ -296,9 +295,9 @@ class Control_Center(Rabbitmq):
 		log.info(f"Bot {data['bot_id']} requests a reply {data['data']['id']}")
 
 		self.postgres_client.insert_log({
-				"bot_id": data["bot_id"],
-				"action": log_actions.REPLY_REQ,
-				"target_id": data['data']['id']
+			"bot_id": data["bot_id"],
+			"action": log_actions.REPLY_REQ,
+			"target_id": data['data']['id']
 		})
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_REPLY,
@@ -346,13 +345,13 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing the bot id and the tweet id
 		"""
-		
+
 		log.info(f"Bot {data['bot_id']} requests a follow from {data['data']['id']}")
 
 		self.postgres_client.insert_log({
-				"bot_id": data["bot_id"],
-				"action": log_actions.FOLLOW_REQ,
-				"target_id": data['data']['id']
+			"bot_id": data["bot_id"],
+			"action": log_actions.FOLLOW_REQ,
+			"target_id": data['data']['id']
 		})
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
@@ -570,12 +569,7 @@ class Control_Center(Rabbitmq):
 				"id": data['data']['id']
 			})
 
-			new_data = {
-				"bot_id": data["bot_id"],
-				'bot_name': data["bot_name"],
-				'bot_screen_name': data["bot_screen_name"],
-			}
-
+			new_data = data.copy()
 			if type(data["data"]["user"]) is dict:
 				new_data["data"] = data["data"]["user"]
 				self.save_user(new_data)
@@ -583,9 +577,7 @@ class Control_Center(Rabbitmq):
 			else:
 				new_data["user"] = data["data"]["user"]
 
-			user_type = self.__save_blank_user_if_exists(
-				data=new_data
-			)
+			user_type = self.__save_blank_user_if_exists(data=new_data)
 
 			self.neo4j_client.add_writer_relationship({
 				"user_id": data["data"]["user"],
@@ -593,13 +585,11 @@ class Control_Center(Rabbitmq):
 				"user_type": user_type
 			})
 
-			if "in_reply_to_status_id" in data["data"] and data["data"]["in_reply_to_status_id"] is not None:
+			if "in_reply_to_status_id" in data["data"] and data["data"]["in_reply_to_status_id"]:
 				log.info(f"Tweet was a reply to some other tweet, must insert the reply relation too")
 				new_data["id"] = data["data"]["in_reply_to_status_id"]
 				new_data["user"] = data["data"]["in_reply_to_user_id"]
-				self.__save_blank_tweet_if_exists(
-					data=new_data
-				)
+				self.__save_blank_tweet_if_exists(data=new_data)
 
 				self.neo4j_client.add_reply_relationship({
 					"reply": data["data"]["id"],
@@ -612,11 +602,8 @@ class Control_Center(Rabbitmq):
 						"target_id": data["data"]["id"]
 					})
 
-			elif (
-					"is_quote_status" in data["data"] and
-					data["data"]["is_quote_status"] and
-					"quoted_status" in data["data"]
-			):
+			elif ("is_quote_status" in data["data"] and data["data"]["is_quote_status"]
+			      and "quoted_status" in data["data"]):
 
 				log.info(f"Tweet was quoting some other tweet, must insert the quote relation too")
 				new_data["data"] = data["data"]["quoted_status"]
@@ -730,7 +717,7 @@ class Control_Center(Rabbitmq):
 
 			self.__follow_user(follower['id'], user_id)
 
-			# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
+		# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
 
 	def send_keywords(self, data):
 		log.info("Starting to sending the keywords to the bot")
@@ -783,7 +770,7 @@ class Control_Center(Rabbitmq):
 		}
 		try:
 			self._send(routing_key='tasks.twitter.' + str(bot), message=payload)
-			# self._close()
+		# self._close()
 		except Exception as e:
 			log.error(f"FAILED TO SEND MESSAGE: {e}")
 

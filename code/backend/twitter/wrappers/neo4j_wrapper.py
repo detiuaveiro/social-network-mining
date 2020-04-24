@@ -123,22 +123,14 @@ class Neo4jAPI:
         the user's type
         """
 
-        if (
-            "tweet_id" not in data.keys()
-            or "user_id" not in data.keys()
-            or "user_type" not in data.keys()
-        ):
+        if "tweet_id" not in data.keys() or "user_id" not in data.keys() or "user_type" not in data.keys():
             log.error("ERROR CREATING A WRITE RELATIONSHIP")
-            log.error(
-                "Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type"
-            )
-
+            log.error("Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type")
             return
 
         if data["user_type"] not in [BOT_LABEL, USER_LABEL]:
             log.error("ERROR CREATING A WRITE RELATIONSHIP")
             log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
-
             return
 
         with self.driver.session() as session:
@@ -158,22 +150,14 @@ class Neo4jAPI:
         the user's type
         """
 
-        if (
-            "tweet_id" not in data.keys()
-            or "user_id" not in data.keys()
-            or "user_type" not in data.keys()
-        ):
+        if "tweet_id" not in data.keys() or "user_id" not in data.keys() or "user_type" not in data.keys():
             log.error("ERROR CREATING A RETWEET RELATIONSHIP")
-            log.error(
-                "Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type"
-            )
-
+            log.error("Error: Specified data doesn't contain necessary fields - tweet_id, user_id, user_type")
             return
 
         if data["user_type"] not in [BOT_LABEL, USER_LABEL]:
             log.error("ERROR CREATING A RETWEET RELATIONSHIP")
             log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
-
             return
 
         with self.driver.session() as session:
@@ -193,16 +177,10 @@ class Neo4jAPI:
         quoted_tweet
         """
 
-        if (
-            "tweet_id" not in data.keys()
-            or "quoted_tweet" not in data.keys()
-        ):
+        if "tweet_id" not in data.keys() or "quoted_tweet" not in data.keys():
             log.error("ERROR CREATING A QUOTE RELATIONSHIP")
-            log.error(
-                "Error: Specified data doesn't contain necessary fields - tweet_id and quoted_tweet"
-            )
+            log.error("Error: Specified data doesn't contain necessary fields - tweet_id and quoted_tweet")
             log.error(data)
-
             return
 
         with self.driver.session() as session:
@@ -220,15 +198,9 @@ class Neo4jAPI:
 
         @param data: The params of the new relationship we want to create. Should include a tweet and the reply
         """
-        if (
-            "tweet" not in data.keys()
-            or "reply" not in data.keys()
-        ):
+        if "tweet" not in data.keys() or "reply" not in data.keys():
             log.error("ERROR CREATING A REPLY RELATIONSHIP")
-            log.error(
-                "Error: Specified data doesn't contain necessary fields - tweet and reply"
-            )
-
+            log.error("Error: Specified data doesn't contain necessary fields - tweet and reply")
             return
 
         with self.driver.session() as session:
