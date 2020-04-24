@@ -582,7 +582,9 @@ class Control_Center(Rabbitmq):
 				data["data"]["user"] = data["data"]["user"]["id"]
 
 			user_type = self.__save_blank_user_if_exists(data={
-				"bot_id": data['bot_id'],
+				"bot_id": data["bot_id"],
+				'bot_name': data["bot_name"],
+				'bot_screen_name': data["bot_screen_name"],
 				"user": data["data"]["user"]
 			})
 
@@ -596,6 +598,8 @@ class Control_Center(Rabbitmq):
 				log.info(f"Tweet was a reply to some other tweet, must insert the reply relation too")
 				self.__save_blank_tweet_if_exists(data={
 					"bot_id": data["bot_id"],
+					'bot_name': data["bot_name"],
+					'bot_screen_name': data["bot_screen_name"],
 					"id": data["data"]["in_reply_to_status_id"],
 					"user": data["data"]["in_reply_to_user_id"]
 				})
