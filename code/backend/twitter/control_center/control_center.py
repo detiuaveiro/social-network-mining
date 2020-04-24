@@ -108,20 +108,19 @@ class Control_Center(Rabbitmq):
 			return
 		self.neo4j_client.add_relationship(relationship)
 
-		if type1 == "Bot":
+		if type1 == "Bot" or type2 == "Bot":
+			bot_id, user_id = (user1_id, user2_id) if type1 == "Bot" else (user2_id, user1_id)
+
 			self.postgres_client.insert_log({
-				"bot_id": user1_id,
+				"bot_id": bot_id,
 				"action": log_actions.FOLLOW,
-				"target_id": user1_id
+				"target_id": user_id
 			})
-			log.info(f"{type1} {user1_id} successfully followed the {type2} {user2_id}")
-		if type2 == "Bot":
-			self.postgres_client.insert_log({
-				"bot_id": user2_id,
-				"action": log_actions.FOLLOW,
-				"target_id": user2_id
-			})
-			log.info(f"{type2} {user2_id} successfully followed the {type1} {user1_id}")
+			log.info(f"Bot {bot_id} successfully followed the user (or bot) {user_id}")
+
+			# if the bot is following a user, we ask the bot to get the followers of that user
+			log.info(f"Asking bot with id <{bot_id}> to get the followers of the user with id {user_id}")
+			self.send(bot_id, ServerToBot.FIND_FOLLOWERS, user_id)
 
 		log.info("Saved follow relation with success")
 
