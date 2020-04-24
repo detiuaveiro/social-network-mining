@@ -43,12 +43,10 @@ class Control_Center(Rabbitmq):
 
 	def action(self, message):
 		message_type = message['type']
-		log.info(f"Received new action: {message['bot_id']} wants to do {message_type}")
-
-		log.debug(f"Received message of type {message_type}")
+		log.info(f"Received new action: {message['bot_id']} wants to do {BotToServer(message_type).name}")
 
 		if message_type == BotToServer.EVENT_TWEET_LIKED:
-			self.like_tweet(message)
+			self.__like_tweet_log(message)
 
 		# elif message_type == BotToServer.EVENT_TWEET_RETWEETED:
 		# 	self.__retweet_log(message)
@@ -538,7 +536,6 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing the id of the tweet to bee saved
 		"""
-		log.debug(data)
 		tweet_exists = self.mongo_client.search(
 			collection="tweets",
 			query={"id": data["data"]["id"]},
