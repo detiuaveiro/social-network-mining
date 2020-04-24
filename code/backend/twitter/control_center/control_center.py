@@ -394,7 +394,7 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the id of the bot and the user object
 		"""
 
-		log.info("Saving User")
+		log.info(f"Saving User <{data['data']['id']}>")
 
 		user, bot_id = data["data"], data["bot_id"]
 
@@ -536,6 +536,8 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing the id of the tweet to bee saved
 		"""
+		log.info(f"Saving Tweet <{data['data']['id']}>")
+
 		tweet_exists = self.mongo_client.search(
 			collection="tweets",
 			query={"id": data["data"]["id"]},
