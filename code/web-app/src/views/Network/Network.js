@@ -45,7 +45,7 @@ class Network extends Component {
   }
 
   state = {
-    loading: false,
+    loading: true,
     graph: {
       nodes: [],
       edges: []
@@ -59,7 +59,7 @@ class Network extends Component {
     options: {
       autoResize: true,
       layout: {
-        hierarchical: false
+        hierarchical: false,
       },
       edges: {
         color: "#000000",
@@ -81,8 +81,8 @@ class Network extends Component {
       physics: {
         enabled: true,
         barnesHut: {
-          gravitationalConstant: -12000,
-          centralGravity: 0.6,
+          gravitationalConstant: -10000,
+          centralGravity: 0.4,
         }
       },
 
@@ -100,12 +100,20 @@ class Network extends Component {
     hideLinks: false,
 
     allNodes: null,
+    allLinks: null,
     bots: null,
     users: null,
-    allLinks: null,
+
+    bots: null,
+    users: null,
 
     modal: false,
-    focusedUser: null,
+    modalType: null,
+    modalInfo: null,
+
+    botRoot: [],
+    userRoot: [],
+    foundNode: null
   }
 
   getBaseNetwork() {
@@ -121,12 +129,16 @@ class Network extends Component {
       }
     }).then(data => {
       if (data != null && data != {}) {
+        console.log(data)
+
         data = data.data
+
 
         var tempNodes = []
         var tempLinks = []
         var tempBots = []
         var tempUsers = []
+
         var tempNodesForSelect = []
         var tempNodesForSelectBots = []
         var tempNodesForSelectUsers = []
@@ -139,8 +151,13 @@ class Network extends Component {
             tempItem['name'] = item.properties.name
             tempItem['real_id'] = item.properties.id
             tempItem['username'] = "@" + item.properties.username
-            tempItem['label'] = item.properties.name
             tempItem['type'] = item.labels[0]
+
+            if (tempItem['type'] == "Tweet") {
+              tempItem['label'] = "#" + tempItem['real_id']
+            } else {
+              tempItem['label'] = item.properties.name
+            }
 
             if (tempItem['type'] == "User") {
               tempItem['color'] = {
@@ -151,10 +168,10 @@ class Network extends Component {
                   background: '#20c997'
                 }
               }
-
               tempUsers.push(tempItem)
+
               tempNodesForSelectUsers.push({ value: tempItem['id'], label: "(" + tempItem['type'] + " #" + tempItem['real_id'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
-            } else {
+            } else if (tempItem['type'] == "Bot") {
               tempItem['color'] = {
                 border: '#63218f',
                 background: "#833ab4",
@@ -163,13 +180,28 @@ class Network extends Component {
                   background: '#20c997'
                 }
               }
-
               tempBots.push(tempItem)
+
               tempNodesForSelectBots.push({ value: tempItem['id'], label: "(" + tempItem['type'] + " #" + tempItem['real_id'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
+            } else if (tempItem['type'] == "Tweet") {
+              tempItem['color'] = {
+                border: '#ce2c2c',
+                background: "#f86c6b",
+                highlight: {
+                  border: '#4dbd74',
+                  background: '#20c997'
+                }
+              }
+
             }
 
             tempNodes.push(tempItem)
-            tempNodesForSelect.push({ value: tempItem['id'], label: "(" + tempItem['type'] + " #" + tempItem['real_id'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
+
+            if (tempItem['type'] == "Tweet") {
+              tempNodesForSelect.push({ value: tempItem['id'], label: "(" + tempItem['type'] + ") #" + tempItem['real_id'] })
+            } else {
+              tempNodesForSelect.push({ value: tempItem['id'], label: "(" + tempItem['type'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
+            }
           } else {
             var tempItem = {}
             tempItem['id'] = item.id
@@ -191,8 +223,106 @@ class Network extends Component {
           usersForSelect: tempNodesForSelectUsers,
 
           allNodes: tempNodes,
+          allLinks: tempLinks,
           bots: tempBots,
-          users: tempUsers,
+          users: tempUsers
+        })
+
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        error: true,
+        loading: false
+      })
+    });
+  }
+
+  getSubNetwork(url) {
+    fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+        console.log(data)
+        data = data.data
+
+        var tempNodes = []
+        var tempLinks = []
+
+        var tempNodesForSelect = []
+
+        data.forEach(item => {
+          item.nodes.forEach(node => {
+            var element = tempNodes.find((element) => {
+              return element.id == node.id;
+            })
+            if (element == null) {
+              var tempItem = {}
+              tempItem['id'] = node.id
+              tempItem['name'] = node.properties.name
+              tempItem['real_id'] = node.properties.id
+              tempItem['username'] = "@" + node.properties.username
+              tempItem['label'] = node.properties.name
+              tempItem['type'] = node.labels[0]
+
+              if (tempItem['type'] == "User") {
+                tempItem['color'] = {
+                  border: '#405de6',
+                  background: "#1da1f2",
+                  highlight: {
+                    border: '#4dbd74',
+                    background: '#20c997'
+                  }
+                }
+
+              } else {
+                tempItem['color'] = {
+                  border: '#63218f',
+                  background: "#833ab4",
+                  highlight: {
+                    border: '#4dbd74',
+                    background: '#20c997'
+                  }
+                }
+
+              }
+              tempNodes.push(tempItem)
+              tempNodesForSelect.push({ value: tempItem['id'], label: "(" + tempItem['type'] + " #" + tempItem['real_id'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
+            }
+          })
+
+          item.rels.forEach(item => {
+            var element = tempLinks.find((element) => {
+              return element.id == item.id;
+            })
+            if (element == null) {
+              var tempItem = {}
+              tempItem['id'] = item.id
+              tempItem['from'] = item.start.id
+              tempItem['to'] = item.end.id
+              tempItem['label'] = item.label
+
+              tempLinks.push(tempItem)
+            }
+          })
+
+        })
+        this.setState({
+          graph: {
+            nodes: tempNodes,
+            edges: tempLinks,
+          },
+          nodesForSelect: tempNodesForSelect,
+
+          allNodes: tempNodes,
           allLinks: tempLinks
         })
 
@@ -217,7 +347,6 @@ class Network extends Component {
     this.setState({
       loading: false
     })
-
   }
 
 
@@ -226,15 +355,17 @@ class Network extends Component {
 
   // Graph methods //////////////////////////////////////////////////////////
   resetNetwork() {
-    this.setState({ hideBots: false, hideLinks: false, hideUsers: false })
+    this.setState({ hideBots: false, hideLinks: false, hideUsers: false, botRoot: [], userRoot: [] })
     document.getElementById("hideBots").checked = false
     document.getElementById("hideUsers").checked = false
     document.getElementById("hideLinks").checked = false
+    document.getElementById("botDepth").value = ""
+    document.getElementById("userDepth").value = ""
 
     if (this.state.graphRef != null) {
       this.state.graphRef.selectNodes([])
       this.state.graphRef.moveTo({
-        position: {x: 0, y: 0},
+        position: { x: 0, y: 0 },
         scale: 0.9,
         animation: {
           duration: 100,
@@ -255,11 +386,82 @@ class Network extends Component {
     })
   }
 
+  searchNetwork() {
+    if (this.state.botRoot.length == 0 && this.state.userRoot.length == 0 && document.getElementById("botDepth").value == "" && document.getElementById("userDepth").value == "") {
+      this.resetNetwork()
+    } else {
+      this.setState({ hideBots: false, hideLinks: false, hideUsers: false, nodesForSelect: [], foundNode: '' })
+      document.getElementById("hideBots").checked = false
+      document.getElementById("hideUsers").checked = false
+      document.getElementById("hideLinks").checked = false
+
+
+      if (this.state.graphRef != null) {
+        this.state.graphRef.selectNodes([])
+        this.state.graphRef.moveTo({
+          position: { x: 0, y: 0 },
+          scale: 0.9,
+          animation: {
+            duration: 100,
+            easingFunction: 'linear'
+          }
+        });
+      }
+
+      this.setState({
+        loading: true
+      })
+
+      // Get Network
+      var url = baseURL + "twitter/sub_network?"
+
+      for (const [index, value] of this.state.botRoot.entries()) {
+
+        var element = this.state.bots.find((element) => {
+          return element.id == value.value;
+        })
+        console.log(element)
+        url += "bots_id=" + element.real_id + "&"
+
+      }
+
+      if (document.getElementById("botDepth").value != "") {
+        url += "bots_depth=" + document.getElementById("botDepth").value + "&"
+      }
+
+
+      for (const [index, value] of this.state.userRoot.entries()) {
+
+        console.log(this.state.allNodes)
+        var element = this.state.users.find((element) => {
+          return element.id == value.value;
+        })
+
+        url += "users_id=" + element.real_id + "&"
+
+      }
+
+      if (document.getElementById("userDepth").value != "") {
+        url += "users_depth=" + document.getElementById("userDepth").value + "&"
+      }
+
+      url = url.replace(/.$/, "")
+      console.log(url)
+      console.log("http://localhost:8000/twitter/sub_network?bots_id=1242484445560451072")
+      this.getSubNetwork(url)
+
+      this.setState({
+        loading: false
+      })
+    }
+  }
+
   /////////////////////////////////////////////////////////////////////
 
 
   // Select Methods //////////////////////////////////////////////////////////
   changeFindNode = (event) => {
+    this.setState({ foundNode: event });
     var node = event.value
     if (this.state.graphRef != null) {
       try {
@@ -271,7 +473,7 @@ class Network extends Component {
             easingFunction: 'linear'
           }
         })
-        
+
         this.state.graphRef.moveTo({ position: this.state.graphRef.getPositions([node])[node] })
       } catch (e) {
 
@@ -279,7 +481,24 @@ class Network extends Component {
     }
   };
 
+  changeRootBot = (selectedOption) => {
+    if (selectedOption != null) {
+      this.setState({ botRoot: selectedOption });
+    } else {
+      this.setState({ botRoot: [] });
+    }
+  }
+  changeRootUser = (selectedOption) => {
+    if (selectedOption != null) {
+      this.setState({ userRoot: selectedOption });
+    } else {
+      this.setState({ userRoot: [] });
+    }
+  }
+
   removeFocus = () => {
+    this.setState({ foundNode: '' });
+
     if (this.state.graphRef != null) {
       this.state.graphRef.selectNodes([])
       this.state.graphRef.moveTo({
@@ -306,18 +525,33 @@ class Network extends Component {
             }
           })
         } else {
+
+          var tempArray = []
+          this.state.allNodes.forEach(item => {
+            if (item.type == "User") {
+              tempArray.push(item)
+            }
+          })
+
           this.setState({
             graph: {
-              nodes: this.state.users,
+              nodes: tempArray,
               edges: this.state.allLinks
             }
           })
         }
       } else {
         if (this.state.hideUsers) {
+          var tempArray = []
+          this.state.allNodes.forEach(item => {
+            if (item.type == "Bot") {
+              tempArray.push(item)
+            }
+          })
+
           this.setState({
             graph: {
-              nodes: this.state.bots,
+              nodes: tempArray,
               edges: this.state.allLinks
             }
           })
@@ -347,18 +581,32 @@ class Network extends Component {
             }
           })
         } else {
+          var tempArray = []
+          this.state.allNodes.forEach(item => {
+            if (item.type == "Bot") {
+              tempArray.push(item)
+            }
+          })
+
           this.setState({
             graph: {
-              nodes: this.state.bots,
+              nodes: tempArray,
               edges: this.state.allLinks
             }
           })
         }
       } else {
         if (this.state.hideBots) {
+          var tempArray = []
+          this.state.allNodes.forEach(item => {
+            if (item.type == "User") {
+              tempArray.push(item)
+            }
+          })
+
           this.setState({
             graph: {
-              nodes: this.state.users,
+              nodes: tempArray,
               edges: this.state.allLinks
             }
           })
@@ -405,10 +653,10 @@ class Network extends Component {
   handleClose() {
     this.setState({
       modal: false,
-      focusedUser: null,
+      modalType: null,
+      modalInfo: null,
     });
   }
-
   /////////////////////////////////////////////////////////////////////
 
 
@@ -418,19 +666,31 @@ class Network extends Component {
         var { nodes, edges } = event;
         this.state.graphRef.selectNodes([nodes[0]])
 
-        console.log(nodes[0])
+
+        var element = this.state.graph.nodes.find((element) => {
+          return element.id == nodes[0];
+        })
+
+        var type
+        if (element.type == "Bot") {
+          type = "BOT"
+        } else if (element.type == "User") {
+          type = "USER"
+        } else {
+          type = "TWEET"
+        }
 
         this.setState({
           modal: true,
-          focusedUser: this.state.graph.nodes.find((element) => {
-            return element.id == nodes[0];
-          })
+          modalInfo: element,
+          modalType: type
         })
       }.bind(this),
+
       click: function (event) {
         var { nodes } = event;
 
-        this.focus(nodes[0], {
+        this.state.graphRef.focus(nodes[0], {
           scale: 1.3,
           animation: {
             duration: 100,
@@ -438,8 +698,14 @@ class Network extends Component {
           }
         })
 
-        this.moveTo({ position: this.getPositions([nodes[0]])[nodes[0]] })
-      }
+        var element = this.state.nodesForSelect.find((element) => {
+          return element.value == nodes[0];
+        })
+
+        this.setState({ foundNode: element })
+
+        this.state.graphRef.moveTo({ position: this.state.graphRef.getPositions([nodes[0]])[nodes[0]] })
+      }.bind(this)
     }
 
     var infoCard
@@ -469,35 +735,91 @@ class Network extends Component {
 
     var modal
     if (this.state.modal) {
-      modal = <Dialog class="fade-in"
-        open={this.state.modal}
-        onClose={() => this.handleClose()}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          <span>{"👤 Info on " + this.state.focusedUser.name}</span><span style={{ color: "#999" }}>{" (" + this.state.focusedUser.username + ")"}</span>
-        </DialogTitle>
-        <DialogContent style={{ minWidth: "600px" }}>
-          <Container fluid>
-            <Row>
-              <Col xs="12" md="12">
+      if (this.state.modalType == "USER") {
+        modal =
+          <Dialog class="fade-in"
+            open={this.state.modal}
+            onClose={() => this.handleClose()}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              <span>{"👤 Info on user "}</span><strong style={{ color: "#1da1f2" }}>{this.state.modalInfo.name}</strong><span style={{ color: "#999", fontSize: "15px" }}>{" (" + this.state.modalInfo.username + ")"}</span>
+            </DialogTitle>
+            <DialogContent style={{ minWidth: "600px" }}>
+              <Container fluid>
+                <Row>
+                  <Col xs="12" md="12">
 
-              </Col>
-            </Row>
+                  </Col>
+                </Row>
+              </Container>
 
-            <DialogContentText>
-              <span id="error" style={{ display: "None", color: "#f86c6b" }}>Sorry, the tweet can't be empty!</span>
-            </DialogContentText>
-          </Container>
-
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => this.handleClose()} color="info">
-            Cancel
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => this.handleClose()} color="info">
+                Cancel
           </Button>
-        </DialogActions>
-      </Dialog>
+            </DialogActions>
+          </Dialog>
+      } else if (this.state.modalType == "BOT") {
+        modal =
+          <Dialog class="fade-in"
+            open={this.state.modal}
+            onClose={() => this.handleClose()}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              <span>{"🤖 Info on bot "}</span><strong style={{ color: "#1da1f2" }}>{this.state.modalInfo.name}</strong><span style={{ color: "#999", fontSize: "15px" }}>{" (" + this.state.modalInfo.username + ")"}</span>
+            </DialogTitle>
+            <DialogContent style={{ minWidth: "600px" }}>
+              <Container fluid>
+                <Row>
+                  <Col xs="12" md="12">
+
+                  </Col>
+                </Row>
+
+              </Container>
+
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => this.handleClose()} color="info">
+                Cancel
+        </Button>
+            </DialogActions>
+          </Dialog>
+      } else if (this.state.modalType == "TWEET") {
+        modal =
+          <Dialog class="fade-in"
+            open={this.state.modal}
+            onClose={() => this.handleClose()}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              <span>{"🐦 Tweet #" + this.state.modalInfo.name}</span>
+            </DialogTitle>
+            <DialogContent style={{ minWidth: "600px" }}>
+              <Container fluid>
+                <Row>
+                  <Col xs="12" md="12">
+
+                  </Col>
+                </Row>
+
+              </Container>
+
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => this.handleClose()} color="info">
+                Cancel
+      </Button>
+            </DialogActions>
+          </Dialog>
+      }
+
     }
 
 
@@ -546,6 +868,7 @@ class Network extends Component {
                           <Select
                             defaultValue={[]}
                             id="findNode" onChange={this.changeFindNode}
+                            value={this.state.foundNode || ''}
                             options={this.state.nodesForSelect}
                             className="basic-single"
                             classNamePrefix="select"
@@ -650,9 +973,12 @@ class Network extends Component {
                         defaultValue={[]}
                         isMulti
                         name="colors"
+                        id="botRoot"
+                        value={this.state.botRoot || ''}
                         options={this.state.botsForSelect}
                         className="basic-multi-select"
                         classNamePrefix="select"
+                        onChange={this.changeRootBot}
                       />
                     </Col>
                   </Row>
@@ -660,7 +986,7 @@ class Network extends Component {
                     <Col md="12">
                       <FormGroup>
                         <Label htmlFor="name">Bot node depth</Label>
-                        <Input type="text" id="name" placeholder="0" required />
+                        <Input type="text" id="botDepth" placeholder="0" />
                       </FormGroup>
                     </Col>
                   </Row>
@@ -674,9 +1000,12 @@ class Network extends Component {
                         defaultValue={[]}
                         isMulti
                         name="colors"
+                        id="userRoot"
+                        value={this.state.userRoot || ''}
                         options={this.state.usersForSelect}
                         className="basic-multi-select"
                         classNamePrefix="select"
+                        onChange={this.changeRootUser}
                       />
                     </Col>
                   </Row>
@@ -684,7 +1013,7 @@ class Network extends Component {
                     <Col md="12">
                       <FormGroup>
                         <Label htmlFor="name">User node depth</Label>
-                        <Input type="text" id="name" placeholder="0" required />
+                        <Input type="text" id="userDepth" placeholder="0" />
                       </FormGroup>
                     </Col>
                   </Row>
@@ -695,12 +1024,12 @@ class Network extends Component {
                     <Col md="6" style={{ alignItems: "center" }}>
                       <Button block outline color="danger"
                         onClick={() => this.resetNetwork()}
-                      > Reset</Button>
+                      > Reset <i class="fas fa-times" style={{ marginLeft: "8px" }}></i></Button>
                     </Col>
                     <Col md="6">
                       <Button block outline color="success"
-
-                      > Search</Button>
+                        onClick={() => this.searchNetwork()}
+                      > Search <i class="fas fa-search" style={{ marginLeft: "8px" }}></i></Button>
                     </Col>
                   </Row>
 
