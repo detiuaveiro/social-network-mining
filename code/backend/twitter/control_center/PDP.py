@@ -168,8 +168,8 @@ class PDP:
 		"""
 		log.info(f"Creating users for the bot to start following")
 		num_users = random.randint(2, 10)
-		with open("first_time_users.csv", "r") as f:
-			users = f.read().rstrip().split("\n")
+		with open("first_time_users.json", "r") as f:
+			users = json.load(f)
 
 		bot_list = []
 		while len(bot_list) < num_users:
@@ -232,7 +232,7 @@ class PDP:
 
 		type1 = "Bot" if self.neo4j.check_bot_exists(data["bot_id"]) else "User"
 		type2 = "Bot" if self.neo4j.check_bot_exists(data["user_id"]) else "User"
-		relation_exists = self.neo4j.check_relationship_exists({
+		relation_exists = self.neo4j.check_follow_exists({
 			"id_1": data["bot_id"],
 			"type_1": type1,
 			"id_2": data["user_id"],
@@ -315,7 +315,7 @@ class PDP:
 		})
 		if bot_logs['success']:
 			for bot_log in bot_logs['data']:
-				user_of_tweet_liked = self.mongo.find(
+				user_of_tweet_liked = self.mongo.search(
 					collection="tweets",
 					query={"id": bot_log["target_id"]},
 					fields=["user"],
@@ -366,7 +366,7 @@ class PDP:
 		})
 		if bot_logs['success']:
 			for bot_log in bot_logs['data']:
-				user_of_retweet = self.mongo.find(
+				user_of_retweet = self.mongo.search(
 					collection="tweets",
 					query={"id": bot_log["target_id"]},
 					fields=["user"],
@@ -430,7 +430,7 @@ class PDP:
 
 		if bot_logs['success']:
 			for bot_log in bot_logs['data']:
-				user_of_reply = self.mongo.find(
+				user_of_reply = self.mongo.search(
 					collection="tweets",
 					query={"id": bot_log["target_id"]},
 					fields=["user"],
