@@ -87,7 +87,6 @@ class TwitterBot(RabbitMessaging):
 			'tweets': tweets
 		}, messages_types.BotToServer.QUERY_FOLLOW_USER)
 
-
 	def __send_user(self, user: User, message_type: messages_types.BotToServer):
 		"""Function to send a twitter's User object to the server
 
@@ -226,7 +225,8 @@ class TwitterBot(RabbitMessaging):
 					f"Tweet with author info {tweet_user.following if 'following' in user_attributes else 'nothing'}")
 				if 'following' in user_attributes and not tweet_user.following or 'following' not in user_attributes:
 					logger.debug(f"Requesting to follow user {tweet_user.id}")
-					self.__send_user(tweet_user, messages_types.BotToServer.QUERY_FOLLOW_USER)
+					self.__send_request_follow(tweet_user)
+					# self.__send_user(tweet_user, messages_types.BotToServer.QUERY_FOLLOW_USER)
 
 				if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
 					logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
