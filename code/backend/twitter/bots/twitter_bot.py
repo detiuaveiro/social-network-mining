@@ -298,6 +298,18 @@ class TwitterBot(RabbitMessaging):
 			'followers': [follower._json for follower in followers]
 		}, messages_types.BotToServer.SAVE_FOLLOWERS)
 
+	def __get_user_dict(self, user_id: int):
+		"""Function to get the full user object by its id, and send it to the control center
+		:param user_id: id of the user we want to send to the control center
+		"""
+		logger.info(f"Getting user of id {user_id}")
+
+		try:
+			self.__send_user(self._twitter_api.get_user(user_id), messages_types.BotToServer.SAVE_USER)
+		except TweepError as error:
+			logger.exception(f"Error <{error}> finding user with id <{user_id}>: ")
+			return None
+
 	def __get_tweet_by_id(self, tweet_id: int):
 		"""
 		Function to get the full tweet object by its id, and send it to the control center
@@ -426,6 +438,8 @@ class TwitterBot(RabbitMessaging):
 						self.__search_tweets(keywords=task_params)
 					elif task_type == messages_types.ServerToBot.GET_TWEET_BY_ID:
 						self.__get_tweet_by_id(tweet_id=task_params)
+					elif task_type == messages_types.ServerToBot.GET_USER_BY_ID:
+						self.__get_user_dict(user_id=task_params)
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
 				else:
