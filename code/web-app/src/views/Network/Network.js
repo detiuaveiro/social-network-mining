@@ -20,6 +20,9 @@ import {
 import Card from "../../components/Card/Card";
 import CardHeader from "../../components/Card/CardHeader";
 import CardBody from "../../components/Card/CardBody";
+import CardFooter from "../../components/Card/CardFooter";
+import CardIcon from "../../components/Card/CardIcon";
+import CardAvatar from "../../components/Card/CardAvatar.js";
 
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
@@ -129,7 +132,6 @@ class Network extends Component {
       }
     }).then(data => {
       if (data != null && data != {}) {
-        console.log(data)
 
         data = data.data
 
@@ -251,7 +253,6 @@ class Network extends Component {
       }
     }).then(data => {
       if (data != null && data != {}) {
-        console.log(data)
         data = data.data
 
         var tempNodes = []
@@ -420,7 +421,6 @@ class Network extends Component {
         var element = this.state.bots.find((element) => {
           return element.id == value.value;
         })
-        console.log(element)
         url += "bots_id=" + element.real_id + "&"
 
       }
@@ -432,7 +432,6 @@ class Network extends Component {
 
       for (const [index, value] of this.state.userRoot.entries()) {
 
-        console.log(this.state.allNodes)
         var element = this.state.users.find((element) => {
           return element.id == value.value;
         })
@@ -446,8 +445,6 @@ class Network extends Component {
       }
 
       url = url.replace(/.$/, "")
-      console.log(url)
-      console.log("http://localhost:8000/twitter/sub_network?bots_id=1242484445560451072")
       this.getSubNetwork(url)
 
       this.setState({
@@ -657,6 +654,36 @@ class Network extends Component {
       modalInfo: null,
     });
   }
+
+  openUserModal(element) {
+    fetch(baseURL + "twitter/users/" + element.real_id + "/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+
+        this.setState({
+          modal: true,
+          modalType: "USER",
+          modalInfo: { 'base': element, 'info': data.data, 'error': null },
+        })
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        modal: true,
+        modalType: "USER",
+        modalInfo: { 'base': element, 'info': null, 'error': error },
+      })
+    });
+  }
   /////////////////////////////////////////////////////////////////////
 
 
@@ -664,27 +691,31 @@ class Network extends Component {
     const events = {
       doubleClick: function (event) {
         var { nodes, edges } = event;
-        this.state.graphRef.selectNodes([nodes[0]])
+
+        try {
+          this.state.graphRef.selectNodes([nodes[0]])
 
 
-        var element = this.state.graph.nodes.find((element) => {
-          return element.id == nodes[0];
-        })
+          var element = this.state.graph.nodes.find((element) => {
+            return element.id == nodes[0];
+          })
 
-        var type
-        if (element.type == "Bot") {
-          type = "BOT"
-        } else if (element.type == "User") {
-          type = "USER"
-        } else {
-          type = "TWEET"
+          var type
+          var info = null
+
+          if (element.type == "Bot") {
+            type = "BOT"
+          } else if (element.type == "User") {
+            this.openUserModal(element)
+
+          } else {
+            type = "TWEET"
+          }
+
+        } catch (e) {
+
         }
 
-        this.setState({
-          modal: true,
-          modalInfo: element,
-          modalType: type
-        })
       }.bind(this),
 
       click: function (event) {
@@ -744,13 +775,59 @@ class Network extends Component {
             aria-describedby="alert-dialog-description"
           >
             <DialogTitle id="alert-dialog-title">
-              <span>{"👤 Info on user "}</span><strong style={{ color: "#1da1f2" }}>{this.state.modalInfo.name}</strong><span style={{ color: "#999", fontSize: "15px" }}>{" (" + this.state.modalInfo.username + ")"}</span>
+              <span>{"👤 Info on user "}</span><strong style={{ color: "#1da1f2" }}>{this.state.modalInfo.base.name}</strong><span style={{ color: "#999", fontSize: "15px" }}>{" (" + this.state.modalInfo.base.username + ")"}</span>
             </DialogTitle>
             <DialogContent style={{ minWidth: "600px" }}>
               <Container fluid>
+                <CardAvatar profile>
+                  <a onClick={e => e.preventDefault()}>
+                    <img src={this.state.modalInfo.info.profile_image_url_https.replace("normal", "400x400")} alt="Profile Image" style={{ minWidth: "100px" }} />
+                  </a>
+                </CardAvatar>
                 <Row>
                   <Col xs="12" md="12">
+                    <Card profile>
 
+                      <CardBody profile>
+                        <h6 style={{
+                          color: "#999",
+                          margin: "0",
+                          fontSize: "14px",
+                          marginTop: "0",
+                          paddingTop: "10px",
+                          marginBottom: "0"
+                        }}>@{this.state.modalInfo.info.screen_name}</h6>
+                        <h4 style={{
+                          color: "#3C4858",
+                          marginTop: "0px",
+                          minHeight: "auto",
+                          fontWeight: "300",
+                          marginBottom: "3px",
+                          textDecoration: "none",
+                          "& small": {
+                            color: "#999",
+                            fontWeight: "400",
+                            lineHeight: "1"
+                          }
+                        }}>{this.state.modalInfo.info.name}</h4>
+                        <h5 style={{ marginTop: "15px" }}>
+                          <i>{this.state.modalInfo.info.description}</i>
+                        </h5>
+
+                        <div class="row" style={{ marginTop: "20px" }}>
+                          <div class="col-sm-12 offset-md-3 col-md-3">
+                            <h6><b>{this.state.modalInfo.info.followers_count}</b> following</h6>
+                          </div>
+
+                          <div class="col-sm-12 col-md-3">
+                            <h6><b>{this.state.modalInfo.info.friends_count}</b> followers</h6>
+                          </div>
+                        </div>
+                      </CardBody>
+                      <CardFooter>
+                        <h5><b style={{ color: "#4dbd74" }}>Active</b></h5>
+                      </CardFooter>
+                    </Card>
                   </Col>
                 </Row>
               </Container>
@@ -799,7 +876,7 @@ class Network extends Component {
             aria-describedby="alert-dialog-description"
           >
             <DialogTitle id="alert-dialog-title">
-              <span>{"🐦 Tweet #" + this.state.modalInfo.name}</span>
+              <span>{"🐦 Tweet #" + this.state.modalInfo.real_id}</span>
             </DialogTitle>
             <DialogContent style={{ minWidth: "600px" }}>
               <Container fluid>
