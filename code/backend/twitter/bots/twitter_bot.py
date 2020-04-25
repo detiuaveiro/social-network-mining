@@ -74,6 +74,20 @@ class TwitterBot(RabbitMessaging):
 			'data': data
 		}), exchange)
 
+	def __send_request_follow(self, user: User):
+		"""
+
+		:param user:
+		:return:
+		"""
+		logger.debug("")
+		tweets = [tweet._json for tweet in self.__user_timeline_tweets(user)]
+		self.__send_data({
+			'user': user._json,
+			'tweets': tweets
+		}, messages_types.BotToServer.QUERY_FOLLOW_USER)
+
+
 	def __send_user(self, user: User, message_type: messages_types.BotToServer):
 		"""Function to send a twitter's User object to the server
 
