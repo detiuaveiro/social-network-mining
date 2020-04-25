@@ -157,6 +157,7 @@ alter table logs alter column target_id type numeric;
 alter table tweets alter column tweet_id type numeric;
 alter table tweets alter column user_id type numeric;
 alter table users alter column user_id type numeric;
+alter table policies alter column bots type numeric[];  
 ```
 
 - neo4j
