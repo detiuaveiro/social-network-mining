@@ -92,12 +92,12 @@ class Control_Center(Rabbitmq):
 				Calls postgres_stats to add new log with the action details
 		"""
 		log.debug(f"User {user1_id} is following {user2_id}")
-		type1 = self.__user_type(user1_id)
-		type2 = self.__user_type(user2_id)
+		type1 = self.__user_type(str(user1_id))
+		type2 = self.__user_type(str(user2_id))
 
 		relationship = {
-			"id_1": user1_id,
-			"id_2": user2_id,
+			"id_1": str(user1_id),
+			"id_2": str(user2_id),
 			"type_1": type1,
 			"type_2": type2
 		}
@@ -119,7 +119,7 @@ class Control_Center(Rabbitmq):
 
 			# if the bot is following a user, we ask the bot to get the followers of that user
 			log.info(f"Asking bot with id <{bot_id}> to get the followers of the user with id {user_id}")
-			self.send(bot_id, ServerToBot.FIND_FOLLOWERS, user_id)
+			self.send(str(bot_id), ServerToBot.FIND_FOLLOWERS, user_id)
 
 		log.info("Saved follow relation with success")
 
@@ -214,8 +214,11 @@ class Control_Center(Rabbitmq):
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_LIKE,
 			"bot_id": data['bot_id'],
+			"bot_id_str": data['bot_id_str'],
 			"user_id": data['data']['user']['id'],
+			"user_id_str": data['data']['user']['id_str'],
 			"tweet_id": data['data']['id'],
+			"tweet_id_str": data['data']['id_str'],
 			"tweet_text": data['data']['text'],
 			"tweet_entities": data['data']['entities']
 		})
@@ -228,7 +231,7 @@ class Control_Center(Rabbitmq):
 				"target_id": data['data']['id']
 			})
 			self.send(
-				data['bot_id'], ServerToBot.LIKE_TWEETS,
+				data['bot_id_str'], ServerToBot.LIKE_TWEETS,
 				data['data']['id']
 			)
 		else:
@@ -257,8 +260,11 @@ class Control_Center(Rabbitmq):
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_RETWEET,
 			"bot_id": data['bot_id'],
+			"bot_id_str": data['bot_id_str'],
 			"user_id": data['data']['user']['id'],
+			"user_id_str":data['data']['user']['id'],
 			"tweet_id": data['data']['id'],
+			"tweet_id_str": data['data']['id_str'],
 			"tweet_text": data['data']['text'],
 			"tweet_entities": data['data']['entities']
 		})
@@ -271,7 +277,7 @@ class Control_Center(Rabbitmq):
 				"target_id": data['data']['id']
 			})
 			self.send(
-				data['bot_id'],
+				data['bot_id_str'],
 				ServerToBot.RETWEET_TWEETS, data['data']['id']
 			)
 		else:
@@ -301,8 +307,11 @@ class Control_Center(Rabbitmq):
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_REPLY,
 			"bot_id": data['bot_id'],
+			"bot_id_str": data['bot_id_str'],
 			"tweet_id": data['data']['id'],
+			"tweet_id_str": data["data"]["id_str"],
 			"user_id": data['data']['user']['id'],
+			"user_id_str": data["data"]["user"]["id_str"],
 			"tweet_text": data['data']['text'],
 			"tweet_entities": data['data']['entities'],
 			"tweet_in_reply_to_status_id_str": data['data']['in_reply_to_status_id_str'],
@@ -323,7 +332,7 @@ class Control_Center(Rabbitmq):
 			reply_text = replier.generate_response(data['data']['text'])
 			log.info(f"Sending reply text <{reply_text}>")
 
-			self.send(data['bot_id'], ServerToBot.POST_TWEET, {
+			self.send(data['bot_id_str'], ServerToBot.POST_TWEET, {
 				"reply_id": data['data']['id'],
 				"text": reply_text
 			})
@@ -355,6 +364,7 @@ class Control_Center(Rabbitmq):
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
 			"bot_id": data['bot_id'],
+			"bot_id_str": data['bot_id_str'],
 			"user_id": data['data']['id']
 		})
 
@@ -367,7 +377,7 @@ class Control_Center(Rabbitmq):
 				"target_id": data['data']['id']
 			})
 			self.send(
-				data['bot_id'],
+				data['bot_id_str'],
 				ServerToBot.FOLLOW_USERS,
 				{
 					"type": "id",
@@ -394,50 +404,50 @@ class Control_Center(Rabbitmq):
 
 		log.info(f"Saving User <{data['data']['id']}>")
 
-		user, bot_id = data["data"], data["bot_id"]
+		user, bot_id, bot_id_str = data["data"], data["bot_id"], data["bot_id_str"]
 
-		exists = self.neo4j_client.check_bot_exists(bot_id)
+		exists = self.neo4j_client.check_bot_exists(bot_id_str)
 		if not exists:
 			log.info(f"Bot {bot_id} is new to the party {data}")
 
 			# save bot to mongo and neo4j
 			self.neo4j_client.add_bot({
-				"id": bot_id,
+				"id": bot_id_str,
 				"name": data['bot_name'],
 				"username": data['bot_screen_name']
 			})
 
 			# we send the list of initial users to follow
 			follow_list = self.pep.first_time_policy()
-			self.send(bot_id, ServerToBot.FOLLOW_USERS, {
+			self.send(bot_id_str, ServerToBot.FOLLOW_USERS, {
 				"type": "screen_name",
 				"data": follow_list,
 			})
 
-		is_bot = self.neo4j_client.check_bot_exists(user["id"])
+		is_bot = self.neo4j_client.check_bot_exists(user["id_str"])
 		if is_bot:
 			log.info("It's a bot that's already been registered in the database")
 			# Update the info of the bot
 			self.mongo_client.update_users(
-				match={"id": user['id']},
+				match={"id_str": user['id_str']},
 				new_data=user,
 				all=False
 			)
 			self.neo4j_client.update_bot({
-				"id": user['id'],
+				"id": user['id_str'],
 				"name": user['name'],
 				"username": user['screen_name']
 			})
 		else:
-			if self.neo4j_client.check_user_exists(user["id"]):
+			if self.neo4j_client.check_user_exists(user["id_str"]):
 				log.info(f"User {user['id']} has already been registered in the database")
 				self.mongo_client.update_users(
-					match={"id": user['id']},
+					match={"id": user['id_str']},
 					new_data=user,
 					all=False
 				)
 				self.neo4j_client.update_user({
-					"id": user["id"],
+					"id": user["id_str"],
 					"name": user['name'],
 					"username": user['screen_name']
 				})
@@ -450,7 +460,7 @@ class Control_Center(Rabbitmq):
 				log.info(f"User {data['data']['id']} is new to the party")
 				self.mongo_client.insert_users(data["data"])
 				self.neo4j_client.add_user({
-					"id": user["id"],
+					"id": user["id_str"],
 					"name": user['name'],
 					"username": user['screen_name']
 				})
@@ -466,11 +476,11 @@ class Control_Center(Rabbitmq):
 			})
 
 			if 'following' in user and user['following']:
-				self.__follow_user(bot_id, user['id'])
+				self.__follow_user(bot_id_str, user['id_str'])
 
 	def __save_user_or_blank_user(self, data):
 		user = data['data']
-		user_type = self.__user_type(user['id'])
+		user_type = self.__user_type(user['id_str'])
 
 		if user_type != "" and 'name' in user and user['name']:
 			self.save_user(data)
@@ -479,9 +489,10 @@ class Control_Center(Rabbitmq):
 		log.debug(f"Inserting blank user with id {user}")
 		blank_user = mongo_utils.BLANK_USER
 		blank_user["id"] = user['id']
-		blank_user["id_str"] = str(user['id'])
+		blank_user["id_str"] = user['id_str']
 		self.save_user({
 			"bot_id": data["bot_id"],
+			"bot_id_str": data["bot_id_str"],
 			'bot_name': data["bot_name"],
 			'bot_screen_name': data["bot_screen_name"],
 			"data": blank_user
@@ -489,7 +500,7 @@ class Control_Center(Rabbitmq):
 
 		log.info("Have to get the full information on the User")
 		self.send(
-			bot=data["bot_id"],
+			bot=data["bot_id_str"],
 			message_type=ServerToBot.GET_USER_BY_ID,
 			params=user['id']
 		)
@@ -498,7 +509,7 @@ class Control_Center(Rabbitmq):
 	def __save_blank_tweet_if_dont_exists(self, data):
 		tweet_exists = self.mongo_client.search(
 			collection="tweets",
-			query={"id": data["id"]},
+			query={"id_str": data["id_str"]},
 			single=True
 		)
 
@@ -508,10 +519,12 @@ class Control_Center(Rabbitmq):
 		log.debug(f"Inserting blank tweet with id {data['id']}")
 		blank_tweet = mongo_utils.BLANK_TWEET
 		blank_tweet["id"] = data["id"]
+		blank_tweet["id_str"] = data["id_str"]
 		blank_tweet["user"] = data["user"]
 
 		self.save_tweet({
 			"bot_id": data["bot_id"],
+			"bot_id_str": data["bot_id_str"],
 			'bot_name': data["bot_name"],
 			'bot_screen_name': data["bot_screen_name"],
 			"data": blank_tweet
@@ -519,7 +532,7 @@ class Control_Center(Rabbitmq):
 
 		log.info("Have to get the full information on the tweet")
 		self.send(
-			bot=data["bot_id"],
+			bot=data["bot_id_str"],
 			message_type=ServerToBot.GET_TWEET_BY_ID,
 			params=data["id"]
 		)
@@ -537,14 +550,14 @@ class Control_Center(Rabbitmq):
 
 		tweet_exists = self.mongo_client.search(
 			collection="tweets",
-			query={"id": data["data"]["id"]},
+			query={"id_str": data["data"]["id_str"]},
 			single=True
 		)
 
 		if tweet_exists:
 			log.info(f"Updating tweet {data['data']['id']}")
 			self.mongo_client.update_tweets(
-				match={"id": data["data"]['id']},
+				match={"id_str": data["data"]['id_str']},
 				new_data=data["data"],
 				all=False
 			)
@@ -566,7 +579,7 @@ class Control_Center(Rabbitmq):
 
 			log.info(f"Inserting tweet {data['data']['id']} on Neo4j")
 			self.neo4j_client.add_tweet({
-				"id": data['data']['id']
+				"id": data['data']['id_str']
 			})
 
 			new_data = data.copy()
@@ -574,14 +587,15 @@ class Control_Center(Rabbitmq):
 			user_type = self.__save_user_or_blank_user(data=new_data)
 
 			self.neo4j_client.add_writer_relationship({
-				"user_id": data["data"]["user"]["id"],
-				"tweet_id": data["data"]["id"],
+				"user_id": data["data"]["user"]["id_str"],
+				"tweet_id": data["data"]["id_str"],
 				"user_type": user_type
 			})
 
 			if "in_reply_to_status_id" in data["data"] and data["data"]["in_reply_to_status_id"]:
 				log.info(f"Tweet was a reply to some other tweet, must insert the reply relation too")
 				new_data["id"] = data["data"]["in_reply_to_status_id"]
+				new_data["id_str"] = data["data"]["in_reply_to_status_id_str"]
 				new_data["user"] = {
 					'id': data["data"]["in_reply_to_user_id"],
 					'id_str': data["data"]["in_reply_to_user_id_str"],
@@ -590,8 +604,8 @@ class Control_Center(Rabbitmq):
 				self.__save_blank_tweet_if_dont_exists(data=new_data)
 
 				self.neo4j_client.add_reply_relationship({
-					"reply": data["data"]["id"],
-					"tweet": data["data"]["in_reply_to_status_id"]
+					"reply": data["data"]["id_str"],
+					"tweet": data["data"]["in_reply_to_status_id_str"]
 				})
 
 				if user_type == neo4j_labels.BOT_LABEL:
@@ -608,8 +622,8 @@ class Control_Center(Rabbitmq):
 				self.save_tweet(data=new_data)
 
 				self.neo4j_client.add_quote_relationship({
-					"tweet_id": data["data"]["id"],
-					"quoted_tweet": data["data"]["quoted_status_id"]
+					"tweet_id": data["data"]["id_str"],
+					"quoted_tweet": data["data"]["quoted_status_id_str"]
 				})
 
 				if user_type == neo4j_labels.BOT_LABEL:
@@ -625,8 +639,8 @@ class Control_Center(Rabbitmq):
 				self.save_tweet(data=new_data)
 
 				self.neo4j_client.add_retweet_relationship({
-					"tweet_id": data["data"]["retweeted_status"]["id"],
-					"user_id": data["data"]["user"]["id"],
+					"tweet_id": data["data"]["retweeted_status"]["id_str"],
+					"user_id": data["data"]["user"]["id_str"],
 					"user_type": user_type
 				})
 
@@ -692,11 +706,13 @@ class Control_Center(Rabbitmq):
 		to his followers
 		"""
 		bot_id = data['bot_id']
+		bot_id_str = data['bot_id_str']
 		user_id = data['data']['id']
+		user_id_str = data['data']['id_str']
 		followers = data['data']['followers']
 
 		log.info(f"Starting to create the Follow Relationship for user {user_id}")
-		is_bot = self.neo4j_client.check_bot_exists(user_id)
+		is_bot = self.neo4j_client.check_bot_exists(user_id_str)
 
 		for follower in followers:
 			if is_bot:
@@ -710,6 +726,7 @@ class Control_Center(Rabbitmq):
 			# add or update user in databases and its relation with our bot
 			self.save_user({
 				'bot_id': bot_id,
+				"bot_id_str": bot_id_str
 				'data': follower
 			})
 
@@ -743,7 +760,7 @@ class Control_Center(Rabbitmq):
 			response
 		)
 
-	def __user_type(self, user_id: int) -> str:
+	def __user_type(self, user_id: str) -> str:
 		if self.neo4j_client.check_bot_exists(user_id):
 			return neo4j_labels.BOT_LABEL
 		elif self.neo4j_client.check_user_exists(user_id):

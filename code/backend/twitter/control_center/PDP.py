@@ -230,12 +230,12 @@ class PDP:
 		@returns: float corresponding for the constant attributed to the situation
 		"""
 
-		type1 = "Bot" if self.neo4j.check_bot_exists(data["bot_id"]) else "User"
-		type2 = "Bot" if self.neo4j.check_bot_exists(data["user_id"]) else "User"
+		type1 = "Bot" if self.neo4j.check_bot_exists(data["bot_id_str"]) else "User"
+		type2 = "Bot" if self.neo4j.check_bot_exists(data["user_id_str"]) else "User"
 		relation_exists = self.neo4j.check_follow_exists({
-			"id_1": data["bot_id"],
+			"id_1": data["bot_id_str"],
 			"type_1": type1,
-			"id_2": data["user_id"],
+			"id_2": data["user_id_str"],
 			"type_2": type2
 		})
 		if relation_exists:
@@ -257,7 +257,6 @@ class PDP:
 			"bot_id": data["bot_id"]
 		})
 
-		# TODO -> TIRAR ESTE PRINT E SUBSTITUIR POR UM LOG
 		log.debug(policy_list)
 
 		if policy_list['success']:
