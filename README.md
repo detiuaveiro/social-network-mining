@@ -150,6 +150,15 @@ mongoimport --db twitter --collection users --file scripts/mongodb/users.json -u
 psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql 
 ```
 
+- change columns on postgresql
+```bash
+alter table logs alter column id_bot type numeric;
+alter table logs alter column target_id type numeric;
+alter table tweets alter column tweet_id type numeric;
+alter table tweets alter column user_id type numeric;
+alter table users alter column user_id type numeric;
+```
+
 - neo4j
 ```bash
   CALL apoc.load.json("user_nodes.json")
