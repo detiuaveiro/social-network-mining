@@ -455,7 +455,7 @@ class PDP:
 		@returns: float that will then be compared to the threshold previously defined
 		"""
 		# This was not implemented last year
-		return random.random() > 0.5
+		return True
 
 	def close(self):
 		self.neo4j.close()
