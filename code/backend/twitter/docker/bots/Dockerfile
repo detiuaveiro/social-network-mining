@@ -2,6 +2,8 @@ FROM ubuntu
 MAINTAINER Pedro Escaleira
 
 # install some tools
+RUN apt-get install software-properties-common
+RUN apt-add-repository universe
 RUN apt-get update
 RUN apt-get install -y tar git curl nano vim wget net-tools build-essential
 RUN apt-get install -y python3 python3-dev python-distribute python3-pip python-pip
