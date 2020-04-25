@@ -5,7 +5,7 @@ import logging
 from neo4j import GraphDatabase
 import credentials
 from neo4j_labels import BOT_LABEL, USER_LABEL, TWEET_LABEL, WROTE_LABEL,\
-    RETWEET_LABEL, REPLY_LABEL, FOLLOW_LABEL, QUOTE_LABEL
+    RETWEET_LABEL, REPLY_LABEL, FOLLOW_LABEL, QUOTE_LABEL, QUERY
 import json
 
 log = logging.getLogger("Neo4j")
@@ -871,8 +871,28 @@ class Neo4jAPI:
 
         return result
 
-    def export_query(self, query, export_type="json"):
+    def export_sample_network(self, export_type="json"):
+        if export_type not in ["json", "csv", "graphml"]:
+            log.error("ERROR EXPORTING RESULT")
+            log.error(
+                "Error: ",
+                "Specified export type not supported. Please use json, csv or graphml",
+            )
 
+            return
+
+        with self.driver.session() as session:
+            query = QUERY
+            result = session.write_transaction(self.__export_query, export_type, query)
+
+            output = result.data()[0]["data"]
+
+            if export_type == "json":
+                output = "[" + output.replace("\n", ",") + "]"
+
+            return json.loads(output)
+
+    def export_query(self, query, export_type="json"):
         if export_type not in ["json", "csv", "graphml"]:
             log.error("ERROR EXPORTING RESULT")
             log.error(
