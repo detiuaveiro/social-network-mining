@@ -468,13 +468,12 @@ class Control_Center(Rabbitmq):
 			if 'following' in user and user['following']:
 				self.__follow_user(bot_id, user['id'])
 
-	def __save_blank_user_if_exists(self, data):
-		# Sometimes the full info on the user comes in the data
-
+	def __save_user_or_blank_user(self, data):
 		user = data['data']
 		user_type = self.__user_type(user['id'])
 
-		if user_type != "":
+		if user_type != "" and 'name' in user and user['name']:
+			self.save_user(data)
 			return user_type
 
 		log.debug(f"Inserting blank user with id {user}")
@@ -496,7 +495,7 @@ class Control_Center(Rabbitmq):
 		)
 		return neo4j_labels.USER_LABEL
 
-	def __save_blank_tweet_if_exists(self, data):
+	def __save_blank_tweet_if_dont_exists(self, data):
 		tweet_exists = self.mongo_client.search(
 			collection="tweets",
 			query={"id": data["id"]},
@@ -572,9 +571,7 @@ class Control_Center(Rabbitmq):
 
 			new_data = data.copy()
 			new_data["data"] = data["data"]["user"]
-			self.save_user(new_data)
-
-			user_type = self.__save_blank_user_if_exists(data=new_data)
+			user_type = self.__save_user_or_blank_user(data=new_data)
 
 			self.neo4j_client.add_writer_relationship({
 				"user_id": data["data"]["user"]["id"],
@@ -585,8 +582,12 @@ class Control_Center(Rabbitmq):
 			if "in_reply_to_status_id" in data["data"] and data["data"]["in_reply_to_status_id"]:
 				log.info(f"Tweet was a reply to some other tweet, must insert the reply relation too")
 				new_data["id"] = data["data"]["in_reply_to_status_id"]
-				new_data["user"] = data["data"]["in_reply_to_user_id"]
-				self.__save_blank_tweet_if_exists(data=new_data)
+				new_data["user"] = {
+					'id': data["data"]["in_reply_to_user_id"],
+					'id_str': data["data"]["in_reply_to_user_id_str"],
+					'screen_name': data["data"]["in_reply_to_screen_name"]
+				}
+				self.__save_blank_tweet_if_dont_exists(data=new_data)
 
 				self.neo4j_client.add_reply_relationship({
 					"reply": data["data"]["id"],
