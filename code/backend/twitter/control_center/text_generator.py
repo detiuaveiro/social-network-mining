@@ -8,6 +8,9 @@ import nltk.chat.zen as zen
 
 from control_center.translator_utils import Translator
 
+from chatterbot import ChatBot
+from chatterbot.trainers import ListTrainer, ChatterBotCorpusTrainer
+
 
 def tweet_to_simple_text(tweet: str) -> str:
 	return re.sub(r'@.*? |\n|http.*', '', tweet).encode('ascii', 'ignore').decode('ascii')
@@ -37,3 +40,30 @@ class DumbReplier:
 	def generate_response(self, text: str) -> str:
 		response_en = self.bot.respond(self.translator.from_pt_to_en(text))
 		return self.translator.from_en_to_pt(response_en)
+
+
+class SmarterReplier:
+	def __init__(self):
+		self.bot = ChatBot("Me very smart")
+		self.trainer = ChatterBotCorpusTrainer(self.bot) # ListTrainer(self.bot)
+
+		# with open("control_center/data/PS/antoniocostapm_tweets.csv", 'r') as file:
+		# 	self.trainer.train(file.readlines())
+
+		self.trainer.train("chatterbot.corpus.portuguese")
+
+	def generate_response(self, text: str) -> str:
+		response = self.bot.get_response(text)
+		print(response.confidence)
+		return response
+
+
+def test():
+	replier = SmarterReplier()
+
+	while True:
+		print(replier.generate_response(input("> ")))
+
+
+if __name__ == "__main__":
+	test()
