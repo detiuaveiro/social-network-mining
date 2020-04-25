@@ -289,7 +289,7 @@ class TwitterBot(RabbitMessaging):
 		Note: for now, it just gets the last 200 followers per user. TODO -> get all users maybe
 		:param user_id: user's id of whom we want to get the followers
 		"""
-		logger.info(f"Start to get the follower of user with id {user_id}")
+		logger.info(f"Start to get the followers of user with id {user_id}")
 		followers = self._twitter_api.followers(id=user_id, count=200)
 
 		logger.info(f"Sending followers of user {user_id} to the control center")
@@ -358,7 +358,8 @@ class TwitterBot(RabbitMessaging):
 					logger.info(f"Tweet with id <{tweet.id}> already retweeted, no need to retweet again")
 				else:
 					logger.info(f"Retweeting Tweet with id <{tweet.id}>")
-					retweet: Status = tweet.retweet()
+					retweet: Status = self._twitter_api.retweet(id=tweet.id)
+					logger.debug(f"Retweet: {retweet}")
 					self.__send_tweet(retweet, messages_types.BotToServer.SAVE_TWEET)
 					# self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_RETWEETED)
 			except Exception as error:
