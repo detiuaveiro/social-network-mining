@@ -52,7 +52,8 @@ class TwitterBot(RabbitMessaging):
 
 			self._messaging.publish(vhost=VHOST, xname=LOG_EXCHANGE, rt_key=LOG_ROUTING_KEY, payload=to_json(data))
 
-	def __get_tweet_dict(self, tweet: Status):
+	@staticmethod
+	def __get_tweet_dict(tweet: Status):
 		tweet_dict = tweet._json.copy()
 		# tweet_dict['user'] = tweet_dict['user']['id']
 		return tweet_dict
