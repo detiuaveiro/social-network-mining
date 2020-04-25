@@ -2,6 +2,7 @@ FROM ubuntu
 MAINTAINER Pedro Escaleira
 
 # install some tools
+RUN apt-get update
 RUN apt-get install software-properties-common
 RUN apt-add-repository universe
 RUN apt-get update
