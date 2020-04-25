@@ -471,15 +471,16 @@ class Control_Center(Rabbitmq):
 	def __save_blank_user_if_exists(self, data):
 		# Sometimes the full info on the user comes in the data
 
-		user_type = self.__user_type(data["user"])
+		user = data['data']
+		user_type = self.__user_type(user['id'])
 
 		if user_type != "":
 			return user_type
 
-		log.debug(f"Inserting blank user with id {data['user']}")
+		log.debug(f"Inserting blank user with id {user}")
 		blank_user = mongo_utils.BLANK_USER
-		blank_user["id"] = data["user"]
-		blank_user["id_str"] = str(data["user"])
+		blank_user["id"] = user['id']
+		blank_user["id_str"] = str(user['id'])
 		self.save_user({
 			"bot_id": data["bot_id"],
 			'bot_name': data["bot_name"],
@@ -491,7 +492,7 @@ class Control_Center(Rabbitmq):
 		self.send(
 			bot=data["bot_id"],
 			message_type=ServerToBot.GET_USER_BY_ID,
-			params=data["user"]
+			params=user['id']
 		)
 		return neo4j_labels.USER_LABEL
 

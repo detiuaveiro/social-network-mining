@@ -53,12 +53,10 @@ class Neo4jAPI:
         log.debug("CREATING BOT")
 
         # Note we use Merge rather than Create to avoid duplicates
-        tx.run(
-            f"MERGE (:{BOT_LABEL} {{ name: $name, id: $id, username: $username }} )",
-            id=data["id"],
-            name=data["name"],
-            username=data["username"],
-        )
+        tx.run(f"MERGE (:{BOT_LABEL} {{ name: $name, id: $id, username: $username }} )",
+               id=data["id"],
+               name=data["name"],
+               username=data["username"])
 
     def add_user(self, data):
         """Method used to create a new user
@@ -84,12 +82,10 @@ class Neo4jAPI:
     def __create_user(self, tx, data):
         log.debug("CREATING USER")
 
-        tx.run(
-            f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username }})",
-            id=data["id"],
-            name=data["name"],
-            username=data["username"],
-        )
+        tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username }})",
+               id=data["id"],
+               name=data["name"],
+               username=data["username"])
 
     def add_tweet(self, data):
         """
@@ -111,10 +107,7 @@ class Neo4jAPI:
     def __create_tweet(self, tx, data):
         log.debug("CREATING TWEET")
 
-        tx.run(
-            f"MERGE (:{TWEET_LABEL} {{id: $id}})",
-            id=data["id"],
-        )
+        tx.run(f"MERGE (:{TWEET_LABEL} {{id: $id}})", id=data["id"])
 
     def add_writer_relationship(self, data):
         """Method used to create a new WRITE relationship
@@ -328,18 +321,10 @@ class Neo4jAPI:
     def __update_user(self, tx, data):
         log.debug("UPDATING USER")
 
-        set_query = ""
-        if len(data.keys()) > 1:
-            set_query = "SET "
-
-        if "username" in data.keys():
-            set_query += "r.username = '" + data["username"] + "',"
-        if "name" in data.keys():
-            set_query += "r.name = '" + data["name"] + "',"
-
-        query = f'MATCH (r: {USER_LABEL} {{ id : {str(data["id"])} }}) {set_query[:-1]} RETURN r'
-
-        tx.run(query)
+        tx.run(f"MATCH (r: {USER_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
+               id=data['id'],
+               username=data['username'] if 'username' in data else '',
+               name=data['name'] if 'name' in data else '')
 
     def update_bot(self, data):
         """Method used to update a given bot
@@ -359,19 +344,10 @@ class Neo4jAPI:
     def __update_bot(self, tx, data):
         log.debug("UPDATING BOT")
 
-        set_query = ""
-        if len(data.keys()) > 1:
-            set_query = "SET "
-
-        if "username" in data.keys():
-            set_query += "r.username = '" + data["username"] + "',"
-        if "name" in data.keys():
-            set_query += "r.name = '" + data["name"] + "',"
-
-        query = f'MATCH (r:{BOT_LABEL} {{ id: {str(data["id"])} }}) {set_query[:-1]}  RETURN r'
-        # Note we use set_query[:-1] in order to remove the final comma (,)
-
-        tx.run(query)
+        tx.run(f"MATCH (r: {BOT_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
+               id=data['id'],
+               username=data['username'] if 'username' in data else '',
+               name=data['name'] if 'name' in data else '')
 
     def delete_user(self, id):
         """Method used to delete a given user
@@ -569,12 +545,8 @@ class Neo4jAPI:
     def __delete_rel(self, tx, data):
         log.debug("DELETING RELATIONSHIP")
 
-        query = f'MATCH (a:{str(data["type_1"])} {{ id: {str(data["id_1"])} }})-' \
-                f'[r:{data["label"]}]->' \
-                f'(b:{str(data["type_2"])} {{ id: {str(data["id_2"])} }}) ' \
-                f' DELETE r'
-
-        tx.run(query)
+        tx.run(f"MATCH (a:{data['type_1']}{{id: $from_id}})-[r:{data['label']}]->(b:{data['type_2']}{{id: $to_id}})",
+               from_id=data['type_1'], to_id=data['type_2'])
 
     def search_tweets(self, tweet=None):
         """Method used to search for a given tweet
@@ -954,13 +926,9 @@ class Neo4jAPI:
         log.debug("EXPORTING NETWORK")
 
         if export_type == "json":
-            result = tx.run(
-                "CALL apoc.export.json.all(null,{useTypes:true, stream:true})"
-            )
+            result = tx.run("CALL apoc.export.json.all(null,{useTypes:true, stream:true})")
         elif export_type == "csv":
-            result = tx.run(
-                "CALL apoc.export.csv.all(null,{useTypes:true, stream:true})"
-            )
+            result = tx.run("CALL apoc.export.csv.all(null,{useTypes:true, stream:true})")
         else:
             result = tx.run("CALL apoc.export.graphml.all(null,{useTypes:true, stream:true})")
 
