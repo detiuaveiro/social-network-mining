@@ -342,7 +342,7 @@ class Control_Center(Rabbitmq):
 				Adds the log to postgres_stats, for the request and its result
 				The result is based on the Policy API object
 
-		@param data: dict containing the bot id and the tweet id
+		@param data: dict containing the bot id and the user id
 		"""
 
 		log.info(f"Bot {data['bot_id']} requests a follow from {data['data']['id']}")
