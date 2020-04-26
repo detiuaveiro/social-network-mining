@@ -48,20 +48,14 @@ class Control_Center(Rabbitmq):
 		if message_type == BotToServer.EVENT_TWEET_LIKED:
 			self.__like_tweet_log(message)
 
-		# elif message_type == BotToServer.EVENT_TWEET_RETWEETED:
-		# 	self.__retweet_log(message)
-
-		# elif message_type == BotToServer.EVENT_TWEET_REPLIED:
-		# 	self.__reply_tweet_log(message)
-
 		elif message_type == BotToServer.QUERY_TWEET_LIKE:
 			self.request_tweet_like(message)
 
 		elif message_type == BotToServer.QUERY_TWEET_RETWEET:
 			self.request_retweet(message)
 
-		elif message_type == BotToServer.QUERY_TWEET_REPLY:
-			self.request_tweet_reply(message)
+		# elif message_type == BotToServer.QUERY_TWEET_REPLY:
+		# 	self.request_tweet_reply(message)
 
 		elif message_type == BotToServer.QUERY_FOLLOW_USER:
 			self.request_follow_user(message)
