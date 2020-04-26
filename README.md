@@ -156,19 +156,52 @@ psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql
 
 - neo4j
 ```bash
-  CALL apoc.load.json("users.json")
+  CALL apoc.load.json("user_nodes.json")
   YIELD value
-  MERGE (p:User {name: value.n.properties.name, id: value.n.properties.id, username: value.n.properties.username})
+  MERGE (p:User {name: value.a.properties.name, id: value.a.properties.id, username: value.a.properties.username})
 ```
 ```bash
-  CALL apoc.load.json("bots.json")
+  CALL apoc.load.json("bots_nodes.json")
   YIELD value
-  MERGE (p:Bot {name: value.n.properties.name, id: value.n.properties.id, username: value.n.properties.username})
+  MERGE (p:Bot {name: value.a.properties.name, id: value.a.properties.id, username: value.a.properties.username})
 ```
 ```bash
-  CALL apoc.load.json("follow.json")
+  CALL apoc.load.json("tweets.json")
   YIELD value
-  MATCH(p:Bot {id:value.p.start.properties.id})
-  MATCH(u: User {id:toInteger(value.p.end.properties.id)})
+  MERGE (p:Tweet {id: value.a.properties.id})
+```
+```bash
+  CALL apoc.load.json("follow_rel.json")
+  YIELD value
+  MATCH(p {id:value.start.properties.id})
+  MATCH(u {id:toInteger(value.end.properties.id)})
   CREATE (p)-[:FOLLOWS]->(u)
+```
+```bash
+  CALL apoc.load.json("retweet.json")
+  YIELD value
+  MATCH(p {id:value.start.properties.id})
+  MATCH(u {id:toInteger(value.end.properties.id)})
+  CREATE (p)-[:RETWEET]->(u)
+```
+```bash
+  CALL apoc.load.json("reply.json")
+  YIELD value
+  MATCH(p {id:value.start.properties.id})
+  MATCH(u {id:toInteger(value.end.properties.id)})
+  CREATE (p)-[:REPLY]->(u)
+```
+```bash
+  CALL apoc.load.json("wrote.json")
+  YIELD value
+  MATCH(p {id:value.start.properties.id})
+  MATCH(u {id:toInteger(value.end.properties.id)})
+  CREATE (p)-[:WROTE]->(u)
+```
+```bash
+  CALL apoc.load.json("quote.json")
+  YIELD value
+  MATCH(p {id:value.start.properties.id})
+  MATCH(u {id:toInteger(value.end.properties.id)})
+  CREATE (p)-[:QUOTED]->(u)
 ```
