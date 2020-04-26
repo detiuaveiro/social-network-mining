@@ -456,6 +456,8 @@ class PDP:
         @returns: float that will then be compared to the threshold previously defined
         """
 
+        return 0
+        """
         heuristic = 0
 
         MODEL_PATH = "control_center/intelligence/models"
@@ -509,6 +511,6 @@ class PDP:
         log.debug(f"Request to follow user with id: {user['id']} and name {user['name']} "
                   f"{'Accepted' if heuristic > THRESHOLD_FOLLOW_USER else 'Denied'}")
         return heuristic
-
+    """
     def close(self):
         self.neo4j.close()
