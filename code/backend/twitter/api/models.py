@@ -37,7 +37,7 @@ class Tweet(djongo_models.Model):
 	user = djongo_models.BigIntegerField()
 	is_quote_status = djongo_models.BooleanField()
 	created_at = djongo_models.DateTimeField()
-	# quoted_status_id = djongo_models.IntegerField(null=True, blank=True)
+	quoted_status_id = djongo_models.BigIntegerField(null=True, blank=True)
 	in_reply_to_screen_name = djongo_models.TextField(null=True, blank=True)
 	in_reply_to_user_id = djongo_models.BigIntegerField(null=True, blank=True)
 	in_reply_to_status_id = djongo_models.BigIntegerField(null=True, blank=True)
