@@ -27,8 +27,11 @@ urlpatterns = [
 
 	path('admin/', admin.site.urls),
 
-	path("twitter/users", users.twitter_users, name="twitter_users"),
-	path("twitter/users/stats", users.twitter_users_stats, name="twitter_users_stats"),
+	url(r"^twitter/users/$", users.twitter_users, name="twitter_users"),
+	url(r"^twitter/users/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", users.twitter_users, name="twitter_users"),
+	url(r"^twitter/users/stats/$", users.twitter_users_stats, name="twitter_users_stats"),
+	url(r"^twitter/users/stats/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", users.twitter_users_stats,
+	    name="twitter_users_stats"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/$", users.twitter_user, name="twitter_user"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/tweets/$", users.twitter_user_tweets, name="twitter_user_tweets"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/tweets/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
@@ -36,14 +39,16 @@ urlpatterns = [
 	url(r"^twitter/users/(?P<id>[0-9]+)/followers/$", users.twitter_user_followers, name="twitter_user_followers"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/following/$", users.twitter_user_following, name="twitter_user_following"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/stats/$", users.twitter_user_stats, name="twitter_user_stats"),
+	url(r"^twitter/users/(?P<id>[0-9]+)/stats/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
+	    users.twitter_user_stats, name="twitter_user_stats"),
+
 	path("twitter/users/export", users.twitter_users_export, name="twitter_users_export"),
 
-    path("twitter/network", network.twitter_network, name="twitter_network"),
-    path("twitter/sub_network", network.twitter_sub_network, name="twitter_sub_network"),
-    url(r"^twitter/network/export/$", network.twitter_network_export, name="twitter_network_export"),
+	path("twitter/network", network.twitter_network, name="twitter_network"),
+	path("twitter/sub_network", network.twitter_sub_network, name="twitter_sub_network"),
+	url(r"^twitter/network/export/$", network.twitter_network_export, name="twitter_network_export"),
 
 	path("twitter/create", bots.twitter_create, name="twitter_create"),
-	path("twitter/stats", bots.twitter_stats, name="twitter_stats"),
 	path("twitter/bots", bots.twitter_bots, name="twitter_bots"),
 	url(r"^twitter/bots/(?P<id>[0-9]+)/$", bots.twitter_bot, name="twitter_bot"),
 	url(r"^twitter/bots/(?P<id>[0-9]+)/logs/$", bots.twitter_bot_logs, name="twitter_bot_logs"),
@@ -52,11 +57,16 @@ urlpatterns = [
 	url(r"^twitter/bots/(?P<id>[0-9]+)/messages/$", bots.twitter_bot_messages, name="twitter_bot_messages"),
 
 	path(r"twitter/tweets/all", tweets.twitter_tweets, name="twitter_tweets"),
-	url(r"^twitter/tweets/all/(?P<limit>[0-9]+)/$", tweets.twitter_tweets, name="twitter_tweets"),
+	url(r"^twitter/tweets/all/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", tweets.twitter_tweets,
+	    name="twitter_tweets"),
 	path("twitter/tweets/export", tweets.twitter_tweets_export, name="twitter_tweets_export"),
-	path("twitter/tweets/stats", tweets.twitter_tweets_stats, name="twitter_tweets_stats"),
+	url(r"^twitter/tweets/stats/$", tweets.twitter_tweets_stats, name="twitter_tweets_stats"),
+	url(r"^twitter/tweets/stats/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
+	    tweets.twitter_tweets_stats, name="twitter_tweets_stats"),
 	url(r"^twitter/tweets/(?P<id>[0-9]+)/$", tweets.twitter_tweet, name="twitter_tweet"),
 	url(r"^twitter/tweets/(?P<id>[0-9]+)/stats/$", tweets.twitter_tweet_stats, name="twitter_tweet_stats"),
+	url(r"^twitter/tweets/(?P<id>[0-9]+)/stats/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", tweets.twitter_tweet_stats, name="twitter_tweet_stats"),
+
 	url(r"^twitter/tweets/(?P<id>[0-9]+)/replies/$", tweets.twitter_tweet_replies, name="twitter_tweet_replies"),
 
 	path("policies", policies.policies, name="policies"),
