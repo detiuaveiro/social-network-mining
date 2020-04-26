@@ -45,7 +45,7 @@ def twitter_user(id):
 def twitter_users_stats():
 	try:
 		return True, [serializers.UserStats(us).data for us in UserStats.objects.all()], \
-		       "Sucesso a obter as estatisticas de todos os utilizadores"
+			   "Sucesso a obter as estatisticas de todos os utilizadores"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_users_stats.__name__} -> {e}")
 		return False, None, f"Erro as estatisticas de todos os utilizadores"
@@ -55,7 +55,7 @@ def twitter_user_stats(id):
 	try:
 
 		return True, [serializers.UserStats(user).data for user in UserStats.objects.filter(user_id=id)], \
-		       "Sucesso a obter as estatisticas do utilizador pedido"
+			   "Sucesso a obter as estatisticas do utilizador pedido"
 	except UserStats.DoesNotExist:
 		return False, None, f"Não existe nenhum utilizador com o id {id} na base de dados de estatisticas"
 	except Exception as e:
@@ -71,7 +71,7 @@ def twitter_user_tweets(id, entries_per_page, page):
 		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]
 
 		return True, data, "Sucesso a obter todos os tweets do utilizador pedido"
-	
+
 	except ValueError as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_user_tweets.__name__} -> {e}")
 		return False, None, str(e)
@@ -123,7 +123,7 @@ def twitter_tweets(limit=None):
 def twitter_tweets_stats():
 	try:
 		return True, [serializers.TweetStats(tweet).data for tweet in
-		              TweetStats.objects.all()], "Sucesso a obter as estatisticas de todos os tweets"
+					  TweetStats.objects.all()], "Sucesso a obter as estatisticas de todos os tweets"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_tweet_stats.__name__} -> {e}")
 		return False, None, "Erro a obter as estatisticas de todos os tweets"
@@ -144,7 +144,7 @@ def twitter_tweet(id):
 def twitter_tweet_stats(id):
 	try:
 		return True, [serializers.TweetStats(tweet).data for tweet in TweetStats.objects.filter(tweet_id=id)], \
-		       "Sucesso a obter as estatisticas do tweet de id pedido"
+			   "Sucesso a obter as estatisticas do tweet de id pedido"
 	except TweetStats.DoesNotExist:
 		return False, None, f"Não existem estatísticas do tweet de id {id} na base de dados"
 	except Exception as e:
@@ -157,7 +157,7 @@ def twitter_tweet_replies(id):
 		Tweet.objects.get(in_reply_to_status_id=id)
 		all_tweets = Tweet.objects.filter(in_reply_to_status_id=id)
 		return True, [serializers.Tweet(tweet).data for tweet in
-		              all_tweets], "Sucesso a obter todas as replies ao tweet"
+					  all_tweets], "Sucesso a obter todas as replies ao tweet"
 	except Tweet.DoesNotExist:
 		return False, None, f"Não existem replies ao tweet de id {id}"
 	except Exception as e:
@@ -242,12 +242,12 @@ def add_policy(data):
 				raise AddPolicyError("IDs dos bots invalidos")
 
 		status = Policy.objects.filter(API_type=policy_serializer.data['API_type'],
-		                               filter=policy_serializer.data['filter'],
-		                               tags=policy_serializer.data['tags']).exists()
+									   filter=policy_serializer.data['filter'],
+									   tags=policy_serializer.data['tags']).exists()
 		if status:
 			args = {"API_type": policy_serializer.data['API_type'],
-			        "filter": policy_serializer.data['filter'],
-			        "tags": policy_serializer.data['tags']}
+					"filter": policy_serializer.data['filter'],
+					"tags": policy_serializer.data['tags']}
 
 			raise AddPolicyError(f"Uma politica com argumentos iguais já existe na base de dados. Args: {args}")
 
@@ -419,7 +419,7 @@ def twitter_network():
 	"""
 
 	try:
-		data = json.loads(neo4j.export_network("json"))
+		data = neo4j.export_sample_network("json")
 		return True, data, f"Sucesso a obter os dados da rede"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_network.__name__} -> {e}")
