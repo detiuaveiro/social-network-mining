@@ -939,4 +939,39 @@ class Neo4jAPI:
 
 if __name__ == "__main__":
     neo = Neo4jAPI()
+    # neo.add_bot({"id":0,"name":"Jonas","username":"Jonas_Pistolas"})
+    # neo.add_user({"id":0,"name":"DS","username":"FenixD.S"})
+    # neo.add_follow_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
+
+    # print(neo.check_bot_exists(0))
+    # print(neo.check_user_exists(0))
+
+    # neo.update_user({"id": 0, "name": "Diogo Ass"})
+    # neo.update_user({"id": 0, "username": "FenixDickSucker","name":"DS"})
+
+    # neo.update_bot({"id":0,"name":"bot lindo"})
+
+    # print(neo.search_bots({"name":"bot lindo"}))
+    # print(neo.search_users({"id":0}))
+    # print(neo.check_relationship_exists({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL}))
+
+    # print(neo.get_following({"type": BOT_LABEL, "id": 0}))
+    # print(neo.get_followers({"type": USER_LABEL, "id": 0}))
+
+    # print(neo.get_following({"type": "BOT", "id": 0}))
+    # print(neo.get_followers({"type": "USER", "id": 0}))
+
+    # neo.export_network()
+    # print(neo.export_network("csv"))
+    # print()
+    # print(neo.export_network("json"))
+    # print()
+    # print(neo.export_network())
+
+    # neo.export_network()
+    # neo.export_network("csv")
+    # neo.export_network("json")
+
+    # neo.delete_user(0)
+    # neo.delete_follow_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
     neo.close()

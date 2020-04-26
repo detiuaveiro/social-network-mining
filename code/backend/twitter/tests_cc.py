@@ -1,8 +1,8 @@
-from control_center.tests.test_json import test_json
+from control_center.tests.save_tweet_relations import test
 
 
 def main():
-	test_json()
+	test.test_neo4j()
 
 
 if __name__ == "__main__":
