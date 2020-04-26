@@ -35,7 +35,7 @@ class PostgresAPI:
 			self.filters = [x[0] for x in enum_policy.api_filter()]
 
 		except (Exception, psycopg2.DatabaseError) as error:
-			log.error(f"Error trying to connect to database: {error}")
+			log.exception(f"Error <{error}> trying to connect to database: ")
 
 	def insert_tweet(self, data):
 		"""
@@ -54,10 +54,7 @@ class PostgresAPI:
 		except psycopg2.Error as error:
 			self.conn.rollback()
 
-			log.error("ERROR INSERTING NEW TWEET")
-			log.error(
-				"Error: " + str(error)
-			)
+			log.exception(f"ERROR <{error}> INSERTING NEW TWEET <{data}>: ")
 			return {"success": False, "error": error}
 		except Exception as error:
 			self.conn.rollback()
@@ -84,10 +81,7 @@ class PostgresAPI:
 		except psycopg2.Error as error:
 			self.conn.rollback()
 
-			log.error("ERROR INSERTING NEW USER")
-			log.error(
-				"Error: " + str(error)
-			)
+			log.exception(f"ERROR <{error}> INSERTING NEW USER <{data}>: ")
 			return {"success": False, "error": error}
 		except Exception as error:
 			self.conn.rollback()
@@ -337,24 +331,12 @@ class PostgresAPI:
 		except psycopg2.Error as error:
 			self.conn.rollback()
 
-			log.error("ERROR INSERTING NEW LOG")
-			log.error(
-				"Error: " + str(error)
-			)
-
-			log.error("Error at inserting: " + str(data))
-
+			log.exception(f"ERROR <{error}> INSERTING NEW LOG <{data}>: ")
 			return {"success": False, "error": error}
 		except Exception as error:
 			self.conn.rollback()
 
-			log.error("ERROR INSERTING NEW LOG")
-			log.error(
-				"Error: " + str(error)
-			)
-
-			log.error("Error at inserting: " + str(data))
-
+			log.exception(f"ERROR <{error}> INSERTING NEW LOG <{data}>: ")
 			return {"success": False, "error": error}
 
 		return {"success": True}

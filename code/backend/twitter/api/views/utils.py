@@ -61,4 +61,8 @@ def cypher_query_generator(request_params):
     users_depth = args_validator(users_id, request_params.getlist('users_depth', []), "users")
     user_queries = queries_generator(users_id, users_depth, show_bots, show_users, "User")
 
+    if len(bots_id + users_id) == 0:
+
+        return [f"match result=()-[]->(entity2) where {nodes_label_choice(show_bots, show_users)} return result"]
+
     return list(set(bot_queries + user_queries))
