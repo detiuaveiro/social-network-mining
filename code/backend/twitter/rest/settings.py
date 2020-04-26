@@ -83,7 +83,8 @@ DATABASES = {
 		'ENGINE': 'djongo',
 		'NAME': MONGO_DB,
 		'HOST': "mongodb://" + (f"{MONGO_URL}:{MONGO_PORT}/{MONGO_DB}" if MONGO_USERNAME == '' and MONGO_PASSWORD == ''
-		                        else MONGO_FULL_URL),
+								else MONGO_FULL_URL),
+		'ENFORCE_SCHEMA': False,
 	},
 	'postgres': {
 		'ENGINE': 'django.db.backends.postgresql_psycopg2',
