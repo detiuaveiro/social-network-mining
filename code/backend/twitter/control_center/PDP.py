@@ -1,6 +1,5 @@
 ## @package twitter.control_center
 # coding: UTF-8
-import logging
 import random
 import datetime
 import json
