@@ -62,8 +62,8 @@ spacy==2.1.9
 SQLAlchemy==1.2.19
 srsly==1.0.2
 tensorboard==2.2.1
-tensorboard-plugin-wit==1.6.0
-tensorflow==2.2.0
+tensorboard-plugin-wit==1.6.0.post3
+tensorflow==2.1.0
 tensorflow-estimator==2.2.0
 termcolor==1.1.0
 thinc==7.0.8
