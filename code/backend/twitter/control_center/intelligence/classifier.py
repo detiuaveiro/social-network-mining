@@ -10,12 +10,14 @@ from keras import layers
 from sklearn.model_selection import RandomizedSearchCV
 from keras.wrappers.scikit_learn import KerasClassifier
 from keras.models import load_model
-
 import json
 import pickle
 import string
 import re
-
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
 
 def tokenize(text):
     text = re.sub(r"http\S+", "", text)
