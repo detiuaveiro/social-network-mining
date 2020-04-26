@@ -229,22 +229,13 @@ class TwitterBot(RabbitMessaging):
 
 				logger.debug(
 					f"Tweet with author info {tweet_user.following if 'following' in user_attributes else 'nothing'}")
-<<<<<<< HEAD
-
-=======
-                    
->>>>>>> 727ff8a8d5138537a9ae7649ed28ca0803d65223
 				if 'following' in user_attributes and not tweet_user.following or 'following' not in user_attributes:
 					logger.debug(f"Requesting to follow user {tweet_user.id}")
 					self.__send_request_follow(tweet_user)
 
 				if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
 					logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
-<<<<<<< HEAD
 								   f"following him, so can't read his timeline")
-=======
-					               f"following him, so can't read his timeline")
->>>>>>> 727ff8a8d5138537a9ae7649ed28ca0803d65223
 
 				elif 'suspended' in user_attributes and tweet_user.suspended:
 					logger.warning(f"Found user with ID={tweet_user.id} but his account was suspended, "
