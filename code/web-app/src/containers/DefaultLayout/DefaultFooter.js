@@ -16,7 +16,6 @@ class DefaultFooter extends Component {
     return (
       <React.Fragment>
         <span>Mineração de Redes Sociais - Grupo 14, Projeto de Informática 2020</span>
-        <span className="ml-auto">Powered by <a href="https://coreui.io/react">CoreUI for React</a></span>
       </React.Fragment>
     );
   }
