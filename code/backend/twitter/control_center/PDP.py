@@ -51,9 +51,9 @@ log.addHandler(handler)
 
 class PDP:
 	def __init__(self):
-		'''
+		"""
 		Here starts the connections with the other DB wrappers
-		'''
+		"""
 		self.mongo = MongoAPI()
 		self.neo4j = Neo4jAPI()
 		self.postgres = PostgresAPI()
@@ -114,7 +114,7 @@ class PDP:
 		elif msg_type == PoliciesTypes.REQUEST_TWEET_REPLY:
 			'''
 			bot_id 
-			user_id    
+			user_id	
 			tweet_id
 			tweet_text
 			tweet_entities
