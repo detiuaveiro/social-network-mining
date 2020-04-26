@@ -13,13 +13,13 @@ from bots.rabbit_messaging import RabbitMessaging
 from bots.settings import *
 from bots.utils import *
 from credentials import VHOST, LOG_EXCHANGE, LOG_ROUTING_KEY, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, \
-	TASKS_QUEUE_PREFIX
+    TASKS_QUEUE_PREFIX
 
 logger = logging.getLogger("bot-agents")
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(open("bot_agent.log", "w"))
 handler.setFormatter(logging.Formatter(
-	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+    "[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 logger.addHandler(handler)
 
 
@@ -74,6 +74,22 @@ class TwitterBot(RabbitMessaging):
 			'timestamp': current_time(),
 			'data': data
 		}), exchange)
+
+    def __send_request_follow(self, user: User):
+        """Function to send a follow user request
+
+        :param user:  user to send
+        :return:
+        """
+        logger.debug(f"Sending request follow to {user.id} ")
+        tweets = []
+        if not user._json['protected']:
+            tweets = [tweet._json for tweet in self.__user_timeline_tweets(user, tweet_mode="extended")]
+
+        self.__send_data({
+            'user': user._json,
+            'tweets': tweets
+        }, messages_types.BotToServer.QUERY_FOLLOW_USER)
 
 	def __send_user(self, user: User, message_type: messages_types.BotToServer):
 		"""Function to send a twitter's User object to the server
@@ -182,6 +198,7 @@ class TwitterBot(RabbitMessaging):
 		logger.debug(f"Search completed in {total_read_time} seconds")
 
 	def __interpret_tweets(self, tweets, jump_users: bool = False, max_depth: int = 3, current_depth: int = 0) -> float:
+
 		total_read_time = 0
 		for tweet in tweets:
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
@@ -195,6 +212,7 @@ class TwitterBot(RabbitMessaging):
 			# Processing the tweet regarding liking/retweeting
 			if not tweet.favorited:
 				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_LIKE)
+
 			if not tweet.retweeted:
 				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_RETWEET)
 
@@ -211,13 +229,15 @@ class TwitterBot(RabbitMessaging):
 
 				logger.debug(
 					f"Tweet with author info {tweet_user.following if 'following' in user_attributes else 'nothing'}")
+                    
 				if 'following' in user_attributes and not tweet_user.following or 'following' not in user_attributes:
 					logger.debug(f"Requesting to follow user {tweet_user.id}")
-					self.__send_user(tweet_user, messages_types.BotToServer.QUERY_FOLLOW_USER)
+					self.__send_request_follow(tweet_user)
 
 				if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
 					logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
 					               f"following him, so can't read his timeline")
+
 				elif 'suspended' in user_attributes and tweet_user.suspended:
 					logger.warning(f"Found user with ID={tweet_user.id} but his account was suspended, "
 					               f"so can't read his timeline")

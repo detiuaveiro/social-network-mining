@@ -23,10 +23,26 @@ def next_id(model):
 # users
 # -----------------------------------------------------------
 
-def twitter_users():
+"""
+		user_tweets = Tweet.objects.filter(user=id).order_by('-created_at')
+
+		data = paginator_factory(user_tweets, entries_per_page, page)
+		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]"""
+
+
+def twitter_users(entries_per_page, page):
 	try:
 		all_users = User.objects.filter()
-		return True, [serializers.User(user).data for user in all_users], "Sucesso a obter todos os utilizadores"
+
+		data = paginator_factory(all_users, entries_per_page, page)
+		data['entries'] = [serializers.User(user).data for user in data['entries']]
+
+		return True, data, "Sucesso a obter todos os utilizadores"
+
+	except ValueError as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_users.__name__} -> {e}")
+		return False, None, str(e)
+
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_users.__name__} -> {e}")
 		return False, None, f"Erro a obter todos os utilizadores"
@@ -42,22 +58,39 @@ def twitter_user(id):
 		return False, None, f"Erro a obter o utilizador de id {id}"
 
 
-def twitter_users_stats():
+def twitter_users_stats(entries_per_page, page):
 	try:
-		return True, [serializers.UserStats(us).data for us in UserStats.objects.all()], \
-		       "Sucesso a obter as estatisticas de todos os utilizadores"
+
+		stats = UserStats.objects.all()
+		data = paginator_factory(stats, entries_per_page, page)
+
+		data['entries'] = [serializers.UserStats(us).data for us in data['entries']]
+
+		return True, data, "Sucesso a obter as estatisticas de todos os utilizadores"
+	except ValueError as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_users_stats.__name__} -> {e}")
+		return False, None, str(e)
+
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_users_stats.__name__} -> {e}")
 		return False, None, f"Erro as estatisticas de todos os utilizadores"
 
 
-def twitter_user_stats(id):
+def twitter_user_stats(id, entries_per_page, page):
 	try:
 
-		return True, [serializers.UserStats(user).data for user in UserStats.objects.filter(user_id=id)], \
-		       "Sucesso a obter as estatisticas do utilizador pedido"
+		user_stats = UserStats.objects.filter(user_id=id)
+		data = paginator_factory(user_stats, entries_per_page, page)
+
+		data['entries'] = [serializers.UserStats(stat).data for stat in data['entries']]
+
+		return True, data, "Sucesso a obter as estatisticas do utilizador pedido"
 	except UserStats.DoesNotExist:
 		return False, None, f"Não existe nenhum utilizador com o id {id} na base de dados de estatisticas"
+	except ValueError as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_user_stats.__name__} -> {e}")
+		return False, None, str(e)
+
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_user_stats.__name__} -> {e}")
 		return False, None, f"Erro as estatisticas do utilizador de id {id}"
@@ -71,7 +104,7 @@ def twitter_user_tweets(id, entries_per_page, page):
 		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]
 
 		return True, data, "Sucesso a obter todos os tweets do utilizador pedido"
-	
+
 	except ValueError as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_user_tweets.__name__} -> {e}")
 		return False, None, str(e)
@@ -107,23 +140,36 @@ def twitter_user_following(id):
 # tweets
 # -----------------------------------------------------------
 
-def twitter_tweets(limit=None):
+def twitter_tweets(entries_per_page, page):
 	try:
 		all_tweets = Tweet.objects.all()
-		data = [
-			serializers.Tweet(tweet).data
-			for tweet in (all_tweets if not limit or limit > len(all_tweets) else all_tweets[:limit])
-		]
+
+		data = paginator_factory(all_tweets, entries_per_page, page)
+		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]
+
 		return True, data, "Sucesso a obter todos os tweets"
+	except ValueError as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_tweets.__name__} -> {e}")
+		return False, None, str(e)
+
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_tweets.__name__} -> {e}")
 		return False, None, "Erro a obter todos os tweets"
 
 
-def twitter_tweets_stats():
+def twitter_tweets_stats(entries_per_page, page):
 	try:
-		return True, [serializers.TweetStats(tweet).data for tweet in
-		              TweetStats.objects.all()], "Sucesso a obter as estatisticas de todos os tweets"
+		tweet_stats = TweetStats.objects.all()
+
+		data = paginator_factory(tweet_stats, entries_per_page, page)
+		data['entries'] = [serializers.TweetStats(tweet).data for tweet in data['entries']]
+
+		return True, data, "Sucesso a obter as estatisticas de todos os tweets"
+
+	except ValueError as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_tweet_stats.__name__} -> {e}")
+		return False, None, str(e)
+
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_tweet_stats.__name__} -> {e}")
 		return False, None, "Erro a obter as estatisticas de todos os tweets"
@@ -141,12 +187,20 @@ def twitter_tweet(id):
 		return False, None, f"Erro a obter todos os tweets do id {id}"
 
 
-def twitter_tweet_stats(id):
+def twitter_tweet_stats(id, entries_per_page, page):
 	try:
-		return True, [serializers.TweetStats(tweet).data for tweet in TweetStats.objects.filter(tweet_id=id)], \
-		       "Sucesso a obter as estatisticas do tweet de id pedido"
+		stats = TweetStats.objects.filter(tweet_id=id).order_by('-timestamp')
+		data = paginator_factory(stats, entries_per_page, page)
+		data['entries'] = [serializers.TweetStats(tweet).data for tweet in data['entries']],
+
+		return True, data, "Sucesso a obter as estatisticas do tweet de id pedido"
 	except TweetStats.DoesNotExist:
 		return False, None, f"Não existem estatísticas do tweet de id {id} na base de dados"
+
+	except ValueError as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_tweet_stats.__name__} -> {e}")
+		return False, None, str(e)
+
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_tweet_stats.__name__} -> {e}")
 		return False, None, f"Erro a obter as estatisticas do tweet de id {id}"
