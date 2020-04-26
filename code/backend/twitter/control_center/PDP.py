@@ -456,7 +456,7 @@ class PDP:
         @returns: float that will then be compared to the threshold previously defined
         """
 
-        return 0
+        return 1
         """
         heuristic = 0
 
