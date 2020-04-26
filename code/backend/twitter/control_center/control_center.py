@@ -354,44 +354,47 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 
-		log.info(f"Bot {data['bot_id']} requests a follow from {data['data']['id']}")
+		user = data['data']['user']
+		tweets = data['data']['tweets']
+		user_id = user['id']
+
+		log.info(f"Bot {data['bot_id']} requests a follow from {user_id}")
 
 		self.postgres_client.insert_log({
 			"bot_id": int(data["bot_id_str"]),
 			"action": log_actions.FOLLOW_REQ,
-			"target_id": int(data['data']['id_str'])
+			"target_id": user_id
 		})
+
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
 			"bot_id": data['bot_id'],
 			"bot_id_str": data['bot_id_str'],
-			"user_id": data['data']['id'],
-			"user_id_str": data['data']['id_str']
+			"user": user,
+			"tweets": tweets
 		})
 
 		if request_accepted:
-			log.info(f"Bot {data['bot_id']} request accepted to follow {data['data']['id']}")
+			log.info(f"Bot {data['bot_id']} request accepted to follow {user_id}")
 
 			self.postgres_client.insert_log({
 				"bot_id": int(data["bot_id_str"]),
 				"action": log_actions.FOLLOW_REQ_ACCEPT,
-				"target_id": int(data['data']['id_str'])
+				"target_id": user_id
 			})
-			self.send(
-				data['bot_id_str'],
-				ServerToBot.FOLLOW_USERS,
-				{
-					"type": "id",
-					"data": [data['data']['id']]
-				}
-			)
+			self.send(data['bot_id'], ServerToBot.FOLLOW_USERS, {"type": "id", "data": [user_id]})
 		else:
-			log.warning(f"Bot {data['bot_id']} request denied to follow {data['data']['id']}")
+			log.warning(f"Bot {data['bot_id']} request denied to follow {user_id}")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ_DENY,
-				"target_id": data['data']['id']
+				"target_id": user_id
 			})
+
+		# save the tweets we received on the databases
+		for tweet in tweets:
+			data['data'] = tweet
+			self.save_tweet(data)
 
 	def save_user(self, data):
 		"""
@@ -745,6 +748,7 @@ class Control_Center(Rabbitmq):
 		})
 
 		response = []
+
 		if policies['success']:
 			policy_list = policies['data']
 			log.debug(f"Obtained policies: {policy_list}")

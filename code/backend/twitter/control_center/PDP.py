@@ -10,11 +10,14 @@ from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
 from control_center.policies_types import PoliciesTypes
 import log_actions
+from control_center.intelligence import classifier
+import numpy as np
 
 # Constants used below for the Heuristics
 THRESHOLD_LIKE = 0.4
 THRESHOLD_RETWEET = 0.6
 THRESHOLD_REPLY = 0.5
+THRESHOLD_FOLLOW_USER = 0.7
 POLICY_KEYWORDS_MATCHES = 0.2
 POLICY_USER_IS_TARGETED = 0.4
 PENALTY_LIKED_RECENTLY_SMALL = -0.35
@@ -22,8 +25,8 @@ PENALTY_LIKED_RECENTLY_SMALL_INTERVAL = 10
 PENALTY_LIKED_RECENTLY_LARGE = -0.65
 PENALTY_LIKED_RECENTLY_LARGE_INTERVAL = 5
 PENALTY_RETWEETED_USER_RECENTLY = -0.5
-PENALTY_RETWEETED_USER_RECENTLY_INTERVAL = 43200                # 12 hours
-PENALTY_REPLIED_USER_RECENTLY_INTERVAL = 24*60*60               # a day
+PENALTY_RETWEETED_USER_RECENTLY_INTERVAL = 43200  # 12 hours
+PENALTY_REPLIED_USER_RECENTLY_INTERVAL = 24 * 60 * 60  # a day
 PENALTY_REPLIED_USER_RECENTLY = -0.5
 BOT_FOLLOWS_USER = 0.3
 BOT_RETWEETED_TWEET = 0.2
@@ -37,7 +40,6 @@ handler = logging.StreamHandler(open("pdp.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
-
 
 log = logging.getLogger('PDP')
 log.setLevel(logging.DEBUG)
@@ -112,7 +114,7 @@ class PDP:
 		elif msg_type == PoliciesTypes.REQUEST_TWEET_REPLY:
 			'''
 			bot_id 
-			user_id       
+			user_id    
 			tweet_id
 			tweet_text
 			tweet_entities
@@ -144,7 +146,7 @@ class PDP:
 				2.3- No one follows tweet_user_id:
 						return PERMIT
 			'''
-			evaluate_answer = self.analyze_follow_user(msg)
+			evaluate_answer = self.analyze_follow_user(msg) > THRESHOLD_FOLLOW_USER
 		if evaluate_answer:
 			log.info(f"Request to {msg_type.name} accepted")
 			return self.send_response({"response": "PERMIT"})
@@ -175,7 +177,7 @@ class PDP:
 		while len(bot_list) < num_users:
 			index = random.randint(0, len(users) - 1)
 			bot_list.append(users.pop(index))
-		
+
 		log.info("Sending first time list: " + ", ".join(bot_list))
 
 		return bot_list
@@ -195,7 +197,7 @@ class PDP:
 			if mention["id"] in policy["bots"]:
 				log.info(f"Bot <{data['bot_id']}> was mentioned by user")
 				return True
-		
+
 		if data["user_id"] in policy["bots"]:
 			log.info(f"Bot <{data['bot_id']}> was targeted in the policy")
 
@@ -391,7 +393,7 @@ class PDP:
 		"""
 				Algorithm to analyse if a bot should retweet a Tweet
 				Takes the current statistics and turns them into a real value
-
+	
 				@param: data - dictionary containing the data of the bot and the tweet it wants to like
 				@returns: float that will then be compared to the threshold previously defined
 				"""
@@ -453,8 +455,60 @@ class PDP:
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
 		"""
-		# This was not implemented last year
-		return True
+
+		heuristic = 0
+
+		MODEL_PATH = "control_center/intelligence/models"
+
+		bot_id = data['bot_id']
+
+		policies = self.postgres.search_policies({
+			"bot_id": bot_id, "filter": "Keywords"
+		})
+
+		if policies['success']:
+			policy_list = policies['data']
+			log.debug(f"Obtained policies: {policy_list}")
+
+			if len(policy_list) > 0:
+				policy_labels = {}
+				for policy in policy_list:
+					policy_labels[policy['name']] = policy['params']
+
+				tweets = data['tweets']
+				user = data['user']
+				user_description = user['description']
+				tweets_text = [t['full_text'] for t in tweets]
+
+				labels = classifier.predict_soft_max(model_path=MODEL_PATH, x=tweets_text + [user_description],
+													 confidence_limit=THRESHOLD_FOLLOW_USER)
+				policies_confidence = {}
+
+				for label in labels:
+					confidence, policy_name = label
+					if policy_name not in policies_confidence:
+						policies_confidence[policy_name] = []
+					policies_confidence[policy_name].append(confidence)
+
+				final_choices = {}
+
+				for key in policies_confidence:
+					mean = np.mean(policies_confidence[key])
+					final_choices[key] = {
+						'mean': mean,
+						'length': len(policies_confidence[key]),
+						'final_score': mean * len(policies_confidence[key]) if mean > 0 else
+						len(policies_confidence[key])
+					}
+
+				best_choice = sorted(list(final_choices.items()), reverse=True, key=lambda c: c[-1]['final_score'])[0]
+				picked_label, mean_score = best_choice[0], best_choice[-1]['mean']
+
+				if picked_label in policy_labels:
+					heuristic += mean_score
+		log.debug(f"Request to follow user with id: {user['id']} and name {user['name']} "
+				  f"{'Accepted' if heuristic > THRESHOLD_FOLLOW_USER else 'Denied'}")
+		return heuristic
 
 	def close(self):
 		self.neo4j.close()
