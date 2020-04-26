@@ -382,9 +382,7 @@ class Neo4jAPI:
     def __delete_node(self, tx, type, id):
         log.debug("DELETING NODE")
 
-        query = f'MATCH (r:{type} {{ id: {str(id)} }}) DETACH DELETE r'
-
-        tx.run(query)
+        tx.run(f'MATCH (r:{type} {{ id: $id }}) DETACH DELETE r', id=id)
 
     def delete_writer_relationship(self, data):
         """Method used to delete WRITE relationship
@@ -545,7 +543,8 @@ class Neo4jAPI:
     def __delete_rel(self, tx, data):
         log.debug("DELETING RELATIONSHIP")
 
-        tx.run(f"MATCH (a:{data['type_1']}{{id: $from_id}})-[r:{data['label']}]->(b:{data['type_2']}{{id: $to_id}})",
+        tx.run(f"MATCH (a:{data['type_1']}{{id: $from_id}})-[r:{data['label']}]->(b:{data['type_2']}{{id: $to_id}})"
+               f"DELETE r",
                from_id=data['type_1'], to_id=data['type_2'])
 
     def search_tweets(self, tweet=None):
@@ -587,18 +586,19 @@ class Neo4jAPI:
 
         query_filters = "{"
         if "id" in data.keys():
-            query_filters += "id: " + str(data["id"]) + ","
+            query_filters += "id: $id,"
         if "name" in data.keys():
-            query_filters += "name: '" + data["name"] + "',"
+            query_filters += "name: '$name',"
         if "username" in data.keys():
-            query_filters += "username: '" + data["username"] + "',"
+            query_filters += "username: '$username',"
 
         query_filters = (query_filters[:-1] if len(query_filters) > 1 else query_filters) + "}"
 
-        query = f'MATCH (r:{BOT_LABEL} {query_filters}) RETURN r'
+        query_result = tx.run(f'MATCH (r:{BOT_LABEL} {query_filters}) RETURN r',
+                              data)
 
         result = []
-        for i in tx.run(query):
+        for i in query_result:
             result.append(dict(i.items()[0][1]))
 
         return result
@@ -618,17 +618,19 @@ class Neo4jAPI:
 
         query_filters = "{"
         if "id" in data.keys():
-            query_filters += "id: " + str(data["id"]) + ","
+            query_filters += "id: $id,"
         if "name" in data.keys():
-            query_filters += "name: '" + data["name"] + "',"
+            query_filters += "name: '$name',"
         if "username" in data.keys():
-            query_filters += "username: '" + data["username"] + "',"
+            query_filters += "username: '$username',"
+
         query_filters = (query_filters[:-1] if len(query_filters) > 1 else query_filters) + "}"
 
-        query = f'MATCH (r:{USER_LABEL} {query_filters}) RETURN r'
+        query_result = tx.run(f'MATCH (r:{USER_LABEL} {query_filters}) RETURN r',
+                              data)
 
         result = []
-        for i in tx.run(query):
+        for i in query_result:
             result.append(dict(i.items()[0][1]))
 
         return result
@@ -794,10 +796,10 @@ class Neo4jAPI:
     def __check_relationship(self, tx, data):
         log.debug("VERIFYING RELATIONSHIP EXISTANCE")
 
-        query = f'MATCH (a: {data["type_1"]} {{id: {str(data["id_1"])} }})-[r:{data["label"]}]' \
-                f'->(b:{data["type_2"]} {{id: {str(data["id_2"])} }}) RETURN a, b'
+        query = f'MATCH (a: {data["type_1"]} {{id: $id1 }})-[r:{data["label"]}]' \
+                f'->(b:{data["type_2"]} {{id: $id2 }}) RETURN a, b'
 
-        result = tx.run(query)
+        result = tx.run(query, id1=data["id_1"], id2=data["id_2"])
 
         return len(result.values()) != 0
 
@@ -827,11 +829,11 @@ class Neo4jAPI:
     def __get_following(self, tx, data):
         log.debug("GETTING FOLLOWINGS")
 
-        query = f"MATCH (a {':' + data['type'] if 'type' in data else ''} {{id: {str(data['id'])} }})-" \
+        query = f"MATCH (a {':' + data['type'] if 'type' in data else ''} {{id: $id }})-" \
                 f"[r:{FOLLOW_LABEL}]->(b) RETURN b"
 
         result = []
-        for i in tx.run(query):
+        for i in tx.run(query, id=data['id']):
             result.append(dict(i.items()[0][1]))
 
         return result
@@ -863,10 +865,10 @@ class Neo4jAPI:
         log.debug("GETTING FOLLOWERS")
 
         query = f'MATCH (b)-[r:{FOLLOW_LABEL}]->' \
-                f'(a {":" + data["type"] if "type" in data else ""} {{id: {str(data["id"])} }}) RETURN b'
+                f'(a {":" + data["type"] if "type" in data else ""} {{id: $id }}) RETURN b'
 
         result = []
-        for i in tx.run(query):
+        for i in tx.run(query, id=str(data["id"])):
             result.append(dict(i.items()[0][1]))
 
         return result
@@ -937,40 +939,4 @@ class Neo4jAPI:
 
 if __name__ == "__main__":
     neo = Neo4jAPI()
-
-    # neo.add_bot({"id":0,"name":"Jonas","username":"Jonas_Pistolas"})
-    # neo.add_user({"id":0,"name":"DS","username":"FenixD.S"})
-    # neo.add_follow_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
-
-    # print(neo.check_bot_exists(0))
-    # print(neo.check_user_exists(0))
-
-    # neo.update_user({"id": 0, "name": "Diogo Ass"})
-    # neo.update_user({"id": 0, "username": "FenixDickSucker","name":"DS"})
-
-    # neo.update_bot({"id":0,"name":"bot lindo"})
-
-    # print(neo.search_bots({"name":"bot lindo"}))
-    # print(neo.search_users({"id":0}))
-    # print(neo.check_relationship_exists({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL}))
-
-    # print(neo.get_following({"type": BOT_LABEL, "id": 0}))
-    # print(neo.get_followers({"type": USER_LABEL, "id": 0}))
-
-    # print(neo.get_following({"type": "BOT", "id": 0}))
-    # print(neo.get_followers({"type": "USER", "id": 0}))
-
-    # neo.export_network()
-    # print(neo.export_network("csv"))
-    # print()
-    # print(neo.export_network("json"))
-    # print()
-    # print(neo.export_network())
-
-    # neo.export_network()
-    # neo.export_network("csv")
-    # neo.export_network("json")
-
-    # neo.delete_user(0)
-    # neo.delete_follow_relationship({"id_1": 0, "id_2": 0, "type_1": BOT_LABEL, "type_2": USER_LABEL})
     neo.close()
