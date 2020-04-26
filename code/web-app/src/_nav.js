@@ -16,9 +16,9 @@ export default {
       icon: 'fas fa-users',
     },
     {
-      name: 'Influencers',
-      url: '/dash/influencers',
-      icon: 'fas fa-user-tag',
+      name: 'Policies',
+      url: '/dash/policies',
+      icon: 'fas fa-tags',
     },
     {
       name: 'Network',

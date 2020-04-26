@@ -19,7 +19,12 @@ $ npm i react-countup
 $ npm i react-visibility-sensor
 $ npm i react-loading
 $ npm i react-toastify
+$ npm i react-graph-vis
+$ npm i react-select
+$ npm install react-paginate --save
+$ npm i @material-ui/lab
 ```
+
 Then use the command to start the web app on port 3000:
 `$ npm start`
 
