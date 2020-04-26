@@ -36,7 +36,7 @@ const Widgets = React.lazy(() => import('./views/Widgets/Widgets'));
 
 // Our Pages (delete everything before this before delivery)
 const Bots = React.lazy(() => import('./views/Bots/Bots'));
-const Influencers = React.lazy(() => import('./views/Influencers/Influencers'));
+const Policies = React.lazy(() => import('./views/Policies/Policies'));
 const Network = React.lazy(() => import('./views/Network/Network'));
 const Statistics = React.lazy(() => import('./views/Statistics/Statistics'));
 const Reports = React.lazy(() => import('./views/Reports/Reports'));
@@ -87,7 +87,7 @@ const routes = [
   // Our Pages (delete everything before this before delivery)
   { path: '/dash/bots', name: 'Bots', component: Bots },
   { path: '/dash/users', name: 'Users', component: Users },
-  { path: '/dash/influencers', name: 'Influencers', component: Influencers },
+  { path: '/dash/policies', name: 'Policies', component: Policies },
   { path: '/dash/network', name: 'Network', component: Network },
   { path: '/dash/statistics', name: 'Statistics', component: Statistics },
   { path: '/dash/reports', name: 'Reports', component: Reports },

@@ -464,6 +464,7 @@ class Network extends Component {
       }
 
       url = url.replace(/.$/, "")
+      
       this.getSubNetwork(url)
 
       this.setState({

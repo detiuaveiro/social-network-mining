@@ -658,7 +658,7 @@ class Bots extends Component {
                   <Card>
                     <CardHeader color="primary" stats icon>
                       <CardIcon color="primary">
-                        <i class="fab fa-twitter"></i>
+                        <i class="fas fa-robot"></i>
                       </CardIcon>
                       <p style={{
                         color: '#999',
@@ -678,7 +678,7 @@ class Bots extends Component {
                           lineHeight: "1"
                         }
                       }} >
-                        49 / 50 < small > Bots</small>
+                        1/1< small > Bots</small>
                       </h3>
                     </CardHeader>
                     <CardBody style={{ minHeight: "38px" }}>
