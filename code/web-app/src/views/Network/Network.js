@@ -70,6 +70,9 @@ class Network extends Component {
           size: 13,
           color: '#999'
         },
+        smooth: {
+          type: "discrete"
+        }
       },
       nodes: {
         size: 30,
@@ -148,6 +151,7 @@ class Network extends Component {
 
         data.forEach(item => {
           if (item.type == "node") {
+            console.log(item)
             var tempItem = {}
             tempItem['id'] = item.id
             tempItem['name'] = item.properties.name
@@ -341,6 +345,8 @@ class Network extends Component {
     this.setState({
       loading: true
     })
+    document.getElementById("loadedGraph").style.visibility = "hidden"
+    document.getElementById("loadingGraph").style.display = ""
 
     // Get Network
     this.getBaseNetwork()
@@ -348,6 +354,10 @@ class Network extends Component {
     this.setState({
       loading: false
     })
+
+    document.getElementById("loadedGraph").style.visibility = "visible"
+    document.getElementById("loadingGraph").style.display = "none"
+
   }
 
 
@@ -356,6 +366,9 @@ class Network extends Component {
 
   // Graph methods //////////////////////////////////////////////////////////
   resetNetwork() {
+    document.getElementById("loadedGraph").style.visibility = "hidden"
+    document.getElementById("loadingGraph").style.display = ""
+
     this.setState({ hideBots: false, hideLinks: false, hideUsers: false, botRoot: [], userRoot: [] })
     document.getElementById("hideBots").checked = false
     document.getElementById("hideUsers").checked = false
@@ -385,12 +398,18 @@ class Network extends Component {
     this.setState({
       loading: false
     })
+
+    document.getElementById("loadedGraph").style.visibility = "visible"
+    document.getElementById("loadingGraph").style.display = "none"
   }
 
   searchNetwork() {
     if (this.state.botRoot.length == 0 && this.state.userRoot.length == 0 && document.getElementById("botDepth").value == "" && document.getElementById("userDepth").value == "") {
       this.resetNetwork()
     } else {
+      document.getElementById("loadedGraph").style.visibility = "hidden"
+      document.getElementById("loadingGraph").style.display = ""
+
       this.setState({ hideBots: false, hideLinks: false, hideUsers: false, nodesForSelect: [], foundNode: '' })
       document.getElementById("hideBots").checked = false
       document.getElementById("hideUsers").checked = false
@@ -450,6 +469,8 @@ class Network extends Component {
       this.setState({
         loading: false
       })
+      document.getElementById("loadedGraph").style.visibility = "visible"
+      document.getElementById("loadingGraph").style.display = "none"
     }
   }
 
@@ -756,118 +777,13 @@ class Network extends Component {
 
 
     var graph
-    if (!this.state.loading) {
-      graph = <Graph graph={this.state.graph} options={this.state.options} events={events} getNetwork={network => {
-        this.setState({ graphRef: network })
-      }} />
-    } else {
-      graph = <ReactLoading type={"cubes"} color="#1da1f2" />
-    }
+    graph = <Graph graph={this.state.graph} options={this.state.options} events={events} getNetwork={network => {
+      this.setState({ graphRef: network })
+    }} />
 
     var modal
     if (this.state.modal) {
-      if (this.state.modalType == "USER") {
-        modal =
-          <Dialog class="fade-in"
-            open={this.state.modal}
-            onClose={() => this.handleClose()}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle id="alert-dialog-title">
-              <span>{"👤 Info on user "}</span><strong style={{ color: "#1da1f2" }}>{this.state.modalInfo.base.name}</strong><span style={{ color: "#999", fontSize: "15px" }}>{" (" + this.state.modalInfo.base.username + ")"}</span>
-            </DialogTitle>
-            <DialogContent style={{ minWidth: "600px" }}>
-              <Container fluid>
-                <CardAvatar profile>
-                  <a onClick={e => e.preventDefault()}>
-                    <img src={this.state.modalInfo.info.profile_image_url_https.replace("normal", "400x400")} alt="Profile Image" style={{ minWidth: "100px" }} />
-                  </a>
-                </CardAvatar>
-                <Row>
-                  <Col xs="12" md="12">
-                    <Card profile>
-
-                      <CardBody profile>
-                        <h6 style={{
-                          color: "#999",
-                          margin: "0",
-                          fontSize: "14px",
-                          marginTop: "0",
-                          paddingTop: "10px",
-                          marginBottom: "0"
-                        }}>@{this.state.modalInfo.info.screen_name}</h6>
-                        <h4 style={{
-                          color: "#3C4858",
-                          marginTop: "0px",
-                          minHeight: "auto",
-                          fontWeight: "300",
-                          marginBottom: "3px",
-                          textDecoration: "none",
-                          "& small": {
-                            color: "#999",
-                            fontWeight: "400",
-                            lineHeight: "1"
-                          }
-                        }}>{this.state.modalInfo.info.name}</h4>
-                        <h5 style={{ marginTop: "15px" }}>
-                          <i>{this.state.modalInfo.info.description}</i>
-                        </h5>
-
-                        <div class="row" style={{ marginTop: "20px" }}>
-                          <div class="col-sm-12 offset-md-3 col-md-3">
-                            <h6><b>{this.state.modalInfo.info.followers_count}</b> following</h6>
-                          </div>
-
-                          <div class="col-sm-12 col-md-3">
-                            <h6><b>{this.state.modalInfo.info.friends_count}</b> followers</h6>
-                          </div>
-                        </div>
-                      </CardBody>
-                      <CardFooter>
-                        <h5><b style={{ color: "#4dbd74" }}>Active</b></h5>
-                      </CardFooter>
-                    </Card>
-                  </Col>
-                </Row>
-              </Container>
-
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => this.handleClose()} color="info">
-                Cancel
-          </Button>
-            </DialogActions>
-          </Dialog>
-      } else if (this.state.modalType == "BOT") {
-        modal =
-          <Dialog class="fade-in"
-            open={this.state.modal}
-            onClose={() => this.handleClose()}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle id="alert-dialog-title">
-              <span>{"🤖 Info on bot "}</span><strong style={{ color: "#1da1f2" }}>{this.state.modalInfo.name}</strong><span style={{ color: "#999", fontSize: "15px" }}>{" (" + this.state.modalInfo.username + ")"}</span>
-            </DialogTitle>
-            <DialogContent style={{ minWidth: "600px" }}>
-              <Container fluid>
-                <Row>
-                  <Col xs="12" md="12">
-
-                  </Col>
-                </Row>
-
-              </Container>
-
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => this.handleClose()} color="info">
-                Cancel
-        </Button>
-            </DialogActions>
-          </Dialog>
-      } else if (this.state.modalType == "TWEET") {
+      if (this.state.modalType == "TWEET") {
         modal =
           <Dialog class="fade-in"
             open={this.state.modal}
@@ -892,7 +808,7 @@ class Network extends Component {
             <DialogActions>
               <Button onClick={() => this.handleClose()} color="info">
                 Cancel
-      </Button>
+              </Button>
             </DialogActions>
           </Dialog>
       }
@@ -924,7 +840,32 @@ class Network extends Component {
             <Col xs="12" sm="12" md="9">
               <Card>
                 <CardBody>
-                  {graph}
+                  <div style={{ position: "relative" }}>
+                    <div
+                      id="loadedGraph"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        position: "relative",
+                        top: 0,
+                        left: 0,
+                        visibility: "hidden"
+                      }}>
+                      {graph}
+
+                    </div>
+                    <div
+                      id="loadingGraph"
+                      style={{
+                        zIndex: 10,
+                        position: "absolute",
+                        top: "45%",
+                        left: "45%",
+                        display: ""
+                      }}>
+                      <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
+                    </div>
+                  </div>
                 </CardBody>
               </Card>
             </Col>
@@ -958,9 +899,6 @@ class Network extends Component {
                         </Col>
 
                       </Row>
-
-
-
                     </Col>
                   </Row>
 
