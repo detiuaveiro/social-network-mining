@@ -39,7 +39,6 @@ def test_successful_twitter_user_followers_request(error_catcher, factory):
     path = reverse('twitter_user_followers', kwargs={'id': 1})
     request = factory.get(path)
     response = users.twitter_user_followers(request, id=1)
-    print(response)
     assert is_response_successful(response)
 
 
