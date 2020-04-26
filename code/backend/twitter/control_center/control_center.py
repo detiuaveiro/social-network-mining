@@ -356,6 +356,7 @@ class Control_Center(Rabbitmq):
 			"action": log_actions.FOLLOW_REQ,
 			"target_id": user_id
 		})
+
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
 			"bot_id": data['bot_id'],
@@ -730,6 +731,7 @@ class Control_Center(Rabbitmq):
 		})
 
 		response = []
+
 		if policies['success']:
 			policy_list = policies['data']
 			log.debug(f"Obtained policies: {policy_list}")
