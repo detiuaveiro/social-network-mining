@@ -11,6 +11,11 @@ export default {
       icon: 'fas fa-robot',
     },
     {
+      name: 'Users',
+      url: '/dash/users',
+      icon: 'fas fa-users',
+    },
+    {
       name: 'Influencers',
       url: '/dash/influencers',
       icon: 'fas fa-user-tag',
