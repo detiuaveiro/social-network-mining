@@ -5,7 +5,7 @@ MAINTAINER Pedro Escaleira
 RUN apt-get update
 RUN apt install -y software-properties-common
 RUN apt-get install -y tar git curl nano vim wget net-tools build-essential
-RUN apt-get install -y python3.8 python3.8-dev python-distribute python3-pip python-pip
+RUN apt-get install -y python3.8 python3.8-dev python-distribute python3.8-pip python-pip
 
 WORKDIR /twitter
 
