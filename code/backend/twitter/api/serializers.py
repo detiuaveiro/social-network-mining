@@ -30,6 +30,8 @@ class Tweet(serializers.Serializer):
 	in_reply_to_user_id = serializers.IntegerField()
 	text = serializers.CharField()
 	in_reply_to_status_id = serializers.IntegerField()
+	retweet_count = serializers.IntegerField()
+	favorite_count = serializers.IntegerField()
 
 
 class TweetStats(serializers.Serializer):
