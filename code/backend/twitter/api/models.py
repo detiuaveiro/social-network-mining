@@ -41,6 +41,9 @@ class Tweet(djongo_models.Model):
 	in_reply_to_screen_name = djongo_models.TextField(null=True, blank=True)
 	in_reply_to_user_id = djongo_models.BigIntegerField(null=True, blank=True)
 	in_reply_to_status_id = djongo_models.BigIntegerField(null=True, blank=True)
+	text = djongo_models.TextField()
+	retweet_count = djongo_models.BigIntegerField()
+	favorite_count = djongo_models.BigIntegerField()
 
 	class Meta:
 		managed = True
