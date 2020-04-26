@@ -507,8 +507,8 @@ class PDP:
 
                 if picked_label in policy_labels:
                     heuristic += mean_score
-        log.debug(
-            f"Request to follow user with id: {user['id']} and name {user['name']} {'Accepted' if heuristic > THRESHOLD_FOLLOW_USER else 'Denied'}")
+        log.debug(f"Request to follow user with id: {user['id']} and name {user['name']} "
+                  f"{'Accepted' if heuristic > THRESHOLD_FOLLOW_USER else 'Denied'}")
         return heuristic
 
     def close(self):
