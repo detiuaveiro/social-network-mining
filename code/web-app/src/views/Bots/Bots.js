@@ -74,10 +74,10 @@ class Bots extends Component {
 
         data.forEach(bot => {
           var tempInfo = []
-          tempInfo.push("" + bot.screen_name);
-          tempInfo.push("" + bot.name);
-          tempInfo.push("" + bot.followers_count);
-          tempInfo.push("" + bot.friends_count);
+          tempInfo.push("@AntnioP88829405");
+          tempInfo.push("António Pinto");
+          tempInfo.push("536");
+          tempInfo.push("67");
 
           // Add wether its active or not
           tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Active</Badge>);

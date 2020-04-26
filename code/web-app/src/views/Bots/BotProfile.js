@@ -1,11 +1,11 @@
-import React, { Component, lazy, Suspense } from 'react';
+import React, { Component, lazy, Suspense, } from 'react';
 import { Bar, Line } from 'react-chartjs-2';
 
 import baseURL from '../../variables/baseURL'
 import {
     Container, Row, Col, Button, Pagination, PaginationItem, PaginationLink, Label,
     Input,
-    FormGroup,
+    FormGroup, Badge
 } from 'reactstrap';
 import Table from "../../components/Table/Table.js";
 
@@ -286,7 +286,7 @@ class BotProfile extends Component {
                     </Dialog>
                 }
             }
-            
+
             return (
                 <div className="animated fadeIn">
                     <Container fluid>
@@ -313,7 +313,7 @@ class BotProfile extends Component {
                                 <Card profile>
                                     <CardAvatar profile>
                                         <a onClick={e => e.preventDefault()}>
-                                            <img src={this.props.bot.profile_image_url_https.replace("normal","400x400")} alt="Profile Image" style={{ minWidth: "100px" }} />
+                                            <img src={"https://pbs.twimg.com/profile_images/1250982807515660289/Nl8ZfzFd_400x400.jpg"} alt="Profile Image" style={{ minWidth: "100px" }} />
                                         </a>
                                     </CardAvatar>
                                     <CardBody profile>
@@ -324,7 +324,7 @@ class BotProfile extends Component {
                                             marginTop: "0",
                                             paddingTop: "10px",
                                             marginBottom: "0"
-                                        }}>@{this.props.bot.screen_name}</h6>
+                                        }}>@AntnioP88829405</h6>
                                         <h4 style={{
                                             color: "#3C4858",
                                             marginTop: "0px",
@@ -337,18 +337,20 @@ class BotProfile extends Component {
                                                 fontWeight: "400",
                                                 lineHeight: "1"
                                             }
-                                        }}>{this.props.bot.name}</h4>
+                                        }}>António Pinto</h4>
                                         <h5 style={{ marginTop: "15px" }}>
-                                            <i>{this.props.bot.description}</i>
+                                            <i>Gestor empresarial <br />
+                                            Procurando o sentido da vida <br />
+                                            🇵🇹🏦🏖️</i>
                                         </h5>
 
                                         <div class="row" style={{ marginTop: "20px" }}>
                                             <div class="col-sm-12 offset-md-3 col-md-3">
-                                                <h6><b>{this.props.bot.followers_count}</b> following</h6>
+                                                <h6><b>536</b> following</h6>
                                             </div>
 
                                             <div class="col-sm-12 col-md-3">
-                                                <h6><b>{this.props.bot.friends_count}</b> followers</h6>
+                                                <h6><b>67</b> followers</h6>
                                             </div>
                                         </div>
                                     </CardBody>
@@ -358,7 +360,7 @@ class BotProfile extends Component {
                                 </Card>
 
                                 <Suspense fallback={this.loading()}>
-                                    <Widget03 dataBox={() => ({ variant: 'twitter', tweets: '1.792' })} >
+                                    <Widget03 dataBox={() => ({ variant: 'twitter', tweets: '-' })} >
                                         <div className="chart-wrapper">
                                             <Line data={makeSocialBoxData({ data: [1, 13, 9, 17, 34, 41, 38], label: 'twitter', labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'] })} options={socialChartOpts} height={90} />
                                         </div>
@@ -383,36 +385,9 @@ class BotProfile extends Component {
                                         }} > Activity</h4>
                                     </CardHeader>
                                     <CardBody style={{ paddingTop: "0px" }}>
-                                        <Table style={{ paddingTop: "0px" }}
-                                            tableHeaderColor="primary"
-                                            tableHead={["Log", "Description", "Date"]}
-                                            tableData={[["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"], ["Posted Tweet", "Published a new tweet - #id", "24/24/24"]]}
-                                        />
+
                                     </CardBody>
-                                    <CardFooter>
-                                        <div class="col-12">
-                                            <Pagination>
-                                                <PaginationItem>
-                                                    <PaginationLink previous tag="button"></PaginationLink>
-                                                </PaginationItem>
-                                                <PaginationItem active>
-                                                    <PaginationLink tag="button">1</PaginationLink>
-                                                </PaginationItem>
-                                                <PaginationItem>
-                                                    <PaginationLink tag="button">2</PaginationLink>
-                                                </PaginationItem>
-                                                <PaginationItem>
-                                                    <PaginationLink tag="button">3</PaginationLink>
-                                                </PaginationItem>
-                                                <PaginationItem>
-                                                    <PaginationLink tag="button">4</PaginationLink>
-                                                </PaginationItem>
-                                                <PaginationItem>
-                                                    <PaginationLink next tag="button"></PaginationLink>
-                                                </PaginationItem>
-                                            </Pagination>
-                                        </div>
-                                    </CardFooter>
+
                                 </Card>
                             </Col>
                         </Row>
@@ -440,7 +415,7 @@ class BotProfile extends Component {
                                     </CardHeader>
                                     <CardBody>
                                         <h5 style={{ marginTop: "15px" }}>
-                                            <i>"oi"</i>
+
                                         </h5>
                                     </CardBody>
                                 </Card>
@@ -470,7 +445,11 @@ class BotProfile extends Component {
                                         <Table
                                             tableHeaderColor="primary"
                                             tableHead={["Name", "Type", "Tags", "Status", ""]}
-                                            tableData={[["Posted Tweet", "Published a new tweet - #id", "24/24/24", ""]]}
+                                            tableData={[["governo_PS", "Keywords", "Partido Socialista, PS, governo, estado, assembleia", <Badge pill color="success" style={{ fontSize: "11px" }}>Active</Badge>, <Button block outline color="info"
+
+                                            >
+                                                <i class="fas fa-ellipsis-h"></i>
+                                            </Button>]]}
                                         />
                                     </CardBody>
                                 </Card>
