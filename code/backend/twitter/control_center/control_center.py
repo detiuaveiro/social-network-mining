@@ -48,20 +48,14 @@ class Control_Center(Rabbitmq):
 		if message_type == BotToServer.EVENT_TWEET_LIKED:
 			self.__like_tweet_log(message)
 
-		# elif message_type == BotToServer.EVENT_TWEET_RETWEETED:
-		# 	self.__retweet_log(message)
-
-		# elif message_type == BotToServer.EVENT_TWEET_REPLIED:
-		# 	self.__reply_tweet_log(message)
-
 		elif message_type == BotToServer.QUERY_TWEET_LIKE:
 			self.request_tweet_like(message)
 
 		elif message_type == BotToServer.QUERY_TWEET_RETWEET:
 			self.request_retweet(message)
 
-		elif message_type == BotToServer.QUERY_TWEET_REPLY:
-			self.request_tweet_reply(message)
+		# elif message_type == BotToServer.QUERY_TWEET_REPLY:
+		# 	self.request_tweet_reply(message)
 
 		elif message_type == BotToServer.QUERY_FOLLOW_USER:
 			self.request_follow_user(message)
@@ -313,20 +307,23 @@ class Control_Center(Rabbitmq):
 		if request_accepted:
 			log.info(f"Bot {data['bot_id']} request accepted to reply {data['data']['id']}")
 
-			self.postgres_client.insert_log({
-				"bot_id": data["bot_id"],
-				"action": log_actions.REPLY_REQ_ACCEPT,
-				"target_id": data['data']['id']
-			})
-
 			replier = DumbReplier(random.choice(list(DumbReplierTypes.__members__.values())))
 			reply_text = replier.generate_response(data['data']['text'])
-			log.info(f"Sending reply text <{reply_text}>")
+			if reply_text:
+				log.info(f"Sending reply text <{reply_text}>")
 
-			self.send(data['bot_id'], ServerToBot.POST_TWEET, {
-				"reply_id": data['data']['id'],
-				"text": reply_text
-			})
+				self.send(data['bot_id'], ServerToBot.POST_TWEET, {
+					"reply_id": data['data']['id'],
+					"text": reply_text
+				})
+
+				self.postgres_client.insert_log({
+					"bot_id": data["bot_id"],
+					"action": log_actions.REPLY_REQ_ACCEPT,
+					"target_id": data['data']['id']
+				})
+			else:
+				log.warning(f"Could not send reply to tweet because of no response from text generator")
 		else:
 			log.warning(f"Bot {data['bot_id']} request denied to reply {data['data']['id']}")
 			self.postgres_client.insert_log({
