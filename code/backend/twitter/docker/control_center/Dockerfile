@@ -1,10 +1,13 @@
-FROM ubuntu
+FROM ubuntu:18.04
 MAINTAINER Pedro Escaleira
 
 # install some tools
 RUN apt-get update
+RUN apt install -y software-properties-common
 RUN apt-get install -y tar git curl nano vim wget net-tools build-essential
-RUN apt-get install -y python3 python3-dev python-distribute python3-pip python-pip
+RUN apt-get install -y python3.8 python3.8-dev python3.8-distutils python-distribute python3-pip python-pip
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN python3.8 get-pip.py
 
 WORKDIR /twitter
 
@@ -12,8 +15,8 @@ WORKDIR /twitter
 COPY / .
 
 # install requirements
-RUN pip3 install --upgrade setuptools
-RUN pip3 install --user -r requirements_cc.txt
+RUN pip3.8 install --upgrade setuptools
+RUN pip3.8 install --user -r requirements_cc.txt
 
 
 # env variables
@@ -32,4 +35,4 @@ ENV NEO4J_USERNAME=$NEO4J_USERNAME
 ENV NEO4J_PASSWORD=$NEO4J_PASSWORD
 
 # run
-CMD [ "python3", "start_cc.py" ]
+CMD [ "python3.8", "start_cc.py" ]
