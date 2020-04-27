@@ -500,7 +500,7 @@ class PDP:
                 final_choices = {}
 
                 for key in policies_confidence:
-                    mean = np.mean(policies_confidence[key])
+                    mean = np.mean(policies_confidence[key] + [0 for _ in range(len(labels) - len(policies_confidence[key]))])
                     final_choices[key] = {
                         'mean': mean,
                         'length': len(policies_confidence[key]),
