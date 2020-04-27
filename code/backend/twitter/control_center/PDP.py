@@ -460,7 +460,7 @@ class PDP:
         @param: data - dictionary containing the data of the bot and the tweet it wants to like
         @returns: float that will then be compared to the threshold previously defined
         """
-        
+
         heuristic = 0
 
         MODEL_PATH = "control_center/intelligence/models"
