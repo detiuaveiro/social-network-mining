@@ -11,6 +11,8 @@ from control_center.policies_types import PoliciesTypes
 import log_actions
 from control_center.intelligence import classifier
 import numpy as np
+import gc
+import keras.backend as K
 
 # Constants used below for the Heuristics
 THRESHOLD_LIKE = 0.4
@@ -456,8 +458,8 @@ class PDP:
         @returns: float that will then be compared to the threshold previously defined
         """
 
-        return 1
-        """
+
+
         heuristic = 0
 
         MODEL_PATH = "control_center/intelligence/models"
@@ -484,6 +486,9 @@ class PDP:
 
                 labels = classifier.predict_soft_max(model_path=MODEL_PATH, x=tweets_text + [user_description],
                                                      confidence_limit=THRESHOLD_FOLLOW_USER)
+                K.clear_session()
+                gc.collect()
+
                 policies_confidence = {}
 
                 for label in labels:
@@ -511,6 +516,6 @@ class PDP:
         log.debug(f"Request to follow user with id: {user['id']} and name {user['name']} "
                   f"{'Accepted' if heuristic > THRESHOLD_FOLLOW_USER else 'Denied'}")
         return heuristic
-    """
+
     def close(self):
         self.neo4j.close()
