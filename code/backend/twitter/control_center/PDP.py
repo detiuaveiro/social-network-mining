@@ -18,7 +18,8 @@ import keras.backend as K
 THRESHOLD_LIKE = 0.4
 THRESHOLD_RETWEET = 0.6
 THRESHOLD_REPLY = 0.6
-THRESHOLD_FOLLOW_USER = 0.85
+THRESHOLD_FOLLOW_USER = 0.8
+MEAN_WORDS_PER_TWEET = 80
 POLICY_KEYWORDS_MATCHES = 0.2
 POLICY_USER_IS_TARGETED = 0.4
 PENALTY_LIKED_RECENTLY_SMALL = -0.35
@@ -470,7 +471,13 @@ class PDP:
             "bot_id": bot_id, "filter": "Keywords"
         })
 
-        if policies['success']:
+        tweets = data['tweets']
+        user = data['user']
+        user_description = user['description']
+        tweets_text = [t['full_text'] for t in tweets]
+        tweets_len_mean = np.mean([len(i) for i in tweets_text])
+
+        if policies['success'] and tweets_len_mean >= MEAN_WORDS_PER_TWEET:
             policy_list = policies['data']
             log.debug(f"Obtained policies: {policy_list}")
 
@@ -478,11 +485,6 @@ class PDP:
                 policy_labels = {}
                 for policy in policy_list:
                     policy_labels[policy['name']] = policy['params']
-
-                tweets = data['tweets']
-                user = data['user']
-                user_description = user['description']
-                tweets_text = [t['full_text'] for t in tweets]
 
                 labels = classifier.predict_soft_max(model_path=MODEL_PATH, x=tweets_text + [user_description],
                                                      confidence_limit=THRESHOLD_FOLLOW_USER)
