@@ -32,11 +32,11 @@ def test_successful_twitter_tweets_request(error_catcher, factory, tweets_list):
 
 @catch_exception
 def test_successful_twitter_tweets_with_limit_request(error_catcher, factory, tweets_list):
-    limit = 4
-    path = reverse('twitter_tweets', kwargs={'limit': limit})
+
+    path = reverse('twitter_tweets',)
     request = factory.get(path)
-    response = tweets.twitter_tweets(request, limit=str(limit))
-    assert is_response_successful(response) and len(response.data['data']) == limit
+    response = tweets.twitter_tweets(request)
+    assert is_response_successful(response)
 
 
 @catch_exception
@@ -44,7 +44,7 @@ def test_unsuccessfully_twitter_tweets_request(error_catcher, factory, db):
     path = reverse('twitter_tweets')
     request = factory.get(path)
     response = tweets.twitter_tweets(request)
-    assert is_response_empty(response)
+    assert is_response_unsuccessful(response)
 
 
 @catch_exception

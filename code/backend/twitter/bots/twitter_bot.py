@@ -474,4 +474,3 @@ class TwitterBot(RabbitMessaging):
                     wait(2)
             except Exception as error:
                 logger.exception(f"Error {error} on bot's loop: ")
-        # exit(1)
