@@ -512,7 +512,7 @@ class Control_Center(Rabbitmq):
 		user = data['data']
 		user_type = self.__user_type(user['id'])
 
-		if user_type != "" and 'name' in user and user['name']:
+		if user_type != "" or ('name' in user and user['name']):
 			self.save_user(data)
 			return user_type
 
