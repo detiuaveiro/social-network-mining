@@ -1,6 +1,8 @@
 import json
 import logging
 import random
+import pytz
+from datetime import timedelta, datetime
 
 from control_center.text_generator import DumbReplier, DumbReplierTypes
 from wrappers.mongo_wrapper import MongoAPI
@@ -40,6 +42,7 @@ class Control_Center(Rabbitmq):
 		self.mongo_client = MongoAPI()
 		self.neo4j_client = Neo4jAPI()
 		self.pep = PEP()
+		self.__utc = pytz.UTC
 
 	def action(self, message):
 		message_type = message['type']
@@ -189,6 +192,27 @@ class Control_Center(Rabbitmq):
 			log.debug(f"Bot {data['bot_id']} could not reply with {data['target_id']}")
 			log.error(f"Bot like caused error {result['error']}")
 
+	def __found_in_logs(self, bot, action, target):
+		"""
+		Function to check if an action is already found in logs recently, therefore not being necessary to be done
+
+		@param bot: id of bot who's requesting an action
+		@param action: action the bot wants to take
+		@param target: id of target that bot wants to take action to
+		@return Boolean value confirming it found the log recently
+		"""
+		bot_logs = self.postgres_client.search_logs(
+			params={"bot_id": bot, "action": action, "target_id": target},
+			limit=1
+		)
+
+		if bot_logs["success"]:
+			log = (timedelta(hours=1) + bot_logs['data'][0]['timestamp']).replace(tzinfo=self.__utc)
+			now = datetime.now().replace(tzinfo=self.__utc)
+			return log > now
+
+		return False
+
 	def request_tweet_like(self, data):
 		"""
 		Action to request a like on tweeter:
@@ -199,6 +223,10 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 		log.info(f"Bot {data['bot_id']} requests a like to tweet {data['data']['id']}")
+		if self.__found_in_logs(data["bot_id"], log_actions.LIKE_REQ, data['data']['id']):
+			log.info("Action was already requested recently")
+			return
+
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": log_actions.LIKE_REQ,
@@ -243,6 +271,10 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 		log.info(f"Bot {data['bot_id']} requests a retweet {data['data']['id']}")
+		if self.__found_in_logs(data["bot_id"], log_actions.RETWEET_REQ, data['data']['id']):
+			log.info("Action was already requested recently")
+			return
+
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": log_actions.RETWEET_REQ,
@@ -286,6 +318,9 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 		log.info(f"Bot {data['bot_id']} requests a reply {data['data']['id']}")
+		if self.__found_in_logs(data["bot_id"], log_actions.REPLY_REQ, data['data']['id']):
+			log.info("Action was already requested recently")
+			return
 
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
@@ -347,6 +382,9 @@ class Control_Center(Rabbitmq):
 		user_id = user['id']
 
 		log.info(f"Bot {data['bot_id']} requests a follow from {user_id}")
+		if self.__found_in_logs(data["bot_id"], log_actions.FOLLOW_REQ, user_id):
+			log.info("Action was already requested recently")
+			return
 
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
