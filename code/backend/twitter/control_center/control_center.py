@@ -513,13 +513,17 @@ class Control_Center(Rabbitmq):
 		user_type = self.__user_type(user['id'])
 
 		if user_type != "" or ('name' in user and user['name']):
-			self.save_user(data)
+			try:
+				self.save_user(data)
+			except Exception as e:
+				print(data)
 			return user_type
 
 		log.debug(f"Inserting blank user with id {user}")
 		blank_user = mongo_utils.BLANK_USER
 		blank_user["id"] = user['id']
 		blank_user["id_str"] = str(user['id'])
+		blank_user["screen_name"] = user['screen_name']
 		self.save_user({
 			"bot_id": data["bot_id"],
 			'bot_name': data["bot_name"],

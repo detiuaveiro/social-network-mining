@@ -11,7 +11,7 @@ from credentials import TASKS_EXCHANGE, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PR
 from tweepy.binder import bind_api
 
 if __name__ == "__main__":
-    bot_id = int(os.environ.get('BOT_ID'))
+    bot_id = 1244051405721255937 #int(os.environ.get('BOT_ID'))
 
     messaging_settings = {
         TASKS_EXCHANGE: MessagingSettings(exchange=TASKS_EXCHANGE, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}.{bot_id}",
@@ -21,10 +21,10 @@ if __name__ == "__main__":
         DATA_EXCHANGE: MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY)
     }
 
-    consumer_key = os.environ.get('CONSUMER_KEY', '')
-    consumer_secret = os.environ.get('CONSUMER_SECRET', '')
-    token = os.environ.get('TOKEN', '')
-    token_secret = os.environ.get('TOKEN_SECRET', '')
+    consumer_key = 'HXyEKV8PXnDAOEFyBQ6mFwAwJ' #os.environ.get('CONSUMER_KEY', '')
+    consumer_secret = 'M9wNJzcozcTmNwgk4zHA4Fwxlz10BkY2cyb8Pc4WYgrTsEI20v' #os.environ.get('CONSUMER_SECRET', '')
+    token = '1244051405721255937-e6UpMLBR3UY5W432KQjPpnSJGJ8JK5' #os.environ.get('TOKEN', '')
+    token_secret = "f9BvAjB1PDNdEUMctU8554apY3RT5d8pHOOdG2sGhw4S8" #os.environ.get('TOKEN_SECRET', '')
     proxy = os.environ.get('PROXY', 'socks5h://localhost:9050')
 
 
