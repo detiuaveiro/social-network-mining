@@ -1,11 +1,9 @@
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk import WordNetLemmatizer
-import string
 from keras import Sequential
 import numpy as np
 from sklearn.model_selection import train_test_split
-from matplotlib import *
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras import layers
@@ -14,7 +12,12 @@ from keras.wrappers.scikit_learn import KerasClassifier
 from keras.models import load_model
 import json
 import pickle
-
+import string
+import re
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
 
 def tokenize(text):
     text = re.sub(r"http\S+", "", text)
