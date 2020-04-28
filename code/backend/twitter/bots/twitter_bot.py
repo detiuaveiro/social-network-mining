@@ -28,10 +28,9 @@ class TwitterBot(RabbitMessaging):
         super().__init__(url, username, password, vhost, messaging_settings)
         self._name: str = 'bot'
         self._screen_name: str = 'bot'
-        self._id = bot_id
-        self._twitter_api = api
+        self._id: int = bot_id
+        self._twitter_api: tweepy.API = api
         self.user: User
-        self._last_home_tweet: int = None
 
     def __repr__(self):
         return f"<TwitterBot id={self._id}, api={self._twitter_api}>"

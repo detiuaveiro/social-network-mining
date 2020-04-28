@@ -82,8 +82,6 @@ class ParlaiReplier:
 	def generate_response(self, text: str) -> str:
 		logger.info(f"Starting to get a response from ParlAI server for the text: {text}")
 
-		self.socket.connect(self.host)
-
 		message = {
 			'id': 'bot',
 			'text': text,
@@ -91,13 +89,18 @@ class ParlaiReplier:
 			'episode_done': False,
 		}
 
-		self.socket.send_unicode(json.dumps(message))
-		reply = json.loads(self.socket.recv_unicode())
-		self.socket.close()
+		try:
+			self.socket.connect(self.host)
+			self.socket.send_unicode(json.dumps(message))
+			reply = json.loads(self.socket.recv_unicode())
+			self.socket.close()
 
-		logger.info(f"Got response <{reply}> form ParlAI for the text <{text}>")
+			logger.info(f"Got response <{reply}> form ParlAI for the text <{text}>")
 
-		return reply['text']
+			return reply['text']
+		except Exception as error:
+			logger.exception(f"Error <{error}> when trying to obtain a response to the text <{text}>: ")
+			return None
 
 
 def test_smarter_replier():
