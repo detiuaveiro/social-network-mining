@@ -57,3 +57,9 @@ NEO4J_PORT = 7687
 NEO4J_FULL_URL = f"{NEO4J_URL}:{NEO4J_PORT}"
 NEO4J_USERNAME = os.environ.get('NEO4J_USERNAME', 'neo4j')
 NEO4J_PASSWORD = os.environ.get('NEO4J_PASSWORD', 'neo4jPI')
+
+# -----------------------------------------------------------
+# ParlAI
+# -----------------------------------------------------------
+PARLAI_URL = os.environ.get('PARLAI_URL', 'localhost')
+PARLAI_PORT = 5555
