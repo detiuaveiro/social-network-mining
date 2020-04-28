@@ -19,7 +19,11 @@ $ npm i react-countup
 $ npm i react-visibility-sensor
 $ npm i react-loading
 $ npm i react-toastify
+$ npm i react-graph-vis
+$ npm i react-select
+$ npm install react-paginate --save
 ```
+
 Then use the command to start the web app on port 3000:
 `$ npm start`
 
@@ -131,12 +135,11 @@ Then use the command to start the web app on port 3000:
  ```bash
  $ docker container run --env-file ~/PI_2020/env_vars/rest.env --publish 7000:7000 --detach --name rest docker.pkg.github.com/detiuaveiro/social-network-mining/rest                # run the rest container
  $ docker container run --env-file ~/PI_2020/env_vars/bot.env --network host --detach --name bot docker.pkg.github.com/detiuaveiro/social-network-mining/bot                # run the bot container
- $ docker container run --env-file ~/PI_2020/env_vars/control_center.env --detach --name control_center docker.pkg.github.com/detiuaveiro/social-network-mining/control_center                # run the control center container
- 
+ $ docker container run --env-file ~/PI_2020/env_vars/control_center.env --cpus=".8" --memory="14g" --detach --name control_center docker.pkg.github.com/detiuaveiro/social-network-mining/control_center               # run the control center container 
  ```
  - Also, it's necessary to have a `watchtower` container running on the server, that will deploy automaticly all the images created with the `deploy github workflow`:
  ```bash
- $ docker run --env-file PI_2020/env_vars/watchtower.env -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock -v ~/.docker/config.json:/config.json containrrr/watchtower
+ $ docker run --env-file ~/PI_2020/env_vars/watchtower.env -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock -v ~/.docker/config.json:/config.json containrrr/watchtower
  ```
 
 ## BDS
@@ -152,19 +155,52 @@ psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql
 
 - neo4j
 ```bash
-  CALL apoc.load.json("users.json")
+  CALL apoc.load.json("user_nodes.json")
   YIELD value
-  MERGE (p:User {name: value.n.properties.name, id: value.n.properties.id, username: value.n.properties.username})
+  MERGE (p:User {name: value.a.properties.name, id: value.a.properties.id, username: value.a.properties.username})
 ```
 ```bash
-  CALL apoc.load.json("bots.json")
+  CALL apoc.load.json("bots_nodes.json")
   YIELD value
-  MERGE (p:Bot {name: value.n.properties.name, id: value.n.properties.id, username: value.n.properties.username})
+  MERGE (p:Bot {name: value.a.properties.name, id: value.a.properties.id, username: value.a.properties.username})
 ```
 ```bash
-  CALL apoc.load.json("follow.json")
+  CALL apoc.load.json("tweets.json")
   YIELD value
-  MATCH(p:Bot {id:value.p.start.properties.id})
-  MATCH(u: User {id:toInteger(value.p.end.properties.id)})
+  MERGE (p:Tweet {id: value.a.properties.id})
+```
+```bash
+  CALL apoc.load.json("follow_rel.json")
+  YIELD value
+  MATCH(p {id:value.start.properties.id})
+  MATCH(u {id:toInteger(value.end.properties.id)})
   CREATE (p)-[:FOLLOWS]->(u)
+```
+```bash
+  CALL apoc.load.json("retweet.json")
+  YIELD value
+  MATCH(p {id:value.start.properties.id})
+  MATCH(u {id:toInteger(value.end.properties.id)})
+  CREATE (p)-[:RETWEET]->(u)
+```
+```bash
+  CALL apoc.load.json("reply.json")
+  YIELD value
+  MATCH(p {id:value.start.properties.id})
+  MATCH(u {id:toInteger(value.end.properties.id)})
+  CREATE (p)-[:REPLY]->(u)
+```
+```bash
+  CALL apoc.load.json("wrote.json")
+  YIELD value
+  MATCH(p {id:value.start.properties.id})
+  MATCH(u {id:toInteger(value.end.properties.id)})
+  CREATE (p)-[:WROTE]->(u)
+```
+```bash
+  CALL apoc.load.json("quote.json")
+  YIELD value
+  MATCH(p {id:value.start.properties.id})
+  MATCH(u {id:toInteger(value.end.properties.id)})
+  CREATE (p)-[:QUOTED]->(u)
 ```

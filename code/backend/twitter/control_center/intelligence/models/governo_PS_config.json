@@ -1,0 +1,1 @@
+{"epochs": 20, "batch_size": 10, "max_len": 100, "padding": "post"}

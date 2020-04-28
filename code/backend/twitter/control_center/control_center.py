@@ -48,20 +48,14 @@ class Control_Center(Rabbitmq):
 		if message_type == BotToServer.EVENT_TWEET_LIKED:
 			self.__like_tweet_log(message)
 
-		# elif message_type == BotToServer.EVENT_TWEET_RETWEETED:
-		# 	self.__retweet_log(message)
-
-		# elif message_type == BotToServer.EVENT_TWEET_REPLIED:
-		# 	self.__reply_tweet_log(message)
-
 		elif message_type == BotToServer.QUERY_TWEET_LIKE:
 			self.request_tweet_like(message)
 
 		elif message_type == BotToServer.QUERY_TWEET_RETWEET:
 			self.request_retweet(message)
 
-		elif message_type == BotToServer.QUERY_TWEET_REPLY:
-			self.request_tweet_reply(message)
+		# elif message_type == BotToServer.QUERY_TWEET_REPLY:
+		# 	self.request_tweet_reply(message)
 
 		elif message_type == BotToServer.QUERY_FOLLOW_USER:
 			self.request_follow_user(message)
@@ -321,12 +315,21 @@ class Control_Center(Rabbitmq):
 
 			replier = DumbReplier(random.choice(list(DumbReplier.DumbReplierTypes.__members__.values())))
 			reply_text = replier.generate_response(data['data']['text'])
-			log.info(f"Sending reply text <{reply_text}>")
+			if reply_text:
+				log.info(f"Sending reply text <{reply_text}>")
 
-			self.send(data['bot_id'], ServerToBot.POST_TWEET, {
-				"reply_id": data['data']['id'],
-				"text": reply_text
-			})
+				self.send(data['bot_id'], ServerToBot.POST_TWEET, {
+					"reply_id": data['data']['id'],
+					"text": reply_text
+				})
+
+				self.postgres_client.insert_log({
+					"bot_id": data["bot_id"],
+					"action": log_actions.REPLY_REQ_ACCEPT,
+					"target_id": data['data']['id']
+				})
+			else:
+				log.warning(f"Could not send reply to tweet because of no response from text generator")
 		else:
 			log.warning(f"Bot {data['bot_id']} request denied to reply {data['data']['id']}")
 			self.postgres_client.insert_log({
@@ -345,42 +348,46 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the user id
 		"""
 
-		log.info(f"Bot {data['bot_id']} requests a follow from {data['data']['id']}")
+		user = data['data']['user']
+		tweets = data['data']['tweets']
+		user_id = user['id']
+
+		log.info(f"Bot {data['bot_id']} requests a follow from {user_id}")
 
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
 			"action": log_actions.FOLLOW_REQ,
-			"target_id": data['data']['id']
+			"target_id": user_id
 		})
+
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
 			"bot_id": data['bot_id'],
-			"user_id": data['data']['id']
+			"user": user,
+			"tweets": tweets
 		})
 
 		if request_accepted:
-			log.info(f"Bot {data['bot_id']} request accepted to follow {data['data']['id']}")
+			log.info(f"Bot {data['bot_id']} request accepted to follow {user_id}")
 
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ_ACCEPT,
-				"target_id": data['data']['id']
+				"target_id": user_id
 			})
-			self.send(
-				data['bot_id'],
-				ServerToBot.FOLLOW_USERS,
-				{
-					"type": "id",
-					"data": [data['data']['id']]
-				}
-			)
+			self.send(data['bot_id'], ServerToBot.FOLLOW_USERS, {"type": "id", "data": [user_id]})
 		else:
-			log.warning(f"Bot {data['bot_id']} request denied to follow {data['data']['id']}")
+			log.warning(f"Bot {data['bot_id']} request denied to follow {user_id}")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id"],
 				"action": log_actions.FOLLOW_REQ_DENY,
-				"target_id": data['data']['id']
+				"target_id": user_id
 			})
+
+		# save the tweets we received on the databases
+		for tweet in tweets:
+			data['data'] = tweet
+			self.save_tweet(data)
 
 	def save_user(self, data):
 		"""
@@ -727,6 +734,7 @@ class Control_Center(Rabbitmq):
 		})
 
 		response = []
+
 		if policies['success']:
 			policy_list = policies['data']
 			log.debug(f"Obtained policies: {policy_list}")
