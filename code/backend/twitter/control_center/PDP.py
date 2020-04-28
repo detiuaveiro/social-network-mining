@@ -1,6 +1,5 @@
 ## @package twitter.control_center
 # coding: UTF-8
-import logging
 import random
 import datetime
 import json
@@ -12,12 +11,15 @@ from control_center.policies_types import PoliciesTypes
 import log_actions
 from control_center.intelligence import classifier
 import numpy as np
+import gc
+import keras.backend as K
 
 # Constants used below for the Heuristics
 THRESHOLD_LIKE = 0.4
 THRESHOLD_RETWEET = 0.6
-THRESHOLD_REPLY = 0.5
-THRESHOLD_FOLLOW_USER = 0.7
+THRESHOLD_REPLY = 0.6
+THRESHOLD_FOLLOW_USER = 0.8
+MEAN_WORDS_PER_TWEET = 80
 POLICY_KEYWORDS_MATCHES = 0.2
 POLICY_USER_IS_TARGETED = 0.4
 PENALTY_LIKED_RECENTLY_SMALL = -0.35
@@ -457,6 +459,8 @@ class PDP:
         @returns: float that will then be compared to the threshold previously defined
         """
 
+
+
         heuristic = 0
 
         MODEL_PATH = "control_center/intelligence/models"
@@ -467,7 +471,13 @@ class PDP:
             "bot_id": bot_id, "filter": "Keywords"
         })
 
-        if policies['success']:
+        tweets = data['tweets']
+        user = data['user']
+        user_description = user['description']
+        tweets_text = [t['full_text'] for t in tweets]
+        tweets_len_mean = np.mean([len(i) for i in tweets_text])
+
+        if policies['success'] and tweets_len_mean >= MEAN_WORDS_PER_TWEET:
             policy_list = policies['data']
             log.debug(f"Obtained policies: {policy_list}")
 
@@ -476,13 +486,11 @@ class PDP:
                 for policy in policy_list:
                     policy_labels[policy['name']] = policy['params']
 
-                tweets = data['tweets']
-                user = data['user']
-                user_description = user['description']
-                tweets_text = [t['full_text'] for t in tweets]
-
                 labels = classifier.predict_soft_max(model_path=MODEL_PATH, x=tweets_text + [user_description],
                                                      confidence_limit=THRESHOLD_FOLLOW_USER)
+                K.clear_session()
+                gc.collect()
+
                 policies_confidence = {}
 
                 for label in labels:
@@ -494,7 +502,7 @@ class PDP:
                 final_choices = {}
 
                 for key in policies_confidence:
-                    mean = np.mean(policies_confidence[key])
+                    mean = np.mean(policies_confidence[key] + [0 for _ in range(len(labels) - len(policies_confidence[key]))])
                     final_choices[key] = {
                         'mean': mean,
                         'length': len(policies_confidence[key]),
