@@ -1,4 +1,7 @@
 import re
+import zmq
+import json
+import logging
 from enum import IntEnum
 
 import nltk.chat.eliza as eliza
@@ -6,13 +9,16 @@ import nltk.chat.rude as rude
 import nltk.chat.suntsu as suntsu
 import nltk.chat.zen as zen
 
-from control_center.translator_utils import Translator
-
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 
-import zmq
-import json
+
+logger = logging.getLogger("text-generator")
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(open("text_generator.log", "w"))
+handler.setFormatter(logging.Formatter(
+	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+logger.addHandler(handler)
 
 
 def tweet_to_simple_text(tweet: str) -> str:
@@ -32,7 +38,6 @@ class DumbReplier:
 	def __init__(self, replier_type: DumbReplierTypes = None):
 		"""The default replier is an Eliza style bot
 		"""
-		self.translator = Translator()
 		self.bot = eliza.eliza_chatbot
 
 		if replier_type == DumbReplier.DumbReplierTypes.RUDE_REPLIER:
@@ -43,8 +48,7 @@ class DumbReplier:
 			self.bot = zen.zen_chatbot
 
 	def generate_response(self, text: str) -> str:
-		response_en = self.bot.respond(self.translator.from_pt_to_en(text))
-		return self.translator.from_en_to_pt(response_en)
+		return self.bot.respond(text)
 
 
 class SmarterReplier:
@@ -76,6 +80,8 @@ class ParlaiReplier:
 		self.host = f"tcp://{host}:{port}"
 
 	def generate_response(self, text: str) -> str:
+		logger.info(f"Starting to get a response from ParlAI server for the text: {text}")
+
 		self.socket.connect(self.host)
 
 		message = {
@@ -88,6 +94,8 @@ class ParlaiReplier:
 		self.socket.send_unicode(json.dumps(message))
 		reply = json.loads(self.socket.recv_unicode())
 		self.socket.close()
+
+		logger.info(f"Got response <{reply}> form ParlAI for the text <{text}>")
 
 		return reply['text']
 
