@@ -233,7 +233,6 @@ class TwitterBot(RabbitMessaging):
                     logger.debug(f"Requesting to follow user {tweet_user.id}")
                     self.__send_request_follow(tweet_user)
 
-
                 if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
                     logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
                                    f"following him, so can't read his timeline")
