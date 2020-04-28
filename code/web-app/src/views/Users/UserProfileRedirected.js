@@ -32,18 +32,16 @@ import Lottie from "react-lottie";
 import * as loadingAnim from "../../assets/animations/squares_1.json";
 
 
-class UserProfile extends Component {
+class UserProfileRedirected extends Component {
     constructor() {
         super();
+        var userInfo = null
     }
 
     state = {
-        error: null,
+        error: false,
         goBack: false,
         doneLoading: false,
-
-        userInfo: null,
-        redirectUser: null,
 
         animationOptions: {
             loop: true, autoplay: true, animationData: loadingAnim.default, rendererSettings: {
@@ -60,11 +58,15 @@ class UserProfile extends Component {
             empty: false
         },
 
+        nextUser: null
 
     };
 
-    async getTweets(page, first) {
-        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/tweets/5/" + page + "/", {
+    
+
+
+    getTweets(page, first) {
+        fetch(baseURL + "twitter/users/" + this.userInfo.user_id + "/tweets/5/" + page + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -120,6 +122,7 @@ class UserProfile extends Component {
 
                 if (first) {
                     this.setState({
+                        error: false,
                         tweets: {
                             data: tempTweets,
                             noPage: data.num_pages,
@@ -128,9 +131,14 @@ class UserProfile extends Component {
                             tweet: null,
                             empty: empty
                         }
+                    }, () => {
+                        this.setState({
+                            doneLoading: true
+                        })
                     })
                 } else {
                     this.setState({
+                        error: false,
                         tweets: {
                             data: tempTweets,
                             noPage: data.num_pages,
@@ -139,6 +147,9 @@ class UserProfile extends Component {
                             tweet: null,
                             empty: empty
                         }
+                    }, () => {
+                        document.getElementById("loadedTweets").style.visibility = ""
+                        document.getElementById("loadingTweets").style.display = "none"
                     })
                 }
 
@@ -146,13 +157,14 @@ class UserProfile extends Component {
         }).catch(error => {
             console.log("error: " + error);
             this.setState({
-                error: error
+                error: true,
+                doneLoading: true
             })
         });
     }
 
-    async getUserInfo() {
-        await fetch(baseURL + "twitter/users/" + this.props.nextUser + "/", {
+    getUserInfo() {
+        fetch(baseURL + "twitter/users/" + this.props.user + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -165,40 +177,41 @@ class UserProfile extends Component {
         }).then(data => {
             if (data != null && data != {}) {
                 data = data.data
-                this.setState({ userInfo: data })
+
+                this.userInfo = data
+                console.log(this.userInfo)
+
             }
         }).catch(error => {
             console.log("error: " + error);
             this.setState({
-                error: "NOT FOUND"
+                error: true,
+                doneLoading: true
             })
         });
     }
 
     async componentDidMount() {
-        if (this.props.user == null) {
-            console.log(this.props.nextUser)
-            await this.getUserInfo()
-        } else {
-            await this.setState({ userInfo: this.props.user })
-        }
+        await this.getUserInfo()
 
         // Get Tweets
-        if (this.state.error == null) {
-            await this.getTweets(1, true)
-        }
+
+        this.getTweets(1, true)
+
+        // Get Policies
 
         this.setState({
-            doneLoading: true
+            goBack: this.state.goBack,
         })
 
     }
 
     handleOpenProfile(user) {
         this.setState({
-            redirectUser: user
+          nextUser: user
         })
-    }
+      }
+
 
     // Methods //////////////////////////////////////////////////////////
 
@@ -242,14 +255,11 @@ class UserProfile extends Component {
     /////////////////////////////////////////////////////////////////////
 
     // Pagination //////////////////////////////////////////////////////////
-    changePageTweets = async (event, value) => {
+    changePageTweets = (event, value) => {
         document.getElementById("loadedTweets").style.visibility = "hidden"
         document.getElementById("loadingTweets").style.display = ""
 
-        await this.getTweets(value, false)
-
-        document.getElementById("loadedTweets").style.visibility = ""
-        document.getElementById("loadingTweets").style.display = "none"
+        this.getTweets(value, false)
     };
     /////////////////////////////////////////////////////////////////////
 
@@ -257,10 +267,6 @@ class UserProfile extends Component {
     render() {
         if (this.state.goBack) {
             return (<Users />)
-        } else if (this.state.redirectUser != null) {
-            return (
-                <UserProfile nextUser={this.state.redirectUser}></UserProfile>
-            )
         } else {
             if (!this.state.doneLoading) {
                 return (
@@ -272,64 +278,37 @@ class UserProfile extends Component {
                         </div>
                     </div>
                 )
-            } else if (this.state.error != null) {
-                if (this.state.error == "NOT FOUND") {
-                    return (
-                        <Container fluid>
-                            <Row>
-                                <Col xs="12" sm="12" md="12" style={{ marginBottom: "30px" }}>
-                                    <Button block outline color="danger" onClick={() => this.handleGoBack()} style={{
-                                        width: "150px", marginTop: "15px", borderWidth: "2px"
-                                    }}><i class="fas fa-chevron-left"></i> Go Back</Button>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col xs="12" sm="12" md="12">
-                                    <Card>
-                                        <CardHeader color="warning">
-                                            <h3 style={{ color: "white" }}>
-                                                Oops :o
-                                            </h3>
-                                        </CardHeader>
-                                        <CardBody>
-                                        </CardBody>
-                                    </Card>
-                                </Col>
-                            </Row>
-                        </Container>
-                    )
-                } else {
-                    return (
-                        <Container fluid>
-                            <Row>
-                                <Col xs="12" sm="12" md="12" style={{ marginBottom: "30px" }}>
-                                    <Button block outline color="danger" onClick={() => this.handleGoBack()} style={{
-                                        width: "150px", marginTop: "15px", borderWidth: "2px"
-                                    }}><i class="fas fa-chevron-left"></i> Go Back</Button>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col xs="12" sm="12" md="12">
-                                    <Card>
-                                        <CardHeader color="danger">
-                                            <h3 style={{ color: "white" }}>
-                                                Oh no! An error :(
-                                            </h3>
-                                        </CardHeader>
-                                        <CardBody>
-                                            <h4 style={{ marginTop: "10px" }}>
-                                                Sorry, there was an error retrieving information on <strong>{this.state.userInfo.name}</strong> <span style={{ color: "#999" }}>(@{this.state.userInfo.screen_name})</span>.
-                                            </h4>
-                                            <h5>
-                                                We're very sorry for any inconvenience this may have caused and ask that you refresh the page in a few minutes.
-                                            </h5>
-                                        </CardBody>
-                                    </Card>
-                                </Col>
-                            </Row>
-                        </Container>
-                    )
-                }
+            } else if (this.state.error) {
+                return (
+                    <Container fluid>
+                        <Row>
+                            <Col xs="12" sm="12" md="12" style={{ marginBottom: "30px" }}>
+                                <Button block outline color="danger" onClick={() => this.handleGoBack()} style={{
+                                    width: "150px", marginTop: "15px", borderWidth: "2px"
+                                }}><i class="fas fa-chevron-left"></i> Go Back</Button>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col xs="12" sm="12" md="12">
+                                <Card>
+                                    <CardHeader color="danger">
+                                        <h3 style={{ color: "white" }}>
+                                            Oh no! An error :(
+                                        </h3>
+                                    </CardHeader>
+                                    <CardBody>
+                                        <h4 style={{ marginTop: "10px" }}>
+                                            Sorry, there was an error retrieving information on <strong>{this.userInfo.name}</strong> <span style={{ color: "#999" }}>(@{this.userInfo.screen_name})</span>.
+                                        </h4>
+                                        <h5>
+                                            We're very sorry for any inconvenience this may have caused and ask that you refresh the page in a few minutes.
+                                        </h5>
+                                    </CardBody>
+                                </Card>
+                            </Col>
+                        </Row>
+                    </Container>
+                )
             } else {
                 var modal
                 if (this.state.modal) {
@@ -392,9 +371,9 @@ class UserProfile extends Component {
                 //Latest Tweet
 
                 var locale = <h5></h5>
-                if (this.state.userInfo.location != "") {
+                if (this.userInfo.location != "") {
                     locale = <h5 style={{ marginTop: "15px" }}>
-                        <span style={{ color: "#999", fontSize: "15px" }}><i>from</i> </span>{this.state.userInfo.location}
+                        <span style={{ color: "#999", fontSize: "15px" }}><i>from</i> </span>{this.userInfo.location}
                     </h5>
 
                 }
@@ -527,7 +506,7 @@ class UserProfile extends Component {
                                     <Card profile>
                                         <CardAvatar profile>
                                             <a onClick={e => e.preventDefault()}>
-                                                <img src={this.state.userInfo.profile_image_url_https.replace("normal", "400x400")} alt="Profile Image" style={{ minWidth: "100px" }} />
+                                                <img src={this.userInfo.profile_image_url_https.replace("normal", "400x400")} alt="Profile Image" style={{ minWidth: "100px" }} />
                                             </a>
                                         </CardAvatar>
                                         <CardBody profile>
@@ -538,7 +517,7 @@ class UserProfile extends Component {
                                                 marginTop: "0",
                                                 paddingTop: "10px",
                                                 marginBottom: "0"
-                                            }}>@{this.state.userInfo.screen_name}</h6>
+                                            }}>@{this.userInfo.screen_name}</h6>
                                             <h4 style={{
                                                 color: "#3C4858",
                                                 marginTop: "0px",
@@ -551,20 +530,20 @@ class UserProfile extends Component {
                                                     fontWeight: "400",
                                                     lineHeight: "1"
                                                 }
-                                            }}>{this.state.userInfo.name}</h4>
+                                            }}>{this.userInfo.name}</h4>
                                             <h5 style={{ marginTop: "15px" }}>
-                                                <i>{this.state.userInfo.description}</i>
+                                                <i>{this.userInfo.description}</i>
                                             </h5>
 
                                             {locale}
 
                                             <div class="row" style={{ marginTop: "20px" }}>
                                                 <div class="col-sm-12 offset-md-3 col-md-3">
-                                                    <h6><b>{this.state.userInfo.followers_count}</b> <br />following</h6>
+                                                    <h6><b>{this.userInfo.followers_count}</b> <br />following</h6>
                                                 </div>
 
                                                 <div class="col-sm-12 col-md-3">
-                                                    <h6><b>{this.state.userInfo.friends_count}</b> <br />followers</h6>
+                                                    <h6><b>{this.userInfo.friends_count}</b> <br />followers</h6>
                                                 </div>
                                             </div>
                                         </CardBody>
@@ -696,4 +675,4 @@ class UserProfile extends Component {
     }
 }
 
-export default UserProfile;
+export default UserProfileRedirected;

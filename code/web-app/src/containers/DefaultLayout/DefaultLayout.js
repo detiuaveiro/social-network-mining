@@ -26,12 +26,30 @@ import navigation from "../../_nav";
 // routes config
 import routes from "../../routes";
 
+
+import FadeIn from "react-fade-in";
+import Lottie from "react-lottie";
+
+import * as loadingAnim from "../../assets/animations/squares_1.json";
+
 const DefaultFooter = React.lazy(() => import("./DefaultFooter"));
 const DefaultHeader = React.lazy(() => import("./DefaultHeader"));
 
 class DefaultLayout extends Component {
+  options = {
+    loop: true, autoplay: true, animationData: loadingAnim.default, rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice"
+    }
+  }
+
   loading = () => (
-    <div className="animated fadeIn pt-1 text-center">Loading...</div>
+    <div className="animated fadeIn pt-1 text-center">
+      <div style={{ width: "100%", marginTop: "10%" }}>
+        <FadeIn>
+          <Lottie options={this.options} height={"30%"} width={"30%"} />
+        </FadeIn>
+      </div>
+    </div>
   );
 
   render() {
