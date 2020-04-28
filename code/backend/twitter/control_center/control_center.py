@@ -2,7 +2,7 @@ import json
 import logging
 import random
 
-from control_center.text_generator import DumbReplier, DumbReplierTypes
+from control_center.text_generator import DumbReplier
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
@@ -319,7 +319,7 @@ class Control_Center(Rabbitmq):
 				"target_id": data['data']['id']
 			})
 
-			replier = DumbReplier(random.choice(list(DumbReplierTypes.__members__.values())))
+			replier = DumbReplier(random.choice(list(DumbReplier.DumbReplierTypes.__members__.values())))
 			reply_text = replier.generate_response(data['data']['text'])
 			log.info(f"Sending reply text <{reply_text}>")
 
