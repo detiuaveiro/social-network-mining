@@ -8,7 +8,7 @@ def main():
 	utc = pytz.UTC
 	psql = PostgresAPI()
 	result = psql.search_logs(
-		params={"bot_id": 1234, "action": "TWEET LIKE", "target_id": 1232123},
+		params={"bot_id": 1234, "action": "TWEET_LIKE", "target_id": 1232123},
 		limit=1
 	)
 	if result["success"]:

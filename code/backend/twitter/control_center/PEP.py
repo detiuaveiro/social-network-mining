@@ -41,7 +41,7 @@ class PEP:
 
 		@param msg - a dictionary containing the message to be passed on
 		"""
-		log.info(f"Received request {msg}")
+		log.info(f"Received request {msg['type']} from bot <{msg['bot_id']}>")
 		data = self.pdp.receive_request(msg)
 		return self.enforce(json.loads(data))
 

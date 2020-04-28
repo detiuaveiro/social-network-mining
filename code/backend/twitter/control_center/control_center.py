@@ -206,7 +206,7 @@ class Control_Center(Rabbitmq):
 			limit=1
 		)
 
-		if bot_logs["success"]:
+		if bot_logs["success"] and len(bot_logs['data']) > 0:
 			log.debug("Found the logs in the database")
 			log_ts = (timedelta(hours=1) + bot_logs['data'][0]['timestamp']).replace(tzinfo=self.__utc)
 			now = datetime.now().replace(tzinfo=self.__utc)
