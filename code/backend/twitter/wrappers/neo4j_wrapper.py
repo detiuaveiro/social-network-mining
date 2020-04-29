@@ -241,6 +241,7 @@ class Neo4jAPI:
     def __create_relationship(self, tx, data):
         log.debug(f"CREATING RELATIONSHIP <{data['label']}> betweet {data['id_1']} and {data['id_2']}")
 
+
         result = tx.run(f"MATCH (u: {data['type_1']} {{ id: $id1 }}), (r: {data['type_2']} {{ id: $id2 }}) "
                         f"MERGE (u)-[:{data['label']}]->(r)", id1=data['id_1'], id2=data['id_2'])
 
@@ -868,7 +869,7 @@ class Neo4jAPI:
                 f'(a {":" + data["type"] if "type" in data else ""} {{id: $id }}) RETURN b'
 
         result = []
-        for i in tx.run(query, id=str(data["id"])):
+        for i in tx.run(query, id=data["id"]):
             result.append(dict(i.items()[0][1]))
 
         return result
