@@ -35,7 +35,7 @@ def test_unsuccessfully_twitter_tweets_stats_request(error_catcher, factory, db)
     path = reverse('twitter_tweets_stats')
     request = factory.get(path)
     response = tweets.twitter_tweets_stats(request)
-    assert is_response_empty(response)
+    assert is_response_unsuccessful(response)
 
 
 @catch_exception
@@ -51,4 +51,4 @@ def test_unsuccessfully_twitter_tweet_stats_request(error_catcher, factory, db):
     path = reverse('twitter_tweet_stats', kwargs={'id': 1})
     request = factory.get(path)
     response = tweets.twitter_tweet_stats(request, id=1)
-    assert is_response_empty(response)
+    assert is_response_unsuccessful(response)
