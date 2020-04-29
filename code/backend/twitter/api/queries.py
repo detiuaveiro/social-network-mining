@@ -211,7 +211,7 @@ def twitter_tweet_replies(id):
 		Tweet.objects.get(in_reply_to_status_id=id)
 		all_tweets = Tweet.objects.filter(in_reply_to_status_id=id)
 		return True, [serializers.Tweet(tweet).data for tweet in
-		              all_tweets], "Sucesso a obter todas as replies ao tweet"
+					  all_tweets], "Sucesso a obter todas as replies ao tweet"
 	except Tweet.DoesNotExist:
 		return False, None, f"Não existem replies ao tweet de id {id}"
 	except Exception as e:
@@ -296,16 +296,19 @@ def add_policy(data):
 				raise AddPolicyError("IDs dos bots invalidos")
 
 		status = Policy.objects.filter(API_type=policy_serializer.data['API_type'],
-		                               filter=policy_serializer.data['filter'],
-		                               tags=policy_serializer.data['tags']).exists()
+									   filter=policy_serializer.data['filter'],
+									   tags=policy_serializer.data['tags']).exists()
 		if status:
 			args = {"API_type": policy_serializer.data['API_type'],
-			        "filter": policy_serializer.data['filter'],
-			        "tags": policy_serializer.data['tags']}
+					"filter": policy_serializer.data['filter'],
+					"tags": policy_serializer.data['tags']}
 
 			raise AddPolicyError(f"Uma politica com argumentos iguais já existe na base de dados. Args: {args}")
 
 		policy = Policy.objects.create(id=next_id(Policy), **policy_serializer.data)
+
+		# Add message on rabbit
+
 
 		return True, {'id': policy.id}, "Sucesso a adicionar uma nova politica"
 

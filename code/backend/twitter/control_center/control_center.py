@@ -602,7 +602,7 @@ class Control_Center(Rabbitmq):
 					})
 
 			elif ("is_quote_status" in data["data"] and data["data"]["is_quote_status"]
-			      and "quoted_status" in data["data"]):
+				  and "quoted_status" in data["data"]):
 
 				log.info(f"Tweet was quoting some other tweet, must insert the quote relation too")
 				new_data["data"] = data["data"]["quoted_status"]
@@ -716,7 +716,7 @@ class Control_Center(Rabbitmq):
 
 			self.__follow_user(follower['id'], user_id)
 
-		# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
+	# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
 
 	def send_keywords(self, data):
 		log.info("Starting to sending the keywords to the bot")
@@ -744,7 +744,7 @@ class Control_Center(Rabbitmq):
 			ServerToBot.KEYWORDS,
 			response
 		)
-
+	
 	def __user_type(self, user_id: int) -> str:
 		if self.neo4j_client.check_bot_exists(user_id):
 			return neo4j_labels.BOT_LABEL
