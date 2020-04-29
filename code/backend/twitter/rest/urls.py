@@ -41,6 +41,7 @@ urlpatterns = [
 	url(r"^twitter/users/(?P<id>[0-9]+)/stats/$", users.twitter_user_stats, name="twitter_user_stats"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/stats/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
 	    users.twitter_user_stats, name="twitter_user_stats"),
+	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/$", users.twitter_search_users, name="twitter_search_users"),
 
 	path("twitter/users/export", users.twitter_users_export, name="twitter_users_export"),
 

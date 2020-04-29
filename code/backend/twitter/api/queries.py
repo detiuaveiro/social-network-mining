@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from django.db.models import Max
+from django.db.models import Max, Q
 from api.models import *
 import api.serializers as serializers
 from api import neo4j
@@ -22,12 +22,6 @@ def next_id(model):
 # -----------------------------------------------------------
 # users
 # -----------------------------------------------------------
-
-"""
-		user_tweets = Tweet.objects.filter(user=id).order_by('-created_at')
-
-		data = paginator_factory(user_tweets, entries_per_page, page)
-		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]"""
 
 
 def twitter_users(entries_per_page, page):
@@ -136,6 +130,20 @@ def twitter_user_following(id):
 		return False, None, f"Erro a obter os utilizadores que o utilizador de id {id} segue"
 
 
+def twitter_search_users(keywords):
+	try:
+		query_filters = Q()
+		for word in keywords.split():
+			query_filters |= Q(name__icontains=word) | Q(screen_name__icontains=word)
+			
+		users = User.objects.filter(query_filters)
+
+		return True, [serializers.User(user).data for user in users], "Sucesso a efetuar a pesquisa de utilizadores"
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+		return False, None, f"Erro a efetuar a pesquisa de utilizadores"
+
+
 # -----------------------------------------------------------
 # tweets
 # -----------------------------------------------------------
@@ -211,7 +219,7 @@ def twitter_tweet_replies(id):
 		Tweet.objects.get(in_reply_to_status_id=id)
 		all_tweets = Tweet.objects.filter(in_reply_to_status_id=id)
 		return True, [serializers.Tweet(tweet).data for tweet in
-		              all_tweets], "Sucesso a obter todas as replies ao tweet"
+					  all_tweets], "Sucesso a obter todas as replies ao tweet"
 	except Tweet.DoesNotExist:
 		return False, None, f"Não existem replies ao tweet de id {id}"
 	except Exception as e:
@@ -296,12 +304,12 @@ def add_policy(data):
 				raise AddPolicyError("IDs dos bots invalidos")
 
 		status = Policy.objects.filter(API_type=policy_serializer.data['API_type'],
-		                               filter=policy_serializer.data['filter'],
-		                               tags=policy_serializer.data['tags']).exists()
+									   filter=policy_serializer.data['filter'],
+									   tags=policy_serializer.data['tags']).exists()
 		if status:
 			args = {"API_type": policy_serializer.data['API_type'],
-			        "filter": policy_serializer.data['filter'],
-			        "tags": policy_serializer.data['tags']}
+					"filter": policy_serializer.data['filter'],
+					"tags": policy_serializer.data['tags']}
 
 			raise AddPolicyError(f"Uma politica com argumentos iguais já existe na base de dados. Args: {args}")
 
