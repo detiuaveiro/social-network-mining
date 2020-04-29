@@ -2,7 +2,7 @@
 import argparse
 
 from control_center.control_center import Control_Center
-from control_center.text_generator import test as ola
+from control_center.text_generator import test_smarter_replier
 
 
 def main():
@@ -13,7 +13,7 @@ def main():
 
 def tests(test_type):
 	if test_type == "text_generator":
-		ola()
+		test_smarter_replier()
 
 
 if __name__ == "__main__":
