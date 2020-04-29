@@ -11,8 +11,8 @@ mkdir $dir_name
 
 for log in ${cc_logs[@]}; do
 	docker cp bot:twitter/$log $dir_name
-	docker exec bot echo "" > $log
+	docker exec bot sh -c "echo > $log"
 done
 
-tar -czvf $dir_name.tar.gz $dir_name
+tar -czf $dir_name.tar.gz $dir_name
 rm -rf $dir_name
