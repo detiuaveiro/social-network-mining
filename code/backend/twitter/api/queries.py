@@ -23,11 +23,17 @@ def next_id(model):
 # users
 # -----------------------------------------------------------
 
-"""
-		user_tweets = Tweet.objects.filter(user=id).order_by('-created_at')
 
-		data = paginator_factory(user_tweets, entries_per_page, page)
-		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]"""
+def twitter_users_count():
+	try:
+		all_users_count = User.objects.filter().count()
+
+
+		return True, {'count': all_users_count}, "Sucesso a obter o numero de utilizadores"
+
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_users.__name__} -> {e}")
+		return False, None, "Erro a obter o numero de utilizadores"
 
 
 def twitter_users(entries_per_page, page):

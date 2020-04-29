@@ -34,6 +34,8 @@ BOT_FOLLOWS_USER = 0.3
 BOT_RETWEETED_TWEET = 0.2
 BOT_LIKED_TWEET = 0.3
 
+NUMBER_TWEETS_FOLLOW_DECISION = 3
+
 LIMIT_REPLY_LOGS_QUANTITY = 1000
 
 log = logging.getLogger('PDP')
@@ -400,10 +402,11 @@ class PDP:
                 @param: data - dictionary containing the data of the bot and the tweet it wants to like
                 @returns: float that will then be compared to the threshold previously defined
                 """
-        # first, we verify if the bot already replied to the tweet
+
+        # first, we verify if we already accepted to reply the tweet (if so, we don't reply again)
         bot_logs = self.postgres.search_logs({
             "bot_id": data["bot_id"],
-            "action": log_actions.TWEET_REPLY,
+            "action": log_actions.REPLY_REQ_ACCEPT,
             "target_id": data["tweet_id"]
         })
         if not bot_logs["success"] or bot_logs['data']:
@@ -459,8 +462,6 @@ class PDP:
         @returns: float that will then be compared to the threshold previously defined
         """
 
-
-
         heuristic = 0
 
         MODEL_PATH = "control_center/intelligence/models"
@@ -472,6 +473,8 @@ class PDP:
         })
 
         tweets = data['tweets']
+        tweets = random.sample(tweets, min(len(tweets), NUMBER_TWEETS_FOLLOW_DECISION))
+
         user = data['user']
         user_description = user['description']
         tweets_text = [t['full_text'] for t in tweets]
