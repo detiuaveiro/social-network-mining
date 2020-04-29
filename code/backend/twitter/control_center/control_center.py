@@ -531,9 +531,10 @@ class Control_Center(Rabbitmq):
 
 		if user_type == "" or 'name' not in user or not user['name']:
 			log.debug(f"Inserting blank user with id {user}")
-			blank_user = mongo_utils.BLANK_USER
+			blank_user = mongo_utils.BLANK_USER.copy()
 			blank_user["id"] = user['id']
 			blank_user["id_str"] = str(user['id'])
+			blank_user["screen_name"] = user['screen_name']
 
 			log.info("Have to get the full information on the User")
 			self.send(
@@ -558,7 +559,7 @@ class Control_Center(Rabbitmq):
 			return
 
 		log.debug(f"Inserting blank tweet with id {data['id']}")
-		blank_tweet = mongo_utils.BLANK_TWEET
+		blank_tweet = mongo_utils.BLANK_TWEET.copy()
 		blank_tweet["id"] = data["id"]
 		blank_tweet["user"] = data["user"]
 
