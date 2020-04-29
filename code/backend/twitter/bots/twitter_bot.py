@@ -28,10 +28,9 @@ class TwitterBot(RabbitMessaging):
         super().__init__(url, username, password, vhost, messaging_settings)
         self._name: str = 'bot'
         self._screen_name: str = 'bot'
-        self._id = bot_id
-        self._twitter_api = api
+        self._id: int = bot_id
+        self._twitter_api: tweepy.API = api
         self.user: User
-        self._last_home_tweet: int = None
 
     def __repr__(self):
         return f"<TwitterBot id={self._id}, api={self._twitter_api}>"
@@ -233,7 +232,6 @@ class TwitterBot(RabbitMessaging):
                 if 'following' in user_attributes and not tweet_user.following or 'following' not in user_attributes:
                     logger.debug(f"Requesting to follow user {tweet_user.id}")
                     self.__send_request_follow(tweet_user)
-
 
                 if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
                     logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
@@ -453,8 +451,8 @@ class TwitterBot(RabbitMessaging):
                     elif task_type == messages_types.ServerToBot.FIND_FOLLOWERS:
                         logger.info(f"The bot was asked to get the followers for user with id <{task_params}>")
                         self.__get_followers(user_id=task_params)
-                    # elif task_type == messages_types.ServerToBot.POST_TWEET:
-                    # 	self.__post_tweet(**task_params)
+                    elif task_type == messages_types.ServerToBot.POST_TWEET:
+                        self.__post_tweet(**task_params)
                     elif task_type == messages_types.ServerToBot.KEYWORDS:
                         self.__search_tweets(keywords=task_params)
                     elif task_type == messages_types.ServerToBot.GET_TWEET_BY_ID:
@@ -474,4 +472,3 @@ class TwitterBot(RabbitMessaging):
                     wait(2)
             except Exception as error:
                 logger.exception(f"Error {error} on bot's loop: ")
-        # exit(1)
