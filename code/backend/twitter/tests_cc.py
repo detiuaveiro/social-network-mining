@@ -1,3 +1,4 @@
+from control_center.tests.save_tweet_relations import test
 from wrappers.postgresql_wrapper import PostgresAPI
 from datetime import timedelta, datetime
 import pytz
@@ -5,6 +6,7 @@ import pytz
 
 def main():
 	#test_json()
+	test.test_neo4j()
 	utc = pytz.UTC
 	psql = PostgresAPI()
 	result = psql.search_logs(
