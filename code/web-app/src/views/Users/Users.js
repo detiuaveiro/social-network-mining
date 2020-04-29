@@ -54,6 +54,7 @@ class Users extends Component {
 
     noPages: 0,
     curPage: 1,
+    noUsers: 0,
     empty: false
   };
 
@@ -75,7 +76,6 @@ class Users extends Component {
           error: false,
           users: [],
           user: null,
-          loading: true
         })
 
         data = data.data
@@ -125,8 +125,37 @@ class Users extends Component {
     });
   }
 
+  async getUserCount() {
+    await fetch(baseURL + "twitter/users/count/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+        data = data.data
+
+
+        this.setState({
+          noUsers: data.count
+        })
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        error: true,
+      })
+    });
+  }
+
   async componentDidMount() {
     await this.getUserList(1)
+    await this.getUserCount()
 
     this.setState({
       doneLoading: true
@@ -165,12 +194,10 @@ class Users extends Component {
     if (this.state.user == null) {
       if (!this.state.doneLoading) {
         return (
-          <div className="animated fadeIn">
-            <div style={{ width: "100%", marginTop: "10%" }}>
-              <FadeIn>
-                <Lottie options={this.state.animationOptions} height={"30%"} width={"30%"} />
-              </FadeIn>
-            </div>
+          <div className="animated fadeOut animated" style={{ width: "100%", marginTop: "10%" }}>
+            <FadeIn>
+              <Lottie options={this.state.animationOptions} height={"30%"} width={"30%"} />
+            </FadeIn>
           </div>
         )
       } else if (this.state.error) {
@@ -310,8 +337,8 @@ class Users extends Component {
                           lineHeight: "1"
                         }
                       }} >
-                        150
-                    </h3>
+                        {this.state.noUsers}
+                      </h3>
                     </CardHeader>
                     <CardBody style={{ minHeight: "38px" }}>
                     </CardBody>
@@ -347,7 +374,7 @@ class Users extends Component {
       }
     } else {
       return (
-        <UserProfile user={this.state.user}></UserProfile>
+        <UserProfile user={this.state.user} redirection={[{"type": "LIST", "info":{}}]}></UserProfile>
       )
     }
 

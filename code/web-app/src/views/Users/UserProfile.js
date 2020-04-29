@@ -41,6 +41,7 @@ class UserProfile extends Component {
         error: null,
         goBack: false,
         doneLoading: false,
+        redirectionList: [],
 
         userInfo: null,
         redirectUser: null,
@@ -64,7 +65,7 @@ class UserProfile extends Component {
     };
 
     async getTweets(page, first) {
-        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/tweets/5/" + page + "/", {
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/tweets/7/" + page + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -176,6 +177,9 @@ class UserProfile extends Component {
     }
 
     async componentDidMount() {
+        await this.setState({redirectionList: this.props.redirection})
+        console.log(this.state.redirectionList)
+
         if (this.props.user == null) {
             console.log(this.props.nextUser)
             await this.getUserInfo()
@@ -195,8 +199,11 @@ class UserProfile extends Component {
     }
 
     handleOpenProfile(user) {
+        var list = this.state.redirectionList
+        list.push({type:"PROFILE", info:this.state.userInfo})
         this.setState({
-            redirectUser: user
+            redirectUser: user,
+            redirectionList: list
         })
     }
 
@@ -256,20 +263,23 @@ class UserProfile extends Component {
 
     render() {
         if (this.state.goBack) {
-            return (<Users />)
+            if(this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "LIST")
+                return (<Users />)
+            else{
+                var lastUser = this.state.redirectionList.pop()
+                return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)
+            }
         } else if (this.state.redirectUser != null) {
             return (
-                <UserProfile nextUser={this.state.redirectUser}></UserProfile>
+                <UserProfile nextUser={this.state.redirectUser} redirection={this.state.redirectionList}></UserProfile>
             )
         } else {
             if (!this.state.doneLoading) {
                 return (
-                    <div className="animated fadeIn">
-                        <div style={{ width: "100%", marginTop: "10%" }}>
-                            <FadeIn>
-                                <Lottie options={this.state.animationOptions} height={"30%"} width={"30%"} />
-                            </FadeIn>
-                        </div>
+                    <div className="animated fadeOut animated" style={{ width: "100%", marginTop: "10%" }}>
+                        <FadeIn>
+                            <Lottie options={this.state.animationOptions} height={"30%"} width={"30%"} />
+                        </FadeIn>
                     </div>
                 )
             } else if (this.state.error != null) {
@@ -285,8 +295,8 @@ class UserProfile extends Component {
                             </Row>
                             <Row>
                                 <Col xs="12" sm="12" md="12">
-                                    <div style={{width: "100%", alignContent:"center"}}>
-                                        <img style={{ width: "50%", display:"block", marginLeft:"auto", marginRight:"auto" }} src={require("../../assets/img/error_not_found.png")}></img>
+                                    <div style={{ width: "100%", alignContent: "center" }}>
+                                        <img style={{ width: "50%", display: "block", marginLeft: "auto", marginRight: "auto" }} src={require("../../assets/img/error_not_found.png")}></img>
                                     </div>
                                 </Col>
                             </Row>
@@ -335,7 +345,7 @@ class UserProfile extends Component {
                             </h6>
                         } else if (this.state.tweets.tweet.in_reply_to_screen_name != null) {
                             extraInfo = <h6 style={{ color: "#999" }}>
-                                Replying to <span style={{ color: "#1b95e0", cursor: "pointer" }}>@{this.state.tweets.tweet.in_reply_to_screen_name}</span>
+                                Replying to <span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(this.state.tweets.tweet.in_reply_to_user_id)}>@{this.state.tweets.tweet.in_reply_to_screen_name}</span>
                             </h6>
                         }
 
@@ -354,10 +364,30 @@ class UserProfile extends Component {
                                     <Row>
                                         <Col xs="12" md="12">
                                             {extraInfo}
-                                            <h4>
+                                            <h5>
                                                 <i>{this.state.tweets.tweet.text}</i>
-                                            </h4>
-                                            <h6 style={{ color: "#999" }}>
+                                            </h5>
+
+                                            <div class="row">
+                                                <div class="col-sm-12 col-md-6">
+                                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                                </div>
+
+                                                <div class="col-sm-12 col-md-6" style={{ alignContent: "center" }}>
+                                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-12 col-md-6">
+                                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                                </div>
+
+                                                <div class="col-sm-12 col-md-6">
+                                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                                </div>
+                                            </div>
+
+                                            <h6 style={{ color: "#999",  marginTop: "20px" }}>
                                                 {this.state.tweets.tweet.created_at}
                                             </h6>
                                             <div class="row" style={{ marginTop: "40px", textAlign: "center" }}>
@@ -403,17 +433,37 @@ class UserProfile extends Component {
                         </h6>
                     } else if (this.state.tweets.latestTweet.in_reply_to_screen_name != null) {
                         extraInfo = <h6 style={{ color: "#999" }}>
-                            Replying to <span style={{ color: "#1b95e0", cursor: "pointer" }}>@{this.state.tweets.latestTweet.in_reply_to_screen_name}</span>
+                            Replying to <span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(this.state.tweets.latestTweet.in_reply_to_user_id)}>@{this.state.tweets.latestTweet.in_reply_to_screen_name}</span>
                         </h6>
                     }
 
                     latestTweet = <CardBody>
                         <div style={{ marginTop: "25px" }}>
                             {extraInfo}
-                            <h4>
+                            <h5>
                                 <i>{this.state.tweets.latestTweet.text}</i>
-                            </h4>
-                            <h6 style={{ color: "#999" }}>
+                            </h5>
+
+                            <div class="row">
+                                <div class="col-sm-12 col-md-6">
+                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                </div>
+
+                                <div class="col-sm-12 col-md-6" style={{ alignContent: "center" }}>
+                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12 col-md-6">
+                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                </div>
+
+                                <div class="col-sm-12 col-md-6">
+                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                </div>
+                            </div>
+
+                            <h6 style={{ color: "#999", marginTop: "20px" }}>
                                 {this.state.tweets.latestTweet.created_at}
                             </h6>
                             <div class="row" style={{ marginTop: "40px", textAlign: "center" }}>
@@ -520,7 +570,7 @@ class UserProfile extends Component {
                                     <Card profile>
                                         <CardAvatar profile>
                                             <a onClick={e => e.preventDefault()}>
-                                                <img src={this.state.userInfo.profile_image_url_https.replace("normal", "400x400")} id="profilePic" alt="Profile Image" onError={() => {document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg'}} style={{ minWidth: "100px" }} />
+                                                <img src={this.state.userInfo.profile_image_url_https.replace("normal", "400x400")} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ minWidth: "100px" }} />
                                             </a>
                                         </CardAvatar>
                                         <CardBody profile>
