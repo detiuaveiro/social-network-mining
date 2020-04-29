@@ -4,7 +4,8 @@ import random
 import pytz
 from datetime import timedelta, datetime
 
-from control_center.text_generator import DumbReplier, DumbReplierTypes
+from control_center.text_generator import ParlaiReplier
+from control_center.translator_utils import Translator
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
@@ -17,6 +18,8 @@ from bots.messages_types import ServerToBot, BotToServer
 import log_actions
 import neo4j_labels
 from control_center import mongo_utils
+
+from credentials import PARLAI_URL, PARLAI_PORT
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
@@ -44,6 +47,10 @@ class Control_Center(Rabbitmq):
 		self.pep = PEP()
 		self.__utc = pytz.UTC
 
+		# replier tools
+		self.replier = ParlaiReplier(PARLAI_URL, PARLAI_PORT)
+		self.translator = Translator()
+
 	def action(self, message):
 		message_type = message['type']
 		log.info(f"Received new action: {message['bot_id']} wants to do {BotToServer(message_type).name}")
@@ -57,8 +64,8 @@ class Control_Center(Rabbitmq):
 		elif message_type == BotToServer.QUERY_TWEET_RETWEET:
 			self.request_retweet(message)
 
-		# elif message_type == BotToServer.QUERY_TWEET_REPLY:
-		# 	self.request_tweet_reply(message)
+		elif message_type == BotToServer.QUERY_TWEET_REPLY:
+			self.request_tweet_reply(message)
 
 		elif message_type == BotToServer.QUERY_FOLLOW_USER:
 			self.request_follow_user(message)
@@ -343,8 +350,18 @@ class Control_Center(Rabbitmq):
 		if request_accepted:
 			log.info(f"Bot {data['bot_id']} request accepted to reply {data['data']['id']}")
 
-			replier = DumbReplier(random.choice(list(DumbReplierTypes.__members__.values())))
-			reply_text = replier.generate_response(data['data']['text'])
+			self.postgres_client.insert_log({
+				"bot_id": data["bot_id"],
+				"action": log_actions.REPLY_REQ_ACCEPT,
+				"target_id": data['data']['id']
+			})
+
+			text_en = self.translator.from_pt_to_en(data['data']['text'])
+			reply_text = None
+			if text_en:
+				reply_text = self.replier.generate_response(text_en)
+				reply_text = self.translator.from_en_to_pt(reply_text)
+
 			if reply_text:
 				log.info(f"Sending reply text <{reply_text}>")
 
@@ -375,7 +392,7 @@ class Control_Center(Rabbitmq):
 				Adds the log to postgres_stats, for the request and its result
 				The result is based on the Policy API object
 
-		@param data: dict containing the bot id and the tweet id
+		@param data: dict containing the bot id and the user id
 		"""
 
 		user = data['data']['user']
@@ -513,14 +530,11 @@ class Control_Center(Rabbitmq):
 		user_type = self.__user_type(user['id'])
 
 		if user_type != "" or ('name' in user and user['name']):
-			try:
-				self.save_user(data)
-			except Exception as e:
-				print(data)
+			self.save_user(data)
 			return user_type
 
 		log.debug(f"Inserting blank user with id {user}")
-		blank_user = mongo_utils.BLANK_USER
+		blank_user = mongo_utils.BLANK_USER	
 		blank_user["id"] = user['id']
 		blank_user["id_str"] = str(user['id'])
 		blank_user["screen_name"] = user['screen_name']

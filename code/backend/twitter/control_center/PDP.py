@@ -402,10 +402,11 @@ class PDP:
                 @param: data - dictionary containing the data of the bot and the tweet it wants to like
                 @returns: float that will then be compared to the threshold previously defined
                 """
-        # first, we verify if the bot already replied to the tweet
+
+        # first, we verify if we already accepted to reply the tweet (if so, we don't reply again)
         bot_logs = self.postgres.search_logs({
             "bot_id": data["bot_id"],
-            "action": log_actions.TWEET_REPLY,
+            "action": log_actions.REPLY_REQ_ACCEPT,
             "target_id": data["tweet_id"]
         })
         if not bot_logs["success"] or bot_logs['data']:
