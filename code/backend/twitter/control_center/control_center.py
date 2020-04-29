@@ -529,30 +529,28 @@ class Control_Center(Rabbitmq):
 		user = data['data']
 		user_type = self.__user_type(user['id'])
 
-		if user_type != "" or ('name' in user and user['name']):
-			self.save_user(data)
-			if 'name' in user and user['name']:
-				user_type = self.__user_type(user['id'])
-			return user_type
+		if user_type == "" or 'name' not in user or not user['name']:
+			log.debug(f"Inserting blank user with id {user}")
+			blank_user = mongo_utils.BLANK_USER
+			blank_user["id"] = user['id']
+			blank_user["id_str"] = str(user['id'])
 
-		log.debug(f"Inserting blank user with id {user}")
-		blank_user = mongo_utils.BLANK_USER
-		blank_user["id"] = user['id']
-		blank_user["id_str"] = str(user['id'])
-		self.save_user({
-			"bot_id": data["bot_id"],
-			'bot_name': data["bot_name"],
-			'bot_screen_name': data["bot_screen_name"],
-			"data": blank_user
-		})
+			log.info("Have to get the full information on the User")
+			self.send(
+				bot=data["bot_id"],
+				message_type=ServerToBot.GET_USER_BY_ID,
+				params=user['id']
+			)
 
-		log.info("Have to get the full information on the User")
-		self.send(
-			bot=data["bot_id"],
-			message_type=ServerToBot.GET_USER_BY_ID,
-			params=user['id']
-		)
-		return neo4j_labels.USER_LABEL
+			data = {
+				"bot_id": data["bot_id"],
+				'bot_name': data["bot_name"],
+				'bot_screen_name': data["bot_screen_name"],
+				"data": blank_user
+			}
+
+		self.save_user(data)
+		return self.__user_type(user['id'])
 
 	def __save_blank_tweet_if_dont_exists(self, data):
 		tweet_exists = self.mongo_client.search(
