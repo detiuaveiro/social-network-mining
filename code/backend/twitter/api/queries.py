@@ -1,11 +1,11 @@
 import logging
 from datetime import datetime
-from django.db.models import Max
+from django.db.models import Max, Count, Sum
 from api.models import *
 import api.serializers as serializers
 from api import neo4j
 import json
-
+from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
 from api.queries_utils import paginator_factory
 
 logger = logging.getLogger('queries')
@@ -94,6 +94,26 @@ def twitter_user_stats(id, entries_per_page, page):
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_user_stats.__name__} -> {e}")
 		return False, None, f"Erro as estatisticas do utilizador de id {id}"
+
+
+def twitter_user_stats_grouped(id, types):
+	try:
+		start_date = UserStats.objects.filter(user_id=id).order_by('timestamp').values('timestamp')[0]['timestamp']
+		query = "UserStats.objects.filter(user_id=id)"
+		for type in types:
+			query += f".annotate({type}=Extract{type.title()}('timestamp'))"
+
+		order_by_list = [f"'{type}'" for type in types]
+		query += f".values('{type}').annotate(sum_followers=Sum('followers'), sum_following=Sum('following')).order_by({','.join(order_by_list)})"
+		
+		users_stats = eval(query)
+
+		return True, {'data': list(users_stats),
+					  'start_date': start_date}, "Sucesso a obter os dados dos utilizadores agrupados"
+
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
+		return False, None, f"Erro a obter os dados dos utilizadores agrupados"
 
 
 def twitter_user_tweets(id, entries_per_page, page):
@@ -211,7 +231,7 @@ def twitter_tweet_replies(id):
 		Tweet.objects.get(in_reply_to_status_id=id)
 		all_tweets = Tweet.objects.filter(in_reply_to_status_id=id)
 		return True, [serializers.Tweet(tweet).data for tweet in
-		              all_tweets], "Sucesso a obter todas as replies ao tweet"
+					  all_tweets], "Sucesso a obter todas as replies ao tweet"
 	except Tweet.DoesNotExist:
 		return False, None, f"Não existem replies ao tweet de id {id}"
 	except Exception as e:
@@ -296,12 +316,12 @@ def add_policy(data):
 				raise AddPolicyError("IDs dos bots invalidos")
 
 		status = Policy.objects.filter(API_type=policy_serializer.data['API_type'],
-		                               filter=policy_serializer.data['filter'],
-		                               tags=policy_serializer.data['tags']).exists()
+									   filter=policy_serializer.data['filter'],
+									   tags=policy_serializer.data['tags']).exists()
 		if status:
 			args = {"API_type": policy_serializer.data['API_type'],
-			        "filter": policy_serializer.data['filter'],
-			        "tags": policy_serializer.data['tags']}
+					"filter": policy_serializer.data['filter'],
+					"tags": policy_serializer.data['tags']}
 
 			raise AddPolicyError(f"Uma politica com argumentos iguais já existe na base de dados. Args: {args}")
 
