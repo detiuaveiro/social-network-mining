@@ -542,12 +542,7 @@ class Control_Center(Rabbitmq):
 				params=user['id']
 			)
 
-			data = {
-				"bot_id": data["bot_id"],
-				'bot_name': data["bot_name"],
-				'bot_screen_name': data["bot_screen_name"],
-				"data": blank_user
-			}
+			data['data'] = blank_user 
 
 		self.save_user(data)
 		return self.__user_type(user['id'])
