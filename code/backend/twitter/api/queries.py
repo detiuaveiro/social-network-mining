@@ -130,15 +130,18 @@ def twitter_user_following(id):
 		return False, None, f"Erro a obter os utilizadores que o utilizador de id {id} segue"
 
 
-def twitter_search_users(keywords):
+def twitter_search_users(keywords, entries_per_page, page):
 	try:
 		query_filters = Q()
 		for word in keywords.split():
 			query_filters |= Q(name__icontains=word) | Q(screen_name__icontains=word)
-			
+
 		users = User.objects.filter(query_filters)
 
-		return True, [serializers.User(user).data for user in users], "Sucesso a efetuar a pesquisa de utilizadores"
+		data = paginator_factory(users, entries_per_page, page)
+		data['entries'] = [serializers.User(user).data for user in data['entries']]
+
+		return True, data, "Sucesso a efetuar a pesquisa de utilizadores"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
 		return False, None, f"Erro a efetuar a pesquisa de utilizadores"
