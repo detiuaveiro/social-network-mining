@@ -451,8 +451,8 @@ class TwitterBot(RabbitMessaging):
                     elif task_type == messages_types.ServerToBot.FIND_FOLLOWERS:
                         logger.info(f"The bot was asked to get the followers for user with id <{task_params}>")
                         self.__get_followers(user_id=task_params)
-                    # elif task_type == messages_types.ServerToBot.POST_TWEET:
-                    # 	self.__post_tweet(**task_params)
+                    elif task_type == messages_types.ServerToBot.POST_TWEET:
+                        self.__post_tweet(**task_params)
                     elif task_type == messages_types.ServerToBot.KEYWORDS:
                         self.__search_tweets(keywords=task_params)
                     elif task_type == messages_types.ServerToBot.GET_TWEET_BY_ID:
