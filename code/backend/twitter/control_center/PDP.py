@@ -34,6 +34,8 @@ BOT_FOLLOWS_USER = 0.3
 BOT_RETWEETED_TWEET = 0.2
 BOT_LIKED_TWEET = 0.3
 
+NUMBER_TWEETS_FOLLOW_DECISION = 3
+
 LIMIT_REPLY_LOGS_QUANTITY = 1000
 
 log = logging.getLogger('PDP')
@@ -460,8 +462,6 @@ class PDP:
         @returns: float that will then be compared to the threshold previously defined
         """
 
-
-
         heuristic = 0
 
         MODEL_PATH = "control_center/intelligence/models"
@@ -473,6 +473,8 @@ class PDP:
         })
 
         tweets = data['tweets']
+        tweets = random.sample(tweets, min(len(tweets), NUMBER_TWEETS_FOLLOW_DECISION))
+
         user = data['user']
         user_description = user['description']
         tweets_text = [t['full_text'] for t in tweets]
