@@ -144,7 +144,7 @@ def twitter_user_stats(request, id, entries_per_page=None, page=None):
 
 
 @api_view(["GET"])
-def twitter_search_users(_, keywords):
+def twitter_search_users(_, keywords, entries_per_page=None, page=None):
 	"""Returns all users (name and username) that match keywords input
 	:param keywords: keyword to be searched
 	"""
@@ -152,7 +152,7 @@ def twitter_search_users(_, keywords):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_search_users(keywords)
+	success, data, message = queries.twitter_search_users(keywords, entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
