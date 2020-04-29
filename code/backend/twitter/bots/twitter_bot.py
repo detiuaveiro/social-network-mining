@@ -28,10 +28,9 @@ class TwitterBot(RabbitMessaging):
         super().__init__(url, username, password, vhost, messaging_settings)
         self._name: str = 'bot'
         self._screen_name: str = 'bot'
-        self._id = bot_id
-        self._twitter_api = api
+        self._id: int = bot_id
+        self._twitter_api: tweepy.API = api
         self.user: User
-        self._last_home_tweet: int = None
 
     def __repr__(self):
         return f"<TwitterBot id={self._id}, api={self._twitter_api}>"
@@ -233,7 +232,6 @@ class TwitterBot(RabbitMessaging):
                 if 'following' in user_attributes and not tweet_user.following or 'following' not in user_attributes:
                     logger.debug(f"Requesting to follow user {tweet_user.id}")
                     self.__send_request_follow(tweet_user)
-
 
                 if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
                     logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
