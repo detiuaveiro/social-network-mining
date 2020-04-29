@@ -11,7 +11,7 @@ from credentials import TASKS_EXCHANGE, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PR
 from tweepy.binder import bind_api
 
 if __name__ == "__main__":
-    bot_id = 1244051405721255937 #int(os.environ.get('BOT_ID'))
+    bot_id = int(os.environ.get('BOT_ID'))
 
     messaging_settings = {
         TASKS_EXCHANGE: MessagingSettings(exchange=TASKS_EXCHANGE, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}.{bot_id}",
