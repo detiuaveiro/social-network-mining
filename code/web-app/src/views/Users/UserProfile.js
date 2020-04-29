@@ -285,15 +285,9 @@ class UserProfile extends Component {
                             </Row>
                             <Row>
                                 <Col xs="12" sm="12" md="12">
-                                    <Card>
-                                        <CardHeader color="warning">
-                                            <h3 style={{ color: "white" }}>
-                                                Oops :o
-                                            </h3>
-                                        </CardHeader>
-                                        <CardBody>
-                                        </CardBody>
-                                    </Card>
+                                    <div style={{width: "100%", alignContent:"center"}}>
+                                        <img style={{ width: "50%", display:"block", marginLeft:"auto", marginRight:"auto" }} src={require("../../assets/img/error_not_found.png")}></img>
+                                    </div>
                                 </Col>
                             </Row>
                         </Container>
@@ -500,7 +494,6 @@ class UserProfile extends Component {
                 }
 
                 ///////////////////////
-
                 return (
                     <div className="animated fadeIn">
                         <Container fluid>
@@ -527,7 +520,7 @@ class UserProfile extends Component {
                                     <Card profile>
                                         <CardAvatar profile>
                                             <a onClick={e => e.preventDefault()}>
-                                                <img src={this.state.userInfo.profile_image_url_https.replace("normal", "400x400")} alt="Profile Image" style={{ minWidth: "100px" }} />
+                                                <img src={this.state.userInfo.profile_image_url_https.replace("normal", "400x400")} id="profilePic" alt="Profile Image" onError={() => {document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg'}} style={{ minWidth: "100px" }} />
                                             </a>
                                         </CardAvatar>
                                         <CardBody profile>
