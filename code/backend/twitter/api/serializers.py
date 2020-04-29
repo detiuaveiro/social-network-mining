@@ -18,8 +18,6 @@ class UserStats(serializers.Serializer):
 	timestamp = serializers.DateTimeField()
 	followers = serializers.IntegerField()
 	following = serializers.IntegerField()
-	sum_followers = serializers.IntegerField() # Aggregation data
-	sum_following = serializers.IntegerField()# Aggregation data
 
 
 
