@@ -531,6 +531,8 @@ class Control_Center(Rabbitmq):
 
 		if user_type != "" or ('name' in user and user['name']):
 			self.save_user(data)
+			if 'name' in user and user['name']:
+				user_type = self.__user_type(user['id'])
 			return user_type
 
 		log.debug(f"Inserting blank user with id {user}")
