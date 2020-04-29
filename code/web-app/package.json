@@ -50,8 +50,10 @@
     "react-sigma": "^1.2.34",
     "react-test-renderer": "^16.8.6",
     "react-toastify": "^5.5.0",
+    "react-vis": "^1.11.7",
     "react-visibility-sensor": "^5.1.1",
     "reactstrap": "^8.0.0",
+    "recharts": "^1.8.5",
     "simple-line-icons": "^2.4.1",
     "vis-react": "^0.5.1"
   },

@@ -205,21 +205,9 @@ class Users extends Component {
           <Container fluid>
             <Row>
               <Col xs="12" sm="12" md="12">
-                <Card>
-                  <CardHeader color="danger">
-                    <h3 style={{ color: "white" }}>
-                      Oh no! An error :(
-                                </h3>
-                  </CardHeader>
-                  <CardBody>
-                    <h4 style={{ marginTop: "10px" }}>
-                      Sorry, there was an error retrieving information on all users.
-                    </h4>
-                    <h5>
-                      We're very sorry for any inconvenience this may have caused and ask that you refresh the page in a few minutes.
-                    </h5>
-                  </CardBody>
-                </Card>
+                <div style={{ width: "100%", alignContent: "center" }}>
+                  <img style={{ width: "50%", display: "block", marginLeft: "auto", marginRight: "auto" }} src={require("../../assets/img/error.png")}></img>
+                </div>
               </Col>
             </Row>
           </Container>
@@ -239,6 +227,18 @@ class Users extends Component {
           users =
             <CardBody>
               <div style={{ position: "relative" }}>
+                <div class="row" style={{ marginTop: "15px" }}>
+                  <div class="col-md-4 col-sm-12 form-group">
+                    <input type="text" placeholder="Search by name or username" class="form-control" id="usr" />
+                  </div>
+                  <div class="col-md-2 col-sm-12">
+                    <Button outline color="primary"
+                    >
+                      <i class="fas fa-search"></i>
+                      <strong style={{ marginLeft: "3px" }}>Search</strong>
+                    </Button>
+                  </div>
+                </div>
                 <div
                   id="loadedTable"
                   style={{
@@ -246,8 +246,10 @@ class Users extends Component {
                     height: "100%",
                     position: "relative",
                     top: 0,
+                    paddingTop: 0,
+                    marginTop: "0px",
                     left: 0,
-                    visibility: ""
+                    visibility: "",
                   }}>
                   <Table
                     tableHeaderColor="primary"
@@ -374,7 +376,7 @@ class Users extends Component {
       }
     } else {
       return (
-        <UserProfile user={this.state.user} redirection={[{"type": "LIST", "info":{}}]}></UserProfile>
+        <UserProfile user={this.state.user} redirection={[{ "type": "LIST", "info": {} }]}></UserProfile>
       )
     }
 

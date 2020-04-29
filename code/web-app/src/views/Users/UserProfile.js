@@ -29,6 +29,12 @@ import Pagination from '@material-ui/lab/Pagination';
 import FadeIn from "react-fade-in";
 import Lottie from "react-lottie";
 
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+
+
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+
 import * as loadingAnim from "../../assets/animations/squares_1.json";
 
 
@@ -176,8 +182,96 @@ class UserProfile extends Component {
         });
     }
 
+    async getStats(type) {
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/tweets/7/" + page + "/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).then(response => {
+            if (response.ok) return response.json();
+            else {
+                throw new Error(response.status);
+            }
+        }).then(data => {
+            if (data != null && data != {}) {
+                data = data.data
+
+                var tempTweets = []
+
+                data.entries.forEach(tweet => {
+                    var tempInfo = []
+                    tempInfo.push("#" + tweet.tweet_id);
+
+                    if (tweet.is_quote_status) {
+                        tempInfo.push(<Badge pill color="warning" style={{ fontSize: "11px" }}>Quote</Badge>);
+                        tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }}>#{tweet.quoted_status_id}</span>);
+
+                    } else if (tweet.in_reply_to_screen_name == null) {
+                        tempInfo.push(<Badge pill color="info" style={{ fontSize: "11px" }}>Tweet</Badge>);
+                        tempInfo.push(<span style={{ color: "#999" }}><i class="fas fa-minus"></i></span>);
+                    } else {
+                        tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Reply</Badge>);
+                        tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(tweet.in_reply_to_user_id)}>@{tweet.in_reply_to_screen_name}</span>);
+                    }
+
+                    var splitData = tweet.created_at.split(" ")
+                    tweet.created_at = splitData[3] + " · " + splitData[1] + " " + splitData[2] + ", " + splitData[5] + " (" + splitData[0] + ")"
+
+                    tempInfo.push(tweet.created_at);
+
+                    tempInfo.push(
+                        <Button block outline color="primary"
+                            onClick={() => this.handleOpenTweet(tweet)}
+                        >
+                            <i class="fas fa-plus"></i>
+                            <strong style={{ marginLeft: "3px" }}>More</strong>
+                        </Button>
+                    )
+
+                    tempTweets.push(tempInfo);
+                })
+
+                var empty = false
+                if (tempTweets.length == 0) {
+                    empty = true
+                }
+
+                if (first) {
+                    this.setState({
+                        tweets: {
+                            data: tempTweets,
+                            noPage: data.num_pages,
+                            curPage: page,
+                            latestTweet: data.entries[0],
+                            tweet: null,
+                            empty: empty
+                        }
+                    })
+                } else {
+                    this.setState({
+                        tweets: {
+                            data: tempTweets,
+                            noPage: data.num_pages,
+                            curPage: page,
+                            latestTweet: this.state.tweets.latestTweet,
+                            tweet: null,
+                            empty: empty
+                        }
+                    })
+                }
+
+            }
+        }).catch(error => {
+            console.log("error: " + error);
+            this.setState({
+                error: error
+            })
+        });
+    }
+
     async componentDidMount() {
-        await this.setState({redirectionList: this.props.redirection})
+        await this.setState({ redirectionList: this.props.redirection })
         console.log(this.state.redirectionList)
 
         if (this.props.user == null) {
@@ -200,7 +294,7 @@ class UserProfile extends Component {
 
     handleOpenProfile(user) {
         var list = this.state.redirectionList
-        list.push({type:"PROFILE", info:this.state.userInfo})
+        list.push({ type: "PROFILE", info: this.state.userInfo })
         this.setState({
             redirectUser: user,
             redirectionList: list
@@ -263,9 +357,9 @@ class UserProfile extends Component {
 
     render() {
         if (this.state.goBack) {
-            if(this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "LIST")
+            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "LIST")
                 return (<Users />)
-            else{
+            else {
                 var lastUser = this.state.redirectionList.pop()
                 return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)
             }
@@ -314,21 +408,9 @@ class UserProfile extends Component {
                             </Row>
                             <Row>
                                 <Col xs="12" sm="12" md="12">
-                                    <Card>
-                                        <CardHeader color="danger">
-                                            <h3 style={{ color: "white" }}>
-                                                Oh no! An error :(
-                                            </h3>
-                                        </CardHeader>
-                                        <CardBody>
-                                            <h4 style={{ marginTop: "10px" }}>
-                                                Sorry, there was an error retrieving information on <strong>{this.state.userInfo.name}</strong> <span style={{ color: "#999" }}>(@{this.state.userInfo.screen_name})</span>.
-                                            </h4>
-                                            <h5>
-                                                We're very sorry for any inconvenience this may have caused and ask that you refresh the page in a few minutes.
-                                            </h5>
-                                        </CardBody>
-                                    </Card>
+                                    <div style={{ width: "100%", alignContent: "center" }}>
+                                        <img style={{ width: "50%", display: "block", marginLeft: "auto", marginRight: "auto" }} src={require("../../assets/img/error.png")}></img>
+                                    </div>
                                 </Col>
                             </Row>
                         </Container>
@@ -368,26 +450,26 @@ class UserProfile extends Component {
                                                 <i>{this.state.tweets.tweet.text}</i>
                                             </h5>
 
-                                            <div class="row">
-                                                <div class="col-sm-12 col-md-6">
-                                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                            <div class="d-flex flex-row flex-wrap justify-content-center">
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPic1" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic1").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
                                                 </div>
 
-                                                <div class="col-sm-12 col-md-6" style={{ alignContent: "center" }}>
-                                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPic2" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic2").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
                                                 </div>
                                             </div>
-                                            <div class="row">
-                                                <div class="col-sm-12 col-md-6">
-                                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                            <div class="d-flex flex-row flex-wrap justify-content-center" style={{ marginTop: "25px" }}>
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPic3" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic3").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
                                                 </div>
 
-                                                <div class="col-sm-12 col-md-6">
-                                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPic4" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic4").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
                                                 </div>
                                             </div>
 
-                                            <h6 style={{ color: "#999",  marginTop: "20px" }}>
+                                            <h6 style={{ color: "#999", marginTop: "20px" }}>
                                                 {this.state.tweets.tweet.created_at}
                                             </h6>
                                             <div class="row" style={{ marginTop: "40px", textAlign: "center" }}>
@@ -444,22 +526,22 @@ class UserProfile extends Component {
                                 <i>{this.state.tweets.latestTweet.text}</i>
                             </h5>
 
-                            <div class="row">
-                                <div class="col-sm-12 col-md-6">
-                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                            <div class="d-flex flex-row flex-wrap justify-content-center">
+                                <div class="d-flex flex-column col-md-6">
+                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPicL1" alt="Tweet Pic" onError={() => { document.getElementById("tweetPicL1").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
                                 </div>
 
-                                <div class="col-sm-12 col-md-6" style={{ alignContent: "center" }}>
-                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                <div class="d-flex flex-column col-md-6">
+                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPicL2" alt="Tweet Pic" onError={() => { document.getElementById("tweetPicL2").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-sm-12 col-md-6">
-                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                            <div class="d-flex flex-row flex-wrap justify-content-center" style={{ marginTop: "25px" }}>
+                                <div class="d-flex flex-column col-md-6">
+                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPicL3" alt="Tweet Pic" onError={() => { document.getElementById("tweetPicL3").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
                                 </div>
 
-                                <div class="col-sm-12 col-md-6">
-                                    <img src={this.state.userInfo.profile_image_url_https} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ width: "85%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
+                                <div class="d-flex flex-column col-md-6">
+                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPicL4" alt="Tweet Pic" onError={() => { document.getElementById("tweetPicL4").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
                                 </div>
                             </div>
 
@@ -570,7 +652,7 @@ class UserProfile extends Component {
                                     <Card profile>
                                         <CardAvatar profile>
                                             <a onClick={e => e.preventDefault()}>
-                                                <img src={this.state.userInfo.profile_image_url_https.replace("normal", "400x400")} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = 'https://img.favpng.com/20/11/12/computer-icons-user-profile-png-favpng-0UAKKCpRRsMj5NaiELzw1pV7L.jpg' }} style={{ minWidth: "100px" }} />
+                                                <img src={this.state.userInfo.profile_image_url_https.replace("normal", "400x400")} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = require('../../assets/img/no_pic_smaller.png') }} style={{ minWidth: "100px" }} />
                                             </a>
                                         </CardAvatar>
                                         <CardBody profile>
@@ -632,6 +714,44 @@ class UserProfile extends Component {
                                             }} > Stats</h4>
                                         </CardHeader>
                                         <CardBody style={{ paddingTop: "0px" }}>
+                                            <div class="row" style={{ marginTop: "10px" }}>
+                                                <ToggleButtonGroup
+                                                    value={"DAILY"}
+                                                    exclusive
+                                                    aria-label="text alignment"
+                                                    style={{ display: "block", marginLeft: "auto", marginRight: "auto" }}
+                                                >
+                                                    <ToggleButton value="DAILY" aria-label="Daily">
+                                                        Daily
+                                                    </ToggleButton>
+                                                    <ToggleButton value="MONTHLY" aria-label="Monthly">
+                                                        Monthly
+                                                    </ToggleButton>
+                                                    <ToggleButton value="YEARLY" aria-label="Yearly">
+                                                        Yearly
+                                                    </ToggleButton>
+                                                </ToggleButtonGroup>
+                                            </div>
+                                            <div class="row" style={{ marginTop: "15px" }}>
+                                                <ResponsiveContainer width="100%" height={250}>
+                                                    <LineChart data={[
+                                                        { name: "Page A", uv: 4000, pv: 2400, amt: 2400 },
+                                                        { name: "Page B", uv: 3000, pv: 1398, amt: 2210 },
+                                                        { name: "Page C", uv: 2000, pv: 9800, amt: 2290 },
+                                                        { name: "Page D", uv: 2780, pv: 3908, amt: 2000 },
+                                                        { name: "Page E", uv: 1890, pv: 4800, amt: 2181 },
+                                                        { name: "Page F", uv: 2390, pv: 3800, amt: 2500 },
+                                                        { name: "Page G", uv: 3490, pv: 4300, amt: 2100 }
+                                                    ]} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                                                        <Legend verticalAlign="bottom" height={36} />
+                                                        <Line name="penis" type="monotone" dataKey="uv" stroke="#8884d8" />
+                                                        <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+                                                        <XAxis dataKey="name" />
+                                                        <YAxis />
+                                                        <Tooltip />
+                                                    </LineChart>
+                                                </ResponsiveContainer>
+                                            </div>
 
                                         </CardBody>
                                     </Card>

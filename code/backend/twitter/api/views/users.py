@@ -162,5 +162,54 @@ def twitter_user_stats(request, id, entries_per_page=None, page=None):
 						   success_messages=success_messages, status=status)
 
 
+@api_view(["GET"])
+def twitter_search_users(_, keywords, entries_per_page=None, page=None):
+	"""Returns all users (name and username) that match keywords input
+	:param keywords: keyword to be searched
+	"""
+
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.twitter_search_users(keywords)
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages,
+						   success_messages=success_messages, status=status)
+
+
+@api_view(["GET"])
+def twitter_user_stats_grouped(_, id, type):
+	"""Function to get all stats grouped
+		:param id: user's id whom we want the stats
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	
+	index_per_type = {
+		'year': 0,
+		'month': 1,
+		'day': 2
+	}
+	types = ["year", "month", "day"]
+	
+	success, data, message = queries.twitter_user_stats_grouped(int(id), types[:index_per_type[type] + 1])
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages,
+						   success_messages=success_messages, status=status)
+
+
 def twitter_users_export(request):
 	return None

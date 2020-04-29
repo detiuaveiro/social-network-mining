@@ -62,7 +62,7 @@ class DefaultLayout extends Component {
             </Suspense>
           </AppHeader>
         </MobileView>
-        <div className="app-body">
+        <div className="app-body" style={{backgroundColor: "#e9ebee"}}>
           <AppSidebar fixed display="lg">
             <AppSidebarHeader>
               <BrowserView>
