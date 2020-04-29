@@ -143,8 +143,7 @@ def twitter_user_tweets(id, entries_per_page, page):
 def twitter_user_followers(id):
 	try:
 		followers = neo4j.get_followers({'id': id})
-		if not followers:
-			return False, None, f"Não existem followers do utilizador de id {id} na base de dados"
+
 		return True, followers, "Sucesso a obter todos os followers do utilizador pedido"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
@@ -154,8 +153,7 @@ def twitter_user_followers(id):
 def twitter_user_following(id):
 	try:
 		following = neo4j.get_following({'id': id})
-		if not following:
-			return False, None, f"Não existem  utilizadores a serem seguidos pelo utilizador de id {id} na base de dados"
+
 		return True, following, "Sucesso a obter todos os utilizadores que o utilizador pedido segue"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
