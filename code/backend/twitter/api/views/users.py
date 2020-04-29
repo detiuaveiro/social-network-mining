@@ -111,7 +111,7 @@ def twitter_user_followers(request, id):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_user_followers(id)
+	success, data, message = queries.twitter_user_followers(int(id))
 	if success:
 		success_messages.append(message)
 	else:
