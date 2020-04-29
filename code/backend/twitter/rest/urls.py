@@ -42,9 +42,13 @@ urlpatterns = [
 	url(r"^twitter/users/(?P<id>[0-9]+)/stats/$", users.twitter_user_stats, name="twitter_user_stats"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/stats/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
 		users.twitter_user_stats, name="twitter_user_stats"),
+	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/$", users.twitter_search_users, name="twitter_search_users"),
+	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
+		users.twitter_search_users, name="twitter_search_users"),
+	url(r"^twitter/users/(?P<id>[0-9]+)/stats/grouped/(?P<type>(?:year)|(?:month)|(?:day))/$", users.twitter_user_stats_grouped, name="twitter_user_stats_grouped"),
+
 
 	path("twitter/users/export", users.twitter_users_export, name="twitter_users_export"),
-
 	path("twitter/network", network.twitter_network, name="twitter_network"),
 	path("twitter/sub_network", network.twitter_sub_network, name="twitter_sub_network"),
 	url(r"^twitter/network/export/$", network.twitter_network_export, name="twitter_network_export"),
