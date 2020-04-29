@@ -514,7 +514,7 @@ def twitter_network():
 	"""
 
 	try:
-		data = json.loads(neo4j.export_network("json"))
+		data = neo4j.export_sample_network("json")
 		return True, data, f"Sucesso a obter os dados da rede"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_network.__name__} -> {e}")
