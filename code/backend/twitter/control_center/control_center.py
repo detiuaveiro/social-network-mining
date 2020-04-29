@@ -64,8 +64,8 @@ class Control_Center(Rabbitmq):
 		elif message_type == BotToServer.QUERY_TWEET_RETWEET:
 			self.request_retweet(message)
 
-		# elif message_type == BotToServer.QUERY_TWEET_REPLY:
-		# 	self.request_tweet_reply(message)
+		elif message_type == BotToServer.QUERY_TWEET_REPLY:
+			self.request_tweet_reply(message)
 
 		elif message_type == BotToServer.QUERY_FOLLOW_USER:
 			self.request_follow_user(message)
