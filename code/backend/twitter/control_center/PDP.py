@@ -470,6 +470,11 @@ class PDP:
 
         if bot_logs["success"] and len(bot_logs['data']) > 0:
             log.debug("Found another bot who follows this user")
+            self.postgres.insert_log({
+                "bot_id": data["bot_id"],
+                "action": log_actions.ANOTHER_BOT_FOLLOWS_USER,
+                "target_id": user['id']
+            })
             return heuristic
 
         MODEL_PATH = "control_center/intelligence/models"
