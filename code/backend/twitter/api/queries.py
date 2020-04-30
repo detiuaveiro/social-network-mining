@@ -28,7 +28,6 @@ def twitter_users_count():
 	try:
 		all_users_count = User.objects.filter().count()
 
-
 		return True, {'count': all_users_count}, "Sucesso a obter o numero de utilizadores"
 
 	except Exception as e:
@@ -111,7 +110,7 @@ def twitter_user_stats_grouped(id, types):
 
 		order_by_list = [f"'{type}'" for type in types]
 		query += f".values('{type}').annotate(sum_followers=Sum('followers'), sum_following=Sum('following')).order_by({','.join(order_by_list)})"
-		
+
 		users_stats = eval(query)
 
 		return True, {'data': list(users_stats),
@@ -514,7 +513,7 @@ def twitter_network():
 	"""
 
 	try:
-		data = neo4j.export_sample_network("json")
+		data = json.loads(neo4j.export_network("json"))
 		return True, data, f"Sucesso a obter os dados da rede"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_network.__name__} -> {e}")
