@@ -55,12 +55,81 @@ class Users extends Component {
     noPages: 0,
     curPage: 1,
     noUsers: 0,
-    empty: false
+    empty: false,
+
+    searchQuery: ""
   };
 
   async getUserList(currentPage) {
     var tempUsers = []
     await fetch(baseURL + "twitter/users/15/" + currentPage + "/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+        this.setState({
+          error: false,
+          users: [],
+          user: null,
+        })
+
+        data = data.data
+
+        data.entries.forEach(user => {
+          var tempInfo = []
+          tempInfo.push("@" + user.screen_name);
+          tempInfo.push("" + user.name);
+          tempInfo.push("" + user.followers_count);
+          tempInfo.push("" + user.friends_count);
+
+          tempInfo.push(
+            <Button block outline color="primary"
+              onClick={() => this.handleOpenProfile(user)}
+            >
+              <i class="far fa-user-circle"></i>
+              <strong style={{ marginLeft: "3px" }}>Profile</strong>
+            </Button>
+          )
+
+          tempUsers.push(tempInfo);
+        })
+
+        var empty = false
+        if (tempUsers.length == 0) {
+          empty = true
+        }
+
+        this.setState({
+          error: false,
+          users: tempUsers,
+          user: null,
+          loading: false,
+
+          noPages: data.num_pages,
+          curPage: currentPage,
+          empty: empty
+        })
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        error: true,
+        users: [],
+        user: null,
+      })
+    });
+  }
+
+  async searchUsers(currentPage) {
+    var tempUsers = []
+    await fetch(baseURL + "twitter/users/search/" + this.state.searchQuery + "/15/" + currentPage + "/", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -155,7 +224,7 @@ class Users extends Component {
 
   async componentDidMount() {
     var page = 1
-    if(this.props.page != null){
+    if (this.props.page != null) {
       page = this.props.page
     }
     await this.getUserList(page)
@@ -183,12 +252,45 @@ class Users extends Component {
       curPage: value
     })
 
-    await this.getUserList(value)
+    if (this.state.searchQuery.length == 0) {
+      await this.getUserList(value)
+    } else {
+      await this.searchUsers(value)
+    }
 
     document.getElementById("loadedTable").style.visibility = "visible"
     document.getElementById("loadingTable").style.display = "none"
   };
 
+
+  async search() {
+    document.getElementById("loadedTable").style.visibility = "hidden"
+    document.getElementById("loadingTable").style.display = ""
+
+    console.log(document.getElementById("searchUser").value)
+
+    await this.setState({
+      curPage: 1,
+      searchQuery: document.getElementById("searchUser").value
+    })
+
+    if (this.state.searchQuery.length == 0) {
+      await this.getUserList(1)
+    } else {
+      await this.searchUsers(1)
+    }
+
+    if (document.getElementById("loadedTable") != null) {
+      document.getElementById("loadedTable").style.visibility = "visible"
+      document.getElementById("loadingTable").style.display = "none"
+    }
+  }
+
+  keydown(e) {
+    if (e.keyCode == 13) {
+      document.getElementById("searchButton").click()
+    }
+  }
   /////////////////////////////////////////////////////////////////////
 
   loading = () => <div className="fadeIn pt-1 text-center"><ReactLoading type={"cubes"} color="#1da1f2" /></div>
@@ -218,75 +320,110 @@ class Users extends Component {
         )
       } else {
         var users = <CardBody></CardBody>
+        var table = <div></div>
         if (this.state.empty) {
-          users =
-            <CardBody>
-              <div style={{ marginTop: "25px" }}>
+          if (this.state.searchQuery == "") {
+            table =
+              <div
+                id="loadedTable"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  position: "relative",
+                  top: 0,
+                  paddingTop: 0,
+                  marginTop: "25px",
+                  left: 0,
+                  visibility: "",
+                }}>
                 <h5 style={{ color: "#999" }}>
                   Hmmm... there don't seem to be any users in our databases 🤔
                 </h5>
               </div>
-            </CardBody>
+          } else {
+            table =
+              <div
+                id="loadedTable"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  position: "relative",
+                  top: 0,
+                  paddingTop: 0,
+                  marginTop: "25px",
+                  left: 0,
+                  visibility: "",
+                }}>
+                <h5 style={{ color: "#999" }}>
+                  Hmmm... we couldn't find any users with either a name or username matching <strong>{this.state.searchQuery}</strong> 🤔
+                </h5>
+              </div>
+          }
+
         } else {
-          users =
-            <CardBody>
-              <div style={{ position: "relative" }}>
-                <div class="row" style={{ marginTop: "15px" }}>
-                  <div class="col-md-4 col-sm-12 form-group">
-                    <input type="text" placeholder="Search by name or username" class="form-control" id="usr" />
-                  </div>
-                  <div class="col-md-2 col-sm-12">
-                    <Button outline color="primary"
-                    >
-                      <i class="fas fa-search"></i>
-                      <strong style={{ marginLeft: "3px" }}>Search</strong>
-                    </Button>
-                  </div>
-                </div>
-                <div
-                  id="loadedTable"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    position: "relative",
-                    top: 0,
-                    paddingTop: 0,
-                    marginTop: "0px",
-                    left: 0,
-                    visibility: "",
-                  }}>
-                  <Table
-                    tableHeaderColor="primary"
-                    tableHead={["Username", "Name", "Followers", "Following", ""]}
-                    tableData={this.state.users}
-                  />
+          table = <div
+            id="loadedTable"
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "relative",
+              top: 0,
+              paddingTop: 0,
+              marginTop: "0px",
+              left: 0,
+              visibility: "",
+            }}>
+            <Table
+              tableHeaderColor="primary"
+              tableHead={["Username", "Name", "Followers", "Following", ""]}
+              tableData={this.state.users}
+            />
 
-                </div>
-                <div
-                  id="loadingTable"
-                  style={{
-                    zIndex: 10,
-                    position: "absolute",
-                    top: "45%",
-                    left: "45%",
-                    display: "none"
-                  }}>
-                  <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
-                </div>
-              </div>
-
-              <div style={{
-                marginTop: "25px",
-                width: "100%",
-                textAlign: "center"
-              }}>
-                <div style={{ display: "inline-block" }}>
-                  <Pagination count={this.state.noPages} page={this.state.curPage} onChange={this.changePage} variant="outlined" color="primary" showFirstButton showLastButton shape="rounded" />
-
-                </div>
-              </div>
-            </CardBody>
+          </div>
         }
+
+        users =
+          <CardBody>
+            <div style={{ position: "relative" }}>
+              <div class="row" style={{ marginTop: "15px" }}>
+                <div class="col-md-4 col-sm-12 form-group">
+                  <input type="text" placeholder="Search by name or username" class="form-control" id="searchUser" onKeyDown={this.keydown} />
+                </div>
+                <div class="col-md-2 col-sm-12">
+                  <Button outline color="primary" id="searchButton"
+                    onClick={() => this.search()}
+                  >
+
+                    <i class="fas fa-search"></i>
+                    <strong style={{ marginLeft: "3px" }}>Search</strong>
+                  </Button>
+                </div>
+              </div>
+              {table}
+              <div
+                id="loadingTable"
+                style={{
+                  zIndex: 10,
+                  position: "absolute",
+                  top: "45%",
+                  left: "45%",
+                  display: "none"
+                }}>
+                <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
+              </div>
+            </div>
+
+            <div style={{
+              marginTop: "25px",
+              width: "100%",
+              textAlign: "center"
+            }}>
+              <div style={{ display: "inline-block" }}>
+                <Pagination count={this.state.noPages} page={this.state.curPage} onChange={this.changePage} variant="outlined" color="primary" showFirstButton showLastButton shape="rounded" />
+
+              </div>
+            </div>
+          </CardBody>
         return (
           <div className="animated fadeIn">
 
