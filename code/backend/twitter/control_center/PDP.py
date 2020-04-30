@@ -322,7 +322,7 @@ class PDP:
 			for bot_log in bot_logs['data']:
 				user_of_tweet_liked = self.mongo.search(
 					collection="tweets",
-					query={"id": bot_log["target_id"]},
+					query={"id": int(bot_log["target_id"])},
 					fields=["user"],
 					single=True
 				)
@@ -373,7 +373,7 @@ class PDP:
 			for bot_log in bot_logs['data']:
 				user_of_retweet = self.mongo.search(
 					collection="tweets",
-					query={"id": bot_log["target_id"]},
+					query={"id": int(bot_log["target_id"])},
 					fields=["user"],
 					single=True
 				)
@@ -437,7 +437,7 @@ class PDP:
 			for bot_log in bot_logs['data']:
 				user_of_reply = self.mongo.search(
 					collection="tweets",
-					query={"id": bot_log["target_id"]},
+					query={"id": int(bot_log["target_id"])},
 					fields=["user"],
 					single=True
 				)
