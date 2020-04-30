@@ -231,7 +231,7 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 		log.info(f"Bot {data['bot_id']} requests a like to tweet {data['data']['id']}")
-		if self.__found_in_logs(data["bot_id"], log_actions.LIKE_REQ, data['data']['id']):
+		if self.__found_in_logs(data["bot_id_str"], log_actions.LIKE_REQ, data['data']['id_str']):
 			log.info("Action was already requested recently")
 			return
 
@@ -261,7 +261,7 @@ class Control_Center(Rabbitmq):
 				"target_id": int(data['data']['id_str'])
 			})
 			self.send(
-				data['bot_id_str'], ServerToBot.LIKE_TWEETS,
+				data['bot_id'], ServerToBot.LIKE_TWEETS,
 				data['data']['id']
 			)
 		else:
@@ -282,7 +282,7 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 		log.info(f"Bot {data['bot_id']} requests a retweet {data['data']['id']}")
-		if self.__found_in_logs(data["bot_id"], log_actions.RETWEET_REQ, data['data']['id']):
+		if self.__found_in_logs(data["bot_id_str"], log_actions.RETWEET_REQ, data['data']['id_str']):
 			log.info("Action was already requested recently")
 			return
 
@@ -296,7 +296,7 @@ class Control_Center(Rabbitmq):
 			"bot_id": data['bot_id'],
 			"bot_id_str": data['bot_id_str'],
 			"user_id": data['data']['user']['id'],
-			"user_id_str":data['data']['user']['id'],
+			"user_id_str": data['data']['user']['id_str'],
 			"tweet_id": data['data']['id'],
 			"tweet_id_str": data['data']['id_str'],
 			"tweet_text": data['data']['text'],
@@ -311,7 +311,7 @@ class Control_Center(Rabbitmq):
 				"target_id": int(data['data']['id_str'])
 			})
 			self.send(
-				data['bot_id_str'],
+				data['bot_id'],
 				ServerToBot.RETWEET_TWEETS, data['data']['id']
 			)
 		else:
@@ -332,7 +332,7 @@ class Control_Center(Rabbitmq):
 		@param data: dict containing the bot id and the tweet id
 		"""
 		log.info(f"Bot {data['bot_id']} requests a reply {data['data']['id']}")
-		if self.__found_in_logs(data["bot_id"], log_actions.REPLY_REQ, data['data']['id']):
+		if self.__found_in_logs(data["bot_id_str"], log_actions.REPLY_REQ, data['data']['id_str']):
 			log.info("Action was already requested recently")
 			return
 
@@ -380,18 +380,18 @@ class Control_Center(Rabbitmq):
 				})
 
 				self.postgres_client.insert_log({
-					"bot_id": data["bot_id"],
+					"bot_id": data["bot_id_str"],
 					"action": log_actions.REPLY_REQ_ACCEPT,
-					"target_id": data['data']['id']
+					"target_id": data['data']['id_str']
 				})
 			else:
 				log.warning(f"Could not send reply to tweet because of no response from text generator")
 		else:
 			log.warning(f"Bot {data['bot_id']} request denied to reply {data['data']['id']}")
 			self.postgres_client.insert_log({
-				"bot_id": int(data["bot_id_str"]),
+				"bot_id": data["bot_id_str"],
 				"action": log_actions.REPLY_REQ_DENY,
-				"target_id": int(data['data']['id_str'])
+				"target_id": data['data']['id_str']
 			})
 
 	def request_follow_user(self, data):
@@ -407,16 +407,17 @@ class Control_Center(Rabbitmq):
 		user = data['data']['user']
 		tweets = data['data']['tweets']
 		user_id = user['id']
+		user_id_str = user['id_str']
 
 		log.info(f"Bot {data['bot_id']} requests a follow from {user_id}")
-		if self.__found_in_logs(data["bot_id"], log_actions.FOLLOW_REQ, user_id):
+		if self.__found_in_logs(data["bot_id_str"], log_actions.FOLLOW_REQ, user_id_str):
 			log.info("Action was already requested recently")
 			return
 
 		self.postgres_client.insert_log({
 			"bot_id": int(data["bot_id_str"]),
 			"action": log_actions.FOLLOW_REQ,
-			"target_id": user_id
+			"target_id": user_id_str
 		})
 
 		request_accepted = self.pep.receive_message({
@@ -433,15 +434,15 @@ class Control_Center(Rabbitmq):
 			self.postgres_client.insert_log({
 				"bot_id": int(data["bot_id_str"]),
 				"action": log_actions.FOLLOW_REQ_ACCEPT,
-				"target_id": user_id
+				"target_id": user_id_str
 			})
 			self.send(data['bot_id'], ServerToBot.FOLLOW_USERS, {"type": "id", "data": [user_id]})
 		else:
 			log.warning(f"Bot {data['bot_id']} request denied to follow {user_id}")
 			self.postgres_client.insert_log({
-				"bot_id": data["bot_id"],
+				"bot_id": data["bot_id_str"],
 				"action": log_actions.FOLLOW_REQ_DENY,
-				"target_id": user_id
+				"target_id": user_id_str
 			})
 
 		# save the tweets we received on the databases
@@ -476,7 +477,7 @@ class Control_Center(Rabbitmq):
 
 			# we send the list of initial users to follow
 			follow_list = self.pep.first_time_policy()
-			self.send(bot_id_str, ServerToBot.FOLLOW_USERS, {
+			self.send(bot_id, ServerToBot.FOLLOW_USERS, {
 				"type": "screen_name",
 				"data": follow_list,
 			})
@@ -511,7 +512,7 @@ class Control_Center(Rabbitmq):
 				self.postgres_client.insert_log({
 					"bot_id": bot_id,
 					"action": log_actions.UPDATE_USER,
-					"target_id": user['id']
+					"target_id": user['id_str']
 				})
 			else:
 				log.info(f"User {data['data']['id']} is new to the party")
@@ -524,7 +525,7 @@ class Control_Center(Rabbitmq):
 				self.postgres_client.insert_log({
 					"bot_id": bot_id,
 					"action": log_actions.INSERT_USER,
-					"target_id": user['id']
+					"target_id": user['id_str']
 				})
 			self.postgres_client.insert_user({
 				"user_id": int(user['id_str']),
@@ -542,13 +543,13 @@ class Control_Center(Rabbitmq):
 		if user_type != "" or ('name' in user and user['name']):
 			self.save_user(data)
 			if 'name' in user and user['name']:
-				user_type = self.__user_type(user['id'])
+				user_type = self.__user_type(user['id_str'])
 			return user_type
 
 		log.debug(f"Inserting blank user with id {user}")
 		blank_user = mongo_utils.BLANK_USER.copy()
 		blank_user["id"] = user['id']
-		blank_user["id_str"] = str(user['id'])
+		blank_user["id_str"] = user['id_str']
 		blank_user["screen_name"] = user['screen_name']
 		self.save_user({
 			"bot_id": data["bot_id"],
@@ -560,7 +561,7 @@ class Control_Center(Rabbitmq):
 
 		log.info("Have to get the full information on the User")
 		self.send(
-			bot=data["bot_id_str"],
+			bot=data["bot_id"],
 			message_type=ServerToBot.GET_USER_BY_ID,
 			params=user['id']
 		)
@@ -592,7 +593,7 @@ class Control_Center(Rabbitmq):
 
 		log.info("Have to get the full information on the tweet")
 		self.send(
-			bot=data["bot_id_str"],
+			bot=data["bot_id"],
 			message_type=ServerToBot.GET_TWEET_BY_ID,
 			params=data["id"]
 		)

@@ -28,6 +28,7 @@ class TwitterBot(RabbitMessaging):
 		super().__init__(url, username, password, vhost, messaging_settings)
 		self._name: str = 'bot'
 		self._screen_name: str = 'bot'
+		self._id_str: str = None
 		self._id = bot_id
 		self._twitter_api: tweepy.API = api
 		self.user: User
@@ -64,10 +65,11 @@ class TwitterBot(RabbitMessaging):
 		:param message_type: type of message to send to server
 		:param exchange: rabbit's exchange where to send the new message
 		"""
+		print(self._id_str)
 		self._send_message(to_json({
 			'type': message_type,
 			'bot_id': self._id,
-			'bot_id_str': str(self._id),
+			'bot_id_str': self._id_str,
 			'bot_name': self._name,
 			'bot_screen_name': self._screen_name,
 			'timestamp': current_time(),
@@ -130,6 +132,7 @@ class TwitterBot(RabbitMessaging):
 
 			self._name = self._twitter_api.me().name
 			self._screen_name = self._twitter_api.me().screen_name
+			self._id_str = self._twitter_api.me().id_str
 		except TweepError as error:
 			logger.exception(f"Error {error} verifying credentials:")
 			exit(1)
