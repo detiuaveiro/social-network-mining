@@ -20,7 +20,6 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 
 import Users from './Users';
 
-import { ToastContainer, toast, Flip } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import ReactLoading from "react-loading";
@@ -64,6 +63,20 @@ class UserProfile extends Component {
             curPage: 1,
             latestTweet: null,
             tweet: null,
+            empty: false
+        },
+
+        followers: {
+            data: [],
+            noPage: 1,
+            curPage: 1,
+            empty: false
+        },
+
+        followings: {
+            data: [],
+            noPage: 1,
+            curPage: 1,
             empty: false
         },
 
@@ -118,9 +131,9 @@ class UserProfile extends Component {
                         } else if (tweet.extended_entities.media[0].type == "animated_gif") {
                             tweet.extended_entities.media[0] = { "type": "gif", "url": tweet.extended_entities.media[0].video_info.variants[0].url, "placeholder": tweet.extended_entities.media[0].media_url_https }
                         }
+
                     }
 
-                    console.log(tweet.extended_entities.media[0])
 
                     tempInfo.push(
                         <Button block outline color="primary"
@@ -162,6 +175,122 @@ class UserProfile extends Component {
                         }
                     })
                 }
+
+            }
+        }).catch(error => {
+            console.log("error: " + error);
+            this.setState({
+                error: error
+            })
+        });
+    }
+
+    async getFollowers(page) {
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/followers/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).then(response => {
+            if (response.ok) return response.json();
+            else {
+                throw new Error(response.status);
+            }
+        }).then(data => {
+            if (data != null && data != {}) {
+                data = data.data
+
+                var tempUsers = []
+
+                data.forEach(user => {
+                    var tempInfo = []
+
+                    tempInfo.push(user.username)
+                    tempInfo.push(user.name)
+                    tempInfo.push(
+                        <Button block outline color="primary"
+                            onClick={() => this.handleOpenProfile(user.id)}
+                        >
+                            <i class="far fa-user-circle"></i>
+                            <strong style={{ marginLeft: "3px" }}>Profile</strong>
+                        </Button>
+                    )
+
+                    tempUsers.push(tempInfo);
+                })
+
+                var empty = false
+                if (tempUsers.length == 0) {
+                    empty = true
+                }
+
+                this.setState({
+                    followers: {
+                        data: tempUsers,
+                        noPage: 1,
+                        curPage: 1,
+                        empty: empty
+                    }
+                })
+
+
+            }
+        }).catch(error => {
+            console.log("error: " + error);
+            this.setState({
+                error: error
+            })
+        });
+    }
+
+    async getFollowings(page) {
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/following/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).then(response => {
+            if (response.ok) return response.json();
+            else {
+                throw new Error(response.status);
+            }
+        }).then(data => {
+            if (data != null && data != {}) {
+                data = data.data
+
+                var tempUsers = []
+
+                data.forEach(user => {
+                    var tempInfo = []
+
+                    tempInfo.push(user.username)
+                    tempInfo.push(user.name)
+                    tempInfo.push(
+                        <Button block outline color="primary"
+                            onClick={() => this.handleOpenProfile(user.id)}
+                        >
+                            <i class="far fa-user-circle"></i>
+                            <strong style={{ marginLeft: "3px" }}>Profile</strong>
+                        </Button>
+                    )
+
+                    tempUsers.push(tempInfo);
+                })
+
+                var empty = false
+                if (tempUsers.length == 0) {
+                    empty = true
+                }
+
+                this.setState({
+                    followings: {
+                        data: tempUsers,
+                        noPage: 1,
+                        curPage: 1,
+                        empty: empty
+                    }
+                })
+
 
             }
         }).catch(error => {
@@ -248,10 +377,8 @@ class UserProfile extends Component {
 
     async componentDidMount() {
         await this.setState({ redirectionList: this.props.redirection })
-        console.log(this.state.redirectionList)
 
         if (this.props.user == null) {
-            console.log(this.props.nextUser)
             await this.getUserInfo()
         } else {
             await this.setState({ userInfo: this.props.user })
@@ -260,8 +387,21 @@ class UserProfile extends Component {
         // Get Tweets
         if (this.state.error == null) {
             await this.getTweets(1, true)
+        }
 
+        // Get Stats
+        if (this.state.error == null) {
             await this.getStats("month")
+        }
+
+        // Get Followers
+        if (this.state.error == null) {
+            await this.getFollowers(1)
+        }
+
+        // Get Followings
+        if (this.state.error == null) {
+            await this.getFollowings(1)
         }
 
         this.setState({
@@ -282,8 +422,6 @@ class UserProfile extends Component {
     // Methods //////////////////////////////////////////////////////////
 
     handleOpenTweet(tweet) {
-        console.log(tweet)
-
         this.setState({
             modal: true,
             modalType: "TWEET",
@@ -312,7 +450,6 @@ class UserProfile extends Component {
     }
 
     handleGoBack() {
-        console.log("back")
         this.setState({
             goBack: true,
         })
@@ -329,6 +466,26 @@ class UserProfile extends Component {
 
         document.getElementById("loadedTweets").style.visibility = ""
         document.getElementById("loadingTweets").style.display = "none"
+    };
+
+    changePageFollowers = async (event, value) => {
+        document.getElementById("loadedFollowers").style.visibility = "hidden"
+        document.getElementById("loadingFollowers").style.display = ""
+
+        await this.getFollowers(value)
+
+        document.getElementById("loadedFollowers").style.visibility = ""
+        document.getElementById("loadingFollowers").style.display = "none"
+    };
+
+    changePageFollowing = async (event, value) => {
+        document.getElementById("loadedFollowings").style.visibility = "hidden"
+        document.getElementById("loadingFollowings").style.display = ""
+
+        await this.getFollowings(value)
+
+        document.getElementById("loadedFollowings").style.visibility = ""
+        document.getElementById("loadingFollowings").style.display = "none"
     };
     /////////////////////////////////////////////////////////////////////
 
@@ -423,6 +580,96 @@ class UserProfile extends Component {
                             </h6>
                         }
 
+                        var media = <div></div>
+                        if (this.state.tweets.tweet.extended_entities != null) {
+                            console.log(this.state.tweets.tweet.extended_entities.media[0])
+                            if (this.state.tweets.tweet.extended_entities.media[0].type == "photo") {
+                                if (this.state.tweets.tweet.extended_entities.media.length == 1) {
+                                    media =
+                                        <div>
+                                            <div class="d-flex flex-row flex-wrap justify-content-center">
+                                                <div class="d-flex flex-column col-md-12">
+                                                    <img src={this.state.tweets.tweet.extended_entities.media[0].media_url_https} id="tweetPic1" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic1").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                } else if (this.state.tweets.tweet.extended_entities.media.length == 2) {
+                                    media =
+                                        <div>
+                                            <div class="d-flex flex-row flex-wrap justify-content-center">
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.tweets.tweet.extended_entities.media[0].media_url_https} id="tweetPic1" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic1").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                                </div>
+
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.tweets.tweet.extended_entities.media[1].media_url_https} id="tweetPic2" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic2").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                } else if (this.state.tweets.tweet.extended_entities.media.length == 3) {
+                                    media =
+                                        <div>
+                                            <div class="d-flex flex-row flex-wrap justify-content-center">
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.tweets.tweet.extended_entities.media[0].media_url_https} id="tweetPic1" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic1").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                                </div>
+
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.tweets.tweet.extended_entities.media[1].media_url_https} id="tweetPic2" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic2").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-row flex-wrap justify-content-center" style={{ marginTop: "25px" }}>
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.tweets.tweet.extended_entities.media[2].media_url_https} id="tweetPic3" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic3").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                } else {
+                                    media =
+                                        <div>
+                                            <div class="d-flex flex-row flex-wrap justify-content-center">
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.tweets.tweet.extended_entities.media[0].media_url_https} id="tweetPic1" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic1").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                                </div>
+
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.tweets.tweet.extended_entities.media[1].media_url_https} id="tweetPic2" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic2").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-row flex-wrap justify-content-center" style={{ marginTop: "25px" }}>
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.tweets.tweet.extended_entities.media[2].media_url_https} id="tweetPic3" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic3").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                                </div>
+
+                                                <div class="d-flex flex-column col-md-6">
+                                                    <img src={this.state.tweets.tweet.extended_entities.media[3].media_url_https} id="tweetPic4" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic4").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                }
+                            } else if (this.state.tweets.tweet.extended_entities.media[0].type == "video") {
+                                console.log(this.state.tweets.tweet.extended_entities.media[0])
+                                media =
+                                    <div>
+                                        <div class="d-flex flex-row flex-wrap justify-content-center">
+                                            <div class="d-flex flex-column col-md-12">
+                                                <video controls src={this.state.tweets.tweet.extended_entities.media[0].url} style={{ width: "90%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                            } else {
+                                console.log(this.state.tweets.tweet.extended_entities.media[0])
+                                media =
+                                    <div>
+                                        <div class="d-flex flex-row flex-wrap justify-content-center">
+                                            <div class="d-flex flex-column col-md-12">
+                                                <video autoplay loop controls src={this.state.tweets.tweet.extended_entities.media[0].url} style={{ width: "90%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                            }
+                        }
+
                         modal = <Dialog class="fade-in"
                             open={this.state.modal}
                             onClose={() => this.handleClose()}
@@ -442,29 +689,12 @@ class UserProfile extends Component {
                                                 <i>{this.state.tweets.tweet.text}</i>
                                             </h5>
 
-                                            <div class="d-flex flex-row flex-wrap justify-content-center">
-                                                <div class="d-flex flex-column col-md-6">
-                                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPic1" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic1").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
-                                                </div>
-
-                                                <div class="d-flex flex-column col-md-6">
-                                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPic2" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic2").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
-                                                </div>
-                                            </div>
-                                            <div class="d-flex flex-row flex-wrap justify-content-center" style={{ marginTop: "25px" }}>
-                                                <div class="d-flex flex-column col-md-6">
-                                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPic3" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic3").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
-                                                </div>
-
-                                                <div class="d-flex flex-column col-md-6">
-                                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPic4" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic4").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
-                                                </div>
-                                            </div>
+                                            {media}
 
                                             <h6 style={{ color: "#999", marginTop: "20px" }}>
                                                 {this.state.tweets.tweet.created_at}
                                             </h6>
-                                            <div class="row" style={{ marginTop: "40px", textAlign: "center" }}>
+                                            <div class="row" style={{ marginTop: "20px", textAlign: "center" }}>
                                                 <div class="col-sm-12 offset-md-3 col-md-3">
                                                     <h6><b>{this.state.tweets.tweet.retweet_count}</b> <br /><i style={{ color: "#1da1f2" }} class="fas fa-retweet"></i> retweets</h6>
                                                 </div>
@@ -511,6 +741,96 @@ class UserProfile extends Component {
                         </h6>
                     }
 
+                    var media = <div></div>
+                    if (this.state.tweets.latestTweet.extended_entities != null) {
+                        console.log(this.state.tweets.latestTweet.extended_entities.media[0])
+                        if (this.state.tweets.latestTweet.extended_entities.media[0].type == "photo") {
+                            if (this.state.tweets.latestTweet.extended_entities.media.length == 1) {
+                                media =
+                                    <div>
+                                        <div class="d-flex flex-row flex-wrap justify-content-center">
+                                            <div class="d-flex flex-column col-md-12">
+                                                <img src={this.state.tweets.latestTweet.extended_entities.media[0].media_url_https} id="tweetPic1" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic1").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                            } else if (this.state.tweets.latestTweet.extended_entities.media.length == 2) {
+                                media =
+                                    <div>
+                                        <div class="d-flex flex-row flex-wrap justify-content-center">
+                                            <div class="d-flex flex-column col-md-6">
+                                                <img src={this.state.tweets.latestTweet.extended_entities.media[0].media_url_https} id="tweetPic1" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic1").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            </div>
+
+                                            <div class="d-flex flex-column col-md-6">
+                                                <img src={this.state.tweets.latestTweet.extended_entities.media[1].media_url_https} id="tweetPic2" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic2").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                            } else if (this.state.tweets.latestTweet.extended_entities.media.length == 3) {
+                                media =
+                                    <div>
+                                        <div class="d-flex flex-row flex-wrap justify-content-center">
+                                            <div class="d-flex flex-column col-md-6">
+                                                <img src={this.state.tweets.latestTweet.extended_entities.media[0].media_url_https} id="tweetPic1" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic1").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            </div>
+
+                                            <div class="d-flex flex-column col-md-6">
+                                                <img src={this.state.tweets.latestTweet.extended_entities.media[1].media_url_https} id="tweetPic2" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic2").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-row flex-wrap justify-content-center" style={{ marginTop: "25px" }}>
+                                            <div class="d-flex flex-column col-md-6">
+                                                <img src={this.state.tweets.latestTweet.extended_entities.media[2].media_url_https} id="tweetPic3" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic3").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                            } else {
+                                media =
+                                    <div>
+                                        <div class="d-flex flex-row flex-wrap justify-content-center">
+                                            <div class="d-flex flex-column col-md-6">
+                                                <img src={this.state.tweets.latestTweet.extended_entities.media[0].media_url_https} id="tweetPic1" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic1").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            </div>
+
+                                            <div class="d-flex flex-column col-md-6">
+                                                <img src={this.state.tweets.latestTweet.extended_entities.media[1].media_url_https} id="tweetPic2" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic2").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-row flex-wrap justify-content-center" style={{ marginTop: "25px" }}>
+                                            <div class="d-flex flex-column col-md-6">
+                                                <img src={this.state.tweets.latestTweet.extended_entities.media[2].media_url_https} id="tweetPic3" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic3").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            </div>
+
+                                            <div class="d-flex flex-column col-md-6">
+                                                <img src={this.state.tweets.latestTweet.extended_entities.media[3].media_url_https} id="tweetPic4" alt="Tweet Pic" onError={() => { document.getElementById("tweetPic4").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                            }
+                        } else if (this.state.tweets.latestTweet.extended_entities.media[0].type == "video") {
+                            console.log(this.state.tweets.latestTweet.extended_entities.media[0])
+                            media =
+                                <div>
+                                    <div class="d-flex flex-row flex-wrap justify-content-center">
+                                        <div class="d-flex flex-column col-md-12">
+                                            <video controls src={this.state.tweets.latestTweet.extended_entities.media[0].url} style={{ width: "90%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                        </div>
+                                    </div>
+                                </div>
+                        } else {
+                            console.log(this.state.tweets.latestTweet.extended_entities.media[0])
+                            media =
+                                <div>
+                                    <div class="d-flex flex-row flex-wrap justify-content-center">
+                                        <div class="d-flex flex-column col-md-12">
+                                            <video autoplay loop controls src={this.state.tweets.latestTweet.extended_entities.media[0].url} style={{ width: "90%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                        </div>
+                                    </div>
+                                </div>
+                        }
+                    }
+
                     latestTweet = <CardBody>
                         <div style={{ marginTop: "25px" }}>
                             {extraInfo}
@@ -518,29 +838,12 @@ class UserProfile extends Component {
                                 <i>{this.state.tweets.latestTweet.text}</i>
                             </h5>
 
-                            <div class="d-flex flex-row flex-wrap justify-content-center">
-                                <div class="d-flex flex-column col-md-6">
-                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPicL1" alt="Tweet Pic" onError={() => { document.getElementById("tweetPicL1").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
-                                </div>
-
-                                <div class="d-flex flex-column col-md-6">
-                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPicL2" alt="Tweet Pic" onError={() => { document.getElementById("tweetPicL2").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
-                                </div>
-                            </div>
-                            <div class="d-flex flex-row flex-wrap justify-content-center" style={{ marginTop: "25px" }}>
-                                <div class="d-flex flex-column col-md-6">
-                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPicL3" alt="Tweet Pic" onError={() => { document.getElementById("tweetPicL3").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
-                                </div>
-
-                                <div class="d-flex flex-column col-md-6">
-                                    <img src={this.state.userInfo.profile_image_url_https} id="tweetPicL4" alt="Tweet Pic" onError={() => { document.getElementById("tweetPicL4").src = require('../../assets/img/no_pic.png') }} style={{ width: "100%", display: "block", marginLeft: "auto", marginRight: "auto" }} />
-                                </div>
-                            </div>
+                            {media}
 
                             <h6 style={{ color: "#999", marginTop: "20px" }}>
                                 {this.state.tweets.latestTweet.created_at}
                             </h6>
-                            <div class="row" style={{ marginTop: "40px", textAlign: "center" }}>
+                            <div class="row" style={{ marginTop: "20px", textAlign: "center" }}>
                                 <div class="col-sm-12 offset-md-3 col-md-3">
                                     <h6><b>{this.state.tweets.latestTweet.retweet_count}</b> <br /><i style={{ color: "#1da1f2" }} class="fas fa-retweet"></i> retweets</h6>
                                 </div>
@@ -560,6 +863,8 @@ class UserProfile extends Component {
                         </div>
                     </CardBody>
                 }
+
+                //All Tweets
 
                 var tweets = <CardBody></CardBody>
                 if (this.state.tweets.empty) {
@@ -617,21 +922,116 @@ class UserProfile extends Component {
                         </CardBody>
                 }
 
+                //All Followers
+                var followers = <CardBody></CardBody>
+                if (this.state.followers.empty) {
+                    followers =
+                        <div style={{ marginTop: "25px" }}>
+                            <h5 style={{ color: "#999" }}>
+                                We weren't able to find any of this user's followers
+                        </h5>
+                        </div>
+                } else {
+                    followers =
+                        <div style={{ position: "relative" }}>
+                            <div
+                                id="loadedFollowers"
+                                style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    position: "relative",
+                                    top: 0,
+                                    left: 0,
+                                    visibility: ""
+                                }}>
+                                <Table
+                                    tableHeaderColor="primary"
+                                    tableHead={["Username", "Name", ""]}
+                                    tableData={this.state.followers.data}
+                                />
+
+                            </div>
+                            <div
+                                id="loadingFollowers"
+                                style={{
+                                    zIndex: 10,
+                                    position: "absolute",
+                                    top: "45%",
+                                    left: "45%",
+                                    display: "none"
+                                }}>
+                                <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
+                            </div>
+
+                            <div style={{
+                                marginTop: "25px",
+                                width: "100%",
+                                textAlign: "center"
+                            }}>
+                                <div style={{ display: "inline-block" }}>
+                                    <Pagination count={this.state.followers.noPage} page={this.state.followers.curPage} onChange={this.changePageFollowers} variant="outlined" color="primary" showFirstButton showLastButton shape="rounded" />
+                                </div>
+                            </div>
+                        </div>
+                }
+
+                //All Followings
+                var followings = <CardBody></CardBody>
+                if (this.state.followings.empty) {
+                    followings =
+                        <div style={{ marginTop: "25px" }}>
+                            <h5 style={{ color: "#999" }}>
+                                We weren't able to find any of this user's followers
+                        </h5>
+                        </div>
+                } else {
+                    followings =
+                        <div style={{ position: "relative" }}>
+                            <div
+                                id="loadedFollowings"
+                                style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    position: "relative",
+                                    top: 0,
+                                    left: 0,
+                                    visibility: ""
+                                }}>
+                                <Table
+                                    tableHeaderColor="primary"
+                                    tableHead={["Username", "Name", ""]}
+                                    tableData={this.state.followings.data}
+                                />
+
+                            </div>
+                            <div
+                                id="loadingFollowings"
+                                style={{
+                                    zIndex: 10,
+                                    position: "absolute",
+                                    top: "45%",
+                                    left: "45%",
+                                    display: "none"
+                                }}>
+                                <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
+                            </div>
+
+                            <div style={{
+                                marginTop: "25px",
+                                width: "100%",
+                                textAlign: "center"
+                            }}>
+                                <div style={{ display: "inline-block" }}>
+                                    <Pagination count={this.state.followings.noPage} page={this.state.followings.curPage} onChange={this.changePageFollowing} variant="outlined" color="primary" showFirstButton showLastButton shape="rounded" />
+                                </div>
+                            </div>
+                        </div>
+                }
+
                 ///////////////////////
                 return (
                     <div className="animated fadeIn">
                         <Container fluid>
-                            <ToastContainer
-                                position="top-center"
-                                autoClose={2500}
-                                hideProgressBar={false}
-                                newestOnTop={false}
-                                closeOnClick
-                                rtl={false}
-                                pauseOnVisibilityChange
-                                draggable
-                                pauseOnHover
-                            />
                             <Row>
                                 <Col xs="12" sm="12" md="12" style={{ marginBottom: "30px" }}>
                                     <Button block outline color="danger" onClick={() => this.handleGoBack()} style={{
@@ -812,7 +1212,7 @@ class UserProfile extends Component {
                                             }} > Followers</h4>
                                         </CardHeader>
                                         <CardBody>
-
+                                            {followers}
                                         </CardBody>
                                     </Card>
                                 </Col>
@@ -835,7 +1235,7 @@ class UserProfile extends Component {
                                             }} > Following</h4>
                                         </CardHeader>
                                         <CardBody>
-
+                                            {followings}
                                         </CardBody>
                                     </Card>
                                 </Col>

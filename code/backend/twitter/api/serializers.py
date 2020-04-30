@@ -51,6 +51,7 @@ class Tweet(serializers.Serializer):
 	in_reply_to_user_id = serializers.IntegerField()
 	in_reply_to_status_id = serializers.IntegerField()
 	extended_entities = ExtendedEntities(required=False)
+	text = serializers.CharField()
 
 
 class TweetStats(serializers.Serializer):
