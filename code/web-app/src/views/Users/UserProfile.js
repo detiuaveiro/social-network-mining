@@ -67,6 +67,10 @@ class UserProfile extends Component {
             empty: false
         },
 
+        stats: {
+            data: [],
+            type: 'day'
+        }
 
     };
 
@@ -183,7 +187,7 @@ class UserProfile extends Component {
     }
 
     async getStats(type) {
-        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/tweets/7/" + page + "/", {
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/stats/grouped/" + type + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -197,70 +201,31 @@ class UserProfile extends Component {
             if (data != null && data != {}) {
                 data = data.data
 
-                var tempTweets = []
+                var tempData = []
+                data.data.forEach(entry => {
+                    var tempInfo = {}
 
-                data.entries.forEach(tweet => {
-                    var tempInfo = []
-                    tempInfo.push("#" + tweet.tweet_id);
-
-                    if (tweet.is_quote_status) {
-                        tempInfo.push(<Badge pill color="warning" style={{ fontSize: "11px" }}>Quote</Badge>);
-                        tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }}>#{tweet.quoted_status_id}</span>);
-
-                    } else if (tweet.in_reply_to_screen_name == null) {
-                        tempInfo.push(<Badge pill color="info" style={{ fontSize: "11px" }}>Tweet</Badge>);
-                        tempInfo.push(<span style={{ color: "#999" }}><i class="fas fa-minus"></i></span>);
-                    } else {
-                        tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Reply</Badge>);
-                        tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(tweet.in_reply_to_user_id)}>@{tweet.in_reply_to_screen_name}</span>);
+                    if(type == "day"){
+                        tempInfo['name'] = entry['day'] + ""
+                    }else if(type == "year"){
+                        tempInfo['name'] = entry['year'] + ""
+                    }else{
+                        tempInfo['name'] = entry['month'] + ""
                     }
 
-                    var splitData = tweet.created_at.split(" ")
-                    tweet.created_at = splitData[3] + " · " + splitData[1] + " " + splitData[2] + ", " + splitData[5] + " (" + splitData[0] + ")"
+                    tempInfo['followers'] = entry['sum_followers']
+                    tempInfo['following'] = entry['sum_following']
+                    tempInfo['tweets'] = 0 // TODO CHANGE THIS
 
-                    tempInfo.push(tweet.created_at);
-
-                    tempInfo.push(
-                        <Button block outline color="primary"
-                            onClick={() => this.handleOpenTweet(tweet)}
-                        >
-                            <i class="fas fa-plus"></i>
-                            <strong style={{ marginLeft: "3px" }}>More</strong>
-                        </Button>
-                    )
-
-                    tempTweets.push(tempInfo);
+                    tempData.push(tempInfo)
                 })
 
-                var empty = false
-                if (tempTweets.length == 0) {
-                    empty = true
-                }
-
-                if (first) {
-                    this.setState({
-                        tweets: {
-                            data: tempTweets,
-                            noPage: data.num_pages,
-                            curPage: page,
-                            latestTweet: data.entries[0],
-                            tweet: null,
-                            empty: empty
-                        }
-                    })
-                } else {
-                    this.setState({
-                        tweets: {
-                            data: tempTweets,
-                            noPage: data.num_pages,
-                            curPage: page,
-                            latestTweet: this.state.tweets.latestTweet,
-                            tweet: null,
-                            empty: empty
-                        }
-                    })
-                }
-
+                this.setState({
+                    stats:{
+                        data: tempData,
+                        type: type
+                    }
+                })
             }
         }).catch(error => {
             console.log("error: " + error);
@@ -284,6 +249,8 @@ class UserProfile extends Component {
         // Get Tweets
         if (this.state.error == null) {
             await this.getTweets(1, true)
+
+            await this.getStats("day")
         }
 
         this.setState({
@@ -351,6 +318,19 @@ class UserProfile extends Component {
 
         document.getElementById("loadedTweets").style.visibility = ""
         document.getElementById("loadingTweets").style.display = "none"
+    };
+    /////////////////////////////////////////////////////////////////////
+
+    // Pagination //////////////////////////////////////////////////////////
+    changeType = async (event, value) => {
+        this.setState({
+            stats:{
+                type: value
+            }
+        })
+
+        await this.getStats(value)
+
     };
     /////////////////////////////////////////////////////////////////////
 
@@ -716,38 +696,34 @@ class UserProfile extends Component {
                                         <CardBody style={{ paddingTop: "0px" }}>
                                             <div class="row" style={{ marginTop: "10px" }}>
                                                 <ToggleButtonGroup
-                                                    value={"DAILY"}
+                                                    value={this.state.stats.type}
                                                     exclusive
                                                     aria-label="text alignment"
+                                                    onChange={this.changeType}
                                                     style={{ display: "block", marginLeft: "auto", marginRight: "auto" }}
                                                 >
-                                                    <ToggleButton value="DAILY" aria-label="Daily">
+                                                    <ToggleButton value="day" aria-label="Daily">
                                                         Daily
                                                     </ToggleButton>
-                                                    <ToggleButton value="MONTHLY" aria-label="Monthly">
+                                                    <ToggleButton value="month" aria-label="Monthly">
                                                         Monthly
                                                     </ToggleButton>
-                                                    <ToggleButton value="YEARLY" aria-label="Yearly">
+                                                    <ToggleButton value="year" aria-label="Yearly">
                                                         Yearly
                                                     </ToggleButton>
                                                 </ToggleButtonGroup>
                                             </div>
                                             <div class="row" style={{ marginTop: "15px" }}>
                                                 <ResponsiveContainer width="100%" height={250}>
-                                                    <LineChart data={[
-                                                        { name: "Page A", uv: 4000, pv: 2400, amt: 2400 },
-                                                        { name: "Page B", uv: 3000, pv: 1398, amt: 2210 },
-                                                        { name: "Page C", uv: 2000, pv: 9800, amt: 2290 },
-                                                        { name: "Page D", uv: 2780, pv: 3908, amt: 2000 },
-                                                        { name: "Page E", uv: 1890, pv: 4800, amt: 2181 },
-                                                        { name: "Page F", uv: 2390, pv: 3800, amt: 2500 },
-                                                        { name: "Page G", uv: 3490, pv: 4300, amt: 2100 }
-                                                    ]} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                                                    <LineChart data={this.state.stats.data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                                                         <Legend verticalAlign="bottom" height={36} />
-                                                        <Line name="penis" type="monotone" dataKey="uv" stroke="#8884d8" />
+                                                        <Line name="Followers" type="monotone" dataKey="followers" stroke="#63c2de" strokeWidth={2} />
+                                                        <Line name="Following" type="monotone" dataKey="following" stroke="#833ab4" strokeWidth={2}/>
+                                                        <Line name="Tweets" type="monotone" dataKey="tweets" stroke="#f77737" strokeWidth={2}/>
+
                                                         <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
                                                         <XAxis dataKey="name" />
-                                                        <YAxis />
+                                                        <YAxis/>
                                                         <Tooltip />
                                                     </LineChart>
                                                 </ResponsiveContainer>
