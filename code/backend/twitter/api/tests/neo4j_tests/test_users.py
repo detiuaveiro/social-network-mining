@@ -47,7 +47,7 @@ def test_empty_twitter_user_followers_request(error_catcher, factory):
     path = reverse('twitter_user_followers', kwargs={'id': 1})
     request = factory.get(path)
     response = users.twitter_user_followers(request, id=1)
-    assert is_response_empty(response)
+    assert is_response_unsuccessful(response)
 
 
 @catch_exception
@@ -64,4 +64,4 @@ def test_empty_twitter_user_following_request(error_catcher, factory):
     path = reverse('twitter_user_following', kwargs={'id': 1})
     request = factory.get(path)
     response = users.twitter_user_following(request, id=1)
-    assert is_response_empty(response)
+    assert is_response_unsuccessful(response)
