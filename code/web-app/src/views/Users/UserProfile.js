@@ -112,6 +112,16 @@ class UserProfile extends Component {
 
                     tempInfo.push(tweet.created_at);
 
+                    if (tweet.extended_entities != null) {
+                        if (tweet.extended_entities.media[0].type == "video") {
+                            tweet.extended_entities.media[0] = { "type": "video", "url": tweet.extended_entities.media[0].video_info.variants[0].url, "placeholder": tweet.extended_entities.media[0].media_url_https }
+                        } else if (tweet.extended_entities.media[0].type == "animated_gif") {
+                            tweet.extended_entities.media[0] = { "type": "gif", "url": tweet.extended_entities.media[0].video_info.variants[0].url, "placeholder": tweet.extended_entities.media[0].media_url_https }
+                        }
+                    }
+
+                    console.log(tweet.extended_entities.media[0])
+
                     tempInfo.push(
                         <Button block outline color="primary"
                             onClick={() => this.handleOpenTweet(tweet)}

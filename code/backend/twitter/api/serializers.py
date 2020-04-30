@@ -20,6 +20,26 @@ class UserStats(serializers.Serializer):
 	following = serializers.IntegerField()
 
 
+class Variant(serializers.Serializer):
+	bitrate = serializers.IntegerField(required=False)
+	content_type = serializers.CharField()
+	url = serializers.URLField()
+
+
+class VideoInfo(serializers.Serializer):
+	variants = serializers.ListField(child=Variant(), allow_empty=True)
+
+
+class Media(serializers.Serializer):
+	id = serializers.IntegerField()
+	type = serializers.CharField()
+	media_url_https = serializers.URLField()
+	video_info = VideoInfo(required=False)
+
+
+class ExtendedEntities(serializers.Serializer):
+	media = serializers.ListField(child=Media(), allow_empty=True)
+
 
 class Tweet(serializers.Serializer):
 	tweet_id = serializers.IntegerField(required=True)
@@ -30,6 +50,7 @@ class Tweet(serializers.Serializer):
 	in_reply_to_screen_name = serializers.CharField()
 	in_reply_to_user_id = serializers.IntegerField()
 	in_reply_to_status_id = serializers.IntegerField()
+	extended_entities = ExtendedEntities(required=False)
 
 
 class TweetStats(serializers.Serializer):
