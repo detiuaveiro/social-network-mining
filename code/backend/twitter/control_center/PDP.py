@@ -470,15 +470,15 @@ class PDP:
 			"bot_id": bot_id, "filter": "Keywords"
 		})
 
-        tweets = data['tweets']
-        tweets = random.sample(tweets, min(len(tweets), NUMBER_TWEETS_FOLLOW_DECISION))
+		tweets = data['tweets']
+		tweets = random.sample(tweets, min(len(tweets), NUMBER_TWEETS_FOLLOW_DECISION))
 
-        user = data['user']
-        user_description = user['description']
-        tweets_text = [t['full_text'] for t in tweets]
-        tweets_len_mean = np.mean([len(i) for i in tweets_text])
+		user = data['user']
+		user_description = user['description']
+		tweets_text = [t['full_text'] for t in tweets]
+		tweets_len_mean = np.mean([len(i) for i in tweets_text])
 
-        if policies['success'] and tweets_len_mean >= MEAN_WORDS_PER_TWEET:
+		if policies['success'] and tweets_len_mean >= MEAN_WORDS_PER_TWEET:
 			policy_list = policies['data']
 			log.debug(f"Obtained policies: {policy_list}")
 
@@ -495,9 +495,9 @@ class PDP:
 				labels = classifier.predict_soft_max(model_path=MODEL_PATH, x=tweets_text + [user_description],
 													 confidence_limit=THRESHOLD_FOLLOW_USER)
 				K.clear_session()
-                gc.collect()
-                
-                policies_confidence = {}
+				gc.collect()
+
+				policies_confidence = {}
 
 				for label in labels:
 					confidence, policy_name = label
@@ -508,7 +508,7 @@ class PDP:
 				final_choices = {}
 
 				for key in policies_confidence:
-                    mean = np.mean(policies_confidence[key] + [0 for _ in range(len(labels) - len(policies_confidence[key]))])
+					mean = np.mean(policies_confidence[key] + [0 for _ in range(len(labels) - len(policies_confidence[key]))])
 					final_choices[key] = {
 						'mean': mean,
 						'length': len(policies_confidence[key]),

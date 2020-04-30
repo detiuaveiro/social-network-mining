@@ -13,13 +13,13 @@ from bots.rabbit_messaging import RabbitMessaging
 from bots.settings import *
 from bots.utils import *
 from credentials import VHOST, LOG_EXCHANGE, LOG_ROUTING_KEY, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, \
-    TASKS_QUEUE_PREFIX
+	TASKS_QUEUE_PREFIX
 
 logger = logging.getLogger("bot-agents")
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(open("bot_agent.log", "w"))
 handler.setFormatter(logging.Formatter(
-    "[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 logger.addHandler(handler)
 
 
@@ -29,8 +29,8 @@ class TwitterBot(RabbitMessaging):
 		self._name: str = 'bot'
 		self._screen_name: str = 'bot'
 		self._id = bot_id
-        self._twitter_api: tweepy.API = api
-        self.user: User
+		self._twitter_api: tweepy.API = api
+		self.user: User
 
 	def __repr__(self):
 		return f"<TwitterBot id={self._id}, api={self._twitter_api}>"
@@ -316,18 +316,18 @@ class TwitterBot(RabbitMessaging):
 			'id': user_id,
 			'followers': [follower._json for follower in followers]
 		}, messages_types.BotToServer.SAVE_FOLLOWERS)
-    
-    def __get_user_dict(self, user_id: int):
-        """Function to get the full user object by its id, and send it to the control center
+
+	def __get_user_dict(self, user_id: int):
+		"""Function to get the full user object by its id, and send it to the control center
 		:param user_id: id of the user we want to send to the control center
 		"""
-        logger.info(f"Getting user of id {user_id}")
+		logger.info(f"Getting user of id {user_id}")
 
-        try:
-            self.__send_user(self._twitter_api.get_user(user_id), messages_types.BotToServer.SAVE_USER)
-        except TweepError as error:
-            logger.exception(f"Error <{error}> finding user with id <{user_id}>: ")
-            return None
+		try:
+			self.__send_user(self._twitter_api.get_user(user_id), messages_types.BotToServer.SAVE_USER)
+		except TweepError as error:
+			logger.exception(f"Error <{error}> finding user with id <{user_id}>: ")
+			return None
 
 	def __get_tweet_by_id(self, tweet_id: int):
 		"""
@@ -418,7 +418,7 @@ class TwitterBot(RabbitMessaging):
 			tweet: Status = self._twitter_api.update_status(**args)
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
 			# if reply_id:
-			# 	self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
+			#	self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
 
 			logger.debug("Tweet posted with success")
 		except TweepError as error:
@@ -452,13 +452,13 @@ class TwitterBot(RabbitMessaging):
 						logger.info(f"The bot was asked to get the followers for user with id <{task_params}>")
 						self.__get_followers(user_id=task_params)
 					elif task_type == messages_types.ServerToBot.POST_TWEET:
-					 	self.__post_tweet(**task_params)
+						self.__post_tweet(**task_params)
 					elif task_type == messages_types.ServerToBot.KEYWORDS:
 						self.__search_tweets(keywords=task_params)
 					elif task_type == messages_types.ServerToBot.GET_TWEET_BY_ID:
 						self.__get_tweet_by_id(tweet_id=task_params)
-                    elif task_type == messages_types.ServerToBot.GET_USER_BY_ID:
-                        self.__get_user_dict(user_id=task_params)
+					elif task_type == messages_types.ServerToBot.GET_USER_BY_ID:
+						self.__get_user_dict(user_id=task_params)
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
 				else:
