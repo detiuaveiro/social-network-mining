@@ -722,7 +722,7 @@ class UserProfile extends Component {
                 //Latest Tweet
 
                 var locale = <h5></h5>
-                if (this.state.userInfo.location != "") {
+                if (this.state.userInfo.location != "" && this.state.userInfo.location.trim().length != 0) {
                     locale = <h5 style={{ marginTop: "15px" }}>
                         <span style={{ color: "#999", fontSize: "15px" }}><i>from</i> </span>{this.state.userInfo.location}
                     </h5>
