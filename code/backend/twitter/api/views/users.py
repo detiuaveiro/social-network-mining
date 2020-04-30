@@ -172,7 +172,7 @@ def twitter_search_users(_, keywords, entries_per_page=None, page=None):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_search_users(keywords)
+	success, data, message = queries.twitter_search_users(keywords, entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
