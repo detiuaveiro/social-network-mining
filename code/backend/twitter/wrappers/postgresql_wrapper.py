@@ -73,7 +73,7 @@ class PostgresAPI:
 		try:
 			cursor = self.conn.cursor()
 			cursor.execute(
-				"INSERT INTO users (timestamp, user_id, followers, following, protected) values (DEFAULT,%s,%s,%s);",
+				"INSERT INTO users (timestamp, user_id, followers, following, protected) values (DEFAULT,%s,%s,%s,%s);",
 				(data["user_id"], data["followers"], data["following"], data["protected"])
 			)
 			self.conn.commit()
