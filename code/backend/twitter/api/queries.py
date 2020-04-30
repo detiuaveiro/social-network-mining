@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from django.db.models import Max, Count, Sum
+from django.db.models import Max, Count, Sum, Q
 from api.models import *
 import api.serializers as serializers
 from api import neo4j
