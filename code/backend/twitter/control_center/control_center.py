@@ -834,7 +834,7 @@ class Control_Center(Rabbitmq):
 			self._send(routing_key='tasks.twitter.' + str(bot), message=payload)
 		# self._close()
 		except Exception as error:
-			log.exception(f"Failed to send message because of error {error}: ")
+			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
 
 	def received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
@@ -843,8 +843,8 @@ class Control_Center(Rabbitmq):
 
 	def run(self):
 		self._receive()
+		self._close()
 
 	def close(self):
 		self.neo4j_client.close()
 		self.pep.pdp.close()
-		self._close()

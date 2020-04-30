@@ -5,7 +5,6 @@ import pika
 import time
 import logging
 import json
-import traceback
 from credentials import *
 
 log = logging.getLogger('Rabbit')
@@ -14,7 +13,7 @@ handler = logging.StreamHandler(open("rabbitmq.log", "w"))
 handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
 
-WAIT_TIME = 10
+WAIT_TIME = 1
 
 
 class Rabbitmq:
@@ -121,7 +120,7 @@ class Rabbitmq:
 
         params:
         -------
-        routing_key: (string) routing key to bding to queue
+        routing_key: (string) routing key to binding to queue
         message: (Dictionary) dictionary to be stringified and sent
         """
 
