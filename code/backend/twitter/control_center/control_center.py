@@ -499,7 +499,7 @@ class Control_Center(Rabbitmq):
 			if self.neo4j_client.check_user_exists(user["id_str"]):
 				log.info(f"User {user['id']} has already been registered in the database")
 				self.mongo_client.update_users(
-					match={"id": user['id_str']},
+					match={"id_str": user['id_str']},
 					new_data=user,
 					all=False
 				)
