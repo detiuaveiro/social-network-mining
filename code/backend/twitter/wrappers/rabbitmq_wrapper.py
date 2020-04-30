@@ -6,7 +6,6 @@ import time
 import logging
 import json
 
-from pika import BlockingConnection
 from pika.adapters.blocking_connection import BlockingChannel
 
 from credentials import *
@@ -68,7 +67,7 @@ class Rabbitmq:
         self.connection = pika.BlockingConnection(self.pika_parameters)
 
         self.channel: BlockingChannel = self.connection.channel()
-        self.channel.basic_qos(prefetch_count=1, prefetch_size=1, global_qos=True)
+        self.channel.basic_qos(prefetch_count=1, global_qos=True)
         self.channel.queue_declare(queue=API_QUEUE, durable=True)
 
         # Declare Exchanges
