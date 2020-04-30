@@ -20,7 +20,7 @@ $ npm i react-visibility-sensor
 $ npm i react-loading
 $ npm i react-toastify
 $ npm i react-graph-vis
-$ npm install victory --save
+$ npm install recharts
 $ npm i react-select
 $ npm install react-paginate --save
 $ npm i @material-ui/lab
