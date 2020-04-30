@@ -33,7 +33,7 @@ import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 
 
-import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Brush } from 'recharts';
 
 import * as loadingAnim from "../../assets/animations/squares_1.json";
 
@@ -69,7 +69,7 @@ class UserProfile extends Component {
 
         stats: {
             data: [],
-            type: 'day'
+            type: 'month'
         }
 
     };
@@ -205,11 +205,11 @@ class UserProfile extends Component {
                 data.data.forEach(entry => {
                     var tempInfo = {}
 
-                    if(type == "day"){
+                    if (type == "day") {
                         tempInfo['name'] = entry['day'] + ""
-                    }else if(type == "year"){
+                    } else if (type == "year") {
                         tempInfo['name'] = entry['year'] + ""
-                    }else{
+                    } else {
                         tempInfo['name'] = entry['month'] + ""
                     }
 
@@ -220,8 +220,9 @@ class UserProfile extends Component {
                     tempData.push(tempInfo)
                 })
 
+
                 this.setState({
-                    stats:{
+                    stats: {
                         data: tempData,
                         type: type
                     }
@@ -250,7 +251,7 @@ class UserProfile extends Component {
         if (this.state.error == null) {
             await this.getTweets(1, true)
 
-            await this.getStats("day")
+            await this.getStats("month")
         }
 
         this.setState({
@@ -324,7 +325,8 @@ class UserProfile extends Component {
     // Pagination //////////////////////////////////////////////////////////
     changeType = async (event, value) => {
         this.setState({
-            stats:{
+            stats: {
+                data: this.state.stats.data,
                 type: value
             }
         })
@@ -717,14 +719,17 @@ class UserProfile extends Component {
                                                 <ResponsiveContainer width="100%" height={250}>
                                                     <LineChart data={this.state.stats.data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                                                         <Legend verticalAlign="bottom" height={36} />
-                                                        <Line name="Followers" type="monotone" dataKey="followers" stroke="#63c2de" strokeWidth={2} />
-                                                        <Line name="Following" type="monotone" dataKey="following" stroke="#833ab4" strokeWidth={2}/>
-                                                        <Line name="Tweets" type="monotone" dataKey="tweets" stroke="#f77737" strokeWidth={2}/>
+                                                        <Line name="Followers" type="monotone" dataKey="followers" stroke="#63c2de" strokeWidth={3} />
+                                                        <Line name="Following" type="monotone" dataKey="following" stroke="#833ab4" strokeWidth={3} />
+                                                        <Line name="Tweets" type="monotone" dataKey="tweets" stroke="#f77737" strokeWidth={3} strokeDasharray="5 5" />
 
                                                         <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
                                                         <XAxis dataKey="name" />
-                                                        <YAxis/>
+                                                        <YAxis width={82} angle={-25} />
                                                         <Tooltip />
+
+                                                        <Brush dataKey="name" height={30} stroke="#1da1f2" />
+
                                                     </LineChart>
                                                 </ResponsiveContainer>
                                             </div>
