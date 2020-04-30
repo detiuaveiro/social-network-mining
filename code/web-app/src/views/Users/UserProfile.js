@@ -341,11 +341,13 @@ class UserProfile extends Component {
                 data = data.data
 
                 var tempData = []
+
                 data.data.forEach(entry => {
                     var tempInfo = {}
 
                     if (type == "day") {
                         tempInfo['name'] = entry['day'] + ""
+
                     } else if (type == "year") {
                         tempInfo['name'] = entry['year'] + ""
                     } else {
@@ -507,7 +509,7 @@ class UserProfile extends Component {
     render() {
         if (this.state.goBack) {
             if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "LIST")
-                return (<Users />)
+                return (<Users page={this.state.redirectionList[0].info} />)
             else {
                 var lastUser = this.state.redirectionList.pop()
                 return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)
@@ -824,7 +826,7 @@ class UserProfile extends Component {
                                 <div>
                                     <div class="d-flex flex-row flex-wrap justify-content-center">
                                         <div class="d-flex flex-column col-md-12">
-                                            <video autoplay loop controls src={this.state.tweets.latestTweet.extended_entities.media[0].url} style={{ width: "90%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                            <video muted autoplay loop controls src={this.state.tweets.latestTweet.extended_entities.media[0].url} style={{ width: "90%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
                                         </div>
                                     </div>
                                 </div>

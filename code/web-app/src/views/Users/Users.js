@@ -154,7 +154,11 @@ class Users extends Component {
   }
 
   async componentDidMount() {
-    await this.getUserList(1)
+    var page = 1
+    if(this.props.page != null){
+      page = this.props.page
+    }
+    await this.getUserList(page)
     await this.getUserCount()
 
     this.setState({
@@ -376,7 +380,7 @@ class Users extends Component {
       }
     } else {
       return (
-        <UserProfile user={this.state.user} redirection={[{ "type": "LIST", "info": {} }]}></UserProfile>
+        <UserProfile user={this.state.user} redirection={[{ "type": "LIST", "info": this.state.curPage }]}></UserProfile>
       )
     }
 
