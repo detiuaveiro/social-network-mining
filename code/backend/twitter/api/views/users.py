@@ -172,7 +172,7 @@ def twitter_search_users(_, keywords, entries_per_page=None, page=None):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_search_users(keywords)
+	success, data, message = queries.twitter_search_users(keywords, entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
@@ -192,14 +192,13 @@ def twitter_user_stats_grouped(_, id, type):
 	success_messages = []
 	status = HTTP_200_OK
 
-	
 	index_per_type = {
 		'year': 0,
 		'month': 1,
 		'day': 2
 	}
 	types = ["year", "month", "day"]
-	
+
 	success, data, message = queries.twitter_user_stats_grouped(int(id), types[:index_per_type[type] + 1])
 	if success:
 		success_messages.append(message)
