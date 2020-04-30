@@ -536,9 +536,10 @@ class Control_Center(Rabbitmq):
 			return user_type
 
 		log.debug(f"Inserting blank user with id {user}")
-		blank_user = mongo_utils.BLANK_USER
+		blank_user = mongo_utils.BLANK_USER.copy()
 		blank_user["id"] = user['id']
 		blank_user["id_str"] = str(user['id'])
+		blank_user["screen_name"] = user['screen_name']
 		self.save_user({
 			"bot_id": data["bot_id"],
 			'bot_name': data["bot_name"],
@@ -565,7 +566,7 @@ class Control_Center(Rabbitmq):
 			return
 
 		log.debug(f"Inserting blank tweet with id {data['id']}")
-		blank_tweet = mongo_utils.BLANK_TWEET
+		blank_tweet = mongo_utils.BLANK_TWEET.copy()
 		blank_tweet["id"] = data["id"]
 		blank_tweet["user"] = data["user"]
 
