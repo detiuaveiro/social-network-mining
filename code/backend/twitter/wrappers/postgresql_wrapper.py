@@ -188,7 +188,7 @@ class PostgresAPI:
 			result = []  # Array of jsons
 			for tuple in data:
 				result.append(
-					{"timestamp": tuple[0], "user_id": tuple[1], "followers": tuple[2],
+					{"timestamp": tuple[0], "user_id": int(tuple[1]), "followers": tuple[2],
 					 "following": tuple[3], "protected": tuple[4]}
 				)
 
