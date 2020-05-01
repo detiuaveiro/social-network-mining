@@ -446,7 +446,7 @@ class Control_Center(Rabbitmq):
 				"action": log_actions.FOLLOW_REQ_ACCEPT,
 				"target_id": user_id_str
 			})
-			self.send(data['bot_id'], ServerToBot.FOLLOW_USERS, {"type": "id", "data": [user_id]})
+			self.send(data['bot_id'], ServerToBot.FOLLOW_USERS, {"type": "id", "data": [user_id_str]})
 		else:
 			log.warning(f"Bot {data['bot_id']} request denied to follow {user_id}")
 			self.postgres_client.insert_log({
@@ -606,7 +606,7 @@ class Control_Center(Rabbitmq):
 		self.send(
 			bot=data["bot_id"],
 			message_type=ServerToBot.GET_TWEET_BY_ID,
-			params=data["id"]
+			params=data["id_str"]
 		)
 
 	def save_tweet(self, data):
