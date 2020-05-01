@@ -20,16 +20,41 @@ class UserStats(serializers.Serializer):
 	following = serializers.IntegerField()
 
 
+class Variant(serializers.Serializer):
+	bitrate = serializers.IntegerField(required=False)
+	content_type = serializers.CharField()
+	url = serializers.URLField()
+
+
+class VideoInfo(serializers.Serializer):
+	variants = serializers.ListField(child=Variant(), allow_empty=True)
+
+
+class Media(serializers.Serializer):
+	id = serializers.IntegerField()
+	type = serializers.CharField()
+	media_url_https = serializers.URLField()
+	video_info = VideoInfo(required=False)
+
+
+class ExtendedEntities(serializers.Serializer):
+	media = serializers.ListField(child=Media(), allow_empty=True)
+
 
 class Tweet(serializers.Serializer):
 	tweet_id = serializers.IntegerField(required=True)
 	user = serializers.IntegerField(required=True)
 	is_quote_status = serializers.BooleanField(required=True)
 	created_at = serializers.DateTimeField(required=True)
-	# quoted_status_id = serializers.IntegerField()
+	quoted_status_id = serializers.IntegerField()
 	in_reply_to_screen_name = serializers.CharField()
 	in_reply_to_user_id = serializers.IntegerField()
 	in_reply_to_status_id = serializers.IntegerField()
+	extended_entities = ExtendedEntities(required=False)
+	text = serializers.CharField()
+	retweet_count = serializers.IntegerField()
+	favorite_count = serializers.IntegerField()
+
 
 
 class TweetStats(serializers.Serializer):
