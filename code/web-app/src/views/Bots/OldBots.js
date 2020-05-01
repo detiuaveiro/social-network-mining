@@ -33,7 +33,7 @@ import ReactLoading from "react-loading";
 
 import BotProfile from './BotProfile';
 
-class Bots extends Component {
+class OldBots extends Component {
   constructor() {
     super();
   }
@@ -42,7 +42,6 @@ class Bots extends Component {
     error: false,
     bots: [],
     bot: null,
-    empty: false,
     loading: true,
     modal: false,
     modalType: null,
@@ -133,17 +132,11 @@ class Bots extends Component {
           bot1.screen_name > bot2.screen_name ? 1 : -1
         );
 
-        var empty = false
-        if(tempBots.length == 0){
-          empty = true
-        }
-
         this.setState({
           error: false,
           bots: tempBots,
           bot: null,
-          loading: false,
-          empty: empty
+          loading: false
         })
       }
     }).catch(error => {
@@ -200,7 +193,7 @@ class Bots extends Component {
     var name = document.getElementById("name").value;
     var pass = document.getElementById("pass").value;
 
-    if (name == "" || pass == "") {
+    if(name == "" || pass == ""){
       document.getElementById("error").style.display = ""
       return
     }
@@ -494,7 +487,7 @@ class Bots extends Component {
             <DialogTitle id="alert-dialog-title">
               {"🤖 Add a new bot"}
             </DialogTitle>
-            <DialogContent style={{ minWidth: "600px" }}>
+            <DialogContent style={{minWidth: "600px"}}>
               <Container fluid>
                 <Row>
                   <Col xs="12" md="12">
@@ -514,7 +507,7 @@ class Bots extends Component {
                 </Row>
 
                 <DialogContentText>
-                  <span id="error" style={{ display: "None", color: "#f86c6b" }}>You need to fill both fields to register a new bot!</span>
+                  <span id="error" style={{display:"None", color:"#f86c6b"}}>You need to fill both fields to register a new bot!</span>
                 </DialogContentText>
               </Container>
 
@@ -537,160 +530,198 @@ class Bots extends Component {
       }
 
 
-      var bots = <CardBody></CardBody>
-      var table = <div></div>
-      if (this.state.empty) {
-        table =
-          <div
-            id="loadedTable"
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "relative",
-              top: 0,
-              paddingTop: 0,
-              marginTop: "25px",
-              left: 0,
-              visibility: "",
-            }}>
-            <h5 style={{ color: "#999" }}>
-              Hmmm... there don't seem to be any bots in our databases, how about adding a new one? 🤔
-            </h5>
-          </div>
-      } else {
-        table = <div
-          id="loadedTable"
-          style={{
-            width: "100%",
-            height: "100%",
-            position: "relative",
-            top: 0,
-            paddingTop: 0,
-            marginTop: "0px",
-            left: 0,
-            visibility: "",
-          }}>
-          <Table
-            tableHeaderColor="primary"
-            tableHead={["Username", "Name", "Followers", "Following", "Status", "", "", ""]}
-            tableData={this.state.bots}
-          />
+      if (this.state.loading) {
+        return (
+          <div className="animated fadeIn">
+            <Container fluid>
+              <ToastContainer
+                position="top-center"
+                autoClose={2500}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnVisibilityChange
+                draggable
+                pauseOnHover
+              />
 
-        </div>
-      }
-
-      bots =
-        <CardBody>
-          <div style={{ position: "relative" }}>
-            {table}
-            <div
-              id="loadingTable"
-              style={{
-                zIndex: 10,
-                position: "absolute",
-                top: "45%",
-                left: "45%",
-                display: "none"
-              }}>
-              <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
-            </div>
-          </div>
-        </CardBody>
-
-      return (
-        <div className="animated fadeIn">
-
-          <Container fluid>
-            <ToastContainer
-              position="top-center"
-              autoClose={2500}
-              hideProgressBar={false}
-              transition={Flip}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnVisibilityChange
-              draggable
-              pauseOnHover
-            />
-            <Row>
-              <Col xs="12" sm="12" md="9">
-                <Card>
-                  <CardHeader color="primary">
-                    <h3 style={{ color: "white" }}>
-                      <strong>Bots</strong>
-                    </h3>
-                    <h5 style={{ color: "white" }}>
-                      List with all registered bot accounts and their status
+              <Row>
+                <Col xs="12" sm="12" md="9">
+                  <Card>
+                    <CardHeader color="primary">
+                      <h3 style={{ color: "white" }}>
+                        <strong>Bots</strong>
+                      </h3>
+                      <h5 style={{ color: "white" }}>
+                        List with all registered bot accounts and their status
                       </h5>
-                  </CardHeader>
-                  <CardBody>
-                  </CardBody>
-                </Card>
-              </Col>
+                    </CardHeader>
+                    <CardBody>
+                    </CardBody>
+                  </Card>
+                </Col>
 
-              <Col xs="12" sm="12" md="3">
-                <Card>
-                  <CardHeader color="primary" stats icon>
-                    <CardIcon color="primary">
-                      <i class="fas fa-robot"></i>
-                    </CardIcon>
-                    <p style={{
-                      color: '#999',
-                      margin: "0",
-                      fontSize: "14px",
-                      marginTop: "0",
-                      paddingTop: "10px",
-                      marginBottom: "0"
-                    }}>Active accounts</p>
-                    <h3 style={{
-                      color: "#23282c",
-                      minHeight: "auto",
-                      marginBottom: "3px",
-                      "& small": {
-                        color: "#777",
-                        fontWeight: "400",
-                        lineHeight: "1"
-                      }
-                    }} >
-                      1/1< small > Bots</small>
-                    </h3>
-                  </CardHeader>
-                  <CardBody style={{ minHeight: "38px" }}>
-                  </CardBody>
-                </Card>
-              </Col>
-            </Row>
-            <Row>
-              <Col xs="12" sm="12" md="12">
-                <Card>
-                  <CardHeader color="primary">
-                    <h4 style={{
-                      color: "#FFFFFF",
-                      marginTop: "0px",
-                      minHeight: "auto",
-                      marginBottom: "3px",
-                      textDecoration: "none",
-                      "& small": {
-                        color: "#777",
-                        fontSize: "65%",
-                        fontWeight: "400",
-                        lineHeight: "1"
-                      }
-                    }} > Registered Accounts</h4>
-                    <Button block outline color="light" style={{
-                      width: "150px", marginTop: "15px"
-                    }} onClick={() => this.handleOpenAdd()}>Add new</Button>
-                  </CardHeader>
-                  {bots}
-                </Card>
-              </Col>
-            </Row>
-          </Container>
-          {modal}
-        </div >
-      );
+                <Col xs="12" sm="12" md="3">
+                  <Card>
+                    <CardHeader color="primary" stats icon>
+                      <CardIcon color="primary">
+                        <i class="fab fa-twitter"></i>
+                      </CardIcon>
+                      <p style={{
+                        color: '#999',
+                        margin: "0",
+                        fontSize: "14px",
+                        marginTop: "0",
+                        paddingTop: "10px",
+                        marginBottom: "0"
+                      }}>Active accounts</p>
+                      <div style={{
+                        minHeight: "auto",
+                        float: "right",
+                        marginBottom: "3px",
+                      }}>
+                        <ReactLoading type={"cubes"} color="#1da1f2" />
+                      </div>
+                    </CardHeader>
+                    <CardBody style={{ minHeight: "38px" }}>
+                    </CardBody>
+                  </Card>
+                </Col>
+              </Row>
+              <Row>
+                <Col xs="12" sm="12" md="12">
+                  <Card>
+                    <CardHeader color="primary">
+                      <h4 style={{
+                        color: "#FFFFFF",
+                        marginTop: "0px",
+                        minHeight: "auto",
+                        marginBottom: "3px",
+                        textDecoration: "none",
+                        "& small": {
+                          color: "#777",
+                          fontSize: "65%",
+                          fontWeight: "400",
+                          lineHeight: "1"
+                        }
+                      }} > Registered Accounts</h4>
+                      <Button block outline color="light" style={{
+                        width: "150px", marginTop: "15px"
+                      }} onClick={() => this.handleOpenAdd()}
+                      >Add new</Button>
+                    </CardHeader>
+                    <CardBody>
+                      <ReactLoading type={"cubes"} color="#1da1f2" />
+                    </CardBody>
+                  </Card>
+                </Col>
+              </Row>
+            </Container>
+          </div >
+        );
+      }
+      else {
+        return (
+          <div className="animated fadeIn">
 
+            <Container fluid>
+              <ToastContainer
+                position="top-center"
+                autoClose={2500}
+                hideProgressBar={false}
+                transition={Flip}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnVisibilityChange
+                draggable
+                pauseOnHover
+              />
+              <Row>
+                <Col xs="12" sm="12" md="9">
+                  <Card>
+                    <CardHeader color="primary">
+                      <h3 style={{ color: "white" }}>
+                        <strong>Bots</strong>
+                      </h3>
+                      <h5 style={{ color: "white" }}>
+                        List with all registered bot accounts and their status
+                      </h5>
+                    </CardHeader>
+                    <CardBody>
+                    </CardBody>
+                  </Card>
+                </Col>
+
+                <Col xs="12" sm="12" md="3">
+                  <Card>
+                    <CardHeader color="primary" stats icon>
+                      <CardIcon color="primary">
+                        <i class="fas fa-robot"></i>
+                      </CardIcon>
+                      <p style={{
+                        color: '#999',
+                        margin: "0",
+                        fontSize: "14px",
+                        marginTop: "0",
+                        paddingTop: "10px",
+                        marginBottom: "0"
+                      }}>Active accounts</p>
+                      <h3 style={{
+                        color: "#23282c",
+                        minHeight: "auto",
+                        marginBottom: "3px",
+                        "& small": {
+                          color: "#777",
+                          fontWeight: "400",
+                          lineHeight: "1"
+                        }
+                      }} >
+                        1/1< small > Bots</small>
+                      </h3>
+                    </CardHeader>
+                    <CardBody style={{ minHeight: "38px" }}>
+                    </CardBody>
+                  </Card>
+                </Col>
+              </Row>
+              <Row>
+                <Col xs="12" sm="12" md="12">
+                  <Card>
+                    <CardHeader color="primary">
+                      <h4 style={{
+                        color: "#FFFFFF",
+                        marginTop: "0px",
+                        minHeight: "auto",
+                        marginBottom: "3px",
+                        textDecoration: "none",
+                        "& small": {
+                          color: "#777",
+                          fontSize: "65%",
+                          fontWeight: "400",
+                          lineHeight: "1"
+                        }
+                      }} > Registered Accounts</h4>
+                      <Button block outline color="light" style={{
+                        width: "150px", marginTop: "15px"
+                      }} onClick={() => this.handleOpenAdd()}>Add new</Button>
+                    </CardHeader>
+                    <CardBody>
+                      <Table
+                        tableHeaderColor="primary"
+                        tableHead={["Username", "Name", "Followers", "Following", "Status", "", "", ""]}
+                        tableData={this.state.bots}
+                      />
+                    </CardBody>
+                  </Card>
+                </Col>
+              </Row>
+            </Container>
+            {modal}
+          </div >
+        );
+      }
 
     } else {
       return (
@@ -700,4 +731,4 @@ class Bots extends Component {
   }
 }
 
-export default Bots;
+export default OldBots;
