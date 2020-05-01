@@ -31,16 +31,41 @@ class UserStats(models.Model):
 		db_table = "users"
 
 
+class Variant(djongo_models.Model):
+	bitrate = djongo_models.BigIntegerField(blank=True, null=True)
+	content_type = djongo_models.TextField()
+	url = djongo_models.URLField()
+
+
+class VideoInfo(djongo_models.Model):
+	variants = djongo_models.ListField(Variant, null=True, blank=True)
+
+
+class Media(djongo_models.Model):
+	id = djongo_models.BigIntegerField(primary_key=True)
+	type = djongo_models.TextField()
+	media_url_https = djongo_models.URLField()
+	video_info = djongo_models.EmbeddedField(VideoInfo, blank=True, null=True)
+
+
+class ExtendedEntities(djongo_models.Model):
+	media = djongo_models.ListField(Media, null=True, blank=True)
+
+
 class Tweet(djongo_models.Model):
 	id = djongo_models.BigIntegerField(primary_key=True, db_column="_id")
 	tweet_id = djongo_models.BigIntegerField(db_column="id")
 	user = djongo_models.BigIntegerField()
 	is_quote_status = djongo_models.BooleanField()
 	created_at = djongo_models.DateTimeField()
-	# quoted_status_id = djongo_models.IntegerField(null=True, blank=True)
+	quoted_status_id = djongo_models.BigIntegerField(null=True, blank=True)
 	in_reply_to_screen_name = djongo_models.TextField(null=True, blank=True)
 	in_reply_to_user_id = djongo_models.BigIntegerField(null=True, blank=True)
 	in_reply_to_status_id = djongo_models.BigIntegerField(null=True, blank=True)
+	extended_entities = djongo_models.EmbeddedField(ExtendedEntities, blank=True, null=True)
+	text = djongo_models.TextField()
+	retweet_count = djongo_models.BigIntegerField()
+	favorite_count = djongo_models.BigIntegerField()
 
 	class Meta:
 		managed = True
