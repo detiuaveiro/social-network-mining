@@ -40,7 +40,7 @@ def is_response_successful(response):
 
 
 def is_response_unsuccessful(response):
-    return response.status_code == 403 and len(response.data['error_messages']) > 0 and \
+    return (response.status_code == 403 or response.status_code == 409) and len(response.data['error_messages']) > 0 and \
            len(response.data['success_messages']) == 0
 
 
