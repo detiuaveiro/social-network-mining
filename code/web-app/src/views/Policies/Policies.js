@@ -1,6 +1,6 @@
 import React, { Component} from 'react';
 
-class Influencers extends Component {
+class Policies extends Component {
   constructor(props) {
     super(props);
   }
@@ -18,4 +18,4 @@ class Influencers extends Component {
   }
 }
 
-export default Influencers;
+export default Policies;
