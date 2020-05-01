@@ -559,24 +559,19 @@ class Control_Center(Rabbitmq):
 		user = data['data']
 		user_type = self.__user_type(user['id_str'])
 
-		if user_type != "" or ('name' in user and user['name']):
-			self.save_user(data)
-			if 'name' in user and user['name']:
-				user_type = self.__user_type(user['id_str'])
-			return user_type
+		if user_type == "" or 'name' not in user or not user['name']:
+			log.debug(f"Inserting blank user with id {user}")
+			blank_user = mongo_utils.BLANK_USER.copy()
+			blank_user["id"] = user['id']
+			blank_user["id_str"] = str(user['id'])
+			blank_user["screen_name"] = user['screen_name']
 
-		log.debug(f"Inserting blank user with id {user}")
-		blank_user = mongo_utils.BLANK_USER.copy()
-		blank_user["id"] = user['id']
-		blank_user["id_str"] = user['id_str']
-		blank_user["screen_name"] = user['screen_name']
-		self.save_user({
-			"bot_id": data["bot_id"],
-			"bot_id_str": data["bot_id_str"],
-			'bot_name': data["bot_name"],
-			'bot_screen_name': data["bot_screen_name"],
-			"data": blank_user
-		})
+			log.info("Have to get the full information on the User")
+			self.send(
+				bot=data["bot_id_str"],
+				message_type=ServerToBot.GET_USER_BY_ID,
+				params=user['id_str']
+			)
 
 			data['data'] = blank_user 
 
