@@ -526,7 +526,6 @@ class OldBots extends Component {
             </DialogActions>
           </Dialog>
         }
-
       }
 
 
