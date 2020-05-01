@@ -7,6 +7,7 @@ from api import neo4j
 import json
 from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
 from api.queries_utils import paginator_factory
+from rest_framework.status import HTTP_200_OK, HTTP_409_CONFLICT, HTTP_403_FORBIDDEN
 
 logger = logging.getLogger('queries')
 
@@ -27,7 +28,6 @@ def next_id(model):
 def twitter_users_count():
 	try:
 		all_users_count = User.objects.filter().count()
-
 
 		return True, {'count': all_users_count}, "Sucesso a obter o numero de utilizadores"
 
@@ -111,7 +111,7 @@ def twitter_user_stats_grouped(id, types):
 
 		order_by_list = [f"'{type}'" for type in types]
 		query += f".values('{type}').annotate(sum_followers=Sum('followers'), sum_following=Sum('following')).order_by({','.join(order_by_list)})"
-		
+
 		users_stats = eval(query)
 
 		return True, {'data': list(users_stats),
@@ -336,26 +336,27 @@ def add_policy(data):
 			if not neo4j.check_bot_exists(bot_id):
 				raise AddPolicyError("IDs dos bots invalidos")
 
-		status = Policy.objects.filter(API_type=policy_serializer.data['API_type'],
-									   filter=policy_serializer.data['filter'],
-									   tags=policy_serializer.data['tags']).exists()
-		if status:
-			args = {"API_type": policy_serializer.data['API_type'],
-					"filter": policy_serializer.data['filter'],
-					"tags": policy_serializer.data['tags']}
+		errors_messages = []
+		if Policy.objects.filter(name=policy_serializer.data['name']).exists():
+			errors_messages.append("Nome")
 
-			raise AddPolicyError(f"Uma politica com argumentos iguais já existe na base de dados. Args: {args}")
+		if Policy.objects.filter(Q(tags__overlap=policy_serializer.data['tags'])).exists():
+			errors_messages.append("Tags")
+
+		if errors_messages:
+			raise AddPolicyError(
+				f"Uma politica com argumentos iguais já existe na base de dados. Duplicado: {errors_messages}")
 
 		policy = Policy.objects.create(id=next_id(Policy), **policy_serializer.data)
 
-		return True, {'id': policy.id}, "Sucesso a adicionar uma nova politica"
+		return True, {'id': policy.id}, "Sucesso a adicionar uma nova politica", HTTP_200_OK
 
 	except AddPolicyError as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {add_policy.__name__} -> {e}")
-		return False, None, str(e)
+		return False, None, str(e), HTTP_409_CONFLICT
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {add_policy.__name__} -> {e}")
-		return False, None, f"Erro ao adicionar uma nova politica->{e}"
+		return False, None, f"Erro ao adicionar uma nova politica->{e}", HTTP_403_FORBIDDEN
 
 
 def remove_policy(id):
