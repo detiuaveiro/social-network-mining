@@ -167,6 +167,16 @@ psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql
 ALTER TABLE users ADD COLUMN protected BOOLEAN DEFAULT False;
 ```
 
+- change columns on postgresql
+```bash
+alter table logs alter column id_bot type numeric;
+alter table logs alter column target_id type numeric;
+alter table tweets alter column tweet_id type numeric;
+alter table tweets alter column user_id type numeric;
+alter table users alter column user_id type numeric;
+alter table policies alter column bots type numeric[];  
+```
+
 - neo4j
 ```bash
   CALL apoc.load.json("user_nodes.json")
@@ -187,35 +197,35 @@ ALTER TABLE users ADD COLUMN protected BOOLEAN DEFAULT False;
   CALL apoc.load.json("follow_rel.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:FOLLOWS]->(u)
 ```
 ```bash
   CALL apoc.load.json("retweet.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:RETWEETED]->(u)
 ```
 ```bash
   CALL apoc.load.json("reply.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:REPLIED]->(u)
 ```
 ```bash
   CALL apoc.load.json("wrote.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:WROTE]->(u)
 ```
 ```bash
   CALL apoc.load.json("quote.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:QUOTED]->(u)
 ```
 Neo4j Export commands:
