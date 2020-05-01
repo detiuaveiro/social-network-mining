@@ -6,6 +6,7 @@ from datetime import timedelta, datetime
 
 from control_center.text_generator import ParlaiReplier
 from control_center.translator_utils import Translator
+from control_center.utils import tweet_to_simple_text
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
@@ -322,7 +323,7 @@ class Control_Center(Rabbitmq):
 				"target_id": int(data['data']['id_str'])
 			})
 
-	def request_tweet_reply(self, data):
+	def request_tweet_reply(self, data: dict):
 		"""
 		Action to request a reply:
 				Calls the control center to request the reply
@@ -331,41 +332,50 @@ class Control_Center(Rabbitmq):
 
 		@param data: dict containing the bot id and the tweet id
 		"""
-		log.info(f"Bot {data['bot_id']} requests a reply {data['data']['id']}")
-		if self.__found_in_logs(data["bot_id_str"], log_actions.REPLY_REQ, data['data']['id_str']):
+		tweet: dict = data['data']
+		log.info(f"Bot {data['bot_id']} requests a reply {tweet['id']}")
+
+		if self.__found_in_logs(data["bot_id"], log_actions.REPLY_REQ, tweet['id']):
 			log.info("Action was already requested recently")
 			return
 
 		self.postgres_client.insert_log({
 			"bot_id": int(data["bot_id_str"]),
 			"action": log_actions.REPLY_REQ,
-			"target_id": int(data['data']['id_str'])
+			"target_id": int(tweet['id_str'])
 		})
+
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_TWEET_REPLY,
 			"bot_id": data['bot_id'],
 			"bot_id_str": data['bot_id_str'],
-			"tweet_id": data['data']['id'],
-			"tweet_id_str": data["data"]["id_str"],
-			"user_id": data['data']['user']['id'],
-			"user_id_str": data["data"]["user"]["id_str"],
-			"tweet_text": data['data']['text'],
-			"tweet_entities": data['data']['entities'],
-			"tweet_in_reply_to_status_id_str": data['data']['in_reply_to_status_id_str'],
-			"tweet_in_reply_to_user_id_str": data['data']['in_reply_to_user_id_str'],
-			"tweet_in_reply_to_screen_name": data['data']['in_reply_to_screen_name']
+			"tweet_id": tweet['id'],
+			"tweet_id_str": tweet["id_str"],
+			"user_id": tweet['user']['id'],
+			"user_id_str": tweet["user"]["id_str"],
+			"tweet_text": tweet['text'],
+			"tweet_entities": tweet['entities'],
+			"tweet_in_reply_to_status_id_str": tweet['in_reply_to_status_id_str'],
+			"tweet_in_reply_to_user_id_str": tweet['in_reply_to_user_id_str'],
+			"tweet_in_reply_to_screen_name": tweet['in_reply_to_screen_name']
 		})
 
 		if request_accepted:
-			log.info(f"Bot {data['bot_id']} request accepted to reply {data['data']['id']}")
+			log.info(f"Bot {data['bot_id']} request accepted to reply {tweet['id']}")
 
 			self.postgres_client.insert_log({
 				"bot_id": int(data["bot_id_str"]),
 				"action": log_actions.REPLY_REQ_ACCEPT,
-				"target_id": int(data['data']['id_str'])
+				"target_id": int(tweet['id_str'])
 			})
 
-			text_en = self.translator.from_pt_to_en(data['data']['text'])
+			# remove urls, tags from text and emojis
+			prepared_text = tweet_to_simple_text(tweet['text'] if 'full_text' not in tweet else tweet['full_text'])
+
+			# portuguese text to english text
+			text_en = self.translator.from_pt_to_en(prepared_text)
+
+			# generate a response
 			reply_text = None
 			if text_en:
 				reply_text = self.replier.generate_response(text_en)
@@ -375,23 +385,23 @@ class Control_Center(Rabbitmq):
 				log.info(f"Sending reply text <{reply_text}>")
 
 				self.send(data['bot_id'], ServerToBot.POST_TWEET, {
-					"reply_id": data['data']['id'],
+					"reply_id": tweet['id'],
 					"text": reply_text
 				})
 
 				self.postgres_client.insert_log({
 					"bot_id": data["bot_id_str"],
 					"action": log_actions.REPLY_REQ_ACCEPT,
-					"target_id": data['data']['id_str']
+					"target_id": tweet['id_str']
 				})
 			else:
 				log.warning(f"Could not send reply to tweet because of no response from text generator")
 		else:
-			log.warning(f"Bot {data['bot_id']} request denied to reply {data['data']['id']}")
+			log.warning(f"Bot {data['bot_id']} request denied to reply {tweet['id']}")
 			self.postgres_client.insert_log({
 				"bot_id": data["bot_id_str"],
 				"action": log_actions.REPLY_REQ_DENY,
-				"target_id": data['data']['id_str']
+				"target_id": tweet['id_str']
 			})
 
 	def request_follow_user(self, data):
@@ -770,7 +780,7 @@ class Control_Center(Rabbitmq):
 		bot_id = data['bot_id']
 		bot_id_str = data['bot_id_str']
 		user_id = data['data']['id']
-		user_id_str = data['data']['id_str']
+		user_id_str = str(user_id)
 		followers = data['data']['followers']
 
 		log.info(f"Starting to create the Follow Relationship for user {user_id}")
