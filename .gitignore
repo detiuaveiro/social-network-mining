@@ -134,5 +134,4 @@ tweets_dataset/
 ParlAI/
 scripts/mongodb/*.json
 scripts/postgresql/*.pgsql
-scripts/neo4j/*.json
 
