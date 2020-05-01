@@ -67,7 +67,7 @@ class Rabbitmq:
         self.connection = pika.BlockingConnection(self.pika_parameters)
 
         self.channel: BlockingChannel = self.connection.channel()
-        self.channel.basic_qos(prefetch_count=10, global_qos=True)
+        self.channel.basic_qos(prefetch_count=500, global_qos=True)
         self.channel.queue_declare(queue=API_QUEUE, durable=True)
 
         # Declare Exchanges
