@@ -48,7 +48,7 @@ class PostgresAPI:
 			cursor = self.conn.cursor()
 			cursor.execute(
 				"INSERT INTO tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",
-				(data["tweet_id"], data["user_id"], data["likes"], data["retweets"]))
+				(int(data["tweet_id"]), int(data["user_id"]), data["likes"], data["retweets"]))
 			self.conn.commit()
 			cursor.close()
 		except psycopg2.Error as error:
@@ -128,7 +128,6 @@ class PostgresAPI:
 			self.conn.commit()
 			cursor.close()
 
-			# result = self.postProcessResults(data, ['timestamp', 'tweet_id', 'likes', 'retweets'])
 			result = []  # Array of jsons
 			for tuple in data:
 				result.append(
@@ -186,7 +185,6 @@ class PostgresAPI:
 			self.conn.commit()
 			cursor.close()
 
-			# result = self.postProcessResults(data, ['timestamp', 'tweet_id', 'likes', 'retweets'])
 			result = []  # Array of jsons
 			for tuple in data:
 				result.append({"timestamp": tuple[0], "user_id": int(tuple[1]), "followers": tuple[2],
@@ -219,15 +217,15 @@ class PostgresAPI:
 			if params is not None:
 				query += "WHERE "
 				if "bot_id" in params:
-					query += f"id_bot={str(params['bot_id'])} AND "
+					query += f"id_bot={params['bot_id']} AND "
 				if "target_id" in params:
-					query += f"target_id={str(params['target_id'])} AND "
+					query += f"target_id={params['target_id']} AND "
 				if "action" in params:
-					query += f"action='{str(params['action'])}' AND "
+					query += f"action='{params['action']}' AND "
 				query = query[:-4]
 
 			query += f"ORDER BY timestamp DESC " \
-			f"{'limit ' + str(limit) if limit is not None else ''} ;"
+			         f"{'limit ' + str(limit) if limit is not None else ''} ;"
 
 			cursor.execute(query)
 
@@ -236,7 +234,6 @@ class PostgresAPI:
 			self.conn.commit()
 			cursor.close()
 
-			# result = self.postProcessResults(data, ['timestamp', 'tweet_id', 'likes', 'retweets'])
 			result = []  # Array of jsons
 
 			for tuple in data:
@@ -265,7 +262,8 @@ class PostgresAPI:
 		try:
 			cursor = self.conn.cursor()
 
-			query = f"select policies.api_type,policies.name,params,active,id_policy,policies.filter, policies.bots from policies"
+			query = f"select policies.api_type,policies.name,params,active,id_policy,policies.filter, policies.bots " \
+			        f"from policies"
 
 			if params is not None:
 				query += " WHERE "
@@ -301,7 +299,11 @@ class PostgresAPI:
 			for tuple in data:
 				result.append({
 					"API_type": tuple[0], "name": tuple[1], "params": tuple[2], "active": tuple[3],
+<<<<<<< HEAD
 					"policy_id": tuple[4], "filter": tuple[5], "bots": [int(t) for t in tuple[6]]
+=======
+					"policy_id": int(tuple[4]), "filter": tuple[5], "bots": [int(t) for t in tuple[6]]
+>>>>>>> master
 				})
 
 			return {"success": True, "data": result}
@@ -322,12 +324,14 @@ class PostgresAPI:
 		try:
 			cursor = self.conn.cursor()
 
+			bot_id = int(data['bot_id'])
+
 			insertion_query = "INSERT INTO logs "
 			if "target_id" in data:
 				insertion_query += \
-					f"(id_bot, action, target_id) values {(data['bot_id'], data['action'], data['target_id'])};"
+					f"(id_bot, action, target_id) values {(bot_id, data['action'], int(data['target_id']))};"
 			else:
-				insertion_query += f"(id_bot, action) values {(data['bot_id'], data['action'])}; "
+				insertion_query += f"(id_bot, action) values {(bot_id, data['action'])}; "
 
 			cursor.execute(insertion_query)
 			self.conn.commit()
@@ -358,7 +362,7 @@ class PostgresAPI:
 
 			if data['api_name'] not in self.api_types:
 				return {"success": False, "error": "Specified API does not exist"}
-			
+
 			if data['filter'] not in self.filters:
 				return {"success": False, "error": "Specified Filter does not exist"}
 
@@ -370,7 +374,8 @@ class PostgresAPI:
 			cursor.execute(
 				"INSERT INTO policies (api_type, filter, name, params, active, id_policy, bots) "
 				"values (%s,%s,%s,%s,%s,%s,%s);",
-				(data['api_name'], data['filter'], data["name"], data["params"], data["active"], max_id + 1, data["bots"]))
+				(data['api_name'], data['filter'], data["name"], data["params"], data["active"], max_id + 1,
+				 data["bots"]))
 
 			self.conn.commit()
 			cursor.close()
@@ -409,7 +414,7 @@ class PostgresAPI:
 		except Exception as error:
 			self.conn.rollback()
 			return {"success": False, "error": error}
-	
+
 	def update_policy(self, policy_id, params):
 		"""
 		Updates the policy with the specified policy id, changing the params specified.
@@ -430,7 +435,7 @@ class PostgresAPI:
 			if 'filter' in params.keys():
 				if params['filter'] not in self.filters:
 					return {"success": False, "error": "Specified Filter does not exist"}
-			
+
 			cursor = self.conn.cursor()
 			query = f"update policies "
 
@@ -513,4 +518,3 @@ if __name__ == "__main__":
 	else:
 		print(result["error"])
 	"""
-
