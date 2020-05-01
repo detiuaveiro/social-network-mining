@@ -132,7 +132,7 @@ class PostgresAPI:
 			result = []  # Array of jsons
 			for tuple in data:
 				result.append(
-					{"timestamp": tuple[0], "tweet_id": tuple[1], "likes": tuple[2], "retweets": tuple[3]})
+					{"timestamp": tuple[0], "tweet_id": int(tuple[1]), "likes": tuple[2], "retweets": tuple[3]})
 
 			return {"success": True, "data": result}
 		except psycopg2.Error as error:
@@ -185,7 +185,7 @@ class PostgresAPI:
 			result = []  # Array of jsons
 			for tuple in data:
 				result.append(
-					{"timestamp": tuple[0], "user_id": tuple[1], "followers": tuple[2], "following": tuple[3]})
+					{"timestamp": tuple[0], "user_id": int(tuple[1]), "followers": tuple[2], "following": tuple[3]})
 
 			return {"success": True, "data": result}
 		except psycopg2.Error as error:
@@ -236,7 +236,7 @@ class PostgresAPI:
 
 			for tuple in data:
 				result.append(
-					{"bot_id": tuple[0], "action": tuple[1], "target_id": tuple[2], "timestamp": tuple[3]})
+					{"bot_id": int(tuple[0]), "action": tuple[1], "target_id": int(tuple[2]), "timestamp": tuple[3]})
 
 			return {"success": True, "data": result}
 		except psycopg2.Error as error:
@@ -296,7 +296,7 @@ class PostgresAPI:
 			for tuple in data:
 				result.append({
 					"API_type": tuple[0], "name": tuple[1], "params": tuple[2], "active": tuple[3],
-					"policy_id": tuple[4], "filter": tuple[5], "bots": tuple[6]
+					"policy_id": tuple[4], "filter": tuple[5], "bots": [int(t) for t in tuple[6]]
 				})
 
 			return {"success": True, "data": result}
