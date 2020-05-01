@@ -20,8 +20,11 @@ $ npm i react-visibility-sensor
 $ npm i react-loading
 $ npm i react-toastify
 $ npm i react-graph-vis
+$ npm install recharts
 $ npm i react-select
 $ npm install react-paginate --save
+$ npm i @material-ui/lab
+$ npm i react-lottie react-fade-in
 ```
 
 Then use the command to start the web app on port 3000:
@@ -151,6 +154,10 @@ mongoimport --db twitter --collection users --file scripts/mongodb/users.json -u
 - postgresql
 ```bash
 psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql 
+```
+```bash
+#Add column to user table to include if it's protected or not
+ALTER TABLE users ADD COLUMN protected BOOLEAN DEFAULT False;
 ```
 
 - neo4j
