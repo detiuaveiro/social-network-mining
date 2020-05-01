@@ -13,7 +13,7 @@ def factory():
 
 @pytest.fixture(autouse=True)
 def delete_neo4j_data():
-    for id in [1, 2]:
+    for id in ["1", "2"]:
         neo4j.delete_bot(id)
         if neo4j.check_bot_exists(id):
             return False
