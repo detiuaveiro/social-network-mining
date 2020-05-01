@@ -141,7 +141,7 @@ class TwitterBot(RabbitMessaging):
 		self.__send_user(self.user, messages_types.BotToServer.SAVE_USER)
 
 		logger.info(f"Sending the last 200 followers of our bot")
-		self.__get_followers(user_id=self._id)
+		self.__get_followers(user_id=self._id_str)
 
 		logger.info("Reading home timeline")
 		self.__read_timeline(self.user)
@@ -468,7 +468,7 @@ class TwitterBot(RabbitMessaging):
 					logger.warning("There are not new messages on the tasks's queue")
 
 					logger.info("Update the control center with the users who follow us")
-					self.__get_followers(user_id=self._id)
+					self.__get_followers(user_id=self._id_str)
 
 					logger.info("Ask control center for keywords to search new tweets")
 					self.__send_user(self._twitter_api.me(), messages_types.BotToServer.QUERY_KEYWORDS)
