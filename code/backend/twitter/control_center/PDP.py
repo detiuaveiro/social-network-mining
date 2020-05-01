@@ -409,6 +409,7 @@ class PDP:
             "action": log_actions.REPLY_REQ_ACCEPT,
             "target_id": data["tweet_id"]
         })
+
         if not bot_logs["success"] or bot_logs['data']:
             return 0
 
@@ -462,7 +463,19 @@ class PDP:
         @returns: float that will then be compared to the threshold previously defined
         """
 
+        # Check if another bot has followed the user
+        user = data['user']
         heuristic = 0
+        bot_logs = self.postgres.search_logs({"action": log_actions.FOLLOW_REQ_ACCEPT, "target_id": user['id']})
+
+        if bot_logs["success"] and len(bot_logs['data']) > 0:
+            log.debug("Found another bot who follows this user")
+            self.postgres.insert_log({
+                "bot_id": data["bot_id"],
+                "action": log_actions.ANOTHER_BOT_FOLLOWS_USER,
+                "target_id": user['id']
+            })
+            return heuristic
 
         MODEL_PATH = "control_center/intelligence/models"
 
@@ -475,7 +488,6 @@ class PDP:
         tweets = data['tweets']
         tweets = random.sample(tweets, min(len(tweets), NUMBER_TWEETS_FOLLOW_DECISION))
 
-        user = data['user']
         user_description = user['description']
         tweets_text = [t['full_text'] for t in tweets]
         tweets_len_mean = np.mean([len(i) for i in tweets_text])
