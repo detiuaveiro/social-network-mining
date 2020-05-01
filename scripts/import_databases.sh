@@ -1,3 +1,7 @@
+mkdir mongodb
+mkdir postgresql
+
+
 echo "Importing mongo DB"
 mongoexport --collection tweets  --db twitter --out "mongodb/tweets.json" -u $MONGO_USERNAME -p $MONGO_PASSWORD --host "192.168.85.46:27017" 
 mongoexport --collection messages  --db twitter --out "mongodb/messages.json"  -u $MONGO_USERNAME -p $MONGO_PASSWORD --host "192.168.85.46:27017"
