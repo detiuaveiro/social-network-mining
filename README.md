@@ -190,35 +190,35 @@ alter table policies alter column bots type numeric[];
   CALL apoc.load.json("follow_rel.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:FOLLOWS]->(u)
 ```
 ```bash
   CALL apoc.load.json("retweet.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:RETWEETED]->(u)
 ```
 ```bash
   CALL apoc.load.json("reply.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:REPLIED]->(u)
 ```
 ```bash
   CALL apoc.load.json("wrote.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:WROTE]->(u)
 ```
 ```bash
   CALL apoc.load.json("quote.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:QUOTED]->(u)
 ```
 Neo4j Export commands:
