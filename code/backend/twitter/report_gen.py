@@ -7,7 +7,6 @@ import json
 def export_csv(result):
 	csv_file = "export.csv"
 	headers = [key + "_" + prop for key in result[0] for prop in result[0][key]]
-	print(headers)
 	try:
 		with open(csv_file, 'w') as csvfile:
 			writer = csv.writer(csvfile)
@@ -30,19 +29,19 @@ def test_report(query, params={}, limit=None, export='csv'):
 	if limit is not None:
 		query += " limit " + str(limit)
 	result = []
+	print(neo.export_query(query))
 	for row in neo.export_query(query):
 		row_dict = {}
 		for key in row:
-			print(row[key])
 			if type(row[key]) is dict:
 				if row[key]['labels'] == ['Tweet']:
-					row_dict[key] = mongo.search('tweets', query={"id_str": row[key]['properties']['id']},
-											   fields=params[key], single=True)
+					row_dict[key] = mongo.search(
+						'tweets', query={"id_str": row[key]['properties']['id']}, fields=params[key], single=True)
 					if not row_dict[key]:
 						row_dict[key] = {prop: None for prop in params[key]}
 				else:
-					row_dict[key] = mongo.search('users', query={"id_str": str(row[key]['properties']['id'])},
-											   fields=params[key], single=True)
+					row_dict[key] = mongo.search(
+						'users', query={"id_str": row[key]['properties']['id']}, fields=params[key], single=True)
 					if not row_dict[key]:
 						row_dict[key] = {prop: None for prop in params[key]}
 			else:
@@ -56,9 +55,9 @@ def test_report(query, params={}, limit=None, export='csv'):
 
 
 if __name__ == '__main__':
-	query = "MATCH (a: User) - [r:FOLLOWS *..2] - (b)"
+	query = "MATCH (a: Tweet) - [r*3..4] - (b: User	)"
 	params = {
-		'a': ['screen_name', 'followers', 'following'],
+		'a': ['text', 'favorite_count', 'retweet_count'],
 		'b': ['name', 'screen_name', 'statuses_count'],
 		'r': []
 	}
