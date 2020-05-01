@@ -198,7 +198,7 @@ class PDP:
 		@returns True or False depending if the bot was indeed targeted
 		"""
 		for mention in data["tweet_entities"]["user_mentions"]:
-			if mention["id"] in policy["bots"]:
+			if int(mention["id_str"]) in policy["bots"]:
 				log.info(f"Bot <{data['bot_id']}> was mentioned by user")
 				return True
 
@@ -322,7 +322,7 @@ class PDP:
 			for bot_log in bot_logs['data']:
 				user_of_tweet_liked = self.mongo.search(
 					collection="tweets",
-					query={"id": int(bot_log["target_id"])},
+					query={"id_str": str(bot_log["target_id"])},
 					fields=["user"],
 					single=True
 				)
@@ -373,7 +373,7 @@ class PDP:
 			for bot_log in bot_logs['data']:
 				user_of_retweet = self.mongo.search(
 					collection="tweets",
-					query={"id": int(bot_log["target_id"])},
+					query={"id_str": str(bot_log["target_id"])},
 					fields=["user"],
 					single=True
 				)
@@ -437,7 +437,7 @@ class PDP:
 			for bot_log in bot_logs['data']:
 				user_of_reply = self.mongo.search(
 					collection="tweets",
-					query={"id": int(bot_log["target_id"])},
+					query={"id_str": str(bot_log["target_id"])},
 					fields=["user"],
 					single=True
 				)
