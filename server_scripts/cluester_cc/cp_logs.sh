@@ -4,7 +4,7 @@ cc_logs=(dbwritter.log mongo.log neo4j.log pdp.log pep.log postgres.log rabbitmq
 
 cd ~/PI_2020/logs/
 
-now=$(date)
+now=$(date "+%A %B %d %T %y")
 dir_name=${now// /_}
 dir_name=${dir_name//:/_}
 mkdir $dir_name
