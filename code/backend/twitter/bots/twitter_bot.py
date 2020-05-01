@@ -65,7 +65,7 @@ class TwitterBot(RabbitMessaging):
 		:param message_type: type of message to send to server
 		:param exchange: rabbit's exchange where to send the new message
 		"""
-		print(self._id_str)
+
 		self._send_message(to_json({
 			'type': message_type,
 			'bot_id': self._id,

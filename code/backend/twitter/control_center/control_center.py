@@ -770,7 +770,7 @@ class Control_Center(Rabbitmq):
 		bot_id = data['bot_id']
 		bot_id_str = data['bot_id_str']
 		user_id = data['data']['id']
-		user_id_str = data['data']['id_str']
+		user_id_str = str(user_id)
 		followers = data['data']['followers']
 
 		log.info(f"Starting to create the Follow Relationship for user {user_id}")
