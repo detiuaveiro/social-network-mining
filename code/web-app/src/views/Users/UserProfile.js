@@ -533,8 +533,8 @@ class UserProfile extends Component {
 
     render() {
         if (this.state.goBack) {
-            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "LIST")
-                return (<Users page={this.state.redirectionList[0].info} />)
+            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "USERS")
+                return (<Users page={this.state.redirectionList[0].info["page"]} searchQuery={this.state.redirectionList[0].info["query"]} />)
             else {
                 var lastUser = this.state.redirectionList.pop()
                 return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)
