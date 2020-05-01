@@ -832,9 +832,10 @@ class Control_Center(Rabbitmq):
 		}
 		try:
 			self._send(routing_key='tasks.twitter.' + str(bot), message=payload)
-		# self._close()
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
+			self._setup()
+			self.send(bot, message_type, params)
 
 	def received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")

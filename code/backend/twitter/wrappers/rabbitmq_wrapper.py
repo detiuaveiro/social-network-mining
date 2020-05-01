@@ -56,9 +56,9 @@ class Rabbitmq:
         self.MAX_RECONNECTIONS = 10
         self.connection = None
         self.channel = None
-        self.__setup()
+        self._setup()
     
-    def __setup(self):
+    def _setup(self):
         """
         Set up function, will start the connection, create all necessary exchanges and respective bindings from the
         parameters given from the constructor
@@ -67,7 +67,7 @@ class Rabbitmq:
         self.connection = pika.BlockingConnection(self.pika_parameters)
 
         self.channel: BlockingChannel = self.connection.channel()
-        self.channel.basic_qos(prefetch_count=5, global_qos=True)
+        self.channel.basic_qos(prefetch_count=1, global_qos=True)
         self.channel.queue_declare(queue=API_QUEUE, durable=True)
 
         # Declare Exchanges
@@ -158,7 +158,7 @@ class Rabbitmq:
             log.exception(f"Exception <{e}> detected:")
             log.warning("Attempting reconnection after waiting time...")
             time.sleep(WAIT_TIME)
-            self.__setup()
+            self._setup()
             log.debug("Setup completed")
             self._receive(queue_name)
 
