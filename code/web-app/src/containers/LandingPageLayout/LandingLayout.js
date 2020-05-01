@@ -24,10 +24,10 @@ import app_3 from './styles/img/scr-img/app-3.jpg'
 import app_4 from './styles/img/scr-img/app-4.jpg'
 import app_5 from './styles/img/scr-img/app-5.jpg'
 
-import escal from './styles/img/team-img/team-1.jpg'
-import rafa from './styles/img/team-img/team-2.jpg'
-import ds from './styles/img/team-img/team-3.jpg'
-import fagoti from './styles/img/team-img/team-4.jpg'
+import escal from './styles/img/team-img/team-1.png'
+import rafa from './styles/img/team-img/team-2.png'
+import ds from './styles/img/team-img/team-3.png'
+import fagoti from './styles/img/team-img/team-4.png'
 
 
 class LandingLayout extends Component {
@@ -40,7 +40,7 @@ class LandingLayout extends Component {
                             <div className="col-12 col-lg-10">
                                 <div className="menu_area">
                                     <nav className="navbar navbar-expand-lg navbar-light">
-                                        <a className="navbar-brand" href="#">Minetwork</a>
+                                        <a className="navbar-brand" href="#">Minerva</a>
                                         <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#ca-navbar" aria-controls="ca-navbar" aria-expanded="false" aria-label="Toggle navigation"><span className="navbar-toggler-icon"></span></button>
                                         <div className="collapse navbar-collapse" id="ca-navbar">
                                             <ul className="navbar-nav ml-auto" id="nav">
@@ -69,18 +69,18 @@ class LandingLayout extends Component {
                         <div className="row h-100 align-items-center">
                             <div className="col-12 col-md-12 col-sm-12">
                                 <div className="wellcome-heading">
-                                    <h2>Minetwork</h2>
+                                    <h2>Minerva</h2>
                                     <h3>M</h3>
                                     <p>Social Network Mining</p>
                                 </div>
                                 <div className="get-start-area">
-                                    <button className="submit">Go to Dashboard</button>
+                                    <button className="submit" href="/dash">Go to Dashboard</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div className="welcome-thumb wow fadeInDown" data-wow-delay="0.5s">
-                        <img src={main_img} alt="" style={{maxWidth:"700px"}}></img>
+                        <img src={main_img} alt="" style={{ maxWidth: "700px" }}></img>
                     </div>
                 </section>
 
@@ -210,8 +210,8 @@ class LandingLayout extends Component {
                             <div className="col-12 col-sm-6 col-lg-4">
                                 <div className="single-feature">
                                     <i className="fas fa-user-tag" aria-hidden="true"></i>
-                                    <h5>Influencer Categorization</h5>
-                                    <p>Get information on an influencer's main target audience to see if it's compatible with your business.</p>
+                                    <h5>Policy Definition</h5>
+                                    <p>Define customizable tags and assign them to bots so that they specialize in following and scraping for users that fit into those parameters.</p>
                                 </div>
                             </div>
                         </div>
@@ -273,13 +273,7 @@ class LandingLayout extends Component {
                                     <div className="counter-area">
                                         <h3>
                                             <span className="counter">
-                                                <CountUp start={0} end={100} redraw={true}>
-                                                    {({ countUpRef, start }) => (
-                                                        <VisibilitySensor onChange={start} delayedCall>
-                                                            <span ref={countUpRef} />
-                                                        </VisibilitySensor>
-                                                    )}
-                                                </CountUp>
+                                                1
                                             </span>
                                         </h3>
                                     </div>
@@ -294,19 +288,13 @@ class LandingLayout extends Component {
                                     <div className="counter-area">
                                         <h3>
                                             <span className="counter">
-                                                <CountUp start={0} end={100} redraw={true}>
-                                                    {({ countUpRef, start }) => (
-                                                        <VisibilitySensor onChange={start} delayedCall>
-                                                            <span ref={countUpRef} />
-                                                        </VisibilitySensor>
-                                                    )}
-                                                </CountUp>
+                                                48696
                                             </span>
                                         </h3>
                                     </div>
                                     <div className="cool-facts-content">
                                         <i className="fas fa-users"></i>
-                                        <p>ACCOUNTS IN <br /> NETWORK</p>
+                                        <p>USERS IN <br /> NETWORK</p>
                                     </div>
                                 </div>
                             </div>
@@ -315,19 +303,13 @@ class LandingLayout extends Component {
                                     <div className="counter-area">
                                         <h3>
                                             <span className="counter">
-                                                <CountUp start={0} end={100} redraw={true}>
-                                                    {({ countUpRef, start }) => (
-                                                        <VisibilitySensor onChange={start} delayedCall>
-                                                            <span ref={countUpRef} />
-                                                        </VisibilitySensor>
-                                                    )}
-                                                </CountUp>
+                                                3069
                                             </span>
                                         </h3>
                                     </div>
                                     <div className="cool-facts-content">
                                         <i className="far fa-comment-alt"></i>
-                                        <p>TWEETS <br />GENERATED</p>
+                                        <p>TWEETS IN<br /> NETWORK</p>
                                     </div>
                                 </div>
                             </div>
@@ -336,40 +318,19 @@ class LandingLayout extends Component {
                                     <div className="counter-area">
                                         <h3>
                                             <span className="counter">
-                                                <CountUp start={0} end={100} redraw={true}>
-                                                    {({ countUpRef, start }) => (
-                                                        <VisibilitySensor onChange={start} delayedCall>
-                                                            <span ref={countUpRef} />
-                                                        </VisibilitySensor>
-                                                    )}
-                                                </CountUp>
+                                                58284
                                             </span>
                                         </h3>
                                     </div>
                                     <div className="cool-facts-content">
-                                        <i className="fas fa-tags"></i>
-                                        <p>INFLUENCER <br />CATEGORIES</p>
+                                        <i className="fas fa-project-diagram"></i>
+                                        <p>RELS. IN <br />NETWORK</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
-
-
-                <section className="app-screenshots-area bg-white section_padding_0_100 clearfix" id="screenshot">
-                    <div className="container">
-                        <div className="row">
-                            <div className="col-12 text-center">
-                                <div className="section-heading">
-                                    <h2>App Screenshots</h2>
-                                    <div className="line-shape"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
 
                 <section className="our-monthly-membership section_padding_50 clearfix">
                     <div className="container">
@@ -381,7 +342,7 @@ class LandingLayout extends Component {
                                 </div>
                             </div>
 
-                            <div className="app-download-area col-md-4 col-sm-12"> 
+                            <div className="app-download-area col-md-4 col-sm-12">
                                 <div className="app-download-btn2 wow fadeInDown" data-wow-delay="0.4s">
                                     <a href="/dash">
                                         <i className="fa fa-globe"></i>
@@ -417,16 +378,14 @@ class LandingLayout extends Component {
                                         <img src={escal} alt="" />
                                         <div className="team-hover-effects">
                                             <div className="team-social-icon">
-                                                <a href="#"><i className="fa fa-facebook" aria-hidden="true"></i></a>
-                                                <a href="#"><i className="fa fa-twitter" aria-hidden="true"></i></a>
-                                                <a href="#"><i className="fa fa-google-plus" aria-hidden="true"></i></a>
-                                                <a href="#"> <i className="fa fa-instagram" aria-hidden="true"></i></a>
+                                                <a href="https://github.com/oEscal"><i className="fa fa-github" aria-hidden="true"></i></a>
+                                                <a href="https://www.linkedin.com/in/pedro-escaleira-b9b39115b/"><i className="fa fa-linkedin" aria-hidden="true"></i></a>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="member-text">
                                         <h4>Pedro Escaleira</h4>
-                                        <p></p>
+                                        <p>88821</p>
                                     </div>
                                 </div>
                             </div>
@@ -436,10 +395,8 @@ class LandingLayout extends Component {
                                         <img src={ds} alt="" />
                                         <div className="team-hover-effects">
                                             <div className="team-social-icon">
-                                                <a href="#"><i className="fa fa-facebook" aria-hidden="true"></i></a>
-                                                <a href="#"><i className="fa fa-twitter" aria-hidden="true"></i></a>
-                                                <a href="#"><i className="fa fa-google-plus" aria-hidden="true"></i></a>
-                                                <a href="#"> <i className="fa fa-instagram" aria-hidden="true"></i></a>
+                                                <a href="https://github.com/Rafaelyot"><i className="fa fa-github" aria-hidden="true"></i></a>
+                                                <a href="https://www.linkedin.com/in/rafael-sim%C3%B5es-60958b173/"><i className="fa fa-linkedin" aria-hidden="true"></i></a>
                                             </div>
                                         </div>
                                     </div>
@@ -455,16 +412,14 @@ class LandingLayout extends Component {
                                         <img src={rafa} alt="" />
                                         <div className="team-hover-effects">
                                             <div className="team-social-icon">
-                                                <a href="#"><i className="fa fa-facebook" aria-hidden="true"></i></a>
-                                                <a href="#"><i className="fa fa-twitter" aria-hidden="true"></i></a>
-                                                <a href="#"><i className="fa fa-google-plus" aria-hidden="true"></i></a>
-                                                <a href="#"> <i className="fa fa-instagram" aria-hidden="true"></i></a>
+                                                <a href="https://github.com/HerouFenix"><i className="fa fa-github" aria-hidden="true"></i></a>
+                                                <a href="https://www.linkedin.com/in/diogosilvads/"><i className="fa fa-linkedin" aria-hidden="true"></i></a>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="member-text">
                                         <h4>Rafael Simões</h4>
-                                        <p></p>
+                                        <p>88984</p>
                                     </div>
                                 </div>
                             </div>
@@ -474,16 +429,14 @@ class LandingLayout extends Component {
                                         <img src={fagoti} alt="" />
                                         <div className="team-hover-effects">
                                             <div className="team-social-icon">
-                                                <a href="#"><i className="fa fa-facebook" aria-hidden="true"></i></a>
-                                                <a href="#"><i className="fa fa-twitter" aria-hidden="true"></i></a>
-                                                <a href="#"><i className="fa fa-google-plus" aria-hidden="true"></i></a>
-                                                <a href="#"> <i className="fa fa-instagram" aria-hidden="true"></i></a>
+                                                <a href="https://github.com/DrPunpun"><i className="fa fa-github" aria-hidden="true"></i></a>
+                                                <a href="https://www.linkedin.com/in/pedromroliveirapt/"><i className="fa fa-linkedin" aria-hidden="true"></i></a>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="member-text">
                                         <h4>Pedro Oliveira</h4>
-                                        <p></p>
+                                        <p>89156</p>
                                     </div>
                                 </div>
                             </div>
@@ -494,7 +447,7 @@ class LandingLayout extends Component {
 
                 <footer className="footer-social-icon text-center section_padding_70 clearfix">
                     <div className="footer-text">
-                        <h2>Minetwork</h2>
+                        <h2>Minerva</h2>
                     </div>
                     <div className="footer-social-icon">
                         <a href="#"><i className="fa fa-facebook" aria-hidden="true"></i></a>

@@ -529,7 +529,8 @@ class Control_Center(Rabbitmq):
 			self.postgres_client.insert_user({
 				"user_id": user['id'],
 				"followers": user["followers_count"],
-				"following": user["friends_count"]
+				"following": user["friends_count"],
+				"protected": user["protected"]
 			})
 
 			if 'following' in user and user['following']:

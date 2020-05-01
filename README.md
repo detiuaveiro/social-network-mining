@@ -20,8 +20,11 @@ $ npm i react-visibility-sensor
 $ npm i react-loading
 $ npm i react-toastify
 $ npm i react-graph-vis
+$ npm install recharts
 $ npm i react-select
 $ npm install react-paginate --save
+$ npm i @material-ui/lab
+$ npm i react-lottie react-fade-in
 ```
 
 Then use the command to start the web app on port 3000:
@@ -152,6 +155,10 @@ mongoimport --db twitter --collection users --file scripts/mongodb/users.json -u
 ```bash
 psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql 
 ```
+```bash
+#Add column to user table to include if it's protected or not
+ALTER TABLE users ADD COLUMN protected BOOLEAN DEFAULT False;
+```
 
 - neo4j
 ```bash
@@ -181,14 +188,14 @@ psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql
   YIELD value
   MATCH(p {id:value.start.properties.id})
   MATCH(u {id:toInteger(value.end.properties.id)})
-  CREATE (p)-[:RETWEET]->(u)
+  CREATE (p)-[:RETWEETED]->(u)
 ```
 ```bash
   CALL apoc.load.json("reply.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
   MATCH(u {id:toInteger(value.end.properties.id)})
-  CREATE (p)-[:REPLY]->(u)
+  CREATE (p)-[:REPLIED]->(u)
 ```
 ```bash
   CALL apoc.load.json("wrote.json")
@@ -203,4 +210,15 @@ psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql
   MATCH(p {id:value.start.properties.id})
   MATCH(u {id:toInteger(value.end.properties.id)})
   CREATE (p)-[:QUOTED]->(u)
+```
+Neo4j Export commands:
+```bash
+call apoc.export.json.query("match (start) - [r:QUOTED] ->(end) return start, r, end", "quote.json")
+call apoc.export.json.query("match (start) - [r:WROTE] ->(end) return start, r, end", "write.json")
+call apoc.export.json.query("match (start) - [r:RETWEETED] ->(end) return start, r, end", "retweet.json")
+call apoc.export.json.query("match (start) - [r:FOLLOWS] ->(end) return start, r, end", "follow_rel.json")
+call apoc.export.json.query("match (start) - [r:REPLIED] ->(end) return start, r, end", "reply.json")
+call apoc.export.json.query("match (a:Tweet) return a", "tweets.json")
+call apoc.export.json.query("match (a:User) return a", "user_nodes.json")
+call apoc.export.json.query("match (a:Bot) return a", "bots_nodes.json")
 ```
