@@ -466,7 +466,7 @@ class PDP:
         # Check if another bot has followed the user
         user = data['user']
         heuristic = 0
-        bot_logs = self.postgres.search_logs({"action": log_actions.FOLLOW, "target_id": user['id']})
+        bot_logs = self.postgres.search_logs({"action": log_actions.FOLLOW_REQ_ACCEPT, "target_id": user['id']})
 
         if bot_logs["success"] and len(bot_logs['data']) > 0:
             log.debug("Found another bot who follows this user")
