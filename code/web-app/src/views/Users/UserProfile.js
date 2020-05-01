@@ -186,8 +186,8 @@ class UserProfile extends Component {
     }
 
     async getFollowers(page) {
-        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/followers/", {
-            method: "GET",
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/followers/5/"+page+"/", {
+            method: "GET", 
             headers: {
                 "Content-Type": "application/json",
             }
@@ -202,11 +202,20 @@ class UserProfile extends Component {
 
                 var tempUsers = []
 
-                data.forEach(user => {
+                console.log(data)
+
+                data.entries.forEach(user => {
                     var tempInfo = []
 
                     tempInfo.push(user.username)
                     tempInfo.push(user.name)
+
+                    if (user.label == "Bot") {
+                        tempInfo.push(<span><i class="fas fa-robot" style={{ color: "#1da1f2" }}></i> Bot</span>)
+                    } else {
+                        tempInfo.push(<span><i class="fas fa-user" style={{ color: "#1da1f2" }}></i> User</span>)
+                    }
+
                     tempInfo.push(
                         <Button block outline color="primary"
                             onClick={() => this.handleOpenProfile(user.id)}
@@ -216,6 +225,7 @@ class UserProfile extends Component {
                         </Button>
                     )
 
+
                     tempUsers.push(tempInfo);
                 })
 
@@ -224,11 +234,16 @@ class UserProfile extends Component {
                     empty = true
                 }
 
+                var curPage = data.next_page - 1
+                if(curPage <= 0){
+                    curPage = 1
+                }
+
                 this.setState({
                     followers: {
                         data: tempUsers,
-                        noPage: 1,
-                        curPage: 1,
+                        noPage: data.num_pages,
+                        curPage: curPage,
                         empty: empty
                     }
                 })
@@ -244,7 +259,7 @@ class UserProfile extends Component {
     }
 
     async getFollowings(page) {
-        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/following/", {
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/followers/5/"+page+"/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -260,11 +275,16 @@ class UserProfile extends Component {
 
                 var tempUsers = []
 
-                data.forEach(user => {
+                data.entries.forEach(user => {
                     var tempInfo = []
 
                     tempInfo.push(user.username)
                     tempInfo.push(user.name)
+                    if (user.label == "Bot") {
+                        tempInfo.push(<span><i class="fas fa-robot" style={{ color: "#1da1f2" }}></i> Bot</span>)
+                    } else {
+                        tempInfo.push(<span><i class="fas fa-user" style={{ color: "#1da1f2" }}></i> User</span>)
+                    }
                     tempInfo.push(
                         <Button block outline color="primary"
                             onClick={() => this.handleOpenProfile(user.id)}
@@ -282,11 +302,16 @@ class UserProfile extends Component {
                     empty = true
                 }
 
+                var curPage = data.next_page - 1
+                if(curPage <= 0){
+                    curPage = 1
+                }
+
                 this.setState({
                     followings: {
                         data: tempUsers,
-                        noPage: 1,
-                        curPage: 1,
+                        noPage: data.num_pages,
+                        curPage: curPage,
                         empty: empty
                     }
                 })
@@ -650,7 +675,6 @@ class UserProfile extends Component {
                                         </div>
                                 }
                             } else if (this.state.tweets.tweet.extended_entities.media[0].type == "video") {
-                                console.log(this.state.tweets.tweet.extended_entities.media[0])
                                 media =
                                     <div>
                                         <div class="d-flex flex-row flex-wrap justify-content-center">
@@ -660,12 +684,11 @@ class UserProfile extends Component {
                                         </div>
                                     </div>
                             } else {
-                                console.log(this.state.tweets.tweet.extended_entities.media[0])
                                 media =
                                     <div>
                                         <div class="d-flex flex-row flex-wrap justify-content-center">
                                             <div class="d-flex flex-column col-md-12">
-                                                <video autoplay loop controls src={this.state.tweets.tweet.extended_entities.media[0].url} style={{ width: "90%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
+                                                <video muted autoplay loop controls src={this.state.tweets.tweet.extended_entities.media[0].url} style={{ width: "90%", display: "block", marginLeft: "auto", marginRight: "auto", borderRadius: "5%" }} />
                                             </div>
                                         </div>
                                     </div>
@@ -811,7 +834,6 @@ class UserProfile extends Component {
                                     </div>
                             }
                         } else if (this.state.tweets.latestTweet.extended_entities.media[0].type == "video") {
-                            console.log(this.state.tweets.latestTweet.extended_entities.media[0])
                             media =
                                 <div>
                                     <div class="d-flex flex-row flex-wrap justify-content-center">
@@ -821,7 +843,6 @@ class UserProfile extends Component {
                                     </div>
                                 </div>
                         } else {
-                            console.log(this.state.tweets.latestTweet.extended_entities.media[0])
                             media =
                                 <div>
                                     <div class="d-flex flex-row flex-wrap justify-content-center">
@@ -948,7 +969,7 @@ class UserProfile extends Component {
                                 }}>
                                 <Table
                                     tableHeaderColor="primary"
-                                    tableHead={["Username", "Name", ""]}
+                                    tableHead={["Username", "Name", "Type", ""]}
                                     tableData={this.state.followers.data}
                                 />
 
@@ -1001,7 +1022,7 @@ class UserProfile extends Component {
                                 }}>
                                 <Table
                                     tableHeaderColor="primary"
-                                    tableHead={["Username", "Name", ""]}
+                                    tableHead={["Username", "Name", "Type", ""]}
                                     tableData={this.state.followings.data}
                                 />
 
