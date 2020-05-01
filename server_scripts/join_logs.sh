@@ -9,8 +9,8 @@ files_names=$(ls | grep tar.gz | cut -d "_" -f1-3 | sort -u | grep -vP '.*_.*_.{
 for file_name in $files_names; do
    mkdir $file_name
 
-   current_files_to_merge=$(ls | grep $file_name | grep tar.gz)
-   echo ${current_files_to_merge}
+   current_files_to_merge=$(ls | grep $file_name | grep tar.gz | grep -vP '.*_.*_.{2}.tar.gz')
+   echo Files to merge: $current_files_to_merge
    for current_name in $current_files_to_merge; do
       tar -xzf $current_name
    done
@@ -24,7 +24,6 @@ for file_name in $files_names; do
       done
       
       cat ${current_logs[@]} > $file_name/$log 2>/dev/null
-      # rm -rf $current_name
    done
 
    tar -czf $file_name.tar.gz $file_name
