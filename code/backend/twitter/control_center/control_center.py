@@ -474,8 +474,8 @@ class Control_Center(Rabbitmq):
 
 		user, bot_id, bot_id_str = data["data"], data["bot_id"], data["bot_id_str"]
 
-		exists = self.neo4j_client.check_bot_exists(bot_id_str)
-		if not exists:
+		exists_in_neo4j = self.neo4j_client.check_bot_exists(bot_id_str)
+		if not exists_in_neo4j:
 			log.info(f"Bot {bot_id} is new to the party {data}")
 
 			# save bot to mongo and neo4j
@@ -496,16 +496,24 @@ class Control_Center(Rabbitmq):
 		if is_bot:
 			log.info("It's a bot that's already been registered in the database")
 			# Update the info of the bot
-			self.mongo_client.update_users(
-				match={"id_str": user['id_str']},
-				new_data=user,
-				all=False
+			exists_in_mongo=self.mongo_client.search(
+				collection="users",
+				query={"id_str": user['id_str']},
+				single=True
 			)
-			self.neo4j_client.update_bot({
-				"id": user['id_str'],
-				"name": user['name'],
-				"username": user['screen_name']
-			})
+			if not exists_in_mongo:
+				self.mongo_client.insert_users(user)
+			else:
+				self.mongo_client.update_users(
+					match={"id_str": user['id_str']},
+					new_data=user,
+					all=False
+				)
+				self.neo4j_client.update_bot({
+					"id": user['id_str'],
+					"name": user['name'],
+					"username": user['screen_name']
+				})
 		else:
 			if self.neo4j_client.check_user_exists(user["id_str"]):
 				log.info(f"User {user['id']} has already been registered in the database")
