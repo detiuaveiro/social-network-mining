@@ -869,7 +869,8 @@ class Control_Center(Rabbitmq):
 		self.action(message)
 
 	def run(self):
-		self._receive()
+		while True:
+			self._receive()
 
 	def close(self):
 		self.neo4j_client.close()

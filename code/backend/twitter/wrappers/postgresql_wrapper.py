@@ -299,11 +299,7 @@ class PostgresAPI:
 			for tuple in data:
 				result.append({
 					"API_type": tuple[0], "name": tuple[1], "params": tuple[2], "active": tuple[3],
-<<<<<<< HEAD
-					"policy_id": tuple[4], "filter": tuple[5], "bots": [int(t) for t in tuple[6]]
-=======
 					"policy_id": int(tuple[4]), "filter": tuple[5], "bots": [int(t) for t in tuple[6]]
->>>>>>> master
 				})
 
 			return {"success": True, "data": result}

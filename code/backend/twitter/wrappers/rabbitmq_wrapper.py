@@ -6,7 +6,7 @@ import time
 import logging
 import json
 
-from pika.adapters.blocking_connection import BlockingChannel
+from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
 
 from credentials import *
 
@@ -64,7 +64,7 @@ class Rabbitmq:
         parameters given from the constructor
         """
     
-        self.connection = pika.BlockingConnection(self.pika_parameters)
+        self.connection: BlockingConnection = pika.BlockingConnection(self.pika_parameters)
 
         self.channel: BlockingChannel = self.connection.channel()
         self.channel.basic_qos(prefetch_count=500, global_qos=True)
