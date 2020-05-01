@@ -1,12 +1,12 @@
 import logging
 from datetime import datetime
-from django.db.models import Max, Count, Sum
+from django.db.models import Max, Count, Sum, Q
 from api.models import *
 import api.serializers as serializers
 from api import neo4j
 import json
 from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
-from api.queries_utils import paginator_factory
+from api.queries_utils import paginator_factory, paginator_factory_non_queryset
 
 logger = logging.getLogger('queries')
 
@@ -27,7 +27,6 @@ def next_id(model):
 def twitter_users_count():
 	try:
 		all_users_count = User.objects.filter().count()
-
 
 		return True, {'count': all_users_count}, "Sucesso a obter o numero de utilizadores"
 
@@ -111,7 +110,7 @@ def twitter_user_stats_grouped(id, types):
 
 		order_by_list = [f"'{type}'" for type in types]
 		query += f".values('{type}').annotate(sum_followers=Sum('followers'), sum_following=Sum('following')).order_by({','.join(order_by_list)})"
-		
+
 		users_stats = eval(query)
 
 		return True, {'data': list(users_stats),
@@ -140,21 +139,25 @@ def twitter_user_tweets(id, entries_per_page, page):
 		return False, None, f"Erro a obter os tweets do utilizador de id {id}"
 
 
-def twitter_user_followers(id):
+def twitter_user_followers(id, entries_per_page, page):
 	try:
 		followers = neo4j.get_followers({'id': id})
 
-		return True, followers, "Sucesso a obter todos os followers do utilizador pedido"
+		data = paginator_factory_non_queryset(followers, entries_per_page, page)
+
+		return True, data, "Sucesso a obter todos os followers do utilizador pedido"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
 		return False, None, f"Erro a obter os followers do utilizador de id {id}"
 
 
-def twitter_user_following(id):
+def twitter_user_following(id, entries_per_page, page):
 	try:
 		following = neo4j.get_following({'id': id})
 
-		return True, following, "Sucesso a obter todos os utilizadores que o utilizador pedido segue"
+		data = paginator_factory_non_queryset(following, entries_per_page, page)
+
+		return True, data, "Sucesso a obter todos os utilizadores que o utilizador pedido segue"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
 		return False, None, f"Erro a obter os utilizadores que o utilizador de id {id} segue"

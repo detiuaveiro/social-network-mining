@@ -73,8 +73,8 @@ class PostgresAPI:
 		try:
 			cursor = self.conn.cursor()
 			cursor.execute(
-				"INSERT INTO users (timestamp, user_id, followers, following) values (DEFAULT,%s,%s,%s);",
-				(int(data["user_id"]), data["followers"], data["following"])
+				"INSERT INTO users (timestamp, user_id, followers, following, protected) values (DEFAULT,%s,%s,%s,%s);",
+				(data["user_id"], data["followers"], data["following"], data["protected"])
 			)
 			self.conn.commit()
 			cursor.close()
@@ -152,7 +152,7 @@ class PostgresAPI:
 		try:
 			cursor = self.conn.cursor()
 
-			query = "select timestamp, user_id, followers, following from users "
+			query = "select timestamp, user_id, followers, following, protected from users "
 			if params is None:
 				query += ";"
 			else:
@@ -165,6 +165,11 @@ class PostgresAPI:
 					if control == 1:
 						query += " AND "
 					query += "followers = " + str(params["followers"])
+					control = 1
+				if "protected" in params.keys():
+					if control == 1:
+						query += " AND "
+					query += "protected = " + str(params["followers"])
 					control = 1
 				if "following" in params.keys():
 					if control == 1:
@@ -183,7 +188,9 @@ class PostgresAPI:
 			result = []  # Array of jsons
 			for tuple in data:
 				result.append(
-					{"timestamp": tuple[0], "user_id": int(tuple[1]), "followers": tuple[2], "following": tuple[3]})
+					{"timestamp": tuple[0], "user_id": tuple[1], "followers": tuple[2],
+					 "following": tuple[3], "protected": tuple[4]}
+				)
 
 			return {"success": True, "data": result}
 		except psycopg2.Error as error:
