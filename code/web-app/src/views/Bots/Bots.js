@@ -138,7 +138,7 @@ class Bots extends Component {
         );
 
         var empty = false
-        if (tempUsers.length == 0) {
+        if (tempBots.length == 0) {
           empty = true
         }
 
@@ -670,7 +670,7 @@ class Bots extends Component {
       }
     } else {
       return (
-        <BotProfile bot={this.state.bot} redirection={[{ "type": "LIST", "info": "" }]}></BotProfile>
+        <BotProfile user={this.state.bot} redirection={[{ "type": "BOTS", "info": "" }]}></BotProfile>
       )
     }
 

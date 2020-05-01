@@ -12,17 +12,19 @@ import Card from "../../components/Card/Card";
 import CardHeader from "../../components/Card/CardHeader";
 import CardBody from "../../components/Card/CardBody";
 import CardAvatar from "../../components/Card/CardAvatar.js";
+import CardFooter from "../../components/Card/CardFooter.js";
 
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
-import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
 
 import Bots from './Bots';
-import BotProfile from './BotProfile';
 
 import 'react-toastify/dist/ReactToastify.css';
+
+import { ToastContainer, toast, Flip } from 'react-toastify';
 
 import ReactLoading from "react-loading";
 import Pagination from '@material-ui/lab/Pagination';
@@ -33,14 +35,13 @@ import Lottie from "react-lottie";
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 
-import { ToastContainer, toast, Flip } from 'react-toastify';
 
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Brush } from 'recharts';
 
 import * as loadingAnim from "../../assets/animations/squares_1.json";
 
 
-class UserProfile extends Component {
+class BotProfile extends Component {
     constructor() {
         super();
     }
@@ -51,7 +52,7 @@ class UserProfile extends Component {
         doneLoading: false,
         redirectionList: [],
 
-        botInfo: null,
+        userInfo: null,
         redirectUser: null,
 
         animationOptions: {
@@ -91,7 +92,7 @@ class UserProfile extends Component {
     };
 
     async getTweets(page, first) {
-        await fetch(baseURL + "twitter/users/" + this.state.botInfo.user_id + "/tweets/7/" + page + "/", {
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/tweets/7/" + page + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -189,7 +190,7 @@ class UserProfile extends Component {
     }
 
     async getFollowers(page) {
-        await fetch(baseURL + "twitter/users/" + this.state.botInfo.user_id + "/followers/5/" + page + "/", {
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/followers/5/" + page + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -262,7 +263,7 @@ class UserProfile extends Component {
     }
 
     async getFollowings(page) {
-        await fetch(baseURL + "twitter/users/" + this.state.botInfo.user_id + "/followers/5/" + page + "/", {
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/followers/5/" + page + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -329,7 +330,7 @@ class UserProfile extends Component {
         });
     }
 
-    async getbotInfo() {
+    async getUserInfo() {
         await fetch(baseURL + "twitter/users/" + this.props.nextUser + "/", {
             method: "GET",
             headers: {
@@ -343,7 +344,7 @@ class UserProfile extends Component {
         }).then(data => {
             if (data != null && data != {}) {
                 data = data.data
-                this.setState({ botInfo: data })
+                this.setState({ userInfo: data })
             }
         }).catch(error => {
             console.log("error: " + error);
@@ -354,7 +355,7 @@ class UserProfile extends Component {
     }
 
     async getStats(type) {
-        await fetch(baseURL + "twitter/users/" + this.state.botInfo.user_id + "/stats/grouped/" + type + "/", {
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/stats/grouped/" + type + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -373,14 +374,8 @@ class UserProfile extends Component {
                 data.data.forEach(entry => {
                     var tempInfo = {}
 
-                    if (type == "day") {
-                        tempInfo['name'] = entry['day'] + ""
+                    tempInfo['name'] = entry['full_date'] + ""
 
-                    } else if (type == "year") {
-                        tempInfo['name'] = entry['year'] + ""
-                    } else {
-                        tempInfo['name'] = entry['month'] + ""
-                    }
 
                     tempInfo['followers'] = entry['sum_followers']
                     tempInfo['following'] = entry['sum_following']
@@ -408,10 +403,10 @@ class UserProfile extends Component {
     async componentDidMount() {
         await this.setState({ redirectionList: this.props.redirection })
 
-        if (this.props.bot == null) {
-            await this.getbotInfo()
+        if (this.props.user == null) {
+            await this.getUserInfo()
         } else {
-            await this.setState({ botInfo: this.props.bot })
+            await this.setState({ userInfo: this.props.user })
         }
 
         // Get Tweets
@@ -420,16 +415,18 @@ class UserProfile extends Component {
         }
 
         // Get Stats
+        /*
         if (this.state.error == null) {
             await this.getStats("month")
         }
+        */
 
-        // Get Followers
+        // Get Activity
         if (this.state.error == null) {
             await this.getFollowers(1)
         }
 
-        // Get Followings
+        // Get Policy
         if (this.state.error == null) {
             await this.getFollowings(1)
         }
@@ -442,7 +439,7 @@ class UserProfile extends Component {
 
     handleOpenProfile(user) {
         var list = this.state.redirectionList
-        list.push({ type: "PROFILE", info: this.state.botInfo })
+        list.push({ type: "PROFILE", info: this.state.userInfo })
         this.setState({
             redirectUser: user,
             redirectionList: list
@@ -545,10 +542,6 @@ class UserProfile extends Component {
         })
     }
 
-    handleOpenPolicy(policy) {
-        console.log(policy)
-    }
-
     /////////////////////////////////////////////////////////////////////
 
     // Pagination //////////////////////////////////////////////////////////
@@ -600,11 +593,11 @@ class UserProfile extends Component {
 
     render() {
         if (this.state.goBack) {
-            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "LIST")
-                return (<Bots page={this.state.redirectionList[0].info} />)
+            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "USERS")
+                return (<Bots page={this.state.redirectionList[0].info["page"]} searchQuery={this.state.redirectionList[0].info["query"]} />)
             else {
                 var lastUser = this.state.redirectionList.pop()
-                return (<BotProfile bot={lastUser['info']} redirection={this.state.redirectionList}></BotProfile>)
+                return (<BotProfile user={lastUser['info']} redirection={this.state.redirectionList}></BotProfile>)
             }
         } else if (this.state.redirectUser != null) {
             return (
@@ -837,14 +830,14 @@ class UserProfile extends Component {
                             <DialogActions>
                                 <Button onClick={() => this.handleClose()} color="info">
                                     Cancel
-                            </Button>
+                                </Button>
                                 <Button
                                     onClick={() => this.handleTweet()}
                                     color="success"
                                     autoFocus
                                 >
                                     Confirm
-                            </Button>
+                                </Button>
                             </DialogActions>
                         </Dialog>
                     }
@@ -853,9 +846,9 @@ class UserProfile extends Component {
                 //Latest Tweet
 
                 var locale = <h5></h5>
-                if (this.state.botInfo.location != "" && this.state.botInfo.location.trim().length != 0) {
+                if (this.state.userInfo.location != "" && this.state.userInfo.location.trim().length != 0) {
                     locale = <h5 style={{ marginTop: "15px" }}>
-                        <span style={{ color: "#999", fontSize: "15px" }}><i>from</i> </span>{this.state.botInfo.location}
+                        <span style={{ color: "#999", fontSize: "15px" }}><i>from</i> </span>{this.state.userInfo.location}
                     </h5>
 
                 }
@@ -876,7 +869,6 @@ class UserProfile extends Component {
 
                     var media = <div></div>
                     if (this.state.tweets.latestTweet.extended_entities != null) {
-                        console.log(this.state.tweets.latestTweet.extended_entities.media[0])
                         if (this.state.tweets.latestTweet.extended_entities.media[0].type == "photo") {
                             if (this.state.tweets.latestTweet.extended_entities.media.length == 1) {
                                 media =
@@ -989,7 +981,7 @@ class UserProfile extends Component {
                     latestTweet = <CardBody>
                         <div style={{ marginTop: "25px" }}>
                             <h5 style={{ color: "#999" }}>
-                                We weren't able to find any tweets made by this user yet
+                                This bot doesn't seem to have made any tweets...
                             </h5>
                         </div>
                     </CardBody>
@@ -1003,7 +995,7 @@ class UserProfile extends Component {
                         <CardBody>
                             <div style={{ marginTop: "25px" }}>
                                 <h5 style={{ color: "#999" }}>
-                                    We weren't able to find any tweets made by this user yet
+                                    This bot doesn't seem to have made any tweets...
                                 </h5>
                             </div>
                         </CardBody>
@@ -1059,7 +1051,7 @@ class UserProfile extends Component {
                     followers =
                         <div style={{ marginTop: "25px" }}>
                             <h5 style={{ color: "#999" }}>
-                                We weren't able to find any of this user's followers
+                                This bot doesn't seem to be followed anyone...
                         </h5>
                         </div>
                 } else {
@@ -1112,7 +1104,7 @@ class UserProfile extends Component {
                     followings =
                         <div style={{ marginTop: "25px" }}>
                             <h5 style={{ color: "#999" }}>
-                                We weren't able to find any of this user's followers
+                                This bot doesn't seem to be following anyone...
                         </h5>
                         </div>
                 } else {
@@ -1159,22 +1151,116 @@ class UserProfile extends Component {
                         </div>
                 }
 
+                //All Policies
+                var policies = <CardBody></CardBody>
+                if (this.state.followings.empty) {
+                    policies =
+                        <div style={{ marginTop: "25px" }}>
+                            <h5 style={{ color: "#999" }}>
+                                This bot doesn't seem to have any policies assigned...
+                        </h5>
+                        </div>
+                } else {
+                    policies =
+                        <div style={{ position: "relative" }}>
+                            <div
+                                id="loadedFollowings"
+                                style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    position: "relative",
+                                    top: 0,
+                                    left: 0,
+                                    visibility: ""
+                                }}>
+                                <Table
+                                    tableHeaderColor="primary"
+                                    tableHead={["Username", "Name", "Type", ""]}
+                                    tableData={this.state.followings.data}
+                                />
+
+                            </div>
+                            <div
+                                id="loadingFollowings"
+                                style={{
+                                    zIndex: 10,
+                                    position: "absolute",
+                                    top: "45%",
+                                    left: "45%",
+                                    display: "none"
+                                }}>
+                                <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
+                            </div>
+
+                            <div style={{
+                                marginTop: "25px",
+                                width: "100%",
+                                textAlign: "center"
+                            }}>
+                                <div style={{ display: "inline-block" }}>
+                                    <Pagination count={this.state.followings.noPage} page={this.state.followings.curPage} onChange={this.changePageFollowing} variant="outlined" color="primary" showFirstButton showLastButton shape="rounded" />
+                                </div>
+                            </div>
+                        </div>
+                }
+
+                //All Activity
+                var activity = <CardBody></CardBody>
+                if (this.state.followings.empty) {
+                    activity =
+                        <div style={{ marginTop: "25px" }}>
+                            <h5 style={{ color: "#999" }}>
+                                This bot doesn't seem to have had any activity...
+                        </h5>
+                        </div>
+                } else {
+                    activity =
+                        <div style={{ position: "relative" }}>
+                            <div
+                                id="loadedFollowings"
+                                style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    position: "relative",
+                                    top: 0,
+                                    left: 0,
+                                    visibility: ""
+                                }}>
+                                <Table
+                                    tableHeaderColor="primary"
+                                    tableHead={["Username", "Name", "Type", ""]}
+                                    tableData={this.state.followings.data}
+                                />
+
+                            </div>
+                            <div
+                                id="loadingFollowings"
+                                style={{
+                                    zIndex: 10,
+                                    position: "absolute",
+                                    top: "45%",
+                                    left: "45%",
+                                    display: "none"
+                                }}>
+                                <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
+                            </div>
+
+                            <div style={{
+                                marginTop: "25px",
+                                width: "100%",
+                                textAlign: "center"
+                            }}>
+                                <div style={{ display: "inline-block" }}>
+                                    <Pagination count={this.state.followings.noPage} page={this.state.followings.curPage} onChange={this.changePageFollowing} variant="outlined" color="primary" showFirstButton showLastButton shape="rounded" />
+                                </div>
+                            </div>
+                        </div>
+                }
+
                 ///////////////////////
                 return (
                     <div className="animated fadeIn">
                         <Container fluid>
-                            <ToastContainer
-                                position="top-center"
-                                autoClose={2500}
-                                hideProgressBar={false}
-                                transition={Flip}
-                                newestOnTop={false}
-                                closeOnClick
-                                rtl={false}
-                                pauseOnVisibilityChange
-                                draggable
-                                pauseOnHover
-                            />
                             <Row>
                                 <Col xs="12" sm="12" md="12" style={{ marginBottom: "30px" }}>
                                     <Button block outline color="danger" onClick={() => this.handleGoBack()} style={{
@@ -1187,7 +1273,7 @@ class UserProfile extends Component {
                                     <Card profile>
                                         <CardAvatar profile>
                                             <a onClick={e => e.preventDefault()}>
-                                                <img src={this.state.botInfo.profile_image_url_https.replace("normal", "400x400")} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = require('../../assets/img/no_pic_smaller.png') }} style={{ minWidth: "100px" }} />
+                                                <img src={this.state.userInfo.profile_image_url_https.replace("normal", "400x400")} id="profilePic" alt="Profile Image" onError={() => { document.getElementById("profilePic").src = require('../../assets/img/no_pic_smaller.png') }} style={{ minWidth: "100px" }} />
                                             </a>
                                         </CardAvatar>
                                         <CardBody profile>
@@ -1198,7 +1284,7 @@ class UserProfile extends Component {
                                                 marginTop: "0",
                                                 paddingTop: "10px",
                                                 marginBottom: "0"
-                                            }}>@{this.state.botInfo.screen_name}</h6>
+                                            }}>@{this.state.userInfo.screen_name}</h6>
                                             <h4 style={{
                                                 color: "#3C4858",
                                                 marginTop: "0px",
@@ -1211,23 +1297,26 @@ class UserProfile extends Component {
                                                     fontWeight: "400",
                                                     lineHeight: "1"
                                                 }
-                                            }}>{this.state.botInfo.name}</h4>
+                                            }}>{this.state.userInfo.name}</h4>
                                             <h5 style={{ marginTop: "15px" }}>
-                                                <i>{this.state.botInfo.description}</i>
+                                                <i>{this.state.userInfo.description}</i>
                                             </h5>
 
                                             {locale}
 
                                             <div class="row" style={{ marginTop: "20px" }}>
                                                 <div class="col-sm-12 offset-md-3 col-md-3">
-                                                    <h6><b>{this.state.botInfo.followers_count}</b> <br />following</h6>
+                                                    <h6><b>{this.state.userInfo.followers_count}</b> <br />following</h6>
                                                 </div>
 
                                                 <div class="col-sm-12 col-md-3">
-                                                    <h6><b>{this.state.botInfo.friends_count}</b> <br />followers</h6>
+                                                    <h6><b>{this.state.userInfo.friends_count}</b> <br />followers</h6>
                                                 </div>
                                             </div>
                                         </CardBody>
+                                        <CardFooter>
+                                            <h5><b style={{ color: "#4dbd74" }}>Active</b></h5>
+                                        </CardFooter>
                                     </Card>
 
                                 </Col>
@@ -1311,7 +1400,7 @@ class UserProfile extends Component {
                                             }} > Last tweet</h4>
                                             <Button block outline color="light" style={{
                                                 width: "150px", marginTop: "15px"
-                                            }} onClick={() => this.handleOpenNewTweet()}>Post new tweet</Button>
+                                            }} onClick={() => this.handleOpenNewTweet()}>Post new Tweet</Button>
                                         </CardHeader>
                                         {latestTweet}
                                     </Card>
@@ -1335,6 +1424,57 @@ class UserProfile extends Component {
                                             }} > Tweets</h4>
                                         </CardHeader>
                                         {tweets}
+                                    </Card>
+                                </Col>
+                            </Row>
+
+                            <Row>
+                                <Col xs="12" sm="12" md="6">
+                                    <Card>
+                                        <CardHeader color="primary">
+                                            <h4 style={{
+                                                color: "#FFFFFF",
+                                                marginTop: "0px",
+                                                minHeight: "auto",
+                                                marginBottom: "3px",
+                                                textDecoration: "none",
+                                                "& small": {
+                                                    color: "#777",
+                                                    fontSize: "65%",
+                                                    fontWeight: "400",
+                                                    lineHeight: "1"
+                                                }
+                                            }} > Policies</h4>
+                                            <Button block outline color="light" style={{
+                                                width: "150px", marginTop: "15px"
+                                            }} onClick={() => this.handleOpenNewTweet()}>Assign new Policy</Button>
+                                        </CardHeader>
+                                        <CardBody>
+                                            {policies}
+                                        </CardBody>
+                                    </Card>
+                                </Col>
+
+                                <Col xs="12" sm="12" md="6">
+                                    <Card>
+                                        <CardHeader color="primary">
+                                            <h4 style={{
+                                                color: "#FFFFFF",
+                                                marginTop: "0px",
+                                                minHeight: "auto",
+                                                marginBottom: "3px",
+                                                textDecoration: "none",
+                                                "& small": {
+                                                    color: "#777",
+                                                    fontSize: "65%",
+                                                    fontWeight: "400",
+                                                    lineHeight: "1"
+                                                }
+                                            }} > Activity</h4>
+                                        </CardHeader>
+                                        <CardBody>
+                                            {activity}
+                                        </CardBody>
                                     </Card>
                                 </Col>
                             </Row>
