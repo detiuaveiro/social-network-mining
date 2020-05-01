@@ -188,14 +188,14 @@ ALTER TABLE users ADD COLUMN protected BOOLEAN DEFAULT False;
   YIELD value
   MATCH(p {id:value.start.properties.id})
   MATCH(u {id:toInteger(value.end.properties.id)})
-  CREATE (p)-[:RETWEET]->(u)
+  CREATE (p)-[:RETWEETED]->(u)
 ```
 ```bash
   CALL apoc.load.json("reply.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
   MATCH(u {id:toInteger(value.end.properties.id)})
-  CREATE (p)-[:REPLY]->(u)
+  CREATE (p)-[:REPLIED]->(u)
 ```
 ```bash
   CALL apoc.load.json("wrote.json")
@@ -210,4 +210,15 @@ ALTER TABLE users ADD COLUMN protected BOOLEAN DEFAULT False;
   MATCH(p {id:value.start.properties.id})
   MATCH(u {id:toInteger(value.end.properties.id)})
   CREATE (p)-[:QUOTED]->(u)
+```
+Neo4j Export commands:
+```bash
+call apoc.export.json.query("match (start) - [r:QUOTED] ->(end) return start, r, end", "quote.json")
+call apoc.export.json.query("match (start) - [r:WROTE] ->(end) return start, r, end", "write.json")
+call apoc.export.json.query("match (start) - [r:RETWEETED] ->(end) return start, r, end", "retweet.json")
+call apoc.export.json.query("match (start) - [r:FOLLOWS] ->(end) return start, r, end", "follow_rel.json")
+call apoc.export.json.query("match (start) - [r:REPLIED] ->(end) return start, r, end", "reply.json")
+call apoc.export.json.query("match (a:Tweet) return a", "tweets.json")
+call apoc.export.json.query("match (a:User) return a", "user_nodes.json")
+call apoc.export.json.query("match (a:Bot) return a", "bots_nodes.json")
 ```
