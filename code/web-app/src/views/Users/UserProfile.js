@@ -186,8 +186,8 @@ class UserProfile extends Component {
     }
 
     async getFollowers(page) {
-        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/followers/5/"+page+"/", {
-            method: "GET", 
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/followers/5/" + page + "/", {
+            method: "GET",
             headers: {
                 "Content-Type": "application/json",
             }
@@ -235,7 +235,7 @@ class UserProfile extends Component {
                 }
 
                 var curPage = data.next_page - 1
-                if(curPage <= 0){
+                if (curPage <= 0) {
                     curPage = 1
                 }
 
@@ -259,7 +259,7 @@ class UserProfile extends Component {
     }
 
     async getFollowings(page) {
-        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/followers/5/"+page+"/", {
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/followers/5/" + page + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -303,7 +303,7 @@ class UserProfile extends Component {
                 }
 
                 var curPage = data.next_page - 1
-                if(curPage <= 0){
+                if (curPage <= 0) {
                     curPage = 1
                 }
 
@@ -370,14 +370,8 @@ class UserProfile extends Component {
                 data.data.forEach(entry => {
                     var tempInfo = {}
 
-                    if (type == "day") {
-                        tempInfo['name'] = entry['day'] + ""
+                    tempInfo['name'] = entry['full_date'] + ""
 
-                    } else if (type == "year") {
-                        tempInfo['name'] = entry['year'] + ""
-                    } else {
-                        tempInfo['name'] = entry['month'] + ""
-                    }
 
                     tempInfo['followers'] = entry['sum_followers']
                     tempInfo['following'] = entry['sum_following']

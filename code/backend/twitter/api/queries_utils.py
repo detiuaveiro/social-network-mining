@@ -1,5 +1,6 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import math
+import datetime
 
 
 def paginator_factory(query_data, entries_per_page, page):

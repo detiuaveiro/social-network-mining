@@ -13,7 +13,7 @@ def factory():
 
 @pytest.fixture(autouse=True)
 def delete_neo4j_data():
-    for id in [1, 2]:
+    for id in ["1", "2"]:
         neo4j.delete_bot(id)
         if neo4j.check_bot_exists(id):
             return False
@@ -35,33 +35,33 @@ def add_relationship(id_1, id_2):
 
 @catch_exception
 def test_successful_twitter_user_followers_request(error_catcher, factory):
-    assert add_bot_neo4j([1, 2]) and add_relationship(2, 1)
-    path = reverse('twitter_user_followers', kwargs={'id': 1})
+    assert add_bot_neo4j(["1", "2"]) and add_relationship("2", "1")
+    path = reverse('twitter_user_followers', kwargs={'id': "1"})
     request = factory.get(path)
-    response = users.twitter_user_followers(request, id=1)
+    response = users.twitter_user_followers(request, id="1")
     assert is_response_successful(response)
 
 
 @catch_exception
 def test_empty_twitter_user_followers_request(error_catcher, factory):
-    path = reverse('twitter_user_followers', kwargs={'id': 1})
+    path = reverse('twitter_user_followers', kwargs={'id': "1"})
     request = factory.get(path)
-    response = users.twitter_user_followers(request, id=1)
+    response = users.twitter_user_followers(request, id="1")
     assert is_response_unsuccessful(response)
 
 
 @catch_exception
 def test_successful_twitter_user_following_request(error_catcher, factory):
-    assert add_bot_neo4j([1, 2]) and add_relationship(1, 2)
-    path = reverse('twitter_user_following', kwargs={'id': 1})
+    assert add_bot_neo4j(["1", "2"]) and add_relationship("1", "2")
+    path = reverse('twitter_user_following', kwargs={'id': "1"})
     request = factory.get(path)
-    response = users.twitter_user_following(request, id=1)
+    response = users.twitter_user_following(request, id="1")
     assert is_response_successful(response)
 
 
 @catch_exception
 def test_empty_twitter_user_following_request(error_catcher, factory):
-    path = reverse('twitter_user_following', kwargs={'id': 1})
+    path = reverse('twitter_user_following', kwargs={'id': "1"})
     request = factory.get(path)
-    response = users.twitter_user_following(request, id=1)
+    response = users.twitter_user_following(request, id="1")
     assert is_response_unsuccessful(response)
