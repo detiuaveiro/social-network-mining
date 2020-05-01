@@ -404,7 +404,7 @@ class PDP:
 		# first, we verify if the bot already replied to the tweet
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
-			"action": log_actions.TWEET_REPLY,
+			"action": log_actions.REPLY_REQ_ACCEPT,
 			"target_id": data["tweet_id"]
 		})
 		if not bot_logs["success"] or bot_logs['data']:
@@ -420,7 +420,7 @@ class PDP:
 		# We then check if the bot has liked the tweet
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
-			"action": log_actions.REPLY_REQ_ACCEPT,
+			"action": log_actions.TWEET_LIKE,
 			"target_id": data["tweet_id"]
 		})
 		if bot_logs["success"]:
@@ -460,7 +460,19 @@ class PDP:
 		@returns: float that will then be compared to the threshold previously defined
 		"""
 
+		# Check if another bot has followed the user
+		user = data['user']
 		heuristic = 0
+		bot_logs = self.postgres.search_logs({"action": log_actions.FOLLOW_REQ_ACCEPT, "target_id": user['id']})
+
+		if bot_logs["success"] and len(bot_logs['data']) > 0:
+			log.debug("Found another bot who follows this user")
+			self.postgres.insert_log({
+				"bot_id": data["bot_id"],
+				"action": log_actions.ANOTHER_BOT_FOLLOWS_USER,
+				"target_id": user['id']
+			})
+			return heuristic
 
 		MODEL_PATH = "control_center/intelligence/models"
 
@@ -473,7 +485,6 @@ class PDP:
 		tweets = data['tweets']
 		tweets = random.sample(tweets, min(len(tweets), NUMBER_TWEETS_FOLLOW_DECISION))
 
-		user = data['user']
 		user_description = user['description']
 		tweets_text = [t['full_text'] for t in tweets]
 		tweets_len_mean = np.mean([len(i) for i in tweets_text])
@@ -486,11 +497,6 @@ class PDP:
 				policy_labels = {}
 				for policy in policy_list:
 					policy_labels[policy['name']] = policy['params']
-
-				tweets = data['tweets']
-				user = data['user']
-				user_description = user['description']
-				tweets_text = [t['full_text'] for t in tweets]
 
 				labels = classifier.predict_soft_max(model_path=MODEL_PATH, x=tweets_text + [user_description],
 													 confidence_limit=THRESHOLD_FOLLOW_USER)
