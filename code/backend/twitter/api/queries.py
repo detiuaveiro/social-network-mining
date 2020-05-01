@@ -330,7 +330,7 @@ def add_policy(data):
 	try:
 		policy_serializer = serializers.Policy(data=data)
 		if not policy_serializer.is_valid():
-			return False, policy_serializer.errors, "Dados invalidos!"
+			return False, policy_serializer.errors, "Dados invalidos!", HTTP_403_FORBIDDEN
 
 		for bot_id in policy_serializer.data['bots']:
 			if not neo4j.check_bot_exists(bot_id):
