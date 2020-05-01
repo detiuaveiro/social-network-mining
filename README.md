@@ -152,6 +152,10 @@ mongoimport --db twitter --collection users --file scripts/mongodb/users.json -u
 ```bash
 psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql 
 ```
+```bash
+#Add column to user table to include if it's protected or not
+ALTER TABLE users ADD COLUMN protected BOOLEAN DEFAULT False;
+```
 
 - neo4j
 ```bash

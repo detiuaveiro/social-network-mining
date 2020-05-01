@@ -833,9 +833,12 @@ class Neo4jAPI:
         query = f"MATCH (a {':' + data['type'] if 'type' in data else ''} {{id: $id }})-" \
                 f"[r:{FOLLOW_LABEL}]->(b) RETURN b"
 
+
         result = []
         for i in tx.run(query, id=data['id']):
-            result.append(dict(i.items()[0][1]))
+            entry = dict(i.items()[0][1])
+            entry['label'] = list(i.items()[0][1].labels)[0]
+            result.append(entry)
 
         return result
 
@@ -870,7 +873,9 @@ class Neo4jAPI:
 
         result = []
         for i in tx.run(query, id=data["id"]):
-            result.append(dict(i.items()[0][1]))
+            entry = dict(i.items()[0][1])
+            entry['label'] = list(i.items()[0][1].labels)[0]
+            result.append(entry)
 
         return result
 
