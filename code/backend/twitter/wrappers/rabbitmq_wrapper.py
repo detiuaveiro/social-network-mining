@@ -48,8 +48,8 @@ class Rabbitmq:
             port=port,
             virtual_host=vhost,
             credentials=pika_credentials,
-            heartbeat=1000,
-            blocked_connection_timeout=1000
+            heartbeat=0,
+            blocked_connection_timeout=300
         )
 
         self.reconnection_attempt = 0
@@ -67,7 +67,7 @@ class Rabbitmq:
         self.connection: BlockingConnection = pika.BlockingConnection(self.pika_parameters)
 
         self.channel: BlockingChannel = self.connection.channel()
-        self.channel.basic_qos(prefetch_count=100, global_qos=True)
+        self.channel.basic_qos(prefetch_count=10, global_qos=True)
         self.channel.queue_declare(queue=API_QUEUE, durable=True)
 
         # Declare Exchanges
