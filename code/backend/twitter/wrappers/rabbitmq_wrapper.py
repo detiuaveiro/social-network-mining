@@ -158,6 +158,7 @@ class Rabbitmq:
             log.exception(f"Exception <{e}> detected:")
             log.warning("Attempting reconnection after waiting time...")
             time.sleep(WAIT_TIME)
+            self._close()
             self._setup()
             log.debug("Setup completed")
             self._receive(queue_name)
@@ -171,4 +172,5 @@ class Rabbitmq:
         """
         Close the connection with the Rabbit MQ server
         """
+        log.info("Closing connection")
         self.connection.close()
