@@ -4,7 +4,7 @@
 import logging
 from neo4j import GraphDatabase
 import credentials
-from neo4j_labels import BOT_LABEL, USER_LABEL, TWEET_LABEL, WROTE_LABEL,\
+from neo4j_labels import BOT_LABEL, USER_LABEL, TWEET_LABEL, WROTE_LABEL, \
     RETWEET_LABEL, REPLY_LABEL, FOLLOW_LABEL, QUOTE_LABEL, QUERY
 import json
 
@@ -54,7 +54,7 @@ class Neo4jAPI:
 
         # Note we use Merge rather than Create to avoid duplicates
         tx.run(f"MERGE (:{BOT_LABEL} {{ name: $name, id: $id, username: $username }} )",
-               id=data["id"],
+               id=str(data["id"]),
                name=data["name"],
                username=data["username"])
 
@@ -83,7 +83,7 @@ class Neo4jAPI:
         log.debug("CREATING USER")
 
         tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username }})",
-               id=data["id"],
+               id=str(data["id"]),
                name=data["name"],
                username=data["username"])
 
@@ -95,9 +95,7 @@ class Neo4jAPI:
         """
         if "id" not in data.keys():
             log.error("ERROR CREATING A TWEET")
-            log.debug(
-                "Error: Specified data doesn't contain necessary fields - id"
-            )
+            log.debug("Error: Specified data doesn't contain necessary fields - id")
             return
 
         with self.driver.session() as session:
@@ -107,7 +105,7 @@ class Neo4jAPI:
     def __create_tweet(self, tx, data):
         log.debug("CREATING TWEET")
 
-        tx.run(f"MERGE (:{TWEET_LABEL} {{id: $id}})", id=data["id"])
+        tx.run(f"MERGE (:{TWEET_LABEL} {{id: $id}})", id=str(data["id"]))
 
     def add_writer_relationship(self, data):
         """Method used to create a new WRITE relationship
@@ -241,9 +239,8 @@ class Neo4jAPI:
     def __create_relationship(self, tx, data):
         log.debug(f"CREATING RELATIONSHIP <{data['label']}> betweet {data['id_1']} and {data['id_2']}")
 
-
         result = tx.run(f"MATCH (u: {data['type_1']} {{ id: $id1 }}), (r: {data['type_2']} {{ id: $id2 }}) "
-                        f"MERGE (u)-[:{data['label']}]->(r)", id1=data['id_1'], id2=data['id_2'])
+                        f"MERGE (u)-[:{data['label']}]->(r)", id1=str(data['id_1']), id2=str(data['id_2']))
 
         log.debug(f"Created relationship:{result}")
 
@@ -260,7 +257,7 @@ class Neo4jAPI:
     def __bot_exists(self, tx, data):
         log.debug("CHECKING BOT EXISTANCE")
 
-        result = tx.run(f"MATCH (r:{BOT_LABEL} {{ id:$id }}) RETURN r", id=data)
+        result = tx.run(f"MATCH (r:{BOT_LABEL} {{ id:$id }}) RETURN r", id=str(data))
 
         if len(result.data()) == 0:
             return False
@@ -280,7 +277,7 @@ class Neo4jAPI:
     def __user_exists(self, tx, data):
         log.debug("CHECKING USER EXISTANCE")
 
-        result = tx.run(f"MATCH (r:{USER_LABEL} {{ id:$id }}) RETURN r", id=data)
+        result = tx.run(f"MATCH (r:{USER_LABEL} {{ id:$id }}) RETURN r", id=str(data))
 
         if len(result.data()) == 0:
             return False
@@ -300,7 +297,7 @@ class Neo4jAPI:
     def __tweet_exists(self, tx, data):
         log.debug("CHECKING TWEET EXISTANCE")
 
-        result = tx.run(f"MATCH (r:{TWEET_LABEL} {{ id:$id }}) RETURN r", id=data)
+        result = tx.run(f"MATCH (r:{TWEET_LABEL} {{ id:$id }}) RETURN r", id=str(data))
 
         return len(result.data()) != 0
 
@@ -323,7 +320,7 @@ class Neo4jAPI:
         log.debug("UPDATING USER")
 
         tx.run(f"MATCH (r: {USER_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
-               id=data['id'],
+               id=str(data['id']),
                username=data['username'] if 'username' in data else '',
                name=data['name'] if 'name' in data else '')
 
@@ -346,7 +343,7 @@ class Neo4jAPI:
         log.debug("UPDATING BOT")
 
         tx.run(f"MATCH (r: {BOT_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
-               id=data['id'],
+               id=str(data['id']),
                username=data['username'] if 'username' in data else '',
                name=data['name'] if 'name' in data else '')
 
@@ -383,7 +380,7 @@ class Neo4jAPI:
     def __delete_node(self, tx, type, id):
         log.debug("DELETING NODE")
 
-        tx.run(f'MATCH (r:{type} {{ id: $id }}) DETACH DELETE r', id=id)
+        tx.run(f'MATCH (r:{type} {{ id: $id }}) DETACH DELETE r', id=str(id))
 
     def delete_writer_relationship(self, data):
         """Method used to delete WRITE relationship
@@ -546,7 +543,7 @@ class Neo4jAPI:
 
         tx.run(f"MATCH (a:{data['type_1']}{{id: $from_id}})-[r:{data['label']}]->(b:{data['type_2']}{{id: $to_id}})"
                f"DELETE r",
-               from_id=data['type_1'], to_id=data['type_2'])
+               from_id=str(data['id_1']), to_id=str(data['id_2']))
 
     def search_tweets(self, tweet=None):
         """Method used to search for a given tweet
@@ -557,17 +554,11 @@ class Neo4jAPI:
         with self.driver.session as session:
             return session.write_transaction(self.__search_tweet, tweet)
 
-    def __search_tweet(self, tx, tweet):
+    def __search_tweet(self, tx, tweet_id):
         log.debug("SEARCHING TWEET")
 
-        query = f"MATCH (r: {TWEET_LABEL}"
-        if tweet is not None:
-            query += "{id: " + tweet + "}"
-
-        query += ") RETURN r"
-
         result = []
-        for i in tx.run(query):
+        for i in tx.run(f"MATCH (r: {TWEET_LABEL} {{id: $id}}) RETURN r", id=str(tweet_id)):
             result.append(dict(i.items()[0][1]))
 
         return result
@@ -582,12 +573,14 @@ class Neo4jAPI:
             # Caller for transactional unit of work
             return session.write_transaction(self.__search_bots, data)
 
-    def __search_bots(self, tx, data):
+    @staticmethod
+    def __search_bots(tx, data):
         log.debug("SEARCHING BOTS")
 
         query_filters = "{"
         if "id" in data.keys():
             query_filters += "id: $id,"
+            data['id'] = str(data['id'])
         if "name" in data.keys():
             query_filters += "name: '$name',"
         if "username" in data.keys():
@@ -614,12 +607,14 @@ class Neo4jAPI:
             # Caller for transactional unit of work
             return session.write_transaction(self.__search_users, data)
 
-    def __search_users(self, tx, data):
+    @staticmethod
+    def __search_users(tx, data):
         log.debug("SEARCHING USERS")
 
         query_filters = "{"
         if "id" in data.keys():
             query_filters += "id: $id,"
+            data['id'] = str(data['id'])
         if "name" in data.keys():
             query_filters += "name: '$name',"
         if "username" in data.keys():
@@ -800,7 +795,7 @@ class Neo4jAPI:
         query = f'MATCH (a: {data["type_1"]} {{id: $id1 }})-[r:{data["label"]}]' \
                 f'->(b:{data["type_2"]} {{id: $id2 }}) RETURN a, b'
 
-        result = tx.run(query, id1=data["id_1"], id2=data["id_2"])
+        result = tx.run(query, id1=str(data["id_1"]), id2=str(data["id_2"]))
 
         return len(result.values()) != 0
 
@@ -833,9 +828,12 @@ class Neo4jAPI:
         query = f"MATCH (a {':' + data['type'] if 'type' in data else ''} {{id: $id }})-" \
                 f"[r:{FOLLOW_LABEL}]->(b) RETURN b"
 
+
         result = []
         for i in tx.run(query, id=data['id']):
-            result.append(dict(i.items()[0][1]))
+            entry = dict(i.items()[0][1])
+            entry['label'] = list(i.items()[0][1].labels)[0]
+            result.append(entry)
 
         return result
 
@@ -870,7 +868,9 @@ class Neo4jAPI:
 
         result = []
         for i in tx.run(query, id=data["id"]):
-            result.append(dict(i.items()[0][1]))
+            entry = dict(i.items()[0][1])
+            entry['label'] = list(i.items()[0][1].labels)[0]
+            result.append(entry)
 
         return result
 
@@ -912,7 +912,7 @@ class Neo4jAPI:
 
             if export_type == "json":
                 output = "[" + output.replace("\n", ",") + "]"
-            
+
             return json.loads(output)
 
     def __export_query(self, tx, export_type, query):

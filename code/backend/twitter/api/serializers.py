@@ -3,7 +3,7 @@ from api.enums import Policy as enum_policy
 
 
 class User(serializers.Serializer):
-	user_id = serializers.IntegerField()
+	user_id = serializers.CharField()
 	description = serializers.CharField()
 	location = serializers.CharField()
 	name = serializers.CharField()
@@ -14,7 +14,7 @@ class User(serializers.Serializer):
 
 
 class UserStats(serializers.Serializer):
-	user_id = serializers.IntegerField()
+	user_id = serializers.CharField()
 	timestamp = serializers.DateTimeField()
 	followers = serializers.IntegerField()
 	following = serializers.IntegerField()
@@ -42,14 +42,14 @@ class ExtendedEntities(serializers.Serializer):
 
 
 class Tweet(serializers.Serializer):
-	tweet_id = serializers.IntegerField(required=True)
-	user = serializers.IntegerField(required=True)
+	tweet_id = serializers.CharField(required=True)
+	user = serializers.CharField(required=True)
 	is_quote_status = serializers.BooleanField(required=True)
 	created_at = serializers.DateTimeField(required=True)
 	quoted_status_id = serializers.IntegerField()
 	in_reply_to_screen_name = serializers.CharField()
-	in_reply_to_user_id = serializers.IntegerField()
-	in_reply_to_status_id = serializers.IntegerField()
+	in_reply_to_user_id = serializers.CharField()
+	in_reply_to_status_id = serializers.CharField()
 	extended_entities = ExtendedEntities(required=False)
 	text = serializers.CharField()
 	retweet_count = serializers.IntegerField()

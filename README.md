@@ -15,13 +15,15 @@ $ npm install
 $ npm install @material-ui/core
 $ npm install react-device-detect --save
 $ npm install jquery
-$ npm i react-countup
-$ npm i react-visibility-sensor
 $ npm i react-loading
 $ npm i react-toastify
 $ npm i react-graph-vis
+$ npm install recharts
 $ npm i react-select
 $ npm install react-paginate --save
+$ npm i @material-ui/lab
+$ npm i react-lottie react-fade-in
+$ npm i react-tooltip
 ```
 
 Then use the command to start the web app on port 3000:
@@ -142,7 +144,14 @@ Then use the command to start the web app on port 3000:
  $ docker run --env-file ~/PI_2020/env_vars/watchtower.env -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock -v ~/.docker/config.json:/config.json containrrr/watchtower
  ```
 
-## BDS
+## BDS AUTOMATIC IMPORT
+```bash
+cd scripts
+chmod +x import_databases.sh
+./import_databases.sh
+```
+
+## BDS MANUAL IMPORT
 - mongodb
 ```bash
 mongoimport --db twitter --collection tweets --file scripts/mongodb/tweets.json -u user -p password
@@ -151,6 +160,20 @@ mongoimport --db twitter --collection users --file scripts/mongodb/users.json -u
 - postgresql
 ```bash
 psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql 
+```
+```bash
+#Add column to user table to include if it's protected or not
+ALTER TABLE users ADD COLUMN protected BOOLEAN DEFAULT False;
+```
+
+- change columns on postgresql
+```bash
+alter table logs alter column id_bot type numeric;
+alter table logs alter column target_id type numeric;
+alter table tweets alter column tweet_id type numeric;
+alter table tweets alter column user_id type numeric;
+alter table users alter column user_id type numeric;
+alter table policies alter column bots type numeric[];  
 ```
 
 - neo4j
@@ -173,34 +196,45 @@ psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql
   CALL apoc.load.json("follow_rel.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:FOLLOWS]->(u)
 ```
 ```bash
   CALL apoc.load.json("retweet.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
-  CREATE (p)-[:RETWEET]->(u)
+  MATCH(u {id:value.end.properties.id})
+  CREATE (p)-[:RETWEETED]->(u)
 ```
 ```bash
   CALL apoc.load.json("reply.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
-  CREATE (p)-[:REPLY]->(u)
+  MATCH(u {id:value.end.properties.id})
+  CREATE (p)-[:REPLIED]->(u)
 ```
 ```bash
   CALL apoc.load.json("wrote.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:WROTE]->(u)
 ```
 ```bash
   CALL apoc.load.json("quote.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:QUOTED]->(u)
+```
+Neo4j Export commands:
+```bash
+call apoc.export.json.query("match (start) - [r:QUOTED] ->(end) return start, r, end", "quote.json")
+call apoc.export.json.query("match (start) - [r:WROTE] ->(end) return start, r, end", "write.json")
+call apoc.export.json.query("match (start) - [r:RETWEETED] ->(end) return start, r, end", "retweet.json")
+call apoc.export.json.query("match (start) - [r:FOLLOWS] ->(end) return start, r, end", "follow_rel.json")
+call apoc.export.json.query("match (start) - [r:REPLIED] ->(end) return start, r, end", "reply.json")
+call apoc.export.json.query("match (a:Tweet) return a", "tweets.json")
+call apoc.export.json.query("match (a:User) return a", "user_nodes.json")
+call apoc.export.json.query("match (a:Bot) return a", "bots_nodes.json")
 ```

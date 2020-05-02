@@ -464,6 +464,7 @@ class Network extends Component {
       }
 
       url = url.replace(/.$/, "")
+      
       this.getSubNetwork(url)
 
       this.setState({
@@ -899,52 +900,6 @@ class Network extends Component {
                         </Col>
 
                       </Row>
-                    </Col>
-                  </Row>
-
-                  <hr />
-
-                  <Row>
-                    <Col md="12">
-                      <h5 style={{ color: "#1fa8dd" }}><strong>Number of nodes per page</strong></h5>
-                      <Row>
-                        <Col md="9" sm="12" xm="12">
-                          <FormGroup>
-                            <Input type="text" id="name" placeholder="0" required />
-                          </FormGroup>
-                        </Col>
-                        <Col md="3" sm="12" xm="12">
-                          <Button block outline color="primary"
-
-                          ><i class="fas fa-check"></i></Button>
-                        </Col>
-
-                      </Row>
-                    </Col>
-                  </Row>
-                  <Row >
-                    <Col md="12" style={{ zIndex: "0" }}>
-                      <ReactPaginate
-                        previousLabel={'<'}
-                        nextLabel={'>'}
-                        breakLabel={'...'}
-
-                        pageCount={10}
-                        marginPagesDisplayed={2}
-                        pageRangeDisplayed={1}
-
-                        breakClassName={'page-item'}
-                        breakLinkClassName={'page-link'}
-                        containerClassName={'pagination'}
-                        pageClassName={'page-item'}
-                        pageLinkClassName={'page-link'}
-                        previousClassName={'page-item'}
-                        previousLinkClassName={'page-link'}
-                        nextClassName={'page-item'}
-                        nextLinkClassName={'page-link'}
-                        activeClassName={'active'}
-                      />
-
                     </Col>
                   </Row>
 

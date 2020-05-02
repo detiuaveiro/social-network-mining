@@ -6,7 +6,7 @@ import api.serializers as serializers
 from api import neo4j
 import json
 from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
-from api.queries_utils import paginator_factory
+from api.queries_utils import paginator_factory, paginator_factory_non_queryset, convert_policy
 
 logger = logging.getLogger('queries')
 
@@ -104,16 +104,21 @@ def twitter_user_stats(id, entries_per_page, page):
 def twitter_user_stats_grouped(id, types):
 	try:
 		start_date = UserStats.objects.filter(user_id=id).order_by('timestamp').values('timestamp')[0]['timestamp']
+
 		query = "UserStats.objects.filter(user_id=id)"
 		for type in types:
 			query += f".annotate({type}=Extract{type.title()}('timestamp'))"
 
 		order_by_list = [f"'{type}'" for type in types]
-		query += f".values('{type}').annotate(sum_followers=Sum('followers'), sum_following=Sum('following')).order_by({','.join(order_by_list)})"
+		query += f".values({','.join(order_by_list)}).annotate(sum_followers=Sum('followers'), sum_following=Sum('following')).order_by({','.join(order_by_list)})"
 
-		users_stats = eval(query)
+		users_stats = []
+		for obj in list(eval(query)):
+			full_date = '/'.join(str(obj.pop(type)) for type in types)
+			obj['full_date'] = full_date
+			users_stats.append(obj)
 
-		return True, {'data': list(users_stats),
+		return True, {'data': users_stats,
 					  'start_date': start_date}, "Sucesso a obter os dados dos utilizadores agrupados"
 
 	except Exception as e:
@@ -139,21 +144,25 @@ def twitter_user_tweets(id, entries_per_page, page):
 		return False, None, f"Erro a obter os tweets do utilizador de id {id}"
 
 
-def twitter_user_followers(id):
+def twitter_user_followers(id, entries_per_page, page):
 	try:
 		followers = neo4j.get_followers({'id': id})
 
-		return True, followers, "Sucesso a obter todos os followers do utilizador pedido"
+		data = paginator_factory_non_queryset(followers, entries_per_page, page)
+
+		return True, data, "Sucesso a obter todos os followers do utilizador pedido"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
 		return False, None, f"Erro a obter os followers do utilizador de id {id}"
 
 
-def twitter_user_following(id):
+def twitter_user_following(id, entries_per_page, page):
 	try:
 		following = neo4j.get_following({'id': id})
 
-		return True, following, "Sucesso a obter todos os utilizadores que o utilizador pedido segue"
+		data = paginator_factory_non_queryset(following, entries_per_page, page)
+
+		return True, data, "Sucesso a obter todos os utilizadores que o utilizador pedido segue"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {e}")
 		return False, None, f"Erro a obter os utilizadores que o utilizador de id {id} segue"
@@ -272,7 +281,7 @@ def policy(id):
 	"""
 	try:
 		policy_by_id = Policy.objects.get(id=id)
-		return True, serializers.Policy(policy_by_id).data, "Sucesso a obter a politica"
+		return True, convert_policy(serializers.Policy(policy_by_id).data), "Sucesso a obter a politica"
 	except Policy.DoesNotExist:
 		return False, None, f"O id {id} não existe na base de dados"
 	except Exception as e:
@@ -287,7 +296,7 @@ def policies():
 	"""
 	try:
 		all_policies = Policy.objects.all()
-		data = [serializers.Policy(policy).data for policy in all_policies]
+		data = [convert_policy(serializers.Policy(policy).data) for policy in all_policies]
 		return True, data, "Sucesso a obter todas as politicas"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {policies.__name__} -> {e}")
@@ -301,7 +310,7 @@ def bot_policies(id):
 	"""
 	try:
 		policies = Policy.objects.filter(bots__contains=[id])
-		data = [serializers.Policy(policy).data for policy in policies]
+		data = [convert_policy(serializers.Policy(policy).data) for policy in policies]
 		return True, data, f"Sucesso a obter as politicas do bot {id}"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {bot_policies.__name__} -> {e}")
@@ -332,7 +341,7 @@ def add_policy(data):
 			return False, policy_serializer.errors, "Dados invalidos!"
 
 		for bot_id in policy_serializer.data['bots']:
-			if not neo4j.check_bot_exists(bot_id):
+			if not neo4j.check_bot_exists(str(bot_id)):
 				raise AddPolicyError("IDs dos bots invalidos")
 
 		status = Policy.objects.filter(API_type=policy_serializer.data['API_type'],
@@ -399,7 +408,7 @@ def policy_by_service(service):
 	:return: status(boolean), data, message(string)
 	"""
 	try:
-		data = [serializers.Policy(policy).data for policy in Policy.objects.filter(API_type=service)]
+		data = [convert_policy(serializers.Policy(policy).data) for policy in Policy.objects.filter(API_type=service)]
 		return True, data, f"Sucesso a obter as politicas do {service}"
 
 	except Exception as e:
@@ -458,6 +467,7 @@ def twitter_bots():
 	"""
 	try:
 		bots_ids = [int(bot['id']) for bot in neo4j.search_bots()]
+		print(bots_ids)
 		data = [serializers.User(user).data for user in User.objects.filter(user_id__in=bots_ids)]
 
 		return True, data, f"Sucesso a obter a informação de todos os bots"

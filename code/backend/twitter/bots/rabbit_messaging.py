@@ -11,6 +11,10 @@ from bots.utils import current_time, from_json
 
 logger = logging.getLogger("rabbit-messaging")
 logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(open("rabbit_messaging.log", "w"))
+handler.setFormatter(logging.Formatter(
+	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
+logger.addHandler(handler)
 
 
 class MessagingSettings:
@@ -24,7 +28,8 @@ class MessagingSettings:
 
 
 class RabbitMessaging:
-	def __init__(self, url, username, password, vhost, settings: Dict[str, MessagingSettings], reconnect_max_iterations=5):
+	def __init__(self, url, username, password, vhost, settings: Dict[str, MessagingSettings],
+	             reconnect_max_iterations=5):
 		self.__url = url
 		self.__username = username
 		self.__password = password
@@ -45,6 +50,7 @@ class RabbitMessaging:
 
 		:param function: function to decorate
 		"""
+
 		def wrapper(self, *args, **kwargs):
 			for current_reconnect in range(self.__reconnect_max_iterations):
 				try:
@@ -55,6 +61,7 @@ class RabbitMessaging:
 
 					if current_reconnect == self.__reconnect_max_iterations - 1:
 						raise error
+
 		return wrapper
 
 	def __connect(self):
@@ -64,12 +71,12 @@ class RabbitMessaging:
 	def _setup_messaging(self):
 		"""Private method for setting up the messaging connections
 		"""
-		
+
 		for current_setting_name in self.settings:
 			current_setting = self.settings[current_setting_name]
-			
+
 			logger.info(f"Setting up Messaging to: {current_setting}\n"
-						 f"Connecting to exchange {current_setting.exchange}")
+			            f"Connecting to exchange {current_setting.exchange}")
 			self.__messaging.create_exchange(vhost=self.vhost, name=current_setting.exchange, xtype="direct")
 
 			if current_setting.queue:
@@ -78,7 +85,7 @@ class RabbitMessaging:
 
 				logger.info(f"Binding exchange to queue {current_setting.queue} with key {current_setting.routing_key}")
 				self.__messaging.create_binding(vhost=self.vhost, exchange=current_setting.exchange,
-											  queue=current_setting.queue, rt_key=current_setting.routing_key)
+				                                queue=current_setting.queue, rt_key=current_setting.routing_key)
 
 			logger.info(f"Connected to Messaging Service using: {current_setting.__str__()}")
 			logger.info("---------------------------------------")
@@ -93,7 +100,8 @@ class RabbitMessaging:
 		"""
 
 		send_to = self.settings[send_to]
-		logger.debug(f"Sending message <{data}> to exchange <{send_to.exchange}> with routing_key <{send_to.routing_key}>")
+		logger.debug(
+			f"Sending message <{data}> to exchange <{send_to.exchange}> with routing_key <{send_to.routing_key}>")
 		self.__messaging.publish(vhost=self.vhost, xname=send_to.exchange, rt_key=send_to.routing_key, payload=data)
 
 	def _receive_message(self, receive_from: str) -> Dict:

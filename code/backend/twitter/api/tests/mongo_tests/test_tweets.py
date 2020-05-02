@@ -14,7 +14,7 @@ def factory():
 
 @pytest.fixture
 def tweet(db):
-    return mixer.blend(Tweet, tweet_id=1, in_reply_to_status_id=1)
+    return mixer.blend(Tweet, tweet_id="1", in_reply_to_status_id="1")
 
 
 @pytest.fixture
@@ -49,31 +49,31 @@ def test_unsuccessfully_twitter_tweets_request(error_catcher, factory, db):
 
 @catch_exception
 def test_successful_twitter_tweet_request(error_catcher, factory, tweet):
-    path = reverse('twitter_tweet', kwargs={'id': 1})
+    path = reverse('twitter_tweet', kwargs={'id': "1"})
     request = factory.get(path)
-    response = tweets.twitter_tweet(request, id=1)
+    response = tweets.twitter_tweet(request, id="1")
     assert is_response_successful(response)
 
 
 @catch_exception
 def test_unsuccessfully_twitter_tweet_request(error_catcher, factory, db):
-    path = reverse('twitter_tweet', kwargs={'id': 1})
+    path = reverse('twitter_tweet', kwargs={'id': "1"})
     request = factory.get(path)
-    response = tweets.twitter_tweet(request, id=1)
+    response = tweets.twitter_tweet(request, id="1")
     assert is_response_unsuccessful(response)
 
 
 @catch_exception
 def test_successful_twitter_tweet_replies_request(error_catcher, factory, tweet):
-    path = reverse('twitter_tweet_replies', kwargs={'id': 1})
+    path = reverse('twitter_tweet_replies', kwargs={'id': "1"})
     request = factory.get(path)
-    response = tweets.twitter_tweet_replies(request, id=1)
+    response = tweets.twitter_tweet_replies(request, id="1")
     assert is_response_successful(response)
 
 
 @catch_exception
 def test_unsuccessfully_twitter_tweet_replies_request(error_catcher, factory, db):
-    path = reverse('twitter_tweet_replies', kwargs={'id': 1})
+    path = reverse('twitter_tweet_replies', kwargs={'id': "1"})
     request = factory.get(path)
-    response = tweets.twitter_tweet_replies(request, id=1)
+    response = tweets.twitter_tweet_replies(request, id="1")
     assert is_response_unsuccessful(response)
