@@ -79,9 +79,11 @@ urlpatterns = [
 
 	url(r"^twitter/tweets/(?P<id>[0-9]+)/replies/$", tweets.twitter_tweet_replies, name="twitter_tweet_replies"),
 
-	path("policies", policies.policies, name="policies"),
+	url(r"^policies/$", policies.policies, name="policies"),
+	url(r"^policies/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", policies.policies, name="policies"),
 	url(r"^policies/(?P<id>[0-9]+)/$", policies.policy, name="policy"),
 	url(r"^policies/bots/(?P<id>[0-9]+)/$", policies.bot_policies, name="bot_policies"),
+	url(r"^policies/bots/(?P<id>[0-9]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", policies.bot_policies, name="bot_policies"),
 	path("policies/add", policies.add_policy, name="add_policy"),
 	url(r"^policies/remove/(?P<id>[0-9]+)/$", policies.remove_policy, name="remove_policy"),
 	url(r"^policies/update/(?P<id>[0-9]+)/$", policies.update_policy, name="update_policy"),
