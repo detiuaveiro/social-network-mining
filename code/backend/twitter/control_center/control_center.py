@@ -871,8 +871,8 @@ class Control_Center(Rabbitmq):
 	def run(self):
 		while True:
 			self._receive()
+			self._close()
 
 	def close(self):
 		self.neo4j_client.close()
 		self.pep.pdp.close()
-		self._close()
