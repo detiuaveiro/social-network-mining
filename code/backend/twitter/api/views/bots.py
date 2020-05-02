@@ -40,7 +40,7 @@ def twitter_bot(_, id):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_bot(int(id))
+	success, data, message = queries.twitter_bot(id)
 	if success:
 		success_messages.append(message)
 	else:

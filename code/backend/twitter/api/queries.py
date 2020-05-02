@@ -6,7 +6,7 @@ import api.serializers as serializers
 from api import neo4j
 import json
 from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
-from api.queries_utils import paginator_factory, paginator_factory_non_queryset
+from api.queries_utils import paginator_factory, paginator_factory_non_queryset, convert_policy
 
 logger = logging.getLogger('queries')
 
@@ -281,7 +281,7 @@ def policy(id):
 	"""
 	try:
 		policy_by_id = Policy.objects.get(id=id)
-		return True, serializers.Policy(policy_by_id).data, "Sucesso a obter a politica"
+		return True, convert_policy(serializers.Policy(policy_by_id).data), "Sucesso a obter a politica"
 	except Policy.DoesNotExist:
 		return False, None, f"O id {id} não existe na base de dados"
 	except Exception as e:
@@ -296,7 +296,7 @@ def policies():
 	"""
 	try:
 		all_policies = Policy.objects.all()
-		data = [serializers.Policy(policy).data for policy in all_policies]
+		data = [convert_policy(serializers.Policy(policy).data) for policy in all_policies]
 		return True, data, "Sucesso a obter todas as politicas"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {policies.__name__} -> {e}")
@@ -310,7 +310,7 @@ def bot_policies(id):
 	"""
 	try:
 		policies = Policy.objects.filter(bots__contains=[id])
-		data = [serializers.Policy(policy).data for policy in policies]
+		data = [convert_policy(serializers.Policy(policy).data) for policy in policies]
 		return True, data, f"Sucesso a obter as politicas do bot {id}"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {bot_policies.__name__} -> {e}")
@@ -341,7 +341,7 @@ def add_policy(data):
 			return False, policy_serializer.errors, "Dados invalidos!"
 
 		for bot_id in policy_serializer.data['bots']:
-			if not neo4j.check_bot_exists(bot_id):
+			if not neo4j.check_bot_exists(str(bot_id)):
 				raise AddPolicyError("IDs dos bots invalidos")
 
 		status = Policy.objects.filter(API_type=policy_serializer.data['API_type'],
@@ -408,7 +408,7 @@ def policy_by_service(service):
 	:return: status(boolean), data, message(string)
 	"""
 	try:
-		data = [serializers.Policy(policy).data for policy in Policy.objects.filter(API_type=service)]
+		data = [convert_policy(serializers.Policy(policy).data) for policy in Policy.objects.filter(API_type=service)]
 		return True, data, f"Sucesso a obter as politicas do {service}"
 
 	except Exception as e:
