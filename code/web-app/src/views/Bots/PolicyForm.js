@@ -76,13 +76,9 @@ class PolicyForm extends Component {
                 var tempPolicies = []
 
                 data.forEach(policy => {
-                    console.log(policy.bots)
-                    console.log(this.props.bot.user_id)
-
-                    if (!policy.bots.includes(this.props.bot.user_id + "")) {
-                        console.log("equals")
-                        tempPolicies.push({ 'value': policy, 'label': "(" + policy.filter + ") " + policy.name });
-                    }
+                    //if (!policy.bots.includes(this.props.bot.user_id)) {
+                    tempPolicies.push({ 'value': policy, 'label': "(" + policy.filter + ") " + policy.name });
+                    //}
                 })
 
 
@@ -260,21 +256,42 @@ class PolicyForm extends Component {
             var bots = this.state.selectedPolicy.value.bots
             bots.push(this.props.bot.user_id)
 
-            toast.error('Oof', {
-                position: "top-center",
-                autoClose: 7500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true
-            });
-
-            /*
             await this.setState({
-                success:true,
-                goBack: true
+                processing: true
             })
-            */
+
+            await fetch(baseURL + "policies/update/" + this.state.selectedPolicy.value.id + "/", {
+                method: "PUT",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    bots: bots
+                })
+            }).then(response => {
+                if (response.ok) return response.json();
+                else {
+                    throw new Error(response.status);
+                }
+            }).then(data => {
+                this.setState({
+                    processing: false
+                })
+
+
+                this.setState({
+                    success: true,
+                    goBack: true
+                })
+
+            }).catch(error => {
+                console.log("error: " + error);
+                this.setState({
+                    processing: false,
+                    error: true,
+                })
+            });
         }
     }
     /////////////////////////////////////////////////////////////////////
@@ -418,7 +435,7 @@ class PolicyForm extends Component {
                                                             classNamePrefix="select"
                                                             placeholder="Filter"
                                                         />
-                                                        <i data-tip="Target specifies the twitter name of users you want the bot to attempt follow, whilst Keywords define tags that a tweet should be classified as for the bot to have interest in" style={{ color: "#1da1f2", float: "right", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
+                                                        <i data-tip="Target specifies the twitter name of users you want the bot to attempt to follow, whilst Keywords define tags that a tweet should be classified as for the bot to have interest in" style={{ color: "#1da1f2", float: "right", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
                                                     </FormGroup>
                                                 </Col>
                                             </Row>
@@ -465,12 +482,12 @@ class PolicyForm extends Component {
                                                 <Col sm="12" md="12" xs="12">
                                                     <Select
                                                         defaultValue={[]}
-                                                        id="findNode" onChange={this.changeSelectedPolicy}
+                                                        id="findNode"
+                                                        onChange={this.changeSelectedPolicy}
                                                         value={this.state.selectedPolicy || ''}
                                                         options={this.state.allPolicies}
                                                         className="basic-single"
                                                         classNamePrefix="select"
-                                                        noOptionsMessage="No policies have been defined yet..."
                                                         placeholder="Select from a list of existing policies"
                                                     />
                                                 </Col>
