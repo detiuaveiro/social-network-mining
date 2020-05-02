@@ -48,8 +48,8 @@ class Rabbitmq:
             port=port,
             virtual_host=vhost,
             credentials=pika_credentials,
-            heartbeat=600,
-            blocked_connection_timeout=300
+            heartbeat=1000,
+            blocked_connection_timeout=1000
         )
 
         self.reconnection_attempt = 0
