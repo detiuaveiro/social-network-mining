@@ -156,12 +156,17 @@ chmod +x import_databases.sh
 ### MongoDB
  - Access
  ```bash
- mongoimport --db twitter --collection tweets --file scripts/mongodb/tweets.json -u user -p password
- mongoimport --db twitter --collection users --file scripts/mongodb/users.json -u user -p password
+ > mongoimport --db twitter --collection tweets --file scripts/mongodb/tweets.json -u user -p password
+ > mongoimport --db twitter --collection users --file scripts/mongodb/users.json -u user -p password
  ```
 
  - Indexation
  ```javascript
+ > db.users.createIndex({id_str: 1}, { unique:true })
+ > db.users.createIndex({id: 1}, { unique:true })
+ > db.users.createIndex({screen_name: 1}, { unique:true })
+ > db.tweets.createIndex({id: 1}, { unique:true })
+ > db.tweets.createIndex({id_str: 1}, { unique:true })
  ```
 
 
