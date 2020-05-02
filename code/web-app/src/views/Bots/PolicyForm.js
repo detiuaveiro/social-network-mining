@@ -76,7 +76,13 @@ class PolicyForm extends Component {
                 var tempPolicies = []
 
                 data.forEach(policy => {
-                    tempPolicies.push({ 'value': policy, 'label': "(" + policy.filter + ") " + policy.name });
+                    console.log(policy.bots)
+                    console.log(this.props.bot.user_id)
+
+                    if (!policy.bots.includes(this.props.bot.user_id + "")) {
+                        console.log("equals")
+                        tempPolicies.push({ 'value': policy, 'label': "(" + policy.filter + ") " + policy.name });
+                    }
                 })
 
 
@@ -154,8 +160,15 @@ class PolicyForm extends Component {
     }
 
     addNewTags = (newValue, actionMeta) => {
+        var tags = []
+        if (newValue != null && newValue.length > 0) {
+            newValue.forEach(tag => {
+                tags.push(tag['value'])
+            })
+        }
+
         this.setState({
-            tags: newValue
+            tags: tags
         })
     };
     /////////////////////////////////////////////////////////////////////
@@ -167,64 +180,85 @@ class PolicyForm extends Component {
         } else {
             document.getElementById("errorNew").style.visibility = "hidden"
 
-            var name = document.getElementById("name").value
+            await this.setState({
+                processing: true
+            })
 
-            console.log(this.props.bot.user_id)
             await fetch(baseURL + "policies/add", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
                 },
-                body: {
-                    "API_type": "Twitter",
-                    "filter": this.state.filter,
-                    "name": name,
-                    "tags": this.state.tags,
-                    "bots": [this.props.bot.user_id]
-                }
+                body: JSON.stringify({
+                    API_type: "Twitter",
+                    filter: this.state.filter.value,
+                    name: document.getElementById("name").value,
+                    tags: this.state.tags,
+                    bots: [this.props.bot.user_id]
+                })
             }).then(response => {
                 if (response.ok) return response.json();
                 else {
-                    if (response.status === 409) {
-                        return response.json()
-                    }else{
+                    if (response.status === 403) {
+                        return { error: response.json(), code: 403 }
+                    } else if (response.status === 409) {
+                        return { error: response.json(), code: 409 }
+                    } else {
                         throw new Error(response.status);
                     }
                 }
             }).then(data => {
-                console.log(data)
+                this.setState({
+                    processing: false
+                })
+
+                if (data.code != null) {
+                    if (data.code == 403) {
+                        toast.error('There already exists a policy with that name!', {
+                            position: "top-center",
+                            autoClose: 7500,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true
+                        });
+                    } else {
+                        toast.error('There already exists a policy with those tags! (Two policies can\'t share more than 1 tag in common)', {
+                            position: "top-center",
+                            autoClose: 7500,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true
+                        });
+                    }
+                } else {
+                    this.setState({
+                        success: true,
+                        goBack: true
+                    })
+                }
+
             }).catch(error => {
                 console.log("error: " + error);
-
+                this.setState({
+                    processing: false,
+                    error: true,
+                })
             });
-
-
-
-
-            toast.error('Oof', {
-                position: "top-center",
-                autoClose: 7500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true
-            });
-
-            /*
-            await this.setState({
-                success:true,
-                goBack: true
-            })
-            */
         }
     }
 
     async confirmExisting() {
 
-        if (this.state.selectedPolicy == null || this.state.selectedOption == "") {
+        if (this.state.selectedPolicy == null || this.state.selectedPolicy == "") {
             document.getElementById("errorExisting").style.visibility = ""
         } else {
             document.getElementById("errorExisting").style.visibility = "hidden"
+
+            var bots = this.state.selectedPolicy.value.bots
+            bots.push(this.props.bot.user_id)
 
             toast.error('Oof', {
                 position: "top-center",
@@ -304,8 +338,23 @@ class PolicyForm extends Component {
                     )
                 }
             } else {
+                var processing = <div></div>
+                if (this.state.processing) {
+                    processing = <div id="loading">
+                        <div className="animated fadeOut animated" style={{ width: "100%", height: "100%", top: 0, left: 0, position: "absolute", backgroundColor: "white", opacity: 0.6, zIndex: 11 }}>
+                        </div>
+                        <div style={{ zIndex: 11, position: "relative" }}>
+                            <div className="animated fadeOut animated" style={{ width: "100%", marginTop: "10%", position: "absolute", zIndex: 12 }}>
+                                <FadeIn>
+                                    <Lottie options={this.state.animationOptions} height={"30%"} width={"30%"} />
+                                </FadeIn>
+                            </div>
+                        </div>
+                    </div>
+                }
                 return (
                     <div className="animated fadeIn">
+                        {processing}
                         <Container fluid>
                             <ReactTooltip
                                 place="right"
@@ -337,7 +386,7 @@ class PolicyForm extends Component {
                                         <CardBody>
                                             <Button block outline color="danger" onClick={() => this.handleGoBack()} style={{
                                                 width: "150px", marginTop: "15px", borderWidth: "2px"
-                                            }}><i class="fas fa-chevron-left" data-tip="oof"></i> Go Back</Button>
+                                            }}><i class="fas fa-chevron-left"></i> Go Back</Button>
                                         </CardBody>
                                     </Card>
                                 </Col>
@@ -369,7 +418,7 @@ class PolicyForm extends Component {
                                                             classNamePrefix="select"
                                                             placeholder="Filter"
                                                         />
-                                                        <i data-tip="hello world" style={{ color: "#1da1f2", float: "right", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
+                                                        <i data-tip="Target specifies the twitter name of users you want the bot to attempt follow, whilst Keywords define tags that a tweet should be classified as for the bot to have interest in" style={{ color: "#1da1f2", float: "right", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
                                                     </FormGroup>
                                                 </Col>
                                             </Row>

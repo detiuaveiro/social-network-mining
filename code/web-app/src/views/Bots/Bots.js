@@ -79,7 +79,7 @@ class Bots extends Component {
 
         data.forEach(bot => {
           var tempInfo = []
-          tempInfo.push("" + bot.screen_name);
+          tempInfo.push("@" + bot.screen_name);
           tempInfo.push("" + bot.name);
           tempInfo.push("" + bot.followers_count);
           tempInfo.push("" + bot.friends_count);

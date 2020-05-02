@@ -238,7 +238,7 @@ class BotProfile extends Component {
 
                     tempInfo.push(
                         <Button block outline color="primary"
-                            onClick={() => this.handleOpenProfile(user.id)}
+                            onClick={() => this.handleOpenProfile(user)}
                         >
                             <i class="far fa-user-circle"></i>
                             <strong style={{ marginLeft: "3px" }}>Profile</strong>
@@ -279,7 +279,7 @@ class BotProfile extends Component {
     }
 
     async getFollowings(page) {
-        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/followers/5/" + page + "/", {
+        await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/following/5/" + page + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -307,7 +307,7 @@ class BotProfile extends Component {
                     }
                     tempInfo.push(
                         <Button block outline color="primary"
-                            onClick={() => this.handleOpenProfile(user.id)}
+                            onClick={() => this.handleOpenProfile(user)}
                         >
                             <i class="far fa-user-circle"></i>
                             <strong style={{ marginLeft: "3px" }}>Profile</strong>
@@ -363,11 +363,18 @@ class BotProfile extends Component {
 
                 var tempActivities = []
 
-                console.log(data)
-
-                data.entries.forEach(user => {
+                data.entries.forEach(activity => {
                     var tempInfo = []
+                    tempInfo.push(activity.action)
+                    tempInfo.push(activity.target_id)
 
+                    var date = new Date(activity.timestamp)
+
+                    date = date.toString()
+                    date = date.split(" ")
+                    date = date[4] + " · " + date[1] + " " + date[2] + ", " + date[3] + " (" + date[0] + ")"
+
+                    tempInfo.push(date)
 
                     tempActivities.push(tempInfo);
                 })
@@ -385,7 +392,7 @@ class BotProfile extends Component {
                 this.setState({
                     activities: {
                         data: tempActivities,
-                        noPage: data.num_pages,
+                        noPage: data.num_pages-1,
                         curPage: curPage,
                         empty: empty
                     }
@@ -431,7 +438,7 @@ class BotProfile extends Component {
                         tags += ", "
                     })
 
-                    tags = tags.substr(1, tags.length - 1)
+                    tags = tags.substr(1, tags.length - 2)
                     if (tags.length > 20) {
                         tags = tags.substr(1, 20) + "..."
                     }
@@ -563,11 +570,11 @@ class BotProfile extends Component {
         }
 
         // Get Stats
-        /*
+
         if (this.state.error == null) {
             await this.getStats("month")
         }
-        */
+
 
         // Get Followers
         if (this.state.error == null) {
@@ -585,11 +592,11 @@ class BotProfile extends Component {
         }
 
         // Get Policy
-        /*
         if (this.state.error == null) {
             await this.getPolicies(1)
         }
-        */
+
+
 
         await this.setState({ doneLoading: true })
 
@@ -608,10 +615,13 @@ class BotProfile extends Component {
     handleOpenProfile(user) {
         var list = this.state.redirectionList
         list.push({ type: "BOT_PROFILE", info: this.state.userInfo })
-        this.setState({
-            redirectUser: user,
-            redirectionList: list
-        })
+
+        if (user.label != null) {
+            this.setState({
+                redirectUser: {"user": user.id, "type": user.label},
+                redirectionList: list
+            })
+        }
     }
 
     handleOpenNewPolicy() {
@@ -799,6 +809,17 @@ class BotProfile extends Component {
                     <PolicyForm redirection={this.state.redirectionList} bot={this.state.userInfo}></PolicyForm>
                 )
             } else {
+                if(this.state.redirectUser.type != null){
+                    if(this.state.redirectUser.type == "Bot"){
+                        return (
+                            <BotProfile nextUser={this.state.redirectUser.user} redirection={this.state.redirectionList}></BotProfile>
+                        )
+                    }else{
+                        return (
+                            <UserProfile nextUser={this.state.redirectUser.user} redirection={this.state.redirectionList}></UserProfile>
+                        )
+                    }
+                }
                 return (
                     <BotProfile nextUser={this.state.redirectUser} redirection={this.state.redirectionList}></BotProfile>
                 )
@@ -869,7 +890,6 @@ class BotProfile extends Component {
 
                         var media = <div></div>
                         if (this.state.tweets.tweet.extended_entities != null) {
-                            console.log(this.state.tweets.tweet.extended_entities.media[0])
                             if (this.state.tweets.tweet.extended_entities.media[0].type == "photo") {
                                 if (this.state.tweets.tweet.extended_entities.media.length == 1) {
                                     media =
@@ -1428,8 +1448,8 @@ class BotProfile extends Component {
                                 }}>
                                 <Table
                                     tableHeaderColor="primary"
-                                    tableHead={["Username", "Name", "Type", ""]}
-                                    tableData={this.state.followings.data}
+                                    tableHead={["Type", "User", "Date"]}
+                                    tableData={this.state.activities.data}
                                 />
 
                             </div>
@@ -1641,7 +1661,7 @@ class BotProfile extends Component {
                             </Row>
 
                             <Row>
-                                <Col xs="12" sm="12" md="6">
+                                <Col xs="12" sm="12" md="4">
                                     <Card>
                                         <CardHeader color="primary">
                                             <h4 style={{
@@ -1667,7 +1687,7 @@ class BotProfile extends Component {
                                     </Card>
                                 </Col>
 
-                                <Col xs="12" sm="12" md="6">
+                                <Col xs="12" sm="12" md="8">
                                     <Card>
                                         <CardHeader color="primary">
                                             <h4 style={{
