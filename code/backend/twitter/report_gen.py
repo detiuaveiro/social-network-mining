@@ -37,44 +37,67 @@ class Report:
 		self.exporter = Report.__Exporter(EXPORT_DIR)
 
 	def __node_builder(self, node):
-		node_start = "("
+		query_node = "("
 
 		if len(node) > 0:
 			if "label" in node:
-				node_start += ":" + "|".join(node['label'])
-			elif
+				query_node += ":" + "|".join(node['label'])
 
-		return node_start+")"
+		return query_node+")"
+
+	def __relation_builder(self, rel):
+		query_rel = "["
+		if len(rel) > 0:
+			if 'label' in rel:
+				query_rel += ":" + "|".join(rel['label'])
+			if 'depth_start' in rel:
+				query_rel += "*" + str(rel['depth_start'])
+			if 'depth_end' in rel:
+				query_rel += ".."+str(rel['depth_end'])
+		return query_rel + "]"
 
 	def create_report(self, match: dict, params: dict, limit: int = None, export='csv'):
-		query = "MATCH "
-		if not params:
-			params = {}
-
-		query = match + " RETURN " + ",".join(params.keys())
+		query = f"MATCH r={self.__node_builder(match['start'])}" \
+				f"-{self.__relation_builder(match['rel'])}" \
+				f"->{self.__node_builder(match['end'])} " \
+				f"return r"
+		logger.info(query)
 
 		if limit:
 			query += " limit " + str(limit)
 
 		result = []
-		logger.info(self.neo.export_query(query, rel_node_properties=True))
-		for row in self.neo.export_query(query, rel_node_properties=True):
-			row_dict = {}
-			for key in row:
-				if type(row[key]) is dict:
-					if row[key]['labels'] == ['Tweet']:
-						row_dict[key] = self.mongo.search(
-							'tweets', query={"id_str": row[key]['properties']['id']}, fields=params[key], single=True)
-						if not row_dict[key]:
-							row_dict[key] = {prop: None for prop in params[key]}
+
+		query_result = self.neo.export_query(query, rel_node_properties=True)
+
+		for row in query_result:
+			# Analyse each row by looking at its rels field
+			relations = row['r']['rels']
+			relation = {}
+			for index in range(len(relations)):
+				rel = relations[index]
+				if rel == 0:
+					# Add the starter params
+					node_type = rel["start"]["labels"][0]
+					if node_type == "Tweet":
+						relation["start"] = self.mongo.search(
+							'tweets', query={"id_str": rel["start"]['properties']['id']},
+							fields=params['start'][node_type], single=True)
 					else:
-						row_dict[key] = self.mongo.search(
-							'users', query={"id_str": row[key]['properties']['id']}, fields=params[key], single=True)
-						if not row_dict[key]:
-							row_dict[key] = {prop: None for prop in params[key]}
-				else:
-					row_dict[key] = {'name': row[key][0]['label']}
-			result.append(row_dict)
+						relation["start"] = self.mongo.search(
+							'users', query={"id_str": rel["start"]['properties']['id']},
+							fields=params['start'][node_type], single=True)
+
+				elif rel == len(relations) - 1:
+					node_type = rel["end"]["labels"][0]
+					if node_type == "Tweet":
+						relation["end"] = self.mongo.search(
+							'tweets', query={"id_str": rel["end"]['properties']['id']},
+							fields=params['end'][node_type], single=True)
+					else:
+						relation["end"] = self.mongo.search(
+							'users', query={"id_str": rel["end"]['properties']['id']},
+							fields=params['end'][node_type], single=True)
 
 		if export == self.ExportType.CSV:
 			self.exporter.export_csv(result)
@@ -117,7 +140,7 @@ if __name__ == '__main__':
 			'label': ['FOLLOWS', 'WROTE']
 		},
 		'end': {
-			'label': 'User'
+			'label': ['User']
 		}
 	}
 	params = {
