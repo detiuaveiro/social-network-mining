@@ -208,7 +208,7 @@ class UserProfile extends Component {
                 data.entries.forEach(user => {
                     var tempInfo = []
 
-                    tempInfo.push(user.username)
+                    tempInfo.push("@"+user.username)
                     tempInfo.push(user.name)
 
                     if (user.label == "Bot") {
@@ -235,16 +235,11 @@ class UserProfile extends Component {
                     empty = true
                 }
 
-                var curPage = data.next_page - 1
-                if (curPage <= 0) {
-                    curPage = 1
-                }
-
                 this.setState({
                     followers: {
                         data: tempUsers,
                         noPage: data.num_pages,
-                        curPage: curPage,
+                        curPage: page,
                         empty: empty
                     }
                 })
@@ -279,7 +274,7 @@ class UserProfile extends Component {
                 data.entries.forEach(user => {
                     var tempInfo = []
 
-                    tempInfo.push(user.username)
+                    tempInfo.push("@"+user.username)
                     tempInfo.push(user.name)
                     if (user.label == "Bot") {
                         tempInfo.push(<span><i class="fas fa-robot" style={{ color: "#1da1f2" }}></i> Bot</span>)
@@ -303,16 +298,11 @@ class UserProfile extends Component {
                     empty = true
                 }
 
-                var curPage = data.next_page - 1
-                if (curPage <= 0) {
-                    curPage = 1
-                }
-
                 this.setState({
                     followings: {
                         data: tempUsers,
                         noPage: data.num_pages,
-                        curPage: curPage,
+                        curPage: page,
                         empty: empty
                     }
                 })
