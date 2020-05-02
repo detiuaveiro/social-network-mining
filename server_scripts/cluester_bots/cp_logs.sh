@@ -4,7 +4,7 @@ bot_logs=(bot_agent.log)
 
 cd ~/PI_2020/logs/
 
-now=$(date)
+now=$(date "+%A %B %d %T %y")
 dir_name=${now// /_}
 dir_name=${dir_name//:/_}
 mkdir $dir_name

@@ -104,15 +104,21 @@ def twitter_user_stats(id, entries_per_page, page):
 def twitter_user_stats_grouped(id, types):
 	try:
 		start_date = UserStats.objects.filter(user_id=id).order_by('timestamp').values('timestamp')[0]['timestamp']
+
 		query = "UserStats.objects.filter(user_id=id)"
 		for type in types:
 			query += f".annotate({type}=Extract{type.title()}('timestamp'))"
 
 		order_by_list = [f"'{type}'" for type in types]
-		query += f".values('{type}').annotate(sum_followers=Sum('followers'), sum_following=Sum('following')).order_by({','.join(order_by_list)})"
-		users_stats = eval(query)
+		query += f".values({','.join(order_by_list)}).annotate(sum_followers=Sum('followers'), sum_following=Sum('following')).order_by({','.join(order_by_list)})"
 
-		return True, {'data': list(users_stats),
+		users_stats = []
+		for obj in list(eval(query)):
+			full_date = '/'.join(str(obj.pop(type)) for type in types)
+			obj['full_date'] = full_date
+			users_stats.append(obj)
+
+		return True, {'data': users_stats,
 					  'start_date': start_date}, "Sucesso a obter os dados dos utilizadores agrupados"
 
 	except Exception as e:
@@ -461,6 +467,7 @@ def twitter_bots():
 	"""
 	try:
 		bots_ids = [int(bot['id']) for bot in neo4j.search_bots()]
+		print(bots_ids)
 		data = [serializers.User(user).data for user in User.objects.filter(user_id__in=bots_ids)]
 
 		return True, data, f"Sucesso a obter a informação de todos os bots"
