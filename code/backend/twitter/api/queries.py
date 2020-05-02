@@ -341,7 +341,7 @@ def add_policy(data):
 			return False, policy_serializer.errors, "Dados invalidos!"
 
 		for bot_id in policy_serializer.data['bots']:
-			if not neo4j.check_bot_exists(bot_id):
+			if not neo4j.check_bot_exists(str(bot_id)):
 				raise AddPolicyError("IDs dos bots invalidos")
 
 		status = Policy.objects.filter(API_type=policy_serializer.data['API_type'],
