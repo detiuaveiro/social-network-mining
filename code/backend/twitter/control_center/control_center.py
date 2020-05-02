@@ -496,7 +496,7 @@ class Control_Center(Rabbitmq):
 		if is_bot:
 			log.info("It's a bot that's already been registered in the database")
 			# Update the info of the bot
-			exists_in_mongo=self.mongo_client.search(
+			exists_in_mongo = self.mongo_client.search(
 				collection="users",
 				query={"id_str": user['id_str']},
 				single=True
@@ -560,11 +560,12 @@ class Control_Center(Rabbitmq):
 		user_type = self.__user_type(user['id_str'])
 
 		if user_type == "" or 'name' not in user or not user['name']:
-			log.debug(f"Inserting blank user with id {user}")
 			blank_user = mongo_utils.BLANK_USER.copy()
 			blank_user["id"] = user['id']
 			blank_user["id_str"] = str(user['id'])
 			blank_user["screen_name"] = user['screen_name']
+
+			log.debug(f"Inserting blank user with id {blank_user['id']}")
 
 			log.info("Have to get the full information on the User")
 			self.send(
@@ -573,7 +574,7 @@ class Control_Center(Rabbitmq):
 				params=user['id_str']
 			)
 
-			data['data'] = blank_user 
+			data['data'] = blank_user
 
 		self.save_user(data)
 		return self.__user_type(user['id'])
@@ -804,7 +805,7 @@ class Control_Center(Rabbitmq):
 
 			self.__follow_user(follower['id_str'], user_id_str)
 
-		# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
+	# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
 
 	def send_keywords(self, data):
 		log.info("Starting to sending the keywords to the bot")
