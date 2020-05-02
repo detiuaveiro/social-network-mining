@@ -57,7 +57,7 @@ def twitter_tweet(request, id):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_tweet(int(id))
+	success, data, message = queries.twitter_tweet(id)
 	if success:
 		success_messages.append(message)
 	else:
@@ -77,7 +77,7 @@ def twitter_tweet_stats(request, id, entries_per_page=None, page=None):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_tweet_stats(int(id), entries_per_page, page)
+	success, data, message = queries.twitter_tweet_stats(id, entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
@@ -97,7 +97,7 @@ def twitter_tweet_replies(request,id):
     success_messages = []
     status = HTTP_200_OK
 
-    success, data, message = queries.twitter_tweet_replies(int(id))
+    success, data, message = queries.twitter_tweet_replies(id)
     if success:
         success_messages.append(message)
     else:
