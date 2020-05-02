@@ -21,6 +21,8 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
 import Bots from './Bots';
+import PolicyForm from './PolicyForm';
+import UserProfile from '../Users/UserProfile';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -78,6 +80,20 @@ class BotProfile extends Component {
         },
 
         followings: {
+            data: [],
+            noPage: 1,
+            curPage: 1,
+            empty: false
+        },
+
+        activities: {
+            data: [],
+            noPage: 1,
+            curPage: 1,
+            empty: false
+        },
+
+        policies: {
             data: [],
             noPage: 1,
             curPage: 1,
@@ -330,6 +346,138 @@ class BotProfile extends Component {
         });
     }
 
+    async getActivities(page) {
+        await fetch(baseURL + "twitter/bots/" + this.state.userInfo.user_id + "/logs/5/" + page + "/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).then(response => {
+            if (response.ok) return response.json();
+            else {
+                throw new Error(response.status);
+            }
+        }).then(data => {
+            if (data != null && data != {}) {
+                data = data.data
+
+                var tempActivities = []
+
+                console.log(data)
+
+                data.entries.forEach(user => {
+                    var tempInfo = []
+
+
+                    tempActivities.push(tempInfo);
+                })
+
+                var empty = false
+                if (tempActivities.length == 0) {
+                    empty = true
+                }
+
+                var curPage = data.next_page - 1
+                if (curPage <= 0) {
+                    curPage = 1
+                }
+
+                this.setState({
+                    activities: {
+                        data: tempActivities,
+                        noPage: data.num_pages,
+                        curPage: curPage,
+                        empty: empty
+                    }
+                })
+
+
+            }
+        }).catch(error => {
+            console.log("error: " + error);
+            this.setState({
+                error: error
+            })
+        });
+    }
+
+    async getPolicies(page) {
+        console.log(this.state.userInfo.user_id)
+        await fetch(baseURL + "policies/bots/" + this.state.userInfo.user_id + "/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).then(response => {
+            if (response.ok) return response.json();
+            else {
+                throw new Error(response.status);
+            }
+        }).then(data => {
+            if (data != null && data != {}) {
+                data = data.data
+
+                var tempPolicies = []
+
+                data.forEach(policy => {
+                    var tempInfo = []
+
+                    tempInfo.push(policy['name'])
+                    tempInfo.push(policy['filter'])
+
+                    var tags = ""
+                    policy.tags.forEach(tag => {
+                        tags += tag
+                        tags += ", "
+                    })
+
+                    tags = tags.substr(1, tags.length - 1)
+                    if (tags.length > 20) {
+                        tags = tags.substr(1, 20) + "..."
+                    }
+
+                    tempInfo.push(tags)
+
+                    tempInfo.push(<Button block outline color="danger"
+                        onClick={() =>
+                            this.handleOpenDelete(policy)
+                        }
+                    >
+                        <i class="fas fa-times"></i>
+                    </Button>)
+
+                    tempPolicies.push(tempInfo);
+                })
+
+                var empty = false
+                if (tempPolicies.length == 0) {
+                    empty = true
+                }
+
+                var curPage = data.next_page - 1
+                if (curPage <= 0) {
+                    curPage = 1
+                }
+
+                this.setState({
+                    policies: {
+                        data: tempPolicies,
+                        noPage: data.num_pages,
+                        curPage: curPage,
+                        empty: empty
+                    }
+                })
+
+
+            }
+        }).catch(error => {
+            console.log("error: " + error);
+            this.setState({
+                error: error
+            })
+        });
+    }
+
     async getUserInfo() {
         await fetch(baseURL + "twitter/users/" + this.props.nextUser + "/", {
             method: "GET",
@@ -421,27 +569,56 @@ class BotProfile extends Component {
         }
         */
 
-        // Get Activity
+        // Get Followers
         if (this.state.error == null) {
             await this.getFollowers(1)
         }
 
-        // Get Policy
+        // Get Followings
         if (this.state.error == null) {
             await this.getFollowings(1)
         }
 
-        this.setState({
-            doneLoading: true
-        })
+        // Get Activity
+        if (this.state.error == null) {
+            await this.getActivities(1)
+        }
 
+        // Get Policy
+        /*
+        if (this.state.error == null) {
+            await this.getPolicies(1)
+        }
+        */
+
+        await this.setState({ doneLoading: true })
+
+        if (this.props.success != null && this.props.success) {
+            toast.success('🏷️ New policy succesfully assigned!', {
+                position: "top-center",
+                autoClose: 2500,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true
+            });
+        }
     }
 
     handleOpenProfile(user) {
         var list = this.state.redirectionList
-        list.push({ type: "PROFILE", info: this.state.userInfo })
+        list.push({ type: "BOT_PROFILE", info: this.state.userInfo })
         this.setState({
             redirectUser: user,
+            redirectionList: list
+        })
+    }
+
+    handleOpenNewPolicy() {
+        var list = this.state.redirectionList
+        list.push({ type: "BOT_PROFILE", info: this.state.userInfo })
+        this.setState({
+            redirectUser: "POLICY",
             redirectionList: list
         })
     }
@@ -526,13 +703,6 @@ class BotProfile extends Component {
         this.setState({
             modal: false,
             modalType: null,
-            tweets: {
-                data: this.state.tweets.data,
-                noPage: this.state.tweets.noPage,
-                curPage: this.state.tweets.curPage,
-                latestTweet: this.state.tweets.latestTweet,
-                tweet: null
-            }
         });
     }
 
@@ -574,9 +744,29 @@ class BotProfile extends Component {
         document.getElementById("loadedFollowings").style.visibility = ""
         document.getElementById("loadingFollowings").style.display = "none"
     };
+
+    changePageActivity = async (event, value) => {
+        document.getElementById("loadedActivities").style.visibility = "hidden"
+        document.getElementById("loadingActivities").style.display = ""
+
+        await this.getActivities(value)
+
+        document.getElementById("loadedActivities").style.visibility = ""
+        document.getElementById("loadingActivities").style.display = "none"
+    };
+
+    changePagePolicy = async (event, value) => {
+        document.getElementById("loadedPolicies").style.visibility = "hidden"
+        document.getElementById("loadingPolicies").style.display = ""
+
+        await this.getPolicies(value)
+
+        document.getElementById("loadedPolicies").style.visibility = ""
+        document.getElementById("loadingPolicies").style.display = "none"
+    };
     /////////////////////////////////////////////////////////////////////
 
-    // Pagination //////////////////////////////////////////////////////////
+    // Graph //////////////////////////////////////////////////////////
     changeType = async (event, value) => {
         this.setState({
             stats: {
@@ -593,16 +783,26 @@ class BotProfile extends Component {
 
     render() {
         if (this.state.goBack) {
-            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "USERS")
-                return (<Bots page={this.state.redirectionList[0].info["page"]} searchQuery={this.state.redirectionList[0].info["query"]} />)
+            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "BOTS")
+                return (<Bots />)
             else {
                 var lastUser = this.state.redirectionList.pop()
-                return (<BotProfile user={lastUser['info']} redirection={this.state.redirectionList}></BotProfile>)
+                if (lastUser.type == "PROFILE") {
+                    return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)
+                } else {
+                    return (<BotProfile user={lastUser['info']} redirection={this.state.redirectionList}></BotProfile>)
+                }
             }
         } else if (this.state.redirectUser != null) {
-            return (
-                <BotProfile nextUser={this.state.redirectUser} redirection={this.state.redirectionList}></BotProfile>
-            )
+            if (this.state.redirectUser == "POLICY") {
+                return (
+                    <PolicyForm redirection={this.state.redirectionList} bot={this.state.userInfo}></PolicyForm>
+                )
+            } else {
+                return (
+                    <BotProfile nextUser={this.state.redirectUser} redirection={this.state.redirectionList}></BotProfile>
+                )
+            }
         } else {
             if (!this.state.doneLoading) {
                 return (
@@ -1164,7 +1364,7 @@ class BotProfile extends Component {
                     policies =
                         <div style={{ position: "relative" }}>
                             <div
-                                id="loadedFollowings"
+                                id="loadedPolicies"
                                 style={{
                                     width: "100%",
                                     height: "100%",
@@ -1175,13 +1375,13 @@ class BotProfile extends Component {
                                 }}>
                                 <Table
                                     tableHeaderColor="primary"
-                                    tableHead={["Username", "Name", "Type", ""]}
-                                    tableData={this.state.followings.data}
+                                    tableHead={["Name", "Filter", "Tags", ""]}
+                                    tableData={this.state.policies.data}
                                 />
 
                             </div>
                             <div
-                                id="loadingFollowings"
+                                id="loadingPolicies"
                                 style={{
                                     zIndex: 10,
                                     position: "absolute",
@@ -1198,7 +1398,7 @@ class BotProfile extends Component {
                                 textAlign: "center"
                             }}>
                                 <div style={{ display: "inline-block" }}>
-                                    <Pagination count={this.state.followings.noPage} page={this.state.followings.curPage} onChange={this.changePageFollowing} variant="outlined" color="primary" showFirstButton showLastButton shape="rounded" />
+                                    <Pagination count={this.state.policies.noPage} page={this.state.policies.curPage} onChange={this.changePagePolicy} variant="outlined" color="primary" showFirstButton showLastButton shape="rounded" />
                                 </div>
                             </div>
                         </div>
@@ -1206,7 +1406,7 @@ class BotProfile extends Component {
 
                 //All Activity
                 var activity = <CardBody></CardBody>
-                if (this.state.followings.empty) {
+                if (this.state.activities.empty) {
                     activity =
                         <div style={{ marginTop: "25px" }}>
                             <h5 style={{ color: "#999" }}>
@@ -1217,7 +1417,7 @@ class BotProfile extends Component {
                     activity =
                         <div style={{ position: "relative" }}>
                             <div
-                                id="loadedFollowings"
+                                id="loadedActivities"
                                 style={{
                                     width: "100%",
                                     height: "100%",
@@ -1234,7 +1434,7 @@ class BotProfile extends Component {
 
                             </div>
                             <div
-                                id="loadingFollowings"
+                                id="loadingActivities"
                                 style={{
                                     zIndex: 10,
                                     position: "absolute",
@@ -1251,7 +1451,7 @@ class BotProfile extends Component {
                                 textAlign: "center"
                             }}>
                                 <div style={{ display: "inline-block" }}>
-                                    <Pagination count={this.state.followings.noPage} page={this.state.followings.curPage} onChange={this.changePageFollowing} variant="outlined" color="primary" showFirstButton showLastButton shape="rounded" />
+                                    <Pagination count={this.state.activities.noPage} page={this.state.activities.curPage} onChange={this.changePageActivity} variant="outlined" color="primary" showFirstButton showLastButton shape="rounded" />
                                 </div>
                             </div>
                         </div>
@@ -1261,6 +1461,18 @@ class BotProfile extends Component {
                 return (
                     <div className="animated fadeIn">
                         <Container fluid>
+                            <ToastContainer
+                                position="top-center"
+                                autoClose={2500}
+                                hideProgressBar={false}
+                                transition={Flip}
+                                newestOnTop={false}
+                                closeOnClick
+                                rtl={false}
+                                pauseOnVisibilityChange
+                                draggable
+                                pauseOnHover
+                            />
                             <Row>
                                 <Col xs="12" sm="12" md="12" style={{ marginBottom: "30px" }}>
                                     <Button block outline color="danger" onClick={() => this.handleGoBack()} style={{
@@ -1447,7 +1659,7 @@ class BotProfile extends Component {
                                             }} > Policies</h4>
                                             <Button block outline color="light" style={{
                                                 width: "150px", marginTop: "15px"
-                                            }} onClick={() => this.handleOpenNewTweet()}>Assign new Policy</Button>
+                                            }} onClick={() => this.handleOpenNewPolicy()}>Assign new Policy</Button>
                                         </CardHeader>
                                         <CardBody>
                                             {policies}

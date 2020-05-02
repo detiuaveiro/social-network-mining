@@ -19,6 +19,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
 import Users from './Users';
+import BotProfile from '../Bots/BotProfile';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -531,7 +532,11 @@ class UserProfile extends Component {
                 return (<Users page={this.state.redirectionList[0].info["page"]} searchQuery={this.state.redirectionList[0].info["query"]} />)
             else {
                 var lastUser = this.state.redirectionList.pop()
-                return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)
+                if(lastUser.type == "PROFILE"){
+                    return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)
+                }else{
+                    return (<BotProfile user={lastUser['info']} redirection={this.state.redirectionList}></BotProfile>)
+                }
             }
         } else if (this.state.redirectUser != null) {
             return (
