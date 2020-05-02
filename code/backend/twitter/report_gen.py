@@ -8,9 +8,9 @@ from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 
 
-logger = logging.getLogger("bot-agents")
+logger = logging.getLogger("report")
 logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(open("bot_agent.log", "w"))
+handler = logging.StreamHandler(open("report_gen.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 logger.addHandler(handler)
@@ -20,22 +20,45 @@ EXPORT_DIR = "export"
 
 
 class Report:
+	class ExportType(IntEnum):
+		"""
+		Enum for the Messages sent by the bot to the server.
+		"""
+
+		CSV = 0
+		JSON = 1
+
+		def __str__(self):
+			return self.name
+
 	def __init__(self):
 		self.mongo = MongoAPI()
 		self.neo = Neo4jAPI()
 		self.exporter = Report.__Exporter(EXPORT_DIR)
 
-	def create_report(self, match: str, params: dict = None, limit: int = None, export='csv'):
+	def __node_builder(self, node):
+		node_start = "("
+
+		if len(node) > 0:
+			if "label" in node:
+				node_start += ":" + "|".join(node['label'])
+			elif
+
+		return node_start+")"
+
+	def create_report(self, match: dict, params: dict, limit: int = None, export='csv'):
+		query = "MATCH "
 		if not params:
 			params = {}
 
 		query = match + " RETURN " + ",".join(params.keys())
+
 		if limit:
 			query += " limit " + str(limit)
 
 		result = []
-		logger.info(self.neo.export_query(query))
-		for row in self.neo.export_query(query):
+		logger.info(self.neo.export_query(query, rel_node_properties=True))
+		for row in self.neo.export_query(query, rel_node_properties=True):
 			row_dict = {}
 			for key in row:
 				if type(row[key]) is dict:
@@ -53,21 +76,10 @@ class Report:
 					row_dict[key] = {'name': row[key][0]['label']}
 			result.append(row_dict)
 
-		if export == 'csv':
+		if export == self.ExportType.CSV:
 			self.exporter.export_csv(result)
-		elif export == 'json':
+		elif export == self.ExportType.JSON:
 			self.exporter.export_json(result)
-
-	class ExportType(IntEnum):
-		"""
-		Enum for the Messages sent by the bot to the server.
-		"""
-
-		CSV = 0
-		JSON = 1
-
-		def __str__(self):
-			return self.name
 
 	class __Exporter:
 		def __init__(self, directory):
@@ -95,15 +107,42 @@ class Report:
 				logger.exception(f"Occurred an error <{error}>: ")
 
 
-# if __name__ == '__main__':
-# 	query = "MATCH (a: Tweet) - [r*3..4] - (b: User	)"
-# 	params = {
-# 		'a': ['text', 'favorite_count', 'retweet_count'],
-# 		'b': ['name', 'screen_name', 'statuses_count'],
-# 		'r': []
-# 	}
-# 	limit = 10
+if __name__ == '__main__':
+	rep = Report()
+	query = {
+		'start': {},
+		'rel': {
+			'depth_start': 2,
+			'depth_end': 4,
+			'label': ['FOLLOWS', 'WROTE']
+		},
+		'end': {
+			'label': 'User'
+		}
+	}
+	params = {
+		'start': {
+			'Tweet': ['retweet_count', 'favourite_count', 'text'],
+			'User': ['name', 'screen_name', 'followers_count', 'friends_count', 'verified'],
+			'Bot': ['name', 'screen_name', 'followers_count', 'friends_count']
+		},
+		'inter': {
+			'Tweet': [],
+			'User': ['name', 'screen_name'],
+			'Bot': ['name']
+		},
+		'end': {
+			'Tweet': ['favorite_count'],
+			'User': ['listed_count'],
+			'Bot': ['friends_count']
+		}
+	}
+	limit = 1
+	for export_type in Report.ExportType:
+		print(export_type)
+		rep.create_report(query, params, limit, export_type)
 #
-# 	for export_type in Report.ExportType
+#
+#
 # 	test_report(query, params, limit)
 # 	test_report(query, params, limit, "json")

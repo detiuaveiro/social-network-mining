@@ -1,0 +1,107 @@
+[
+  {
+    "a": {
+      "type": "node",
+      "id": "8652",
+      "labels": [
+        "Tweet"
+      ],
+      "properties": {
+        "id": "1256259171076444160"
+      }
+    },
+    "b": {
+      "type": "node",
+      "id": "8654",
+      "labels": [
+        "User"
+      ],
+      "properties": {
+        "name": "Pedro Mendes",
+        "id": "24760004",
+        "username": "pedrommendes"
+      }
+    },
+    "r": [
+      {
+        "id": "1021",
+        "type": "relationship",
+        "label": "WROTE",
+        "start": {
+          "id": "9549",
+          "labels": [
+            "User"
+          ],
+          "properties": {
+            "name": "Filipe Sabe",
+            "id": "1334838757",
+            "username": "LigaAoFilipe"
+          }
+        },
+        "end": {
+          "id": "8652",
+          "labels": [
+            "Tweet"
+          ],
+          "properties": {
+            "id": "1256259171076444160"
+          }
+        }
+      },
+      {
+        "id": "6",
+        "type": "relationship",
+        "label": "FOLLOWS",
+        "start": {
+          "id": "8644",
+          "labels": [
+            "Bot"
+          ],
+          "properties": {
+            "name": "Ana Rodrigues",
+            "id": "1244051405721255937",
+            "username": "AnaRodr68388178"
+          }
+        },
+        "end": {
+          "id": "9549",
+          "labels": [
+            "User"
+          ],
+          "properties": {
+            "name": "Filipe Sabe",
+            "id": "1334838757",
+            "username": "LigaAoFilipe"
+          }
+        }
+      },
+      {
+        "id": "0",
+        "type": "relationship",
+        "label": "FOLLOWS",
+        "start": {
+          "id": "8644",
+          "labels": [
+            "Bot"
+          ],
+          "properties": {
+            "name": "Ana Rodrigues",
+            "id": "1244051405721255937",
+            "username": "AnaRodr68388178"
+          }
+        },
+        "end": {
+          "id": "8654",
+          "labels": [
+            "User"
+          ],
+          "properties": {
+            "name": "Pedro Mendes",
+            "id": "24760004",
+            "username": "pedrommendes"
+          }
+        }
+      }
+    ]
+  }
+]
