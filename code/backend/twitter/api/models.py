@@ -90,7 +90,7 @@ class Policy(models.Model):
 	filter = models.TextField()
 	name = models.TextField()  # alter table policies add constraint unique_name unique(name);
 	tags = ArrayField(models.TextField(), db_column="params")
-	bots = ArrayField(models.BigIntegerField())
+	bots = ArrayField(models.DecimalField(max_digits=128, decimal_places=6))
 	active = models.BooleanField(default=False)
 
 	class Meta:

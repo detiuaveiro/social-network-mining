@@ -71,7 +71,7 @@ def twitter_user(request, id):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_user(int(id))
+	success, data, message = queries.twitter_user(id)
 	if success:
 		success_messages.append(message)
 	else:
@@ -91,7 +91,7 @@ def twitter_user_tweets(request, id, entries_per_page=None, page=None):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_user_tweets(int(id), entries_per_page, page)
+	success, data, message = queries.twitter_user_tweets(id, entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
@@ -103,7 +103,7 @@ def twitter_user_tweets(request, id, entries_per_page=None, page=None):
 
 
 @api_view(["GET"])
-def twitter_user_followers(request, id):
+def twitter_user_followers(request, id, entries_per_page=None, page=None):
 	"""Function to retrieve all the followers of some requested user
 	:param id: id of the user whom we want the followers
 	"""
@@ -111,7 +111,7 @@ def twitter_user_followers(request, id):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_user_followers(int(id))
+	success, data, message = queries.twitter_user_followers(id, entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
@@ -123,7 +123,7 @@ def twitter_user_followers(request, id):
 
 
 @api_view(["GET"])
-def twitter_user_following(request, id):
+def twitter_user_following(request, id, entries_per_page=None, page=None):
 	"""Function to retrieve all the following users of some requested user
 	:param id: id of the user whom we want the following users
 	"""
@@ -131,7 +131,7 @@ def twitter_user_following(request, id):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_user_following(int(id))
+	success, data, message = queries.twitter_user_following(id, entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
@@ -151,7 +151,7 @@ def twitter_user_stats(request, id, entries_per_page=None, page=None):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_user_stats(int(id), entries_per_page, page)
+	success, data, message = queries.twitter_user_stats(id, entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
@@ -199,7 +199,7 @@ def twitter_user_stats_grouped(_, id, type):
 	}
 	types = ["year", "month", "day"]
 
-	success, data, message = queries.twitter_user_stats_grouped(int(id), types[:index_per_type[type] + 1])
+	success, data, message = queries.twitter_user_stats_grouped(id, types[:index_per_type[type] + 1])
 	if success:
 		success_messages.append(message)
 	else:

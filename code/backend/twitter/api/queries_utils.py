@@ -1,4 +1,6 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+import math
+import datetime
 
 
 def paginator_factory(query_data, entries_per_page, page):
@@ -29,3 +31,27 @@ def paginator_factory(query_data, entries_per_page, page):
 		raise ValueError("Invalid value for entries_per_page parameter. Should be greater than 0")
 
 	return data
+
+
+def paginator_factory_non_queryset(query_data, entries_per_page, page):
+	entries_per_page = int(entries_per_page) if entries_per_page is not None else len(query_data)
+	page = int(page) if page is not None else 1
+
+	num_pages = math.ceil(len(query_data) / entries_per_page)
+
+	start = (page - 1) * entries_per_page
+	end = start + entries_per_page
+
+	data = {
+		'entries': query_data[start:end],
+		'num_pages': num_pages,
+		'next_page': page + 1 if page + 1 <= num_pages else 1,
+		'previous_page': page - 1 if page - 1 > 0 else num_pages
+	}
+
+	return data
+
+
+def convert_policy(policy):
+	policy['bots'] = [str(bot) for bot in policy['bots']]
+	return policy

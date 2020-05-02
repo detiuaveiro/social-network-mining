@@ -1,4 +1,3 @@
-import re
 import zmq
 import json
 import logging
@@ -19,10 +18,6 @@ handler = logging.StreamHandler(open("text_generator.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 logger.addHandler(handler)
-
-
-def tweet_to_simple_text(tweet: str) -> str:
-	return re.sub(r'@.*? |\n|http.*', '', tweet).encode('ascii', 'ignore').decode('ascii')
 
 
 class DumbReplier:

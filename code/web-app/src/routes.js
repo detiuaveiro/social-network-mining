@@ -33,15 +33,14 @@ const Modals = React.lazy(() => import('./views/Notifications/Modals'));
 const Colors = React.lazy(() => import('./views/Theme/Colors'));
 const Typography = React.lazy(() => import('./views/Theme/Typography'));
 const Widgets = React.lazy(() => import('./views/Widgets/Widgets'));
-const Users = React.lazy(() => import('./views/Users/Users'));
-const User = React.lazy(() => import('./views/Users/User'));
 
 // Our Pages (delete everything before this before delivery)
 const Bots = React.lazy(() => import('./views/Bots/Bots'));
-const Influencers = React.lazy(() => import('./views/Influencers/Influencers'));
+const Policies = React.lazy(() => import('./views/Policies/Policies'));
 const Network = React.lazy(() => import('./views/Network/Network'));
 const Statistics = React.lazy(() => import('./views/Statistics/Statistics'));
 const Reports = React.lazy(() => import('./views/Reports/Reports'));
+const Users = React.lazy(() => import('./views/Users/Users'));
 
 
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
@@ -84,12 +83,11 @@ const routes = [
   { path: '/dash/notifications/modals', name: 'Modals', component: Modals },
   { path: '/dash/widgets', name: 'Widgets', component: Widgets },
   { path: '/dash/charts', name: 'Charts', component: Charts },
-  { path: '/dash/users', exact: true,  name: 'Users', component: Users },
-  { path: '/dash/users/:id', exact: true, name: 'User Details', component: User },
   
   // Our Pages (delete everything before this before delivery)
   { path: '/dash/bots', name: 'Bots', component: Bots },
-  { path: '/dash/influencers', name: 'Influencers', component: Influencers },
+  { path: '/dash/users', name: 'Users', component: Users },
+  { path: '/dash/policies', name: 'Policies', component: Policies },
   { path: '/dash/network', name: 'Network', component: Network },
   { path: '/dash/statistics', name: 'Statistics', component: Statistics },
   { path: '/dash/reports', name: 'Reports', component: Reports },
