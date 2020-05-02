@@ -145,7 +145,14 @@ Then use the command to start the web app on port 3000:
  $ docker run --env-file ~/PI_2020/env_vars/watchtower.env -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock -v ~/.docker/config.json:/config.json containrrr/watchtower
  ```
 
-## BDS
+## BDS AUTOMATIC IMPORT
+```bash
+cd scripts
+chmod +x import_databases.sh
+./import_databases.sh
+```
+
+## BDS MANUAL IMPORT
 - mongodb
 ```bash
 mongoimport --db twitter --collection tweets --file scripts/mongodb/tweets.json -u user -p password
@@ -190,35 +197,35 @@ alter table policies alter column bots type numeric[];
   CALL apoc.load.json("follow_rel.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:FOLLOWS]->(u)
 ```
 ```bash
   CALL apoc.load.json("retweet.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:RETWEETED]->(u)
 ```
 ```bash
   CALL apoc.load.json("reply.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:REPLIED]->(u)
 ```
 ```bash
   CALL apoc.load.json("wrote.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:WROTE]->(u)
 ```
 ```bash
   CALL apoc.load.json("quote.json")
   YIELD value
   MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:toInteger(value.end.properties.id)})
+  MATCH(u {id:value.end.properties.id})
   CREATE (p)-[:QUOTED]->(u)
 ```
 Neo4j Export commands:
