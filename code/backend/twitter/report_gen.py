@@ -29,11 +29,10 @@ def test_report(query, params={}, limit=None, export='csv'):
 	if limit is not None:
 		query += " limit " + str(limit)
 	result = []
-	print(neo.export_query(query))
 	for row in neo.export_query(query):
 		row_dict = {}
 		for key in row:
-			if type(row[key]) is dict:
+			if type(row[key]) is dict and row[key]['type'] == "node":
 				if row[key]['labels'] == ['Tweet']:
 					row_dict[key] = mongo.search(
 						'tweets', query={"id_str": row[key]['properties']['id']}, fields=params[key], single=True)
@@ -44,8 +43,6 @@ def test_report(query, params={}, limit=None, export='csv'):
 						'users', query={"id_str": row[key]['properties']['id']}, fields=params[key], single=True)
 					if not row_dict[key]:
 						row_dict[key] = {prop: None for prop in params[key]}
-			else:
-				row_dict[key] = {'name': row[key][0]['label']}
 		result.append(row_dict)
 
 	if export == 'csv':
@@ -55,13 +52,13 @@ def test_report(query, params={}, limit=None, export='csv'):
 
 
 if __name__ == '__main__':
-	query = "MATCH (a: Tweet) - [r*3..4] - (b: User	)"
+	query = "MATCH (a: Tweet) - [r] - (b: User)"
 	params = {
-		'a': ['text', 'favorite_count', 'retweet_count'],
+		'a': ['retweet_count', 'favorite_count'],
 		'b': ['name', 'screen_name', 'statuses_count'],
 		'r': []
 	}
-	limit = 10
+	limit = 5
 	test_report(query, params, limit)
 	test_report(query, params, limit, "json")
 
