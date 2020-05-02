@@ -3,6 +3,8 @@ import logging
 import random
 import pytz
 from datetime import timedelta, datetime
+from queue import Queue
+from threading import Thread
 
 from control_center.text_generator import ParlaiReplier
 from control_center.translator_utils import Translator
@@ -47,47 +49,51 @@ class Control_Center(Rabbitmq):
 		self.neo4j_client = Neo4jAPI()
 		self.pep = PEP()
 		self.__utc = pytz.UTC
+		self.action_queue = Queue()
+		self.rabbit_thread = Thread(target=self._receive, daemon=True)
 
 		# replier tools
 		self.replier = ParlaiReplier(PARLAI_URL, PARLAI_PORT)
 		self.translator = Translator()
 
-	def action(self, message):
-		message_type = message['type']
-		log.info(f"Received new action: {message['bot_id']} wants to do {BotToServer(message_type).name}")
+	def action(self):
+		while True:
+			message = self.action_queue.get()
+			message_type = message['type']
+			log.info(f"Received new action: {message['bot_id']} wants to do {BotToServer(message_type).name}")
 
-		if message_type == BotToServer.EVENT_TWEET_LIKED:
-			self.__like_tweet_log(message)
+			if message_type == BotToServer.EVENT_TWEET_LIKED:
+				self.__like_tweet_log(message)
 
-		elif message_type == BotToServer.QUERY_TWEET_LIKE:
-			self.request_tweet_like(message)
+			elif message_type == BotToServer.QUERY_TWEET_LIKE:
+				self.request_tweet_like(message)
 
-		elif message_type == BotToServer.QUERY_TWEET_RETWEET:
-			self.request_retweet(message)
+			elif message_type == BotToServer.QUERY_TWEET_RETWEET:
+				self.request_retweet(message)
 
-		elif message_type == BotToServer.QUERY_TWEET_REPLY:
-			self.request_tweet_reply(message)
+			elif message_type == BotToServer.QUERY_TWEET_REPLY:
+				self.request_tweet_reply(message)
 
-		elif message_type == BotToServer.QUERY_FOLLOW_USER:
-			self.request_follow_user(message)
+			elif message_type == BotToServer.QUERY_FOLLOW_USER:
+				self.request_follow_user(message)
 
-		elif message_type == BotToServer.SAVE_USER:
-			self.save_user(message)
+			elif message_type == BotToServer.SAVE_USER:
+				self.save_user(message)
 
-		elif message_type == BotToServer.SAVE_TWEET:
-			self.save_tweet(message)
+			elif message_type == BotToServer.SAVE_TWEET:
+				self.save_tweet(message)
 
-		elif message_type == BotToServer.SAVE_DIRECT_MESSAGES:
-			self.save_dm(message)
+			elif message_type == BotToServer.SAVE_DIRECT_MESSAGES:
+				self.save_dm(message)
 
-		elif message_type == BotToServer.EVENT_USER_BLOCKED:
-			self.error(message)
+			elif message_type == BotToServer.EVENT_USER_BLOCKED:
+				self.error(message)
 
-		elif message_type == BotToServer.SAVE_FOLLOWERS:
-			self.__add_followers(message)
+			elif message_type == BotToServer.SAVE_FOLLOWERS:
+				self.__add_followers(message)
 
-		elif message_type == BotToServer.QUERY_KEYWORDS:
-			self.send_keywords(message)
+			elif message_type == BotToServer.QUERY_KEYWORDS:
+				self.send_keywords(message)
 
 	# Need DB API now
 	def __follow_user(self, user1_id, user2_id):
@@ -867,12 +873,13 @@ class Control_Center(Rabbitmq):
 	def received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
 		message = json.loads(body)
-		self.action(message)
+		self.action_queue.put(message)
 
 	def run(self):
-		while True:
-			self._receive()
-			log.warning("Restarting again...")
+		self.rabbit_thread.start()
+		print("Starting actions")
+		self.action()
+		self.rabbit_thread.join()
 
 	def close(self):
 		self.neo4j_client.close()
