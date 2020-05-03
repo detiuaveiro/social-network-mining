@@ -143,11 +143,11 @@ class MongoAPI:
 
     def search(
             self,
-            collection,
-            query={},
-            fields=None,
-            single=False,
-            export_type=None,
+            collection: str,
+            query: dict = None,
+            fields: list = None,
+            single: bool = False,
+            export_type: str = None,
     ):
         """Searches the a collection by a given search query. Can also export to a json or csv
 
@@ -159,6 +159,9 @@ class MongoAPI:
         @param export_type: Specifies whether or not to export the result. Can either be None, json or csv
         @return: The search result
         """
+        if not query:
+            query = {}
+
         if collection not in ["users", "tweets", "messages"]:
             log.error("ERROR SEARCHING FOR DOCUMENTS")
             log.debug("Error: ", "Unknown Collection. Please use users, tweets or messages")
