@@ -408,6 +408,7 @@ class PDP:
 			"target_id": data["tweet_id"]
 		})
 		if not bot_logs["success"] or bot_logs['data']:
+			log.info(f"Request to reply to tweet <{data['tweet_id']}> denied because the bot already replied to this tweet")
 			return 0
 
 		heuristic_value = 0
@@ -424,7 +425,7 @@ class PDP:
 			"target_id": data["tweet_id"]
 		})
 		if bot_logs["success"]:
-			log.info("Bot already liked the tweet")
+			log.info(f"Bot already liked the tweet <{data['tweet_id']}>")
 			heuristic_value = heuristic_value + BOT_LIKED_TWEET if heuristic_value < 0.7 else 1
 
 		# Finally check if the bot already replied to the user recently
@@ -449,6 +450,7 @@ class PDP:
 						heuristic_value += PENALTY_REPLIED_USER_RECENTLY
 						break
 
+		log.info(f"Request to reply to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
 
 	def analyze_follow_user(self, data):
