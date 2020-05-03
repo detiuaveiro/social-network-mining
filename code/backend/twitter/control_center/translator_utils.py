@@ -1,6 +1,5 @@
 import logging
 from googletrans import Translator as Google_translator
-import pydeepl
 
 
 log = logging.getLogger('Translator')
@@ -17,14 +16,14 @@ class Translator(Google_translator):
 
 	def from_pt_to_en(self, text):
 		try:
-			return pydeepl.translate(text, from_lang='pt', to_lang='en')
+			return self.translate(text, src='pt', dest='en').text
 		except Exception as error:
 			log.exception(f"Error <{error}> translating text <{text}> from portuguese to english: ")
 			return None
 
 	def from_en_to_pt(self, text):
 		try:
-			return pydeepl.translate(text, from_lang='en', to_lang='pt').text
+			return self.translate(text, src='en', dest='pt').text
 		except Exception as error:
 			log.exception(f"Error <{error}> translating text <{text}> from english to portuguese: ")
 			return None
