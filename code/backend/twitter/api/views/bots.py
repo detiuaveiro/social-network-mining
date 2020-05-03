@@ -62,7 +62,7 @@ def twitter_bot_logs(_, id, entries_per_page=None, page=None):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_bot_logs(id, entries_per_page, page)
+	success, data, message = queries.twitter_bot_logs(int(id), entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:

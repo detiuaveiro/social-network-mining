@@ -326,7 +326,7 @@ def bot_policies(id, entries_per_page, page):
 
 		data = paginator_factory(policies, entries_per_page, page)
 		data['entries'] = [serializers.Policy(policy).data for policy in data['entries']]
-		
+
 		return True, data, f"Sucesso a obter as politicas do bot {id}"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {bot_policies.__name__} -> {e}")
@@ -446,6 +446,11 @@ def twitter_bot_logs(id, entries_per_page, page):
 
 		data['entries'] = [serializers.Log(log).data for log in data['entries']]
 
+		for entry in data['entries']:
+			target_id = entry['target_id']
+			user_obj = User.objects.filter(user_id=target_id)
+			entry['target_screen_name'] = user_obj[0].screen_name if len(user_obj) > 0 else ''
+			
 		return True, data, f"Sucesso a obter os logs do bot com ID {id}"
 
 	except ValueError as e:
