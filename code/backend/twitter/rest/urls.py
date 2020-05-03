@@ -28,7 +28,7 @@ urlpatterns = [
 	path('admin/', admin.site.urls),
 
 	# Users
-	url(r"^twitter/users/count/$", users.twitter_users_count, name='users.twitter_users_count'),
+	url(r"^twitter/users/count/$", users.twitter_users_count, name='twitter_users_count'),
 
 	url(r"^twitter/users/$", users.twitter_users, name="twitter_users"),
 	url(r"^twitter/users/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", users.twitter_users, name="twitter_users"),

@@ -263,7 +263,6 @@ def twitter_search_users(keywords, entries_per_page, page):
 	Returns: User's  that matches keywords on name and screen_name wrapped on response's object divided by pages
 	if entries_per_page and page are both None then all users will be returned
 
-
 	"""
 	try:
 		query_filters = Q()
@@ -379,9 +378,9 @@ def twitter_tweet_stats(tweet_id, entries_per_page, page):
 		stats = TweetStats.objects.filter(tweet_id=tweet_id).order_by('-timestamp')
 
 		data = paginator_factory(stats, entries_per_page, page)
-		data['entries'] = [serializers.TweetStats(tweet).data for tweet in data['entries']],
+		data['entries'] = [serializers.TweetStats(tweet).data for tweet in data['entries']]
 
-		return True, data, f"Success obtaining tweet's (id:{tweet_id} stats"
+		return True, data, f"Success obtaining tweet's (id:{tweet_id}) stats"
 
 	except ValueError as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_tweet_stats.__name__} -> {e}")
@@ -615,7 +614,7 @@ def twitter_bot(bot_id):
 		if not neo4j.check_bot_exists(bot_id):
 			return False, None, f"Bot (id:{bot_id}) does not exist on database"
 
-		return True, serializers.User(User.objects.get(user_id=bot_id)).data, \
+		return True, serializers.User(User.objects.get(user_id=int(bot_id))).data, \
 			   f"Success obtaining bot's (id:{bot_id}) info"
 
 	except User.DoesNotExist as e:
@@ -697,7 +696,7 @@ def twitter_network():
 	"""
 
 	try:
-		data = neo4j.export_sample_network("json")
+		data = neo4j.export_network("json")
 		return True, data, f"Success obtaining full network"
 
 	except Exception as e:

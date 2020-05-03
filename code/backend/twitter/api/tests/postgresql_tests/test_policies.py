@@ -67,7 +67,7 @@ def test_unsuccessfully_policies_request(error_catcher, factory, db):
 
 @catch_exception
 def test_successful_policy_request(error_catcher, factory, policy):
-    path = reverse('policy', kwargs={'id': 1})
+    path = reverse('policy', kwargs={'policy_id': 1})
     request = factory.get(path)
     response = policies.policy(request, policy_id=1)
     assert is_response_successful(response)
@@ -75,7 +75,7 @@ def test_successful_policy_request(error_catcher, factory, policy):
 
 @catch_exception
 def test_unsuccessfully_policy_request(error_catcher, factory, db):
-    path = reverse('policy', kwargs={'id': 1})
+    path = reverse('policy', kwargs={'policy_id': 1})
     request = factory.get(path)
     response = policies.policy(request, policy_id=1)
     assert is_response_unsuccessful(response)
@@ -83,7 +83,7 @@ def test_unsuccessfully_policy_request(error_catcher, factory, db):
 
 @catch_exception
 def test_successful_bot_policies_request(error_catcher, factory, policy):
-    path = reverse('bot_policies', kwargs={'id': 1})
+    path = reverse('bot_policies', kwargs={'bot_id': 1})
     request = factory.get(path)
     response = policies.bot_policies(request, bot_id=1)
     assert is_response_successful(response)
@@ -91,7 +91,7 @@ def test_successful_bot_policies_request(error_catcher, factory, policy):
 
 @catch_exception
 def test_unsuccessfully_bot_policies_request(error_catcher, factory, db):
-    path = reverse('bot_policies', kwargs={'id': 1})
+    path = reverse('bot_policies', kwargs={'bot_id': 1})
     request = factory.get(path)
     response = policies.bot_policies(request, bot_id=1)
     assert is_response_empty(response)
@@ -142,7 +142,7 @@ def test_unsuccessfully_add_policy_request(error_catcher, factory, db):
 
 @catch_exception
 def test_successful_remove_policy_request(error_catcher, factory, policy):
-    path = reverse('remove_policy', kwargs={'id': 1})
+    path = reverse('remove_policy', kwargs={'policy_id': 1})
     request = factory.delete(path)
     response = policies.remove_policy(request, policy_id=1)
     assert is_response_successful(response) and Policy.objects.filter().count() == 0
@@ -150,7 +150,7 @@ def test_successful_remove_policy_request(error_catcher, factory, policy):
 
 @catch_exception
 def test_unsuccessfully_remove_policy_request(error_catcher, factory, db):
-    path = reverse('remove_policy', kwargs={'id': 1})
+    path = reverse('remove_policy', kwargs={'policy_id': 1})
     request = factory.delete(path)
     response = policies.remove_policy(request, policy_id=1)
     assert is_response_unsuccessful(response)
@@ -158,7 +158,7 @@ def test_unsuccessfully_remove_policy_request(error_catcher, factory, db):
 
 @catch_exception
 def test_successful_update_policy_request(error_catcher, factory, policy):
-    path = reverse('update_policy', kwargs={'id': 1})
+    path = reverse('update_policy', kwargs={'policy_id': 1})
     request = factory.put(path, {'name': 'bot_1'}, content_type='application/json')
     response = policies.update_policy(request, policy_id=1)
     assert is_response_successful(response) and Policy.objects.filter().count() == 1
@@ -166,39 +166,8 @@ def test_successful_update_policy_request(error_catcher, factory, policy):
 
 @catch_exception
 def test_unsuccessfully_update_policy_request(error_catcher, factory, db):
-    path = reverse('update_policy', kwargs={'id': 1})
+    path = reverse('update_policy', kwargs={'policy_id': 1})
     request = factory.put(path)
     response = policies.update_policy(request, policy_id=1)
     assert is_response_unsuccessful(response)
 
-
-@catch_exception
-def test_successful_instagram__policies_request(error_catcher, factory, policy_instagram):
-    path = reverse('instagram_policies')
-    request = factory.get(path)
-    response = policies.instagram_policies(request)
-    assert is_response_successful(response)
-
-
-@catch_exception
-def test_successful_twitter__policies_request(error_catcher, factory, policy_twitter):
-    path = reverse('twitter_policies')
-    request = factory.get(path)
-    response = policies.twitter_policies(request)
-    assert is_response_successful(response)
-
-
-@catch_exception
-def test_unsuccessfully_instagram__policies_request(error_catcher, factory, db):
-    path = reverse('instagram_policies')
-    request = factory.get(path)
-    response = policies.instagram_policies(request)
-    assert is_response_empty(response)
-
-
-@catch_exception
-def test_unsuccessfully_twitter__policies_request(error_catcher, factory, db):
-    path = reverse('twitter_policies')
-    request = factory.get(path)
-    response = policies.twitter_policies(request)
-    assert is_response_empty(response)
