@@ -261,7 +261,7 @@ chmod +x import_databases.sh
  ```cypher
  // create index on user id
  CREATE CONSTRAINT user_id
- ON (u:Bot)
+ ON (u:User)
  ASSERT u.id IS UNIQUE
  ```
  ```cypher
