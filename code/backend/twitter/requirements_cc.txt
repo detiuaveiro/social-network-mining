@@ -73,3 +73,4 @@ wasabi==0.6.0
 Werkzeug==1.0.1
 wrapt==1.12.1
 zmq
+pydeepl==0.13
