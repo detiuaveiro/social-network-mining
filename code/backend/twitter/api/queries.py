@@ -448,11 +448,9 @@ def twitter_bot_logs(id, entries_per_page, page):
 
 		for entry in data['entries']:
 			target_id = entry['target_id']
-			try:
-				entry['target_screen_name'] = User.objects.get(user_id=target_id).screen_name
-			except User.DoesNotExist:
-				entry['target_screen_name'] = ''
-
+			user_obj = User.objects.filter(user_id=target_id)
+			entry['target_screen_name'] = user_obj[0].screen_name if len(user_obj) > 0 else ''
+			
 		return True, data, f"Sucesso a obter os logs do bot com ID {id}"
 
 	except ValueError as e:
