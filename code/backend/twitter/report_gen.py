@@ -60,11 +60,15 @@ class Report:
 		node_type = node["labels"][0]
 		if node_type in params and len(params[node_type]) > 0:
 			if node_type == "Tweet":
-				return self.mongo.search('tweets', query={"id_str": node['properties']['id']},
+				mongo_info = self.mongo.search('tweets', query={"id_str": node['properties']['id']},
 										 fields=params[node_type], single=True)
 			# It's a user or a bot
-			return self.mongo.search('users', query={"id_str": node['properties']['id']},
-									 fields=params[node_type], single=True)
+			else:
+				mongo_info = self.mongo.search('users', query={"id_str": node['properties']['id']},
+											 fields=params[node_type], single=True)
+			if mongo_info:
+				return mongo_info
+			return {param: None for param in params[node_type]}
 		return None
 
 	def create_report(self, match: dict, params: dict, limit: int = None, export='csv'):
@@ -81,6 +85,8 @@ class Report:
 
 		query_result = self.neo.export_query(query, rel_node_properties=True)
 
+		logger.debug(query_result)
+
 		for row in query_result:
 			# Analyse each row by looking at its rels field
 			relations = row['r']['rels']
@@ -94,21 +100,22 @@ class Report:
 			# Add all intermediate nodes and relations
 			for index in range(len(relations) - 1):
 				rel = relations[index]
-				relation['rel' + str(index)] = rel["label"]
+				relation['rel' + str(index+1)] = {"name": rel["label"]}
 				node_mongo_info = self.__get_mongo_info(rel["end"], params['inter'])
 				if node_mongo_info:
 					relation['inter' + str(index)] = node_mongo_info
 
 			# Add ending node
-			relation['rel' + str(len(relations))] = relations[-1]["label"]
+			relation['rel' + str(len(relations))] = {"name": relations[-1]["label"]}
 			node_mongo_info = self.__get_mongo_info(relations[-1]["end"], params['end'])
+			logger.debug(node_mongo_info)
 			if node_mongo_info:
 				relation['end'] = node_mongo_info
 
 			# Append to result
 			result.append(relation)
 
-		logger.debug(result)
+		#logger.debug(result)
 
 		if export == self.ExportType.CSV:
 			self.exporter.export_csv(result)
