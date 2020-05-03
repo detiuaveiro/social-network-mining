@@ -48,8 +48,8 @@ class Rabbitmq:
             port=port,
             virtual_host=vhost,
             credentials=pika_credentials,
-            heartbeat=0,
-            blocked_connection_timeout=300
+            heartbeat=10000,
+            blocked_connection_timeout=10000
         )
 
         self.reconnection_attempt = 0
@@ -171,4 +171,5 @@ class Rabbitmq:
         """
         Close the connection with the Rabbit MQ server
         """
+        log.info("Closing connection")
         self.connection.close()
