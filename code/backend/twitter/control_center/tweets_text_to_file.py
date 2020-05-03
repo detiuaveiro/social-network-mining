@@ -2,6 +2,7 @@ import json
 import os
 from typing import List
 
+from control_center.utils import tweet_to_simple_text
 from wrappers.mongo_wrapper import MongoAPI
 
 FIELDS = ['text', 'full_text']
@@ -30,6 +31,7 @@ class TweetsExporter:
 			if 'full_text' in result:
 				result['text'] = result['full_text']
 				del result['full_text']
+			result['text'] = tweet_to_simple_text(result['text'])
 
 		with open(path, 'w') as file:
-			file.write(json.dumps(results))
+			file.write(json.dumps(results, ensure_ascii=False))
