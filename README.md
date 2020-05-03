@@ -257,3 +257,34 @@ chmod +x import_databases.sh
  call apoc.export.json.query("match (a:User) return a", "user_nodes.json")
  call apoc.export.json.query("match (a:Bot) return a", "bots_nodes.json")
  ```
+ - Indexation
+ ```cypher
+ // create index on user id
+ CREATE CONSTRAINT user_id
+ ON (u:Bot)
+ ASSERT u.id IS UNIQUE
+ ```
+ ```cypher
+ // create index on tweet id
+ CREATE CONSTRAINT tweet_id
+ ON (t:Tweet)
+ ASSERT t.id IS UNIQUE
+ ```
+ ```cypher
+ // create index on bot id
+ CREATE CONSTRAINT bot_id
+ ON (b:Bot)
+ ASSERT b.id IS UNIQUE
+ ```
+ ```cypher
+ // create index on bot username
+ CREATE CONSTRAINT bot_username
+ ON (b:Bot)
+ ASSERT b.username IS UNIQUE
+ ```
+ ```cypher
+ // create index on user username
+ CREATE CONSTRAINT user_username
+ ON (u:User)
+ ASSERT u.username IS UNIQUE
+ ```
