@@ -8,7 +8,7 @@ DATABASES = {
 		'NAME': 'twitter_postgres',
 		'USER': 'admin',
 		'PASSWORD': 'admin',
-		'HOST': os.environ['POSTGRES_HOST'],
-		'PORT': os.environ['POSTGRES_PORT'],
+		'HOST': "localhost",  # os.environ['POSTGRES_HOST'],
+		'PORT': 5432,  # os.environ['POSTGRES_PORT'],
 	}
 }

@@ -6,8 +6,8 @@ DATABASES = {
 	'default': {
 		'ENGINE': 'djongo',
 		'NAME': 'twitter',
-		'HOST': os.environ['MONGO_HOST'],
-		'PORT': int(os.environ['MONGO_PORT']),
+		'HOST': "admin",  # os.environ['MONGO_HOST'],
+		'PORT': 27017,  # int(os.environ['MONGO_PORT']),
 		'USER': 'admin',
 		'PASSWORD': 'admin',
 	},
