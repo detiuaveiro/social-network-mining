@@ -8,6 +8,8 @@ def paginator_factory(query_data, entries_per_page, page):
 	page = int(page) if page is not None else 1
 
 	data = {}
+	if len(query_data) == 0:
+		entries_per_page = 1
 
 	if entries_per_page > 0:
 		paginator = None

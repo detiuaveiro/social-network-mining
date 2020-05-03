@@ -69,7 +69,7 @@ def test_unsuccessfully_policies_request(error_catcher, factory, db):
 def test_successful_policy_request(error_catcher, factory, policy):
     path = reverse('policy', kwargs={'id': 1})
     request = factory.get(path)
-    response = policies.policy(request, id=1)
+    response = policies.policy(request, policy_id=1)
     assert is_response_successful(response)
 
 
@@ -77,7 +77,7 @@ def test_successful_policy_request(error_catcher, factory, policy):
 def test_unsuccessfully_policy_request(error_catcher, factory, db):
     path = reverse('policy', kwargs={'id': 1})
     request = factory.get(path)
-    response = policies.policy(request, id=1)
+    response = policies.policy(request, policy_id=1)
     assert is_response_unsuccessful(response)
 
 
@@ -85,7 +85,7 @@ def test_unsuccessfully_policy_request(error_catcher, factory, db):
 def test_successful_bot_policies_request(error_catcher, factory, policy):
     path = reverse('bot_policies', kwargs={'id': 1})
     request = factory.get(path)
-    response = policies.bot_policies(request, id=1)
+    response = policies.bot_policies(request, bot_id=1)
     assert is_response_successful(response)
 
 
@@ -93,7 +93,7 @@ def test_successful_bot_policies_request(error_catcher, factory, policy):
 def test_unsuccessfully_bot_policies_request(error_catcher, factory, db):
     path = reverse('bot_policies', kwargs={'id': 1})
     request = factory.get(path)
-    response = policies.bot_policies(request, id=1)
+    response = policies.bot_policies(request, bot_id=1)
     assert is_response_empty(response)
 
 
@@ -144,7 +144,7 @@ def test_unsuccessfully_add_policy_request(error_catcher, factory, db):
 def test_successful_remove_policy_request(error_catcher, factory, policy):
     path = reverse('remove_policy', kwargs={'id': 1})
     request = factory.delete(path)
-    response = policies.remove_policy(request, id=1)
+    response = policies.remove_policy(request, policy_id=1)
     assert is_response_successful(response) and Policy.objects.filter().count() == 0
 
 
@@ -152,7 +152,7 @@ def test_successful_remove_policy_request(error_catcher, factory, policy):
 def test_unsuccessfully_remove_policy_request(error_catcher, factory, db):
     path = reverse('remove_policy', kwargs={'id': 1})
     request = factory.delete(path)
-    response = policies.remove_policy(request, id=1)
+    response = policies.remove_policy(request, policy_id=1)
     assert is_response_unsuccessful(response)
 
 
@@ -160,7 +160,7 @@ def test_unsuccessfully_remove_policy_request(error_catcher, factory, db):
 def test_successful_update_policy_request(error_catcher, factory, policy):
     path = reverse('update_policy', kwargs={'id': 1})
     request = factory.put(path, {'name': 'bot_1'}, content_type='application/json')
-    response = policies.update_policy(request, id=1)
+    response = policies.update_policy(request, policy_id=1)
     assert is_response_successful(response) and Policy.objects.filter().count() == 1
 
 
@@ -168,7 +168,7 @@ def test_successful_update_policy_request(error_catcher, factory, policy):
 def test_unsuccessfully_update_policy_request(error_catcher, factory, db):
     path = reverse('update_policy', kwargs={'id': 1})
     request = factory.put(path)
-    response = policies.update_policy(request, id=1)
+    response = policies.update_policy(request, policy_id=1)
     assert is_response_unsuccessful(response)
 
 
