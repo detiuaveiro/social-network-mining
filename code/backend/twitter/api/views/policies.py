@@ -60,7 +60,7 @@ def bot_policies(_, id):
     success_messages = []
     status = HTTP_200_OK
 
-    success, data, message = queries.bot_policies(id)
+    success, data, message = queries.bot_policies(int(id))
     if success:
         success_messages.append(message)
     else:

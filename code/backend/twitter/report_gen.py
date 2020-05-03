@@ -56,6 +56,17 @@ class Report:
 				query_rel += ".."+str(rel['depth_end'])
 		return query_rel + "]"
 
+	def __get_mongo_info(self, node, params):
+		node_type = node["labels"][0]
+		if node_type in params and len(params[node_type]) > 0:
+			if node_type == "Tweet":
+				return self.mongo.search('tweets', query={"id_str": node['properties']['id']},
+										 fields=params[node_type], single=True)
+			# It's a user or a bot
+			return self.mongo.search('users', query={"id_str": node['properties']['id']},
+									 fields=params[node_type], single=True)
+		return None
+
 	def create_report(self, match: dict, params: dict, limit: int = None, export='csv'):
 		query = f"MATCH r={self.__node_builder(match['start'])}" \
 				f"-{self.__relation_builder(match['rel'])}" \
@@ -74,30 +85,30 @@ class Report:
 			# Analyse each row by looking at its rels field
 			relations = row['r']['rels']
 			relation = {}
-			for index in range(len(relations)):
-				rel = relations[index]
-				if rel == 0:
-					# Add the starter params
-					node_type = rel["start"]["labels"][0]
-					if node_type == "Tweet":
-						relation["start"] = self.mongo.search(
-							'tweets', query={"id_str": rel["start"]['properties']['id']},
-							fields=params['start'][node_type], single=True)
-					else:
-						relation["start"] = self.mongo.search(
-							'users', query={"id_str": rel["start"]['properties']['id']},
-							fields=params['start'][node_type], single=True)
 
-				elif rel == len(relations) - 1:
-					node_type = rel["end"]["labels"][0]
-					if node_type == "Tweet":
-						relation["end"] = self.mongo.search(
-							'tweets', query={"id_str": rel["end"]['properties']['id']},
-							fields=params['end'][node_type], single=True)
-					else:
-						relation["end"] = self.mongo.search(
-							'users', query={"id_str": rel["end"]['properties']['id']},
-							fields=params['end'][node_type], single=True)
+			# Add the detailed start node
+			node_mongo_info = self.__get_mongo_info(relations[0]["start"], params['start'])
+			if node_mongo_info:
+				relation['start'] = node_mongo_info
+
+			# Add all intermediate nodes and relations
+			for index in range(len(relations) - 1):
+				rel = relations[index]
+				relation['rel' + str(index)] = rel["label"]
+				node_mongo_info = self.__get_mongo_info(rel["end"], params['inter'])
+				if node_mongo_info:
+					relation['inter' + str(index)] = node_mongo_info
+
+			# Add ending node
+			relation['rel' + str(len(relations))] = relations[-1]["label"]
+			node_mongo_info = self.__get_mongo_info(relations[-1]["end"], params['end'])
+			if node_mongo_info:
+				relation['end'] = node_mongo_info
+
+			# Append to result
+			result.append(relation)
+
+		logger.debug(result)
 
 		if export == self.ExportType.CSV:
 			self.exporter.export_csv(result)

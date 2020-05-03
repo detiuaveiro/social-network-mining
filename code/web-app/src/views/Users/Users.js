@@ -227,12 +227,22 @@ class Users extends Component {
     if (this.props.page != null) {
       page = this.props.page
     }
-    await this.getUserList(page)
+    if (this.props.searchQuery != null && this.props.searchQuery != "") {
+      await this.setState({ searchQuery: this.props.searchQuery })
+      await this.searchUsers(page)
+
+    } else {
+      await this.getUserList(page)
+    }
     await this.getUserCount()
 
-    this.setState({
+    await this.setState({
       doneLoading: true
     })
+
+    if(document.getElementById("searchUser") != null){
+      document.getElementById("searchUser").value = this.state.searchQuery
+    }
   }
 
 
@@ -266,8 +276,6 @@ class Users extends Component {
   async search() {
     document.getElementById("loadedTable").style.visibility = "hidden"
     document.getElementById("loadingTable").style.display = ""
-
-    console.log(document.getElementById("searchUser").value)
 
     await this.setState({
       curPage: 1,
@@ -517,7 +525,7 @@ class Users extends Component {
       }
     } else {
       return (
-        <UserProfile user={this.state.user} redirection={[{ "type": "LIST", "info": this.state.curPage }]}></UserProfile>
+        <UserProfile user={this.state.user} redirection={[{ "type": "USERS", "info": { "page": this.state.curPage, "query": this.state.searchQuery }}]}></UserProfile>
       )
     }
 

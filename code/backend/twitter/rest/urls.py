@@ -51,6 +51,7 @@ urlpatterns = [
 		users.twitter_search_users, name="twitter_search_users"),
 	url(r"^twitter/users/(?P<id>[0-9]+)/stats/grouped/(?P<type>(?:year)|(?:month)|(?:day))/$",
 		users.twitter_user_stats_grouped, name="twitter_user_stats_grouped"),
+	url(r"twitter/users/(?P<id>[0-9]+)/type/$", users.twitter_users_type, name="users.twitter_users_type"),
 
 	path("twitter/users/export", users.twitter_users_export, name="twitter_users_export"),
 	path("twitter/network", network.twitter_network, name="twitter_network"),
