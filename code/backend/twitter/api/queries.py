@@ -250,7 +250,7 @@ def twitter_tweet_stats(id, entries_per_page, page):
 	try:
 		stats = TweetStats.objects.filter(tweet_id=id).order_by('-timestamp')
 		data = paginator_factory(stats, entries_per_page, page)
-		data['entries'] = [serializers.TweetStats(tweet).data for tweet in data['entries']],
+		data['entries'] = [serializers.TweetStats(tweet).data for tweet in data['entries']]
 
 		return True, data, "Sucesso a obter as estatisticas do tweet de id pedido"
 	except TweetStats.DoesNotExist:
@@ -299,28 +299,34 @@ def policy(id):
 		return False, None, "Erro a obter a politica"
 
 
-def policies():
+def policies(entries_per_page, page):
 	"""
 	Get all availables policies saved on DB
 	:return: status(boolean), data, message(string)
 	"""
 	try:
 		all_policies = Policy.objects.all()
-		data = [convert_policy(serializers.Policy(policy).data) for policy in all_policies]
+
+		data = paginator_factory(all_policies, entries_per_page, page)
+		data['entries'] = [serializers.Policy(policy).data for policy in data['entries']]
+
 		return True, data, "Sucesso a obter todas as politicas"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {policies.__name__} -> {e}")
 		return False, None, "Erro a obter todas as politicas"
 
 
-def bot_policies(id):
+def bot_policies(id, entries_per_page, page):
 	"""
 	Get all availables policies by bot's id saved on DB
 	:return: status(boolean), data, message(string)
 	"""
 	try:
 		policies = Policy.objects.filter(bots__contains=[id])
-		data = [convert_policy(serializers.Policy(policy).data) for policy in policies]
+
+		data = paginator_factory(policies, entries_per_page, page)
+		data['entries'] = [serializers.Policy(policy).data for policy in data['entries']]
+
 		return True, data, f"Sucesso a obter as politicas do bot {id}"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {bot_policies.__name__} -> {e}")
@@ -440,6 +446,11 @@ def twitter_bot_logs(id, entries_per_page, page):
 
 		data['entries'] = [serializers.Log(log).data for log in data['entries']]
 
+		for entry in data['entries']:
+			target_id = entry['target_id']
+			user_obj = User.objects.filter(user_id=target_id)
+			entry['target_screen_name'] = user_obj[0].screen_name if len(user_obj) > 0 else ''
+			
 		return True, data, f"Sucesso a obter os logs do bot com ID {id}"
 
 	except ValueError as e:
