@@ -496,7 +496,7 @@ class Control_Center(Rabbitmq):
 		if is_bot:
 			log.info("It's a bot that's already been registered in the database")
 			# Update the info of the bot
-			exists_in_mongo=self.mongo_client.search(
+			exists_in_mongo = self.mongo_client.search(
 				collection="users",
 				query={"id_str": user['id_str']},
 				single=True
@@ -559,32 +559,25 @@ class Control_Center(Rabbitmq):
 		user = data['data']
 		user_type = self.__user_type(user['id_str'])
 
-		if user_type != "" or ('name' in user and user['name']):
-			self.save_user(data)
-			if 'name' in user and user['name']:
-				user_type = self.__user_type(user['id_str'])
-			return user_type
+		if user_type == "" or 'name' not in user or not user['name']:
+			blank_user = mongo_utils.BLANK_USER.copy()
+			blank_user["id"] = user['id']
+			blank_user["id_str"] = str(user['id'])
+			blank_user["screen_name"] = user['screen_name']
 
-		log.debug(f"Inserting blank user with id {user}")
-		blank_user = mongo_utils.BLANK_USER.copy()
-		blank_user["id"] = user['id']
-		blank_user["id_str"] = user['id_str']
-		blank_user["screen_name"] = user['screen_name']
-		self.save_user({
-			"bot_id": data["bot_id"],
-			"bot_id_str": data["bot_id_str"],
-			'bot_name': data["bot_name"],
-			'bot_screen_name': data["bot_screen_name"],
-			"data": blank_user
-		})
+			log.debug(f"Inserting blank user with id {blank_user['id']}")
 
-		log.info("Have to get the full information on the User")
-		self.send(
-			bot=data["bot_id"],
-			message_type=ServerToBot.GET_USER_BY_ID,
-			params=user['id']
-		)
-		return neo4j_labels.USER_LABEL
+			log.info("Have to get the full information on the User")
+			self.send(
+				bot=data["bot_id_str"],
+				message_type=ServerToBot.GET_USER_BY_ID,
+				params=user['id_str']
+			)
+
+			data['data'] = blank_user
+
+		self.save_user(data)
+		return self.__user_type(user['id'])
 
 	def __save_blank_tweet_if_dont_exists(self, data):
 		tweet_exists = self.mongo_client.search(
@@ -812,7 +805,7 @@ class Control_Center(Rabbitmq):
 
 			self.__follow_user(follower['id_str'], user_id_str)
 
-		# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
+	# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
 
 	def send_keywords(self, data):
 		log.info("Starting to sending the keywords to the bot")
@@ -866,9 +859,10 @@ class Control_Center(Rabbitmq):
 		}
 		try:
 			self._send(routing_key='tasks.twitter.' + str(bot), message=payload)
-		# self._close()
 		except Exception as error:
-			log.exception(f"Failed to send message because of error {error}: ")
+			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
+			self._setup()
+			self.send(bot, message_type, params)
 
 	def received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
@@ -876,9 +870,11 @@ class Control_Center(Rabbitmq):
 		self.action(message)
 
 	def run(self):
-		self._receive()
-		self._close()
+		while True:
+			self._receive()
+			log.warning("Restarting again...")
 
 	def close(self):
 		self.neo4j_client.close()
 		self.pep.pdp.close()
+		self._close()

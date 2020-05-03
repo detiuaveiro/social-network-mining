@@ -132,4 +132,6 @@ packages/react-devtools-shell/dist
 tweets_dataset/
 *.csv
 ParlAI/
+scripts/mongodb/*.json
+scripts/postgresql/*.pgsql
 

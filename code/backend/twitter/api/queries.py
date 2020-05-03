@@ -185,6 +185,16 @@ def twitter_search_users(keywords, entries_per_page, page):
 		return False, None, f"Erro a efetuar a pesquisa de utilizadores"
 
 
+def twitter_users_type(id):
+	try:
+		node_type = neo4j.node_type({'id': id})
+		return True, {'type': node_type}, "Sucesso a obter o tipo de utilizador"
+
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_tweet.__name__} -> {e}")
+		return False, None, f"Erro a obter o tipo de utilizador"
+
+
 # -----------------------------------------------------------
 # tweets
 # -----------------------------------------------------------
