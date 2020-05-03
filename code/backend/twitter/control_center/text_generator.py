@@ -8,8 +8,6 @@ import nltk.chat.rude as rude
 import nltk.chat.suntsu as suntsu
 import nltk.chat.zen as zen
 
-from retrying import retry
-
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 
