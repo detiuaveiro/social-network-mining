@@ -17,7 +17,7 @@ import keras.backend as K
 # Constants used below for the Heuristics
 THRESHOLD_LIKE = 0.4
 THRESHOLD_RETWEET = 0.6
-THRESHOLD_REPLY = 0.6
+THRESHOLD_REPLY = 0.5
 THRESHOLD_FOLLOW_USER = 0.8
 MEAN_WORDS_PER_TWEET = 80
 POLICY_KEYWORDS_MATCHES = 0.2
@@ -420,7 +420,7 @@ class PDP:
 		# We then check if the bot has liked the tweet
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
-			"action": log_actions.TWEET_LIKE,
+			"action": log_actions.RETWEET_REQ_ACCEPT,
 			"target_id": data["tweet_id"]
 		})
 		if bot_logs["success"]:
