@@ -105,7 +105,8 @@ class BotProfile extends Component {
             type: 'month'
         },
 
-        processing: false
+        processing: false,
+        deletePolicy: null
 
     };
 
@@ -394,7 +395,6 @@ class BotProfile extends Component {
     }
 
     async getPolicies(page) {
-        console.log(this.state.userInfo.user_id)
         await fetch(baseURL + "policies/bots/" + this.state.userInfo.user_id + "/", {
             method: "GET",
             headers: {
@@ -423,7 +423,7 @@ class BotProfile extends Component {
                         tags += ", "
                     })
 
-                    tags = tags.substr(1, tags.length - 2)
+                    tags = tags.substr(1, tags.length - 3)
                     if (tags.length > 20) {
                         tags = tags.substr(1, 20) + "..."
                     }
@@ -432,7 +432,7 @@ class BotProfile extends Component {
 
                     tempInfo.push(<Button block outline color="danger"
                         onClick={() =>
-                            this.handleDeletePolicy(policy)
+                            this.handleOpenDelete(policy)
                         }
                     >
                         <i class="fas fa-times"></i>
@@ -613,8 +613,17 @@ class BotProfile extends Component {
         })
     }
 
-    async handleDeletePolicy(policy) {
+    handleOpenDelete(policy){
+        this.setState({
+            modal: true,
+            modalType: "DELETE",
+            deletePolicy: policy
+        });
+    }
+
+    async handleDeletePolicy() {
         var bots = []
+        var policy = this.state.deletePolicy
         policy.bots.forEach(bot => {
             if (bot != this.state.userInfo.user_id) {
                 bots.push(this.state.userInfo.user_id)
@@ -668,6 +677,8 @@ class BotProfile extends Component {
                 draggable: true
             });
         });
+
+        this.handleClose()
     }
 
     // Methods //////////////////////////////////////////////////////////
@@ -750,6 +761,7 @@ class BotProfile extends Component {
         this.setState({
             modal: false,
             modalType: null,
+            deletePolicy: null
         });
     }
 
@@ -1098,7 +1110,35 @@ class BotProfile extends Component {
                                 </Button>
                             </DialogActions>
                         </Dialog>
-                    }
+                    } else if (this.state.modalType == "DELETE") {
+                        modal = <Dialog class="fade-in"
+                          open={this.state.modal}
+                          onClose={() => this.handleClose()}
+                          aria-labelledby="alert-dialog-title"
+                          aria-describedby="alert-dialog-description"
+                        >
+                          <DialogTitle id="alert-dialog-title">
+                            {"❌ 🏷️ Are you sure you want to remove this policy from the bot?"}
+                          </DialogTitle>
+                          <DialogContent>
+                            <DialogContentText id="alert-dialog-description">
+                              Bot <strong>{this.state.userInfo.name}</strong> (@{this.state.userInfo.screen_name}) will stop following the rules stated by the policy <strong>{this.state.deletePolicy.name}</strong>
+                          </DialogContentText>
+                          </DialogContent>
+                          <DialogActions>
+                            <Button onClick={() => this.handleClose()} color="info">
+                              Cancel
+                          </Button>
+                            <Button
+                              onClick={() => this.handleDeletePolicy()}
+                              color="danger"
+                              autoFocus
+                            >
+                              Confirm
+                          </Button>
+                          </DialogActions>
+                        </Dialog>
+                      } 
                 }
 
                 //Latest Tweet
@@ -1411,11 +1451,11 @@ class BotProfile extends Component {
 
                 //All Policies
                 var policies = <CardBody></CardBody>
-                if (this.state.followings.empty) {
+                if (this.state.policies.empty) {
                     policies =
                         <div style={{ marginTop: "25px" }}>
                             <h5 style={{ color: "#999" }}>
-                                This bot doesn't seem to have any policies assigned...
+                                This bot doesn't seem to have any assigned policies...
                         </h5>
                         </div>
                 } else {
