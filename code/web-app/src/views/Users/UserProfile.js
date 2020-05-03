@@ -31,6 +31,7 @@ import Lottie from "react-lottie";
 
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import { ToastContainer, toast, Flip } from 'react-toastify';
 
 
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Brush } from 'recharts';
@@ -111,7 +112,11 @@ class UserProfile extends Component {
 
                     if (tweet.is_quote_status) {
                         tempInfo.push(<Badge pill color="warning" style={{ fontSize: "11px" }}>Quote</Badge>);
-                        tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }}>#{tweet.quoted_status_id}</span>);
+                        if(tweet.quoted_status_id != null){
+                            tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenTweet(tweet.quoted_status_id)}>#{tweet.quoted_status_id}</span>);
+                        }else{
+                            tempInfo.push(<span style={{ color: "#999" }}><i class="fas fa-minus"></i></span>);
+                        }
 
                     } else if (tweet.in_reply_to_screen_name == null) {
                         tempInfo.push(<Badge pill color="info" style={{ fontSize: "11px" }}>Tweet</Badge>);
@@ -208,7 +213,7 @@ class UserProfile extends Component {
                 data.entries.forEach(user => {
                     var tempInfo = []
 
-                    tempInfo.push("@"+user.username)
+                    tempInfo.push("@" + user.username)
                     tempInfo.push(user.name)
 
                     if (user.label == "Bot") {
@@ -274,7 +279,7 @@ class UserProfile extends Component {
                 data.entries.forEach(user => {
                     var tempInfo = []
 
-                    tempInfo.push("@"+user.username)
+                    tempInfo.push("@" + user.username)
                     tempInfo.push(user.name)
                     if (user.label == "Bot") {
                         tempInfo.push(<span><i class="fas fa-robot" style={{ color: "#1da1f2" }}></i> Bot</span>)
@@ -423,28 +428,95 @@ class UserProfile extends Component {
     }
 
     handleOpenProfile(user) {
-        var list = this.state.redirectionList
-        list.push({ type: "PROFILE", info: this.state.userInfo })
-        this.setState({
-            redirectUser: user,
-            redirectionList: list
-        })
+        fetch(baseURL + "twitter/users/" + user + "/type/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).then(response => {
+            if (response.ok) return response.json();
+            else {
+                throw new Error(response.status);
+            }
+        }).then(data => {
+            if (data != null && data != {}) {
+                data = data.data
+                var list = this.state.redirectionList
+                list.push({ type: "PROFILE", info: this.state.userInfo })
+                this.setState({
+                    redirectUser: { "user": user, "type": data.type },
+                    redirectionList: list
+                })
+
+            }
+        }).catch(error => {
+            console.log("error: " + error);
+            toast.error('Sorry, we couldn\'t redirect you to that user/bot\'s profile page. It\'s likely that they\'re still not in our databases, please try again later', {
+                position: "top-center",
+                autoClose: 7500,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true
+            });
+        });
     }
 
     // Methods //////////////////////////////////////////////////////////
 
     handleOpenTweet(tweet) {
-        this.setState({
-            modal: true,
-            modalType: "TWEET",
-            tweets: {
-                data: this.state.tweets.data,
-                noPage: this.state.tweets.noPage,
-                curPage: this.state.tweets.curPage,
-                latestTweet: this.state.tweets.latestTweet,
-                tweet: tweet
-            }
-        });
+        if(tweet.tweet_id != null){
+            this.setState({
+                modal: true,
+                modalType: "TWEET",
+                tweets: {
+                    data: this.state.tweets.data,
+                    noPage: this.state.tweets.noPage,
+                    curPage: this.state.tweets.curPage,
+                    latestTweet: this.state.tweets.latestTweet,
+                    tweet: tweet
+                }
+            });
+        }else{
+            fetch(baseURL + "twitter/tweets/" + tweet + "/", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            }).then(response => {
+                if (response.ok) return response.json();
+                else {
+                    throw new Error(response.status);
+                }
+            }).then(data => {
+                if (data != null && data != {}) {
+                    data = data.data
+    
+                    this.setState({
+                        modal: true,
+                        modalType: "TWEET",
+                        tweets: {
+                            data: this.state.tweets.data,
+                            noPage: this.state.tweets.noPage,
+                            curPage: this.state.tweets.curPage,
+                            latestTweet: this.state.tweets.latestTweet,
+                            tweet: data[0]
+                        }
+                    });
+    
+                }
+            }).catch(error => {
+                console.log("error: " + error);
+                toast.error('🐦 Sorry, we couldn\'t find that tweet. It\'s likely that it\'s still not in our databases, please try again later', {
+                    position: "top-center",
+                    autoClose: 7500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true
+                });
+            });
+        } 
     }
 
     handleClose() {
@@ -522,16 +594,28 @@ class UserProfile extends Component {
                 return (<Users page={this.state.redirectionList[0].info["page"]} searchQuery={this.state.redirectionList[0].info["query"]} />)
             else {
                 var lastUser = this.state.redirectionList.pop()
-                if(lastUser.type == "PROFILE"){
+                if (lastUser.type == "PROFILE") {
                     return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)
-                }else{
+                } else {
                     return (<BotProfile user={lastUser['info']} redirection={this.state.redirectionList}></BotProfile>)
                 }
             }
         } else if (this.state.redirectUser != null) {
+            if (this.state.redirectUser.type != null) {
+                if (this.state.redirectUser.type == "Bot") {
+                    return (
+                        <BotProfile nextUser={this.state.redirectUser.user} redirection={this.state.redirectionList}></BotProfile>
+                    )
+                } else {
+                    return (
+                        <UserProfile nextUser={this.state.redirectUser.user} redirection={this.state.redirectionList}></UserProfile>
+                    )
+                }
+            }
             return (
-                <UserProfile nextUser={this.state.redirectUser} redirection={this.state.redirectionList}></UserProfile>
+                <BotProfile nextUser={this.state.redirectUser} redirection={this.state.redirectionList}></BotProfile>
             )
+
         } else {
             if (!this.state.doneLoading) {
                 return (
@@ -588,7 +672,7 @@ class UserProfile extends Component {
                         var extraInfo
                         if (this.state.tweets.tweet.is_quote_status) {
                             extraInfo = <h6 style={{ color: "#999" }}>
-                                Retweeted <span style={{ color: "#1b95e0", cursor: "pointer" }}>#{this.state.tweets.tweet.quoted_status_id}</span>
+                                Retweeted <span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenTweet(this.state.tweets.tweet.quoted_status_id)}>#{this.state.tweets.tweet.quoted_status_id}</span>
                             </h6>
                         } else if (this.state.tweets.tweet.in_reply_to_screen_name != null) {
                             extraInfo = <h6 style={{ color: "#999" }}>
@@ -747,7 +831,7 @@ class UserProfile extends Component {
                     var extraInfo
                     if (this.state.tweets.latestTweet.is_quote_status) {
                         extraInfo = <h6 style={{ color: "#999" }}>
-                            Retweeted <span style={{ color: "#1b95e0", cursor: "pointer" }}>#{this.state.tweets.latestTweet.quoted_status_id}</span>
+                            Retweeted <span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenTweet(this.state.tweets.latestTweet.quoted_status_id)}>#{this.state.tweets.latestTweet.quoted_status_id}</span>
                         </h6>
                     } else if (this.state.tweets.latestTweet.in_reply_to_screen_name != null) {
                         extraInfo = <h6 style={{ color: "#999" }}>
@@ -1044,6 +1128,18 @@ class UserProfile extends Component {
                 return (
                     <div className="animated fadeIn">
                         <Container fluid>
+                            <ToastContainer
+                                position="top-center"
+                                autoClose={2500}
+                                hideProgressBar={false}
+                                transition={Flip}
+                                newestOnTop={false}
+                                closeOnClick
+                                rtl={false}
+                                pauseOnVisibilityChange
+                                draggable
+                                pauseOnHover
+                            />
                             <Row>
                                 <Col xs="12" sm="12" md="12" style={{ marginBottom: "30px" }}>
                                     <Button block outline color="danger" onClick={() => this.handleGoBack()} style={{

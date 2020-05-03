@@ -133,8 +133,11 @@ class BotProfile extends Component {
 
                     if (tweet.is_quote_status) {
                         tempInfo.push(<Badge pill color="warning" style={{ fontSize: "11px" }}>Quote</Badge>);
-                        tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }}>#{tweet.quoted_status_id}</span>);
-
+                        if (tweet.quoted_status_id != null) {
+                            tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenTweet(tweet.quoted_status_id)}>#{tweet.quoted_status_id}</span>);
+                        } else {
+                            tempInfo.push(<span style={{ color: "#999" }}><i class="fas fa-minus"></i></span>);
+                        }
                     } else if (tweet.in_reply_to_screen_name == null) {
                         tempInfo.push(<Badge pill color="info" style={{ fontSize: "11px" }}>Tweet</Badge>);
                         tempInfo.push(<span style={{ color: "#999" }}><i class="fas fa-minus"></i></span>);
@@ -239,7 +242,7 @@ class BotProfile extends Component {
 
                     tempInfo.push(
                         <Button block outline color="primary"
-                            onClick={() => this.handleOpenProfile(user)}
+                            onClick={() => this.handleOpenProfile(user.id)}
                         >
                             <i class="far fa-user-circle"></i>
                             <strong style={{ marginLeft: "3px" }}>Profile</strong>
@@ -303,7 +306,7 @@ class BotProfile extends Component {
                     }
                     tempInfo.push(
                         <Button block outline color="primary"
-                            onClick={() => this.handleOpenProfile(user)}
+                            onClick={() => this.handleOpenProfile(user.id)}
                         >
                             <i class="far fa-user-circle"></i>
                             <strong style={{ marginLeft: "3px" }}>Profile</strong>
@@ -595,15 +598,40 @@ class BotProfile extends Component {
     }
 
     handleOpenProfile(user) {
-        var list = this.state.redirectionList
-        list.push({ type: "BOT_PROFILE", info: this.state.userInfo })
+        fetch(baseURL + "twitter/users/" + user + "/type/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).then(response => {
+            if (response.ok) return response.json();
+            else {
+                throw new Error(response.status);
+            }
+        }).then(data => {
+            if (data != null && data != {}) {
+                data = data.data
 
-        if (user.label != null) {
-            this.setState({
-                redirectUser: { "user": user.id, "type": user.label },
-                redirectionList: list
-            })
-        }
+                var list = this.state.redirectionList
+                list.push({ type: "BOT_PROFILE", info: this.state.userInfo })
+
+                this.setState({
+                    redirectUser: { "user": user, "type": data.type },
+                    redirectionList: list
+                })
+
+            }
+        }).catch(error => {
+            console.log("error: " + error);
+            toast.error('Sorry, we couldn\'t redirect you to that user/bot\'s profile page. It\'s likely that they\'re still not in our databases, please try again later', {
+                position: "top-center",
+                autoClose: 7500,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true
+            });
+        });
     }
 
     handleOpenNewPolicy() {
@@ -615,7 +643,7 @@ class BotProfile extends Component {
         })
     }
 
-    handleOpenDelete(policy){
+    handleOpenDelete(policy) {
         this.setState({
             modal: true,
             modalType: "DELETE",
@@ -686,17 +714,58 @@ class BotProfile extends Component {
     // Methods //////////////////////////////////////////////////////////
 
     handleOpenTweet(tweet) {
-        this.setState({
-            modal: true,
-            modalType: "TWEET",
-            tweets: {
-                data: this.state.tweets.data,
-                noPage: this.state.tweets.noPage,
-                curPage: this.state.tweets.curPage,
-                latestTweet: this.state.tweets.latestTweet,
-                tweet: tweet
-            }
-        });
+        if(tweet.tweet_id != null){
+            this.setState({
+                modal: true,
+                modalType: "TWEET",
+                tweets: {
+                    data: this.state.tweets.data,
+                    noPage: this.state.tweets.noPage,
+                    curPage: this.state.tweets.curPage,
+                    latestTweet: this.state.tweets.latestTweet,
+                    tweet: tweet
+                }
+            });
+        }else{
+            fetch(baseURL + "twitter/tweets/" + tweet + "/", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            }).then(response => {
+                if (response.ok) return response.json();
+                else {
+                    throw new Error(response.status);
+                }
+            }).then(data => {
+                if (data != null && data != {}) {
+                    data = data.data
+    
+                    this.setState({
+                        modal: true,
+                        modalType: "TWEET",
+                        tweets: {
+                            data: this.state.tweets.data,
+                            noPage: this.state.tweets.noPage,
+                            curPage: this.state.tweets.curPage,
+                            latestTweet: this.state.tweets.latestTweet,
+                            tweet: data[0]
+                        }
+                    });
+    
+                }
+            }).catch(error => {
+                console.log("error: " + error);
+                toast.error('🐦 Sorry, we couldn\'t find that tweet. It\'s likely that it\'s still not in our databases, please try again later', {
+                    position: "top-center",
+                    autoClose: 7500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true
+                });
+            });
+        } 
     }
 
     handleOpenNewTweet() {
@@ -932,7 +1001,7 @@ class BotProfile extends Component {
                         var extraInfo
                         if (this.state.tweets.tweet.is_quote_status) {
                             extraInfo = <h6 style={{ color: "#999" }}>
-                                Retweeted <span style={{ color: "#1b95e0", cursor: "pointer" }}>#{this.state.tweets.tweet.quoted_status_id}</span>
+                                Retweeted <span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenTweet(this.state.tweets.tweet.quoted_status_id)}>#{this.state.tweets.tweet.quoted_status_id}</span>
                             </h6>
                         } else if (this.state.tweets.tweet.in_reply_to_screen_name != null) {
                             extraInfo = <h6 style={{ color: "#999" }}>
@@ -1114,33 +1183,33 @@ class BotProfile extends Component {
                         </Dialog>
                     } else if (this.state.modalType == "DELETE") {
                         modal = <Dialog class="fade-in"
-                          open={this.state.modal}
-                          onClose={() => this.handleClose()}
-                          aria-labelledby="alert-dialog-title"
-                          aria-describedby="alert-dialog-description"
+                            open={this.state.modal}
+                            onClose={() => this.handleClose()}
+                            aria-labelledby="alert-dialog-title"
+                            aria-describedby="alert-dialog-description"
                         >
-                          <DialogTitle id="alert-dialog-title">
-                            {"❌ 🏷️ Are you sure you want to remove this policy from the bot?"}
-                          </DialogTitle>
-                          <DialogContent>
-                            <DialogContentText id="alert-dialog-description">
-                              Bot <strong>{this.state.userInfo.name}</strong> (@{this.state.userInfo.screen_name}) will stop following the rules stated by the policy <strong>{this.state.deletePolicy.name}</strong>
-                          </DialogContentText>
-                          </DialogContent>
-                          <DialogActions>
-                            <Button onClick={() => this.handleClose()} color="info">
-                              Cancel
+                            <DialogTitle id="alert-dialog-title">
+                                {"❌ 🏷️ Are you sure you want to remove this policy from the bot?"}
+                            </DialogTitle>
+                            <DialogContent>
+                                <DialogContentText id="alert-dialog-description">
+                                    Bot <strong>{this.state.userInfo.name}</strong> (@{this.state.userInfo.screen_name}) will stop following the rules stated by the policy <strong>{this.state.deletePolicy.name}</strong>
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={() => this.handleClose()} color="info">
+                                    Cancel
                           </Button>
-                            <Button
-                              onClick={() => this.handleDeletePolicy()}
-                              color="danger"
-                              autoFocus
-                            >
-                              Confirm
+                                <Button
+                                    onClick={() => this.handleDeletePolicy()}
+                                    color="danger"
+                                    autoFocus
+                                >
+                                    Confirm
                           </Button>
-                          </DialogActions>
+                            </DialogActions>
                         </Dialog>
-                      } 
+                    }
                 }
 
                 //Latest Tweet
@@ -1159,7 +1228,7 @@ class BotProfile extends Component {
                     var extraInfo
                     if (this.state.tweets.latestTweet.is_quote_status) {
                         extraInfo = <h6 style={{ color: "#999" }}>
-                            Retweeted <span style={{ color: "#1b95e0", cursor: "pointer" }}>#{this.state.tweets.latestTweet.quoted_status_id}</span>
+                            Retweeted <span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenTweet(this.state.tweets.latestTweet.quoted_status_id)}>#{this.state.tweets.latestTweet.quoted_status_id}</span>
                         </h6>
                     } else if (this.state.tweets.latestTweet.in_reply_to_screen_name != null) {
                         extraInfo = <h6 style={{ color: "#999" }}>
@@ -1559,7 +1628,7 @@ class BotProfile extends Component {
 
                 var processing = <div></div>
                 if (this.state.processing) {
-                    processing = <div id="loading" style={{position: "fixed", width:"100%", height:"100%",top:0,left:0, zIndex:9}}>
+                    processing = <div id="loading" style={{ position: "fixed", width: "100%", height: "100%", top: 0, left: 0, zIndex: 9 }}>
                         <div className="animated fadeOut animated" style={{ width: "100%", height: "100%", top: 0, left: 0, position: "absolute", backgroundColor: "white", opacity: 0.6, zIndex: 11 }}>
                         </div>
                         <div style={{ zIndex: 11, position: "relative" }}>
