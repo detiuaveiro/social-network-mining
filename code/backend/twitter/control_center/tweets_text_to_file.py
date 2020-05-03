@@ -7,6 +7,7 @@ from wrappers.mongo_wrapper import MongoAPI
 
 FIELDS = ['text', 'full_text']
 DIR_EXPORT = "tweets_text/"
+MIN_SIZE_TWEET = 3
 
 
 class TweetsExporter:
@@ -32,6 +33,9 @@ class TweetsExporter:
 				result['text'] = result['full_text']
 				del result['full_text']
 			result['text'] = tweet_to_simple_text(result['text'])
+
+			if len(result['text']) < MIN_SIZE_TWEET:
+				results.remove(result)
 
 		with open(path, 'w') as file:
 			file.write(json.dumps(results, ensure_ascii=False))
