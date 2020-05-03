@@ -354,6 +354,8 @@ class BotProfile extends Component {
 
                 var tempActivities = []
 
+                console.log(data)
+
                 data.entries.forEach(activity => {
                     var tempInfo = []
                     tempInfo.push(activity.action)
