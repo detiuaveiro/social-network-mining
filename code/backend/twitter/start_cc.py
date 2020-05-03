@@ -25,7 +25,7 @@ def export_tweets_text(file_name: str):
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--test', type=str, default='')
-	parser.add_argument('--export_tweets_text', type=str, default='tweets.txt')
+	parser.add_argument('--export_tweets_text', type=str, default='tweets.json')
 	args = parser.parse_args()
 
 	if args.test:

@@ -1,3 +1,4 @@
+import json
 import os
 from typing import List
 
@@ -25,7 +26,10 @@ class TweetsExporter:
 			os.makedirs(DIR_EXPORT)
 
 		results = self.get_tweets()
+		for result in results:
+			if 'full_text' in result:
+				result['text'] = result['full_text']
+				del result['full_text']
 
 		with open(path, 'w') as file:
-			for tweet in results:
-				file.write(f"{tweet['full_text'] if 'full_text' in tweet else tweet['text']}")
+			file.write(json.dumps(results))
