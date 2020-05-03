@@ -998,8 +998,8 @@ class UserProfile extends Component {
                                     style={{
                                         zIndex: 10,
                                         position: "absolute",
-                                        top: "45%",
-                                        left: "45%",
+                                        top: "30%",
+                                        left: "40%",
                                         display: "none"
                                     }}>
                                     <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
@@ -1052,8 +1052,8 @@ class UserProfile extends Component {
                                 style={{
                                     zIndex: 10,
                                     position: "absolute",
-                                    top: "45%",
-                                    left: "45%",
+                                    top: "30%",
+                                    left: "40%",
                                     display: "none"
                                 }}>
                                 <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
@@ -1105,8 +1105,8 @@ class UserProfile extends Component {
                                 style={{
                                     zIndex: 10,
                                     position: "absolute",
-                                    top: "45%",
-                                    left: "45%",
+                                    top: "30%",
+                                    left: "40%",
                                     display: "none"
                                 }}>
                                 <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />

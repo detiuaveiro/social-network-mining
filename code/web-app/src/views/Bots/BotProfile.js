@@ -400,7 +400,7 @@ class BotProfile extends Component {
     }
 
     async getPolicies(page) {
-        await fetch(baseURL + "policies/bots/" + this.state.userInfo.user_id + "/", {
+        await fetch(baseURL + "policies/bots/" + this.state.userInfo.user_id + "/4/"+page+"/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -416,7 +416,7 @@ class BotProfile extends Component {
 
                 var tempPolicies = []
 
-                data.forEach(policy => {
+                data.entries.forEach(policy => {
                     var tempInfo = []
 
                     tempInfo.push(policy['name'])
@@ -428,9 +428,9 @@ class BotProfile extends Component {
                         tags += ", "
                     })
 
-                    tags = tags.substr(1, tags.length - 3)
+                    tags = tags.substr(0, tags.length - 2)
                     if (tags.length > 20) {
-                        tags = tags.substr(1, 20) + "..."
+                        tags = tags.substr(0, 20) + "..."
                     }
 
                     tempInfo.push(tags)
@@ -1448,8 +1448,8 @@ class BotProfile extends Component {
                                 style={{
                                     zIndex: 10,
                                     position: "absolute",
-                                    top: "45%",
-                                    left: "45%",
+                                    top: "30%",
+                                    left: "40%",
                                     display: "none"
                                 }}>
                                 <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
@@ -1501,8 +1501,8 @@ class BotProfile extends Component {
                                 style={{
                                     zIndex: 10,
                                     position: "absolute",
-                                    top: "45%",
-                                    left: "45%",
+                                    top: "30%",
+                                    left: "40%",
                                     display: "none"
                                 }}>
                                 <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
@@ -1554,8 +1554,8 @@ class BotProfile extends Component {
                                 style={{
                                     zIndex: 10,
                                     position: "absolute",
-                                    top: "45%",
-                                    left: "45%",
+                                    top: "20%",
+                                    left: "30%",
                                     display: "none"
                                 }}>
                                 <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
@@ -1607,8 +1607,8 @@ class BotProfile extends Component {
                                 style={{
                                     zIndex: 10,
                                     position: "absolute",
-                                    top: "45%",
-                                    left: "45%",
+                                    top: "30%",
+                                    left: "40%",
                                     display: "none"
                                 }}>
                                 <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />

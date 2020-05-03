@@ -59,7 +59,7 @@ class PolicyForm extends Component {
     };
 
     async getAllPolicies() {
-        await fetch(baseURL + "policies", {
+        await fetch(baseURL + "policies/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -75,10 +75,10 @@ class PolicyForm extends Component {
 
                 var tempPolicies = []
 
-                data.forEach(policy => {
-                    //if (!policy.bots.includes(this.props.bot.user_id)) {
+                data.entries.forEach(policy => {
+                    if (!policy.bots.includes(this.props.bot.user_id)) {
                     tempPolicies.push({ 'value': policy, 'label': "(" + policy.filter + ") " + policy.name });
-                    //}
+                    }
                 })
 
 
