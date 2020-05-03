@@ -34,7 +34,7 @@ BOT_FOLLOWS_USER = 0.3
 BOT_RETWEETED_TWEET = 0.2
 BOT_LIKED_TWEET = 0.3
 
-NUMBER_TWEETS_FOLLOW_DECISION = 3
+NUMBER_TWEETS_FOLLOW_DECISION = 5
 
 LIMIT_REPLY_LOGS_QUANTITY = 1000
 
@@ -485,7 +485,7 @@ class PDP:
 		})
 
 		tweets = data['tweets']
-		tweets = random.sample(tweets, min(len(tweets), NUMBER_TWEETS_FOLLOW_DECISION))
+		tweets = sorted(tweets, key=lambda x: -len(x))[:min(len(tweets), NUMBER_TWEETS_FOLLOW_DECISION)]
 
 		user_description = user['description']
 		tweets_text = [t['full_text'] for t in tweets]
