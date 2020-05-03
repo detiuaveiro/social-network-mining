@@ -379,7 +379,8 @@ class Control_Center(Rabbitmq):
 			reply_text = None
 			if text_en:
 				reply_text = self.replier.generate_response(text_en)
-				reply_text = self.translator.from_en_to_pt(reply_text)
+				if reply_text:
+					reply_text = self.translator.from_en_to_pt(reply_text)
 
 			if reply_text:
 				log.info(f"Sending reply text <{reply_text}>")
