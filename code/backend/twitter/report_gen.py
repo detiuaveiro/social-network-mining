@@ -154,7 +154,6 @@ if __name__ == '__main__':
 		'start': {},
 		'rel': {
 			'depth_start': 2,
-			'depth_end': 4,
 			'label': ['FOLLOWS', 'WROTE']
 		},
 		'end': {
@@ -178,7 +177,7 @@ if __name__ == '__main__':
 			'Bot': ['friends_count']
 		}
 	}
-	limit = 1
+	limit = 25
 	for export_type in Report.ExportType:
 		print(export_type)
 		rep.create_report(query, params, limit, export_type)
