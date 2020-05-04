@@ -146,7 +146,10 @@ class Policies extends Component {
     tags: [],
     bots: [],
     allBots: [],
-    processing: false
+    processing: false,
+
+    noPolicies: 0,
+    noActivePolicies: 0
   };
 
   async getPolicies(page) {
@@ -292,16 +295,49 @@ class Policies extends Component {
     });
   }
 
+  async getNumbers() {
+    await fetch(baseURL + "policies/numbers/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+        data = data.data
+        console.log(data)
+
+        this.setState({
+          noPolicies: data.total,
+          noActivePolicies: data.active
+        })
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        error: true,
+      })
+    });
+  }
+
   async componentDidMount() {
 
     await this.getPolicies(1, true)
     await this.getBotList(1)
+    await this.getNumbers()
 
     await this.setState({
       doneLoading: true
     })
 
-    this.changeSelected(this.state.policies[0])
+    if (!this.state.error) {
+      this.changeSelected(this.state.policies[0])
+    }
+
   }
 
 
@@ -439,7 +475,6 @@ class Policies extends Component {
     });
   }
 
-
   handleClose() {
     this.setState({
       modal: false,
@@ -454,7 +489,6 @@ class Policies extends Component {
     })
   }
 
-
   async confirmEdit() {
     if (!this.checkForChange()) {
       toast.info('No changes have been made!', {
@@ -465,7 +499,13 @@ class Policies extends Component {
         pauseOnHover: true,
         draggable: true
       });
+      document.getElementById("error").style.visibility = "hidden"
+
+    } else if (document.getElementById("name").value == null || document.getElementById("name").value == "" || this.state.tags == null || this.state.tags.length == 0) {
+      document.getElementById("error").style.visibility = ""
     } else {
+      document.getElementById("error").style.visibility = "hidden"
+
       var bots = []
       for (var i = 0; i < this.state.bots.length; i++) {
         bots.push(this.state.bots[i].value)
@@ -505,12 +545,13 @@ class Policies extends Component {
       }).then(data => {
         var policy = data.data
 
+        document.getElementById("loadedTable").style.visibility = "hidden"
+        document.getElementById("loadingTable").style.display = ""
+
         /////////////////////////////////////////////////////////////////////
 
         if (this.state.policy != null) {
           if (document.getElementsByName(this.state.policy[7].id) != null) {
-            console.log(document.getElementsByName(this.state.policy[0]).length)
-    
             for (var i = 0; i < 4; i++) {
               document.getElementsByName(this.state.policy[7].id)[i].style.color = ""
               document.getElementsByName(this.state.policy[7].id)[i].style.fontWeight = ""
@@ -518,7 +559,7 @@ class Policies extends Component {
           }
         }
 
-        this.setState({policy: null})
+        this.setState({ policy: null })
 
         var tempInfo = []
 
@@ -593,6 +634,8 @@ class Policies extends Component {
 
         this.changeSelected(tempInfo)
 
+        document.getElementById("loadedTable").style.visibility = ""
+        document.getElementById("loadingTable").style.display = "none"
 
         toast.info('Policy succesfully altered!', {
           position: "top-center",
@@ -637,7 +680,22 @@ class Policies extends Component {
       curPage: value
     })
 
+    if (this.state.policy != null) {
+      if (document.getElementsByName(this.state.policy[7].id) != null) {
+        console.log(document.getElementsByName(this.state.policy[0]).length)
+
+        for (var i = 0; i < 4; i++) {
+          document.getElementsByName(this.state.policy[7].id)[i].style.color = ""
+          document.getElementsByName(this.state.policy[7].id)[i].style.fontWeight = ""
+        }
+      }
+    }
+    await this.setState({
+      policy: null,
+    })
+
     await this.getPolicies(value)
+    this.changeSelected(this.state.policies[0])
 
     document.getElementById("loadedTable").style.visibility = "visible"
     document.getElementById("loadingTable").style.display = "none"
@@ -766,8 +824,6 @@ class Policies extends Component {
     await this.setState({
       policy: selected,
     })
-
-    console.log(this.state.policy[7].id)
 
     if (document.getElementsByName(this.state.policy[7].id) != null) {
       for (var i = 0; i < 4; i++) {
@@ -1085,7 +1141,7 @@ class Policies extends Component {
                         marginTop: "0",
                         paddingTop: "10px",
                         marginBottom: "0"
-                      }}>Total number of policies</p>
+                      }}>Total number of active policies</p>
                       <h3 style={{
                         color: "#23282c",
                         minHeight: "auto",
@@ -1096,7 +1152,7 @@ class Policies extends Component {
                           lineHeight: "1"
                         }
                       }} >
-                        1/1
+                        {this.state.noActivePolicies} / {this.state.noPolicies}
                       </h3>
                     </CardHeader>
                     <CardBody style={{ minHeight: "38px" }}>
@@ -1203,6 +1259,11 @@ class Policies extends Component {
                       <Row style={{ marginTop: "30px" }}>
                         <Col sm="12" md="12" xs="12">
                           <span id="changed" style={{ visibility: "hidden", color: "#999" }}>*Changes made but still not applied. Please click confirm to save changes.</span>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col sm="12" md="12" xs="12">
+                          <span id="error" style={{ visibility: "hidden", color: "#f86c6b" }}>Sorry, you can't leave the name empty and must define at least one tag!</span>
                         </Col>
                       </Row>
 

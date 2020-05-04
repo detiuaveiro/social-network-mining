@@ -112,4 +112,6 @@ urlpatterns = [
 
 	url(r"^policies/update/(?P<policy_id>[0-9]+)/$", policies.update_policy, name="update_policy"),
 
+	url(r"^policies/number", policies.get_number_policies, name="number_policies")
+
 ]
