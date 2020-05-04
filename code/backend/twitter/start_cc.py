@@ -19,7 +19,7 @@ def tests(test_type):
 
 def export_tweets_text(file_name: str):
 	exporter = TweetsExporter()
-	exporter.export(file_name)
+	exporter.export_json(file_name)
 
 
 if __name__ == "__main__":

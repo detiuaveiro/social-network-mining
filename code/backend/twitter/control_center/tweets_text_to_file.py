@@ -20,22 +20,20 @@ class TweetsExporter:
 			results += self.mongo_api.search(collection='tweets', query={field: {'$exists': True, '$ne': ''}},
 			                                fields=[field])
 
-		return results
-
-	def export(self, file_name: str):
-		path = f"{DIR_EXPORT}{file_name}"
-		if not os.path.exists(DIR_EXPORT):
-			os.makedirs(DIR_EXPORT)
-
-		results = self.get_tweets()
 		for result in results:
 			if 'full_text' in result:
 				result['text'] = result['full_text']
 				del result['full_text']
 			result['text'] = tweet_to_simple_text(result['text'])
 
-			if len(result['text']) < MIN_SIZE_TWEET:
-				results.remove(result)
+		results = [result for result in results if len(result['text']) > MIN_SIZE_TWEET]
+
+	def export_json(self, file_name: str):
+		path = f"{DIR_EXPORT}{file_name}"
+		if not os.path.exists(DIR_EXPORT):
+			os.makedirs(DIR_EXPORT)
+
+		results = self.get_tweets()
 
 		with open(path, 'w') as file:
-			file.write(json.dumps(results, ensure_ascii=False))
+			file.write(json.dumps(results, ensure_ascii=False, indent=3))
