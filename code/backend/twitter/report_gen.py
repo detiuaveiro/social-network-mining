@@ -58,6 +58,7 @@ class Report:
 
 	def __get_mongo_info(self, node, params):
 		node_type = node["labels"][0]
+
 		if node_type in params and len(params[node_type]) > 0:
 			if node_type == "Tweet":
 				mongo_info = self.mongo.search('tweets', query={"id_str": node['properties']['id']},
@@ -69,6 +70,17 @@ class Report:
 			if mongo_info:
 				return mongo_info
 			return {param: None for param in params[node_type]}
+		return None
+
+	def __get_mongo_aggregate(self, table, query, params):
+		params += ["id_str"]
+		if len(query) != 0:
+			result = self.mongo.search(table, query={"$or": query}, fields=params)
+
+			if not result:
+				result = {param: None for param in params}
+
+			return result
 		return None
 
 	def create_report(self, match: dict, params: dict, limit: int = None, export='csv'):
@@ -97,7 +109,6 @@ class Report:
 			if node_mongo_info:
 				relation['start'] = node_mongo_info
 
-			# Add all intermediate nodes and relations
 			for index in range(len(relations) - 1):
 				rel = relations[index]
 				relation['rel' + str(index+1)] = {"name": rel["label"]}
@@ -153,12 +164,9 @@ if __name__ == '__main__':
 	query = {
 		'start': {},
 		'rel': {
-			'depth_start': 2,
-			'label': ['FOLLOWS', 'WROTE']
+			'depth_start': 5,
 		},
-		'end': {
-			'label': ['User']
-		}
+		'end': {}
 	}
 	params = {
 		'start': {
@@ -177,7 +185,7 @@ if __name__ == '__main__':
 			'Bot': ['friends_count']
 		}
 	}
-	limit = 25
+	limit = 10000
 	for export_type in Report.ExportType:
 		print(export_type)
 		rep.create_report(query, params, limit, export_type)
