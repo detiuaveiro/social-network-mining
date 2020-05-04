@@ -4,10 +4,12 @@ import datetime
 
 
 def paginator_factory(query_data, entries_per_page, page):
-	entries_per_page = int(entries_per_page) if entries_per_page is not None else len(query_data)
+	entries_per_page = int(entries_per_page) if entries_per_page is not None else query_data.count()
 	page = int(page) if page is not None else 1
 
 	data = {}
+	if query_data.count() == 0:
+		entries_per_page = 1
 
 	if entries_per_page > 0:
 		paginator = None
@@ -37,6 +39,9 @@ def paginator_factory_non_queryset(query_data, entries_per_page, page):
 	entries_per_page = int(entries_per_page) if entries_per_page is not None else len(query_data)
 	page = int(page) if page is not None else 1
 
+	if len(query_data) == 0:
+		entries_per_page = 1
+
 	num_pages = math.ceil(len(query_data) / entries_per_page)
 
 	start = (page - 1) * entries_per_page
@@ -51,7 +56,3 @@ def paginator_factory_non_queryset(query_data, entries_per_page, page):
 
 	return data
 
-
-def convert_policy(policy):
-	policy['bots'] = [str(bot) for bot in policy['bots']]
-	return policy

@@ -152,89 +152,138 @@ chmod +x import_databases.sh
 ```
 
 ## BDS MANUAL IMPORT
-- mongodb
-```bash
-mongoimport --db twitter --collection tweets --file scripts/mongodb/tweets.json -u user -p password
-mongoimport --db twitter --collection users --file scripts/mongodb/users.json -u user -p password
-```
-- postgresql
-```bash
-psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql 
-```
-```bash
-#Add column to user table to include if it's protected or not
-ALTER TABLE users ADD COLUMN protected BOOLEAN DEFAULT False;
-```
+### MongoDB
+ - Access
+ ```bash
+ > mongoimport --db twitter --collection tweets --file scripts/mongodb/tweets.json -u user -p password
+ > mongoimport --db twitter --collection users --file scripts/mongodb/users.json -u user -p password
+ ```
 
-- change columns on postgresql
-```bash
-alter table logs alter column id_bot type numeric;
-alter table logs alter column target_id type numeric;
-alter table tweets alter column tweet_id type numeric;
-alter table tweets alter column user_id type numeric;
-alter table users alter column user_id type numeric;
-alter table policies alter column bots type numeric[];  
-```
+ - Indexation
+ ```javascript
+ > db.users.createIndex({id_str: 1}, { unique:true })
+ > db.users.createIndex({id: 1}, { unique:true })
+ > db.users.createIndex({screen_name: 1}, { unique:true })
+ > db.tweets.createIndex({id: 1}, { unique:true })
+ > db.tweets.createIndex({id_str: 1}, { unique:true })
+ ```
 
-- neo4j
-```bash
+
+### PostgreSQL
+ - Access
+ ```bash
+ psql -U postgres_pi twitter -h localhost < scripts/postgresql/twitter.pgsql 
+ ```
+
+ - Modifications to the initial bd
+   - Add a new column for protected users on table `users`
+   ```sql
+   -- Add column to user table to include if it's protected or not
+   ALTER TABLE users ADD COLUMN protected BOOLEAN DEFAULT False;
+   ```
+ 
+   - change `id` columns on postgresql from `int` to `numeric` (because of possible overflow)
+   ```sql
+   alter table logs alter column id_bot type numeric;
+   alter table logs alter column target_id type numeric;
+   alter table tweets alter column tweet_id type numeric;
+   alter table tweets alter column user_id type numeric;
+   alter table users alter column user_id type numeric;
+   alter table policies alter column bots type numeric[];  
+   ```
+
+### Neo4j
+ - Import
   CALL apoc.load.json("user_nodes.json")
-  YIELD value
-  MERGE (p:User {name: value.a.properties.name, id: value.a.properties.id, username: value.a.properties.username})
-```
-```bash
-  CALL apoc.load.json("bots_nodes.json")
-  YIELD value
-  MERGE (p:Bot {name: value.a.properties.name, id: value.a.properties.id, username: value.a.properties.username})
-```
-```bash
-  CALL apoc.load.json("tweets.json")
-  YIELD value
-  MERGE (p:Tweet {id: value.a.properties.id})
-```
-```bash
-  CALL apoc.load.json("follow_rel.json")
-  YIELD value
-  MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:value.end.properties.id})
-  CREATE (p)-[:FOLLOWS]->(u)
-```
-```bash
-  CALL apoc.load.json("retweet.json")
-  YIELD value
-  MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:value.end.properties.id})
-  CREATE (p)-[:RETWEETED]->(u)
-```
-```bash
-  CALL apoc.load.json("reply.json")
-  YIELD value
-  MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:value.end.properties.id})
-  CREATE (p)-[:REPLIED]->(u)
-```
-```bash
-  CALL apoc.load.json("wrote.json")
-  YIELD value
-  MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:value.end.properties.id})
-  CREATE (p)-[:WROTE]->(u)
-```
-```bash
-  CALL apoc.load.json("quote.json")
-  YIELD value
-  MATCH(p {id:value.start.properties.id})
-  MATCH(u {id:value.end.properties.id})
-  CREATE (p)-[:QUOTED]->(u)
-```
-Neo4j Export commands:
-```bash
-call apoc.export.json.query("match (start) - [r:QUOTED] ->(end) return start, r, end", "quote.json")
-call apoc.export.json.query("match (start) - [r:WROTE] ->(end) return start, r, end", "write.json")
-call apoc.export.json.query("match (start) - [r:RETWEETED] ->(end) return start, r, end", "retweet.json")
-call apoc.export.json.query("match (start) - [r:FOLLOWS] ->(end) return start, r, end", "follow_rel.json")
-call apoc.export.json.query("match (start) - [r:REPLIED] ->(end) return start, r, end", "reply.json")
-call apoc.export.json.query("match (a:Tweet) return a", "tweets.json")
-call apoc.export.json.query("match (a:User) return a", "user_nodes.json")
-call apoc.export.json.query("match (a:Bot) return a", "bots_nodes.json")
-```
+ ```cypher
+ YIELD value
+ MERGE (p:User {name: value.a.properties.name, id: value.a.properties.id, username: value.a.properties.username})
+ ```
+ ```cypher
+ CALL apoc.load.json("bots_nodes.json")
+ YIELD value
+ MERGE (p:Bot {name: value.a.properties.name, id: value.a.properties.id, username: value.a.properties. username})
+ ```
+ ```cypher
+ CALL apoc.load.json("tweets.json")
+ YIELD value
+ MERGE (p:Tweet {id: value.a.properties.id})
+ ```
+ ```cypher
+ CALL apoc.load.json("follow_rel.json")
+ YIELD value
+ MATCH(p {id:value.start.properties.id})
+ MATCH(u {id:value.end.properties.id})
+ CREATE (p)-[:FOLLOWS]->(u)
+ ```
+ ```cypher
+ CALL apoc.load.json("retweet.json")
+ YIELD value
+ MATCH(p {id:value.start.properties.id})
+ MATCH(u {id:value.end.properties.id})
+ CREATE (p)-[:RETWEETED]->(u)
+ ```
+ ```cypher
+ CALL apoc.load.json("reply.json")
+ YIELD value
+ MATCH(p {id:value.start.properties.id})
+ MATCH(u {id:value.end.properties.id})
+ CREATE (p)-[:REPLIED]->(u)
+ ```
+ ```cypher
+ CALL apoc.load.json("wrote.json")
+ YIELD value
+ MATCH(p {id:value.start.properties.id})
+ MATCH(u {id:value.end.properties.id})
+ CREATE (p)-[:WROTE]->(u)
+ ```
+ ```cypher
+ CALL apoc.load.json("quote.json")
+ YIELD value
+ MATCH(p {id:value.start.properties.id})
+ MATCH(u {id:value.end.properties.id})
+ CREATE (p)-[:QUOTED]->(u)
+ ```
+
+ - Export:
+ ```cypher
+ call apoc.export.json.query("match (start) - [r:QUOTED] ->(end) return start, r, end", "quote.json")
+ call apoc.export.json.query("match (start) - [r:WROTE] ->(end) return start, r, end", "write.json")
+ call apoc.export.json.query("match (start) - [r:RETWEETED] ->(end) return start, r, end", "retweet.json")
+ call apoc.export.json.query("match (start) - [r:FOLLOWS] ->(end) return start, r, end", "follow_rel.json")
+ call apoc.export.json.query("match (start) - [r:REPLIED] ->(end) return start, r, end", "reply.json")
+ call apoc.export.json.query("match (a:Tweet) return a", "tweets.json")
+ call apoc.export.json.query("match (a:User) return a", "user_nodes.json")
+ call apoc.export.json.query("match (a:Bot) return a", "bots_nodes.json")
+ ```
+ - Indexation
+ ```cypher
+ // create index on user id
+ CREATE CONSTRAINT user_id
+ ON (u:User)
+ ASSERT u.id IS UNIQUE
+ ```
+ ```cypher
+ // create index on tweet id
+ CREATE CONSTRAINT tweet_id
+ ON (t:Tweet)
+ ASSERT t.id IS UNIQUE
+ ```
+ ```cypher
+ // create index on bot id
+ CREATE CONSTRAINT bot_id
+ ON (b:Bot)
+ ASSERT b.id IS UNIQUE
+ ```
+ ```cypher
+ // create index on bot username
+ CREATE CONSTRAINT bot_username
+ ON (b:Bot)
+ ASSERT b.username IS UNIQUE
+ ```
+ ```cypher
+ // create index on user username
+ CREATE CONSTRAINT user_username
+ ON (u:User)
+ ASSERT u.username IS UNIQUE
+ ```
