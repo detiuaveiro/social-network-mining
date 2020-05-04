@@ -43,38 +43,6 @@ def delete_neo4j_data():
 
 
 @catch_exception
-def test_successful_policies_request(error_catcher, factory, policies_list):
-	path = reverse('policies')
-	request = factory.get(path)
-	response = policies.policies(request)
-	assert is_response_successful_with_pagination(response, len(policies_list))
-
-
-@catch_exception
-def test_successful_policies_request_with_pagination(error_catcher, factory, policies_list):
-	path = reverse('policies', kwargs={'entries_per_page': 10, 'page': 1})
-	request = factory.get(path)
-	response = policies.policies(request, entries_per_page=10, page=1)
-	assert is_response_successful_with_pagination(response, 10)
-
-
-@catch_exception
-def test_empty_policies_request(error_catcher, factory, db):
-	path = reverse('policies')
-	request = factory.get(path)
-	response = policies.policies(request)
-	assert is_response_empty_with_pagination(response)
-
-
-@catch_exception
-def test_unsuccessfully_policies_request(error_catcher, factory, policies_list):
-	path = reverse('policies', kwargs={'entries_per_page': 0, 'page': 1})
-	request = factory.get(path)
-	response = policies.policies(request, entries_per_page=0, page=1)
-	assert is_response_unsuccessful(response)
-
-
-@catch_exception
 def test_successful_policy_request(error_catcher, factory, policy):
 	path = reverse('policy', kwargs={'policy_id': 1})
 	request = factory.get(path)
