@@ -250,7 +250,7 @@ class Control_Center(Rabbitmq):
 			"user_id_str": data['data']['user']['id_str'],
 			"tweet_id": data['data']['id'],
 			"tweet_id_str": data['data']['id_str'],
-			"tweet_text": data['data']['text'],
+			"tweet_text": data['data']['full_text'] if 'full_text' in data['data'] else data['data']['text'],
 			"tweet_entities": data['data']['entities']
 		})
 
@@ -300,7 +300,7 @@ class Control_Center(Rabbitmq):
 			"user_id_str": data['data']['user']['id_str'],
 			"tweet_id": data['data']['id'],
 			"tweet_id_str": data['data']['id_str'],
-			"tweet_text": data['data']['text'],
+			"tweet_text": data['data']['full_text'] if 'full_text' in data['data'] else data['data']['text'],
 			"tweet_entities": data['data']['entities']
 		})
 
@@ -353,7 +353,7 @@ class Control_Center(Rabbitmq):
 			"tweet_id_str": tweet["id_str"],
 			"user_id": tweet['user']['id'],
 			"user_id_str": tweet["user"]["id_str"],
-			"tweet_text": tweet['text'],
+			"tweet_text": data['data']['full_text'] if 'full_text' in data['data'] else data['data']['text'],
 			"tweet_entities": tweet['entities'],
 			"tweet_in_reply_to_status_id_str": tweet['in_reply_to_status_id_str'],
 			"tweet_in_reply_to_user_id_str": tweet['in_reply_to_user_id_str'],
