@@ -362,7 +362,12 @@ class BotProfile extends Component {
                 data.entries.forEach(activity => {
                     var tempInfo = []
                     tempInfo.push(activity.action)
-                    tempInfo.push(activity.target_id)
+
+                    if(activity.target_screen_name == null || activity.target_screen_name == ""){
+                        tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(activity.target_id)}>#{activity.target_id}</span>);
+                    }else{
+                        tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(activity.target_id)}>@{activity.target_screen_name}</span>);
+                    }
 
                     var date = new Date(activity.timestamp)
 
@@ -598,6 +603,7 @@ class BotProfile extends Component {
     }
 
     handleOpenProfile(user) {
+        console.log(user)
         fetch(baseURL + "twitter/users/" + user + "/type/", {
             method: "GET",
             headers: {

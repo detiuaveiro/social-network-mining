@@ -394,7 +394,7 @@ class UserProfile extends Component {
 
     async componentDidMount() {
         await this.setState({ redirectionList: this.props.redirection })
-
+        console.log(this.props.user)
         if (this.props.user == null) {
             await this.getUserInfo()
         } else {
