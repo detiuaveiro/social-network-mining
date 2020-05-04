@@ -470,6 +470,12 @@ def policies(entries_per_page, page):
 
 		data = paginator_factory(all_policies, entries_per_page, page)
 		data['entries'] = [serializers.Policy(policy_obj).data for policy_obj in data['entries']]
+		for entry in data['entries']:
+			for index in range(len(entry['bots'])):
+				bot_id = entry['bots'][index]
+				user_obj = User.objects.filter(user_id=bot_id)
+				bot_name = user_obj[0].screen_name if len(user_obj) > 0 else ''
+				entry['bots'][index] = {"bot_id": bot_id, "bot_name": bot_name}
 
 		return True, data, "Success obtaining all policies"
 	except Exception as e:
