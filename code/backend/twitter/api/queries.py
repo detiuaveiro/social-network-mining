@@ -123,8 +123,8 @@ def twitter_user_stats(user_id, entries_per_page, page):
 	try:
 
 		user_stats = UserStats.objects.filter(user_id=user_id)
-		data = paginator_factory(user_stats, entries_per_page, page)
 
+		data = paginator_factory(user_stats, entries_per_page, page)
 		data['entries'] = [serializers.UserStats(stat).data for stat in data['entries']]
 
 		return True, data, f"Success obtaining user's (id:{user_id}) stats"
@@ -279,6 +279,23 @@ def twitter_search_users(keywords, entries_per_page, page):
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_search_users.__name__} -> {e}")
 		return False, None, f"Error searching users by {keywords}"
+
+
+def twitter_users_type(user_id):
+	"""
+	Args:
+		user_id: User's ID
+
+	Returns: User's type wrapped on dictionary
+
+	"""
+	try:
+		node_type = neo4j.node_type({'id': user_id})
+		return True, {'type': node_type}, f"Success obtaining user's (id:{user_id}) type"
+
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_users_type.__name__} -> {e}")
+		return False, None, f"Error obtaining user's (id:{user_id}) type"
 
 
 # -----------------------------------------------------------
@@ -440,15 +457,21 @@ def policy(policy_id):
 		return False, None, f"Error obtaining policy's (id:{policy_id}) info"
 
 
-def policies():
+def policies(entries_per_page, page):
 	"""
 
-	Returns: All policies saved wrapped on dictionary
+	Args:
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
 
+	Returns: All policies saved wrapped on dictionary divided in pages
+	if entries_per_page and page are both None then all policies will be returned
 	"""
 	try:
 		all_policies = Policy.objects.all()
-		data = [convert_policy(serializers.Policy(policy).data) for policy in all_policies]
+
+		data = paginator_factory(all_policies, entries_per_page, page)
+		data['entries'] = [convert_policy(serializers.Policy(policy_obj).data) for policy_obj in data['entries']]
 
 		return True, data, "Success obtaining all policies"
 	except Exception as e:
@@ -456,17 +479,22 @@ def policies():
 		return False, None, "Error obtaining all policies"
 
 
-def bot_policies(bot_id):
+def bot_policies(bot_id, entries_per_page, page):
 	"""
 
 	Args:
 		bot_id: Bot's ID
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
 
-	Returns: Bot assigned policies wrapped on dictionary
+	Returns: Bot assigned policies wrapped on dictionary divided in pages
+	if entries_per_page and page are both None then all bots will be returned
 	"""
 	try:
 		policies_list = Policy.objects.filter(bots__contains=[bot_id])
-		data = [convert_policy(serializers.Policy(policy_obj).data) for policy_obj in policies_list]
+
+		data = paginator_factory(policies_list, entries_per_page, page)
+		data['entries'] = [convert_policy(serializers.Policy(policy_obj).data) for policy_obj in data['entries']]
 
 		return True, data, f"Success obtaining bot's (id:{bot_id}) policy info"
 	except Exception as e:
@@ -589,6 +617,11 @@ def twitter_bot_logs(bot_id, entries_per_page, page):
 
 		data = paginator_factory(logs, entries_per_page, page)
 		data['entries'] = [serializers.Log(log).data for log in data['entries']]
+
+		for entry in data['entries']:
+			target_id = entry['target_id']
+			user_obj = User.objects.filter(user_id=target_id)
+			entry['target_screen_name'] = user_obj[0].screen_name if len(user_obj) > 0 else ''
 
 		return True, data, f"Success obtaining bot's (id:{bot_id}) logs"
 

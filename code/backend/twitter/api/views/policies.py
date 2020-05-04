@@ -5,11 +5,13 @@ import api.queries as queries
 
 
 @api_view(["GET"])
-def policies(_):
+def policies(_, entries_per_page=None, page=None):
 	"""
 
 	Args:
 		_:  Http Request (ignored in this function)
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
 
 	Returns: All policies saved wrapped on response's object
 
@@ -19,7 +21,7 @@ def policies(_):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.policies()
+	success, data, message = queries.policies(entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
@@ -55,12 +57,14 @@ def policy(_, policy_id):
 
 
 @api_view(["GET"])
-def bot_policies(_, bot_id):
+def bot_policies(_, bot_id, entries_per_page=None, page=None):
 	"""
 	
 	Args:
 		_:  Http Request (ignored in this function)
 		bot_id: Bot's ID
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
 
 	Returns: Bot assigned policies wrapped on response's object
 
@@ -70,7 +74,7 @@ def bot_policies(_, bot_id):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.bot_policies(int(bot_id))
+	success, data, message = queries.bot_policies(int(bot_id), entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
@@ -153,7 +157,3 @@ def update_policy(request, policy_id):
 		status = HTTP_403_FORBIDDEN
 
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
-
-
-
-

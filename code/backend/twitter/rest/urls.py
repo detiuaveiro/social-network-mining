@@ -61,6 +61,7 @@ urlpatterns = [
 
 	url(r"^twitter/users/(?P<user_id>[0-9]+)/stats/grouped/(?P<group_type>(?:year)|(?:month)|(?:day))/$",
 		users.twitter_user_stats_grouped, name="twitter_user_stats_grouped"),
+	url(r"twitter/users/(?P<id>[0-9]+)/type/$", users.twitter_users_type, name="users.twitter_users_type"),
 
 	# Network
 	path("twitter/network", network.twitter_network, name="twitter_network"),
@@ -96,11 +97,14 @@ urlpatterns = [
 	url(r"^twitter/tweets/(?P<tweet_id>[0-9]+)/replies/$", tweets.twitter_tweet_replies, name="twitter_tweet_replies"),
 
 	# Policies
-	path("policies", policies.policies, name="policies"),
+	url(r"^policies/$", policies.policies, name="policies"),
+	url(r"^policies/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", policies.policies, name="policies"),
 
 	url(r"^policies/(?P<policy_id>[0-9]+)/$", policies.policy, name="policy"),
 
 	url(r"^policies/bots/(?P<bot_id>[0-9]+)/$", policies.bot_policies, name="bot_policies"),
+	url(r"^policies/bots/(?P<bot_id>[0-9]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", policies.bot_policies,
+		name="bot_policies"),
 
 	path("policies/add", policies.add_policy, name="add_policy"),
 

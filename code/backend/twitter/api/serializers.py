@@ -56,7 +56,6 @@ class Tweet(serializers.Serializer):
 	favorite_count = serializers.IntegerField()
 
 
-
 class TweetStats(serializers.Serializer):
 	tweet_id = serializers.IntegerField()
 	user_id = serializers.IntegerField()
@@ -76,10 +75,10 @@ class Policy(serializers.Serializer):
 
 
 class Log(serializers.Serializer):
-	id_bot = serializers.IntegerField()
+	id_bot = serializers.CharField()
 	timestamp = serializers.DateTimeField()
 	action = serializers.CharField()
-	target_id = serializers.IntegerField()
+	target_id = serializers.CharField()
 
 
 class Url(serializers.Serializer):
