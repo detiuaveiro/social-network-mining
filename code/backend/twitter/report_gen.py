@@ -37,7 +37,8 @@ class Report:
 		self.neo = Neo4jAPI()
 		self.exporter = Report.__Exporter(EXPORT_DIR)
 
-	def __node_builder(self, node):
+	@staticmethod
+	def __node_builder(node):
 		query_node = "("
 
 		if len(node) > 0:
@@ -46,7 +47,8 @@ class Report:
 
 		return query_node+")"
 
-	def __relation_builder(self, rel):
+	@staticmethod
+	def __relation_builder(rel):
 		query_rel = "["
 		if len(rel) > 0:
 			if 'label' in rel:
@@ -81,7 +83,8 @@ class Report:
 			return result
 		return None
 
-	def __insert_info_list(self, info_dict, results_list, placement_dict):
+	@staticmethod
+	def __insert_info_list(info_dict, results_list, placement_dict):
 		if results_list:
 			for result in results_list:
 				index, key = placement_dict[result["id_str"]]
@@ -105,7 +108,7 @@ class Report:
 		logger.info(query)
 
 		if limit:
-			query += " limit " + str(limit)
+			query += f" limit {limit}"
 
 		result = []
 
@@ -212,7 +215,7 @@ class Report:
 		def export_json(self, result):
 			try:
 				with open(f"{self.directory}/export.json", "w") as file:
-					json.dump(result, file)
+					json.dump(result, file, indent=3)
 			except Exception as error:
 				logger.exception(f"Occurred an error <{error}>: ")
 
@@ -243,7 +246,7 @@ if __name__ == '__main__':
 			'Bot': ['friends_count']
 		}
 	}
-	limit = 1
+	limit = 10000
 	for export_type in Report.ExportType:
 		print(export_type)
 		rep.create_report(query, params, limit, export_type)
