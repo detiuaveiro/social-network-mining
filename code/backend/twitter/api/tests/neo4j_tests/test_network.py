@@ -34,7 +34,7 @@ def add_relationship(id_1, id_2):
 
 @catch_exception
 def test_successful_twitter_sub_network_request(error_catcher, factory):
-	assert add_bot_neo4j(["1", "2", "3"]) and add_relationship("2", "1") and add_relationship("3", "1")
+	assert add_bot_neo4j(["1", "2", "3"]) and add_relationship("1", "2") and add_relationship("1", "3")
 	path = reverse('twitter_sub_network')
 	request = factory.get(path)
 	response = network.twitter_sub_network(request)
