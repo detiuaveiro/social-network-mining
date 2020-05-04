@@ -240,7 +240,7 @@ class Users extends Component {
       doneLoading: true
     })
 
-    if(document.getElementById("searchUser") != null){
+    if (document.getElementById("searchUser") != null) {
       document.getElementById("searchUser").value = this.state.searchQuery
     }
   }
@@ -274,23 +274,34 @@ class Users extends Component {
 
 
   async search() {
-    document.getElementById("loadedTable").style.visibility = "hidden"
-    document.getElementById("loadingTable").style.display = ""
-
-    await this.setState({
-      curPage: 1,
-      searchQuery: document.getElementById("searchUser").value
-    })
-
-    if (this.state.searchQuery.length == 0) {
-      await this.getUserList(1)
+    if (document.getElementById("searchUser").value != null &&  document.getElementById("searchUser").value!="" && !document.getElementById("searchUser").value.match("^[A-Za-z0-9]+$")) {
+      toast.error('Sorry, the search parameter can\'t include characters like @ or #. Please use only letters and numbers', {
+        position: "top-center",
+        autoClose: 7500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
     } else {
-      await this.searchUsers(1)
-    }
+      document.getElementById("loadedTable").style.visibility = "hidden"
+      document.getElementById("loadingTable").style.display = ""
 
-    if (document.getElementById("loadedTable") != null) {
-      document.getElementById("loadedTable").style.visibility = "visible"
-      document.getElementById("loadingTable").style.display = "none"
+      await this.setState({
+        curPage: 1,
+        searchQuery: document.getElementById("searchUser").value
+      })
+
+      if (this.state.searchQuery.length == 0) {
+        await this.getUserList(1)
+      } else {
+        await this.searchUsers(1)
+      }
+
+      if (document.getElementById("loadedTable") != null) {
+        document.getElementById("loadedTable").style.visibility = "visible"
+        document.getElementById("loadingTable").style.display = "none"
+      }
     }
   }
 
@@ -525,7 +536,7 @@ class Users extends Component {
       }
     } else {
       return (
-        <UserProfile user={this.state.user} redirection={[{ "type": "USERS", "info": { "page": this.state.curPage, "query": this.state.searchQuery }}]}></UserProfile>
+        <UserProfile user={this.state.user} redirection={[{ "type": "USERS", "info": { "page": this.state.curPage, "query": this.state.searchQuery } }]}></UserProfile>
       )
     }
 
