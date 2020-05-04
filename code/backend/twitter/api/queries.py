@@ -508,21 +508,11 @@ def bot_policies(bot_id, entries_per_page, page):
 
 def get_number_policies():
 	"""
-	Returns: Total number of policies in the database
+	Returns: Dictionary with total number of policies, and number of active policies
 	"""
 	try:
-		return True, Policy.objects.all().count(), "Success obtaining all policies"
-	except Exception as e:
-		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {policies.__name__} -> {e}")
-		return False, None, "Error obtaining all policies"
-
-
-def get_number_act_policies():
-	"""
-		Returns: Total number of policies in the database
-		"""
-	try:
-		return True, Policy.objects.filter(active=True).count(), "Success obtaining all policies"
+		data = {"total": Policy.objects.all().count(), "active": Policy.objects.filter(active=True).count()}
+		return True, data, "Success obtaining all policies"
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {policies.__name__} -> {e}")
 		return False, None, "Error obtaining all policies"
