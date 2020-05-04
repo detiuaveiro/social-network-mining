@@ -942,7 +942,7 @@ class Neo4jAPI:
 			if export_type == "json":
 				result = "[" + result.replace("\n", ",") + "]"
 
-			return result
+			return json.loads(result)
 
 	def __export_network(self, tx, export_type):
 		log.debug("EXPORTING NETWORK")

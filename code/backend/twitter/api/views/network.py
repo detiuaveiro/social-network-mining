@@ -6,51 +6,53 @@ from api import queries
 
 @api_view(["GET"])
 def twitter_network(_):
-    error_messages = []
-    success_messages = []
-    status = HTTP_200_OK
+	"""
 
-    success, data, message = queries.twitter_network()
+	Args:
+		_: Http Request (ignored in this function)
 
-    if success:
-        success_messages.append(message)
-    else:
-        error_messages.append(message)
-        status = HTTP_403_FORBIDDEN
+	Returns:  Neo4'j network in json format wrapped on response's object
 
-    return create_response(data=data, error_messages=error_messages,
-                           success_messages=success_messages, status=status)
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
 
+	success, data, message = queries.twitter_network()
 
-def twitter_network_export(request):
-    return None
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
 def twitter_sub_network(request):
-    """
-    Get sub network
-    Args:
-        request: http request object
+	"""
 
-    Returns:
+	Args:
+		request:  Http Request
 
-    """
-    error_messages = []
-    success_messages = []
-    status = HTTP_200_OK
-    data = []
+	Returns: Neo4'j sub network in json format wrapped on response's object
 
-    try:
-        success, data, message = queries.twitter_sub_network(cypher_query_generator(request.GET))
-        if success:
-            success_messages.append(message)
-        else:
-            error_messages.append(message)
-            status = HTTP_403_FORBIDDEN
-    except Exception as e:
-        status = HTTP_403_FORBIDDEN
-        error_messages.append(str(e))
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+	data = []
 
-    return create_response(data=data, error_messages=error_messages,
-                           success_messages=success_messages, status=status)
+	try:
+		success, data, message = queries.twitter_sub_network(cypher_query_generator(request.GET))
+		if success:
+			success_messages.append(message)
+		else:
+			error_messages.append(message)
+			status = HTTP_403_FORBIDDEN
+	except Exception as e:
+		status = HTTP_403_FORBIDDEN
+		error_messages.append(str(e))
+
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)

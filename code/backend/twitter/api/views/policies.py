@@ -7,8 +7,14 @@ import api.queries as queries
 @api_view(["GET"])
 def policies(_, entries_per_page=None, page=None):
 	"""
-	Return all saved policies
-	:return: Response Object
+
+	Args:
+		_:  Http Request (ignored in this function)
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: All policies saved wrapped on response's object
+
 	"""
 
 	error_messages = []
@@ -22,61 +28,71 @@ def policies(_, entries_per_page=None, page=None):
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-						   success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
-def policy(_, id):
+def policy(_, policy_id):
 	"""
-	Return a policy specified by ID
-	:param id: policy id
-	:return: Response Object
+
+	Args:
+		_: Http Request (ignored in this function)
+		policy_id: Policy's ID
+
+	Returns: Policy's info wrapped on  response's object
+
 	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.policy(id)
+	success, data, message = queries.policy(int(policy_id))
 	if success:
 		success_messages.append(message)
 	else:
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-						   success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
-def bot_policies(_, id, entries_per_page=None, page=None):
+def bot_policies(_, bot_id, entries_per_page=None, page=None):
 	"""
-	Get policies by bot's id
-	:param id:  bot's id
-	:return: response object
+	
+	Args:
+		_:  Http Request (ignored in this function)
+		bot_id: Bot's ID
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: Bot assigned policies wrapped on response's object
+
 	"""
 
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.bot_policies(id, entries_per_page, page)
+	success, data, message = queries.bot_policies(int(bot_id), entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-						   success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["POST"])
 def add_policy(request):
 	"""
-	Add a new policy
-	:param request:  request object
-	:return: response object
+
+	Args:
+		request: Http Request
+
+	Returns: Add operation status wrapped on response's object
+
 	"""
 
 	error_messages = []
@@ -90,96 +106,54 @@ def add_policy(request):
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-						   success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["DELETE"])
-def remove_policy(_, id):
-	"""
-	Remove a policy specified by ID
-	:param id: policy id
-	:return: response object
+def remove_policy(_, policy_id):
 	"""
 
+	Args:
+		_:
+		policy_id: Policy's ID
+
+	Returns: Remove operation status wrapped on response's object
+
+	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.remove_policy(id)
+	success, data, message = queries.remove_policy(int(policy_id))
 	if success:
 		success_messages.append(message)
 	else:
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-						   success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["PUT"])
-def update_policy(request, id):
-	"""
-	Update a policy specified by ID
-	:param request: request object
-	:param id: policy id
-	:return: response object
+def update_policy(request, policy_id):
 	"""
 
+	Args:
+		request: Http Request
+		policy_id: Policy'ID
+
+	Returns: Update operation status wrapped on response's object
+
+	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.update_policy(request.data, id)
+	success, data, message = queries.update_policy(request.data, int(policy_id))
 	if success:
 		success_messages.append(message)
 	else:
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-						   success_messages=success_messages, status=status)
-
-
-@api_view(["GET"])
-def instagram_policies(_):
-	"""
-	Return all instagram policies
-	:return: response object
-	"""
-
-	error_messages = []
-	success_messages = []
-	status = HTTP_200_OK
-
-	success, data, message = queries.policy_by_service("Instagram")
-	if success:
-		success_messages.append(message)
-	else:
-		error_messages.append(message)
-		status = HTTP_403_FORBIDDEN
-
-	return create_response(data=data, error_messages=error_messages,
-						   success_messages=success_messages, status=status)
-
-
-@api_view(["GET"])
-def twitter_policies(_):
-	"""
-	Return all twitter policies
-	:return: response object
-	"""
-
-	error_messages = []
-	success_messages = []
-	status = HTTP_200_OK
-
-	success, data, message = queries.policy_by_service("Twitter")
-	if success:
-		success_messages.append(message)
-	else:
-		error_messages.append(message)
-		status = HTTP_403_FORBIDDEN
-
-	return create_response(data=data, error_messages=error_messages,
-						   success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
