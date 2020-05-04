@@ -146,8 +146,8 @@ class TwitterBot(RabbitMessaging):
 		logger.info("Reading home timeline")
 		self.__read_timeline(self.user)
 
-	# ver porque não está a dar (o twitter não está a deixar aceder)
-	# self.__direct_messages()
+		# TODO -> ver porque não está a dar (o twitter não está a deixar aceder)
+		# self.__direct_messages()
 
 	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
 		"""Function to get the 20 (default) most recent tweets (including retweets) from some user
