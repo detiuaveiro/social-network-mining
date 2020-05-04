@@ -45,6 +45,36 @@ if __name__ == "__main__":
                 require_auth=True
             )
 
+        @property
+        def user_timeline(self):
+            """ :reference: https://developer.twitter.com/en/docs/tweets/timelines/api-reference/get-statuses-user_timeline
+				:allowed_param:'id', 'user_id', 'screen_name', 'since_id', 'max_id', 'count', 'include_rts', 'trim_user', 'exclude_replies'
+			"""
+            return bind_api(
+                api=self,
+                path='/statuses/user_timeline.json',
+                payload_type='status', payload_list=True,
+                allowed_param=['id', 'user_id', 'screen_name', 'since_id',
+                               'max_id', 'count', 'include_rts', 'trim_user',
+                               'exclude_replies', 'tweet_mode']
+            )
+
+        @property
+        def search(self):
+            """ :reference: https://developer.twitter.com/en/docs/tweets/search/api-reference/get-search-tweets
+				:allowed_param:'q', 'lang', 'locale', 'since_id', 'geocode',
+				 'max_id', 'until', 'result_type', 'count',
+				  'include_entities'
+			"""
+            return bind_api(
+                api=self,
+                path='/search/tweets.json',
+                payload_type='search_results',
+                allowed_param=['q', 'lang', 'locale', 'since_id', 'geocode',
+                               'max_id', 'until', 'result_type', 'count',
+                               'include_entities', 'tweet_mode']
+            )
+
 
     twitter_auth = tweepy.OAuthHandler(consumer_key=consumer_key, consumer_secret=consumer_secret)
     twitter_auth.set_access_token(key=token, secret=token_secret)

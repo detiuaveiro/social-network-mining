@@ -178,7 +178,7 @@ class TwitterBot(RabbitMessaging):
 			return
 
 		logger.debug(f"Reading user's <{user.id}> timeline")
-		tweets = self.__user_timeline_tweets(user, count=MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE)
+		tweets = self.__user_timeline_tweets(user, count=MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE, tweet_mode="extended")
 
 		total_read_time = self.__interpret_tweets(tweets, jump_users, max_depth, current_depth)
 		logger.debug(f"Read {user.id}'s timeline in {total_read_time} seconds")
@@ -194,7 +194,8 @@ class TwitterBot(RabbitMessaging):
 
 				# get tweets in portuguese and from Portugal (center of Portugal and a radius equal form the center
 				# to the most distant point)
-				tweets = self._twitter_api.search(q=keyword, lang=language, geocode="39.557191,-8.1,300km")
+				tweets = self._twitter_api.search(q=keyword, lang=language, geocode="39.557191,-8.1,300km",
+				                                  tweet_mode="extended")
 				total_read_time += self.__interpret_tweets(tweets)
 
 		logger.debug(f"Search completed in {total_read_time} seconds")
