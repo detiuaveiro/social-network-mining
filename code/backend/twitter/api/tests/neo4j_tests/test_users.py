@@ -12,7 +12,7 @@ def factory():
 
 @pytest.fixture(autouse=True)
 def delete_neo4j_data():
-	for id in ["1", "2","3"]:
+	for id in ["1", "2", "3"]:
 		neo4j.delete_bot(id)
 		if neo4j.check_bot_exists(id):
 			return False
@@ -38,6 +38,7 @@ def test_successful_twitter_user_followers_request(error_catcher, factory):
 	path = reverse('twitter_user_followers', kwargs={'user_id': "1"})
 	request = factory.get(path)
 	response = users.twitter_user_followers(request, user_id="1")
+	print(response.data)
 	assert is_response_successful_with_pagination(response, 2)
 
 
@@ -51,11 +52,11 @@ def test_successful_twitter_user_followers_request_with_pagination(error_catcher
 
 
 @catch_exception
-def test_unsuccessfully_twitter_user_followers_request(error_catcher, factory):
+def test_empty_twitter_user_followers_request(error_catcher, factory):
 	path = reverse('twitter_user_followers', kwargs={'user_id': "1"})
 	request = factory.get(path)
 	response = users.twitter_user_followers(request, user_id="1")
-	assert is_response_unsuccessful(response)
+	assert is_response_empty_with_pagination(response)
 
 
 @catch_exception
@@ -86,11 +87,11 @@ def test_successful_twitter_user_following_request_with_with_pagination(error_ca
 
 
 @catch_exception
-def test_unsuccessfully_twitter_user_following_request(error_catcher, factory):
+def test_empty_twitter_user_following_request(error_catcher, factory):
 	path = reverse('twitter_user_following', kwargs={'user_id': "1"})
 	request = factory.get(path)
 	response = users.twitter_user_following(request, user_id="1")
-	assert is_response_unsuccessful(response)
+	assert is_response_empty_with_pagination(response)
 
 
 @catch_exception
