@@ -29,9 +29,9 @@ def export_tweets_json(file_name: str):
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--test', type=str, default='')
-	parser.add_argument('--export_tweets_text', type=str, default='tweets')
-	parser.add_argument('--export_tweets_json', type=str, default='tweets')
+	parser.add_argument('--test', type=str)
+	parser.add_argument('--export_tweets_text', type=str)
+	parser.add_argument('--export_tweets_json', type=str)
 	args = parser.parse_args()
 
 	if args.test:
@@ -39,6 +39,6 @@ if __name__ == "__main__":
 	elif args.export_tweets_text:
 		export_tweets_text(args.export_tweets_text)
 	elif args.export_tweets_json:
-		export_tweets_text(args.export_tweets_json)
+		export_tweets_json(args.export_tweets_json)
 	else:
 		main()
