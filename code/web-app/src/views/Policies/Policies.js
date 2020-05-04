@@ -128,7 +128,7 @@ class Policies extends Component {
     policies: [],
     policy: null,
 
-    noPage: 1,
+    noPages: 1,
     curPage: 1,
 
     doneLoading: false,
@@ -145,10 +145,12 @@ class Policies extends Component {
     filter: null,
     tags: [],
     bots: [],
+    allBots: [],
+    processing: false
   };
 
-  async getPolicies(page) {
-    await fetch(baseURL + "policies/15/" + page + "/", {
+  async getPolicies(page, changePolicy) {
+    await fetch(baseURL + "policies/6/" + page + "/", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -185,13 +187,16 @@ class Policies extends Component {
 
           var bots = ""
           policy.bots.forEach(bot => {
-            bots += bot
+            bots += "@" + bot.bot_name
+
             bots += ", "
           })
 
           bots = bots.substr(0, bots.length - 2)
-          if (bots.length > 30) {
-            bots = bots.substr(0, 30) + "..."
+          if (bots.length > 45) {
+            bots = bots.substr(0, 45) + "..."
+          } else if (bots.length == "") {
+            bots = <span style={{ color: "#999" }}><i class="fas fa-minus"></i></span>
           }
 
           tempInfo.push(bots)
@@ -208,7 +213,7 @@ class Policies extends Component {
               </Button>
             )
           } else {
-            tempInfo.push(<Badge pill color="error" style={{ fontSize: "11px" }}>Inactive</Badge>)
+            tempInfo.push(<Badge pill color="danger" style={{ fontSize: "11px" }}>Inactive</Badge>)
             tempInfo.push(
               <Button block outline color="success"
                 onClick={() =>
@@ -240,12 +245,18 @@ class Policies extends Component {
 
         this.setState({
           policies: tempPolicies,
-          noPage: data.num_pages,
+          noPages: data.num_pages,
           curPage: page,
           empty: empty,
-          policy: this.state.policy
-
         })
+
+        if (changePolicy) {
+          this.setState({
+            policy: tempPolicies[0]
+          })
+
+          this.changeSelected(this.state.policy)
+        }
 
 
       }
@@ -256,12 +267,47 @@ class Policies extends Component {
       })
     });
   }
+
+  async getBotList() {
+    await fetch(baseURL + "twitter/bots", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+        data = data.data
+
+        var tempBots = []
+
+        data.forEach(bot => {
+          tempBots.push({ label: "@" + bot.screen_name, value: bot.user_id });
+        })
+
+        this.setState({
+          allBots: tempBots
+        })
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        error: true,
+      })
+    });
+  }
+
   async componentDidMount() {
 
-    await this.getPolicies(1)
+    await this.getPolicies(1, true)
+    await this.getBotList(1)
 
     await this.setState({
-      policy: this.state.policies[0]
+      policy: this.state.policies[0],
     })
 
     await this.setState({
@@ -274,6 +320,32 @@ class Policies extends Component {
         document.getElementsByName(this.state.policy[0])[i].style.fontWeight = "bold"
       }
     }
+
+    if (document.getElementsByName(this.state.policy[0]) != null) {
+      for (var i = 0; i < 4; i++) {
+        document.getElementsByName(this.state.policy[0])[i].style.color = "#1da1f2"
+        document.getElementsByName(this.state.policy[0])[i].style.fontWeight = "bold"
+      }
+    }
+
+    document.getElementById("name").value = this.state.policy[7].name
+    document.getElementById("title").textContent = this.state.policy[7].name
+
+    var bots = []
+    this.state.policy[7].bots.forEach(bot => {
+      bots.push({ label: bot.bot_name, value: bot.bot_id })
+    })
+
+    var tags = []
+    this.state.policy[7].tags.forEach(tag => {
+      tags.push({ label: tag, value: tag })
+    })
+
+    await this.setState({
+      filter: { label: this.state.policy[7].filter, value: this.state.policy[7].filter },
+      bots: bots,
+      tags: tags
+    })
   }
 
 
@@ -283,14 +355,6 @@ class Policies extends Component {
       modal: true,
       modalType: "DEACTIVATE",
       modalPolicy: policy
-    });
-  }
-
-  handleOpenAdd() {
-    this.setState({
-      modal: true,
-      modalType: "ADD",
-      modalPolicy: ""
     });
   }
 
@@ -310,7 +374,7 @@ class Policies extends Component {
     });
   }
 
-  handleDeactivate(policy) {
+  handleDeactivate() {
     //TODO: DEACTIVATE BOT
 
     //TODO: ADD FAILURE OPTION
@@ -338,7 +402,7 @@ class Policies extends Component {
     this.handleClose()
   }
 
-  handleActivate(policy) {
+  handleActivate() {
     //TODO: ACTIVATE BOT
 
     //TODO: ADD FAILURE OPTION
@@ -366,11 +430,29 @@ class Policies extends Component {
     this.handleClose()
   }
 
-  handleDelete(policy) {
-    //TODO: DELETE BOT
+  async handleDelete() {
+    var policy = this.state.modalPolicy
+    this.handleClose()
 
-    //TODO: ADD FAILURE OPTION
-    if (true) {
+    await this.setState({
+      processing: true
+    })
+
+    await fetch(baseURL + "policies/remove/" + policy.id + "/", {
+      method: "DELETE",
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+
+      this.getPolicies(this.state.curPage, true)
+
       toast.warning('🗑️ Policy successfully deleted', {
         position: "top-center",
         autoClose: 2500,
@@ -379,7 +461,16 @@ class Policies extends Component {
         pauseOnHover: true,
         draggable: true
       });
-    } else {
+
+      this.setState({
+        processing: false
+      })
+
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        processing: false,
+      })
       toast.error('Sorry, there was an error deleting the policy! Please try again later.', {
         position: "top-center",
         autoClose: 7500,
@@ -388,11 +479,9 @@ class Policies extends Component {
         pauseOnHover: true,
         draggable: true
       });
-    }
-
-
-    this.handleClose()
+    });
   }
+
 
   handleClose() {
     this.setState({
@@ -408,6 +497,93 @@ class Policies extends Component {
     })
   }
 
+
+  async confirmEdit() {
+    if (!this.checkForChange()) {
+      toast.info('No changes have been made!', {
+        position: "top-center",
+        autoClose: 2500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+    } else {
+      var bots = []
+      for (var i = 0; i < this.state.bots.length; i++) {
+        bots.push(this.state.bots[i].value)
+      }
+
+      var tags = []
+      for (var i = 0; i < this.state.tags.length; i++) {
+        tags.push(this.state.tags[i].value)
+      }
+
+      var filter = this.state.filter.value
+
+      var name = document.getElementById("name").value
+
+
+      await this.setState({
+        processing: true
+      })
+
+      await fetch(baseURL + "policies/update/" + this.state.policy[7].id + "/", {
+        method: "PUT",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          bots: bots,
+          tags: tags,
+          filter: filter,
+          name: name
+        })
+      }).then(response => {
+        if (response.ok) return response.json();
+        else {
+          throw new Error(response.status);
+        }
+      }).then(data => {
+
+        this.getPolicies(this.state.curPage, false)
+
+        toast.info('Policy succesfully altered!', {
+          position: "top-center",
+          autoClose: 2500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        });
+
+        this.setState({
+          processing: false
+        })
+
+      }).catch(error => {
+        console.log("error: " + error);
+        this.setState({
+          processing: false,
+        })
+
+        toast.error('Sorry, there was an error updating the policy! Please try again later.', {
+          position: "top-center",
+          autoClose: 7500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        })
+      });
+    }
+  }
+
+
+
+  ////////////////////////////////////////////////////////
+
   changePage = async (event, value) => {
     document.getElementById("loadedTable").style.visibility = "hidden"
     document.getElementById("loadingTable").style.display = ""
@@ -416,88 +592,165 @@ class Policies extends Component {
       curPage: value
     })
 
-    await this.getPolicies(value)
+    await this.getPolicies(value, true)
 
     document.getElementById("loadedTable").style.visibility = "visible"
     document.getElementById("loadingTable").style.display = "none"
   };
 
-  changeSelectedFilter = (selectedOption) => {
+  changeSelectedFilter = async (selectedOption) => {
     if (selectedOption != null) {
-      this.setState({ filter: selectedOption });
+      await this.setState({ filter: selectedOption });
 
     } else {
-      this.setState({ filter: null });
+      await this.setState({ filter: null });
+    }
+
+    if (this.checkForChange()) {
+      document.getElementById("changed").style.visibility = ""
+    } else {
+      document.getElementById("changed").style.visibility = "hidden"
     }
   }
 
-  addNewTags = (newValue, actionMeta) => {
+  addNewTags = async (newValue, actionMeta) => {
     var tags = []
     if (newValue != null && newValue.length > 0) {
-      newValue.forEach(tag => {
-        tags.push(tag['value'])
-      })
+      tags = newValue
     }
 
-    this.setState({
+    await this.setState({
       tags: tags
     })
+
+    if (this.checkForChange()) {
+      document.getElementById("changed").style.visibility = ""
+    } else {
+      document.getElementById("changed").style.visibility = "hidden"
+    }
   };
 
-  addNewBots = (newValue, actionMeta) => {
+  addNewBots = async (newValue, actionMeta) => {
     var bots = []
     if (newValue != null && newValue.length > 0) {
-      newValue.forEach(bot => {
-        bots.push(bot['value'])
-      })
+      bots = newValue
     }
 
-    this.setState({
+    await this.setState({
       bots: bots
     })
+
+    if (this.checkForChange()) {
+      document.getElementById("changed").style.visibility = ""
+    } else {
+      document.getElementById("changed").style.visibility = "hidden"
+    }
   };
 
+  changeText = () => {
+    try {
+      if (this.checkForChange()) {
+        document.getElementById("changed").style.visibility = ""
+      } else {
+        document.getElementById("changed").style.visibility = "hidden"
+      }
+    } catch (err) {
+      console.log("oops")
+    }
+  };
+
+
+  checkForChange() {
+    if (this.state.policy[7].name != document.getElementById("name").value) {
+      return true
+    }
+
+    ///////////////////
+    var bots = []
+    var botsOriginal = []
+    this.state.bots.forEach(bot => {
+      bots.push(bot.value)
+    })
+
+    this.state.policy[7].bots.forEach(bot => {
+      botsOriginal.push(bot.bot_id)
+    })
+
+    bots = bots.sort().join()
+    botsOriginal = botsOriginal.sort().join()
+
+    if (bots != botsOriginal) {
+      return true
+    }
+
+    ///////////////////
+    var tags = []
+    var tagsOriginal = []
+    this.state.tags.forEach(tag => {
+      tags.push(tag.value)
+    })
+
+    this.state.policy[7].tags.forEach(tag => {
+      tagsOriginal.push(tag)
+    })
+
+    tags = tags.sort().join()
+    tagsOriginal = tagsOriginal.sort().join()
+    if (tags != tagsOriginal) {
+      return true
+    }
+
+    if (this.state.policy[7].filter != this.state.filter.value) {
+      return true
+    }
+
+    return false
+  }
+
   async changeSelected(selected) {
-    if (this.state.policy != null) {
-      if (document.getElementsByName(this.state.policy[0]) != null) {
-        for (var i = 0; i < 4; i++) {
-          document.getElementsByName(this.state.policy[0])[i].style.color = ""
-          document.getElementsByName(this.state.policy[0])[i].style.fontWeight = ""
+    try{
+      if (this.state.policy != null) {
+        if (document.getElementsByName(this.state.policy[0]) != null) {
+          for (var i = 0; i < 4; i++) {
+            document.getElementsByName(this.state.policy[0])[i].style.color = ""
+            document.getElementsByName(this.state.policy[0])[i].style.fontWeight = ""
+          }
         }
       }
-    }
-    await this.setState({
-      policy: selected,
-    })
-
-    if (document.getElementsByName(this.state.policy[0]) != null) {
-      for (var i = 0; i < 4; i++) {
-        document.getElementsByName(this.state.policy[0])[i].style.color = "#1da1f2"
-        document.getElementsByName(this.state.policy[0])[i].style.fontWeight = "bold"
+      await this.setState({
+        policy: selected,
+      })
+  
+      if (document.getElementsByName(this.state.policy[0]) != null) {
+        for (var i = 0; i < 4; i++) {
+          document.getElementsByName(this.state.policy[0])[i].style.color = "#1da1f2"
+          document.getElementsByName(this.state.policy[0])[i].style.fontWeight = "bold"
+        }
       }
+  
+      document.getElementById("name").value = this.state.policy[7].name
+      document.getElementById("title").textContent = this.state.policy[7].name
+      document.getElementById("changed").style.visibility = "hidden"
+  
+      var bots = []
+      this.state.policy[7].bots.forEach(bot => {
+        bots.push({ label: bot.bot_name, value: bot.bot_id })
+      })
+  
+      var tags = []
+      this.state.policy[7].tags.forEach(tag => {
+        tags.push({ label: tag, value: tag })
+      })
+  
+      await this.setState({
+        filter: { label: this.state.policy[7].filter, value: this.state.policy[7].filter },
+        bots: bots,
+        tags: tags
+      })
+    }catch(erro){
+      console.log()
     }
-
-    console.log(this.state.policy[7])
-    document.getElementById("name").value = this.state.policy[7].name
-
-    var bots = []
-    this.state.policy[7].bots.forEach(bot => {
-      bots.push({label: bot, value: bot})
-    })
-
-    var tags = []
-    this.state.policy[7].tags.forEach(tag => {
-      tags.push({label: tag, value: tag})
-    })
-
-    await this.setState({
-      filter: {label: this.state.policy[7].filter, value: this.state.policy[7].filter},
-      bots: bots,
-      tags: tags
-    })
-
-    console.log(this.state.filter)
-
+    
   };
 
   /////////////////////////////////////////////////////////////////////
@@ -550,7 +803,7 @@ class Policies extends Component {
                   Cancel
                           </Button>
                 <Button
-                  onClick={() => this.handleDeletePolicy()}
+                  onClick={() => this.handleDelete()}
                   color="danger"
                   autoFocus
                 >
@@ -722,9 +975,26 @@ class Policies extends Component {
               </div>
             </div>
           </CardBody>
+
+
+
+        var processing = <div></div>
+        if (this.state.processing) {
+          processing = <div id="loading">
+            <div className="animated fadeOut animated" style={{ width: "100%", height: "100%", top: 0, left: 0, position: "absolute", backgroundColor: "white", opacity: 0.6, zIndex: 11 }}>
+            </div>
+            <div style={{ zIndex: 11, position: "relative" }}>
+              <div className="animated fadeOut animated" style={{ width: "100%", marginTop: "10%", position: "absolute", zIndex: 12 }}>
+                <FadeIn>
+                  <Lottie options={this.state.animationOptions} height={"30%"} width={"30%"} />
+                </FadeIn>
+              </div>
+            </div>
+          </div>
+        }
         return (
           <div className="animated fadeIn">
-
+            {processing}
             <Container fluid>
               <ToastContainer
                 position="top-center"
@@ -831,21 +1101,21 @@ class Policies extends Component {
                           fontWeight: "400",
                           lineHeight: "1"
                         }
-                      }} > Policy Info</h4>
+                      }} > Policy Info - <strong id="title"></strong></h4>
 
                     </CardHeader>
                     <CardBody>
                       <Row style={{ marginTop: "25px" }}>
                         <Col md="8">
                           <FormGroup>
-                            <Input type="text" id="name" placeholder="Policy name" required />
+                            <Input type="text" id="name" placeholder="Policy name" onChange={() => { this.changeText() }} required />
                           </FormGroup>
                         </Col>
                         <Col md="4">
                           <FormGroup>
                             <Select
                               defaultValue={[]}
-                              id="filter" 
+                              id="filter"
                               onChange={this.changeSelectedFilter}
                               value={this.state.filter || ''}
                               options={[{ value: "Target", label: "Target" }, { value: "Keywords", label: "Keywords" }]}
@@ -865,7 +1135,7 @@ class Policies extends Component {
                             id="tags"
                             value={this.state.tags}
                             onChange={this.addNewTags}
-                            options={[]}
+                            options={this.state.tags}
                             components={makeAnimated()}
                             placeholder="Tags"
                           />
@@ -874,12 +1144,12 @@ class Policies extends Component {
 
                       <Row style={{ marginTop: "30px", minHeight: "48px" }}>
                         <Col md="12">
-                          <CreatableSelect
+                          <Select
                             isMulti
                             id="bots"
                             value={this.state.bots}
                             onChange={this.addNewBots}
-                            options={[]}
+                            options={this.state.allBots}
                             components={makeAnimated()}
                             placeholder="Bots"
                           />
@@ -888,16 +1158,17 @@ class Policies extends Component {
 
                       <Row style={{ marginTop: "30px" }}>
                         <Col sm="12" md="12" xs="12">
-                          <span id="changed" style={{ visibility: "", color: "#999" }}>*Changes made but still not applied. Please click confirm to save changes.</span>
+                          <span id="changed" style={{ visibility: "hidden", color: "#999" }}>*Changes made but still not applied. Please click confirm to save changes.</span>
                         </Col>
                       </Row>
 
 
                       <Row style={{ marginTop: "10px" }}>
                         <Col sm="12" md="12" xs="12">
-                          <Button block outline color="success" onClick={() => this.confirmNew()} style={{
+                          <Button block outline color="success" onClick={() => this.confirmEdit()} style={{
                             width: "150px", marginTop: "15px", borderWidth: "2px", float: "right"
-                          }}>Confirm</Button>
+                          }}>                  <i class="fas fa-edit"></i> <strong style={{ marginLeft: "3px" }}>Confirm</strong>
+                          </Button>
                         </Col>
                       </Row>
                     </CardBody>

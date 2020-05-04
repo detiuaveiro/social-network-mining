@@ -363,9 +363,9 @@ class BotProfile extends Component {
                     var tempInfo = []
                     tempInfo.push(activity.action)
 
-                    if(activity.target_screen_name == null || activity.target_screen_name == ""){
+                    if (activity.target_screen_name == null || activity.target_screen_name == "") {
                         tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(activity.target_id)}>#{activity.target_id}</span>);
-                    }else{
+                    } else {
                         tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(activity.target_id)}>@{activity.target_screen_name}</span>);
                     }
 
@@ -405,7 +405,7 @@ class BotProfile extends Component {
     }
 
     async getPolicies(page) {
-        await fetch(baseURL + "policies/bots/" + this.state.userInfo.user_id + "/4/"+page+"/", {
+        await fetch(baseURL + "policies/bots/" + this.state.userInfo.user_id + "/4/" + page + "/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -720,7 +720,7 @@ class BotProfile extends Component {
     // Methods //////////////////////////////////////////////////////////
 
     handleOpenTweet(tweet) {
-        if(tweet.tweet_id != null){
+        if (tweet.tweet_id != null) {
             this.setState({
                 modal: true,
                 modalType: "TWEET",
@@ -732,7 +732,7 @@ class BotProfile extends Component {
                     tweet: tweet
                 }
             });
-        }else{
+        } else {
             fetch(baseURL + "twitter/tweets/" + tweet + "/", {
                 method: "GET",
                 headers: {
@@ -746,7 +746,7 @@ class BotProfile extends Component {
             }).then(data => {
                 if (data != null && data != {}) {
                     data = data.data
-    
+
                     this.setState({
                         modal: true,
                         modalType: "TWEET",
@@ -758,7 +758,7 @@ class BotProfile extends Component {
                             tweet: data[0]
                         }
                     });
-    
+
                 }
             }).catch(error => {
                 console.log("error: " + error);
@@ -771,7 +771,7 @@ class BotProfile extends Component {
                     draggable: true
                 });
             });
-        } 
+        }
     }
 
     handleOpenNewTweet() {
@@ -787,7 +787,7 @@ class BotProfile extends Component {
         document.getElementById("counter").textContent = text.length + ""
         if (text.length >= 281) {
             document.getElementById("counter").style.color = "#f86c6b"
-            document.getElementById("tweetText").value = text.substring(0, text.length - 2);
+            document.getElementById("tweetText").value = text.substring(0, 279);
             document.getElementById("tweetText").value = document.getElementById("tweetText").value + text.charAt(text.length - 1);
             document.getElementById("counter").textContent = document.getElementById("tweetText").value.length + ""
 
@@ -1709,11 +1709,11 @@ class BotProfile extends Component {
 
                                             <div class="row" style={{ marginTop: "20px" }}>
                                                 <div class="col-sm-12 offset-md-3 col-md-3">
-                                                    <h6><b>{this.state.userInfo.followers_count}</b> <br />following</h6>
+                                                    <h6><b>{this.state.userInfo.friends_count}</b> <br />following</h6>
                                                 </div>
 
                                                 <div class="col-sm-12 col-md-3">
-                                                    <h6><b>{this.state.userInfo.friends_count}</b> <br />followers</h6>
+                                                    <h6><b>{this.state.userInfo.followers_count}</b> <br />followers</h6>
                                                 </div>
                                             </div>
                                         </CardBody>

@@ -76,8 +76,16 @@ class PolicyForm extends Component {
                 var tempPolicies = []
 
                 data.entries.forEach(policy => {
-                    if (!policy.bots.includes(this.props.bot.user_id)) {
-                    tempPolicies.push({ 'value': policy, 'label': "(" + policy.filter + ") " + policy.name });
+                    var containsBot = false
+                    for (var i = 0; i < policy.bots.length; i++) {
+                        if (policy.bots[i].bot_id == this.props.bot.user_id) {
+                            containsBot = true
+                            break
+                        }
+                    }
+
+                    if (!containsBot) {
+                        tempPolicies.push({ 'value': policy, 'label': "(" + policy.filter + ") " + policy.name });
                     }
                 })
 
@@ -253,7 +261,11 @@ class PolicyForm extends Component {
         } else {
             document.getElementById("errorExisting").style.visibility = "hidden"
 
-            var bots = this.state.selectedPolicy.value.bots
+            var bots = []
+            for (var i = 0; i < this.state.selectedPolicy.value.bots.length; i++) {
+                bots.push(this.state.selectedPolicy.value.bots[i].bot_id)
+            }
+            
             bots.push(this.props.bot.user_id)
 
             await this.setState({
