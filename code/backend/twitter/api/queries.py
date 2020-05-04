@@ -592,7 +592,15 @@ def update_policy(data, policy_id):
 		policy_obj.__dict__.update(data)
 		policy_obj.save()
 
-		return True, None, f"Success in updating the policy (id:{policy_id})"
+		entry = serializers.Policy(policy_obj).data
+
+		for index in range(len(entry['bots'])):
+			bot_id = entry['bots'][index]
+			user_obj = User.objects.filter(user_id=bot_id)
+			bot_name = user_obj[0].screen_name if len(user_obj) > 0 else ''
+			entry['bots'][index] = {"bot_id": bot_id, "bot_name": bot_name}
+
+		return True, entry, f"Success in updating the policy (id:{policy_id})"
 
 	except Policy.DoesNotExist as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {update_policy.__name__} -> {e}")
