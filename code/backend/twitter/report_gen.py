@@ -37,7 +37,8 @@ class Report:
 		self.neo = Neo4jAPI()
 		self.exporter = Report.__Exporter(EXPORT_DIR)
 
-	def __node_builder(self, node):
+	@staticmethod
+	def __node_builder(node):
 		query_node = "("
 
 		if len(node) > 0:
@@ -46,7 +47,8 @@ class Report:
 
 		return query_node+")"
 
-	def __relation_builder(self, rel):
+	@staticmethod
+	def __relation_builder(rel):
 		query_rel = "["
 		if len(rel) > 0:
 			if 'label' in rel:
@@ -81,7 +83,8 @@ class Report:
 			return result
 		return None
 
-	def __insert_info_dict(self, info_dict, results_list, placement_dict):
+	@staticmethod
+	def __insert_info_dict(info_dict, results_list, placement_dict):
 		if results_list:
 			for result in results_list:
 				info_dict[placement_dict[result["id_str"]]] = result
@@ -95,7 +98,7 @@ class Report:
 		logger.info(query)
 
 		if limit:
-			query += " limit " + str(limit)
+			query += f" limit {limit}"
 
 		result = []
 
@@ -132,7 +135,7 @@ class Report:
 				elif node_label == "Bot":
 					query_bots.append(rel["end"]["properties"]["id"])
 				keep_track_places[rel["end"]["properties"]["id"]] = "interm" + str(index+1)
-				relation["interm" + str(index+1)] = {param:None for param in params['inter'][node_label]}
+				relation["interm" + str(index+1)] = {param: None for param in params['inter'][node_label]}
 
 			result_tweets = self.__get_mongo_aggregate("tweets", query_tweets, params['inter']['Tweet'])
 			result_users = self.__get_mongo_aggregate("users", query_users, params['inter']['User'])
@@ -181,7 +184,7 @@ class Report:
 		def export_json(self, result):
 			try:
 				with open(f"{self.directory}/export.json", "w") as file:
-					json.dump(result, file)
+					json.dump(result, file, indent=3)
 			except Exception as error:
 				logger.exception(f"Occurred an error <{error}>: ")
 

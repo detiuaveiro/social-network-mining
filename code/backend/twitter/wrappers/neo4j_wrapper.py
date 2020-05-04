@@ -945,7 +945,8 @@ class Neo4jAPI:
 
 			return json.loads(result)
 
-	def __export_network(self, tx, export_type):
+	@staticmethod
+	def __export_network(tx, export_type):
 		log.debug("EXPORTING NETWORK")
 
 		if export_type == "json":
@@ -957,7 +958,8 @@ class Neo4jAPI:
 
 		return result
 
-	def __node_type(self, tx, data):
+	@staticmethod
+	def __node_type(tx, data):
 		log.debug("GETTING NODE TYPE")
 		query = "match (a {id : $id}) return labels(a)"
 		return list(tx.run(query, id=data['id']))[0].values()[0][0]
