@@ -3,6 +3,7 @@ import csv
 import json
 import logging
 from enum import IntEnum
+from time import time
 
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
@@ -60,6 +61,7 @@ class Report:
 		node_type = node["labels"][0]
 
 		if node_type in params and len(params[node_type]) > 0:
+
 			if node_type == "Tweet":
 				mongo_info = self.mongo.search('tweets', query={"id_str": node['properties']['id']},
 										 fields=params[node_type], single=True)
@@ -74,14 +76,16 @@ class Report:
 
 	def __get_mongo_aggregate(self, table, query, params):
 		params += ["id_str"]
-		if len(query) != 0:
-			result = self.mongo.search(table, query={"$or": query}, fields=params)
-
-			if not result:
-				result = {param: None for param in params}
-
+		if len(query) > 0 and len(params) > 0:
+			result = self.mongo.search(table, query={"$or": [{"id_str": obj_id} for obj_id in query]}, fields=params)
 			return result
 		return None
+
+	def __insert_info_dict(self, info_dict, results_list, placement_dict):
+		if results_list:
+			for result in results_list:
+				info_dict[placement_dict[result["id_str"]]] = result
+		return info_dict
 
 	def create_report(self, match: dict, params: dict, limit: int = None, export='csv'):
 		query = f"MATCH r={self.__node_builder(match['start'])}" \
@@ -97,7 +101,9 @@ class Report:
 
 		query_result = self.neo.export_query(query, rel_node_properties=True)
 
-		logger.debug(query_result)
+		#logger.debug(query_result)
+
+		start = time()
 
 		for row in query_result:
 			# Analyse each row by looking at its rels field
@@ -109,22 +115,43 @@ class Report:
 			if node_mongo_info:
 				relation['start'] = node_mongo_info
 
+			query_tweets = []
+			query_users = []
+			query_bots = []
+
+			keep_track_places = {}
+
 			for index in range(len(relations) - 1):
 				rel = relations[index]
 				relation['rel' + str(index+1)] = {"name": rel["label"]}
-				node_mongo_info = self.__get_mongo_info(rel["end"], params['inter'])
-				if node_mongo_info:
-					relation['inter' + str(index)] = node_mongo_info
+				node_label = rel["end"]["labels"][0]
+				if node_label == "Tweet":
+					query_tweets.append(rel["end"]["properties"]["id"])
+				elif node_label == "User":
+					query_users.append(rel["end"]["properties"]["id"])
+				elif node_label == "Bot":
+					query_bots.append(rel["end"]["properties"]["id"])
+				keep_track_places[rel["end"]["properties"]["id"]] = "interm" + str(index+1)
+				relation["interm" + str(index+1)] = {param:None for param in params['inter'][node_label]}
+
+			result_tweets = self.__get_mongo_aggregate("tweets", query_tweets, params['inter']['Tweet'])
+			result_users = self.__get_mongo_aggregate("users", query_users, params['inter']['User'])
+			result_bots = self.__get_mongo_aggregate("users", query_bots, params['inter']['Bot'])
+
+			relation = self.__insert_info_dict(relation, result_tweets, keep_track_places)
+			relation = self.__insert_info_dict(relation, result_users, keep_track_places)
+			relation = self.__insert_info_dict(relation, result_bots, keep_track_places)
 
 			# Add ending node
 			relation['rel' + str(len(relations))] = {"name": relations[-1]["label"]}
 			node_mongo_info = self.__get_mongo_info(relations[-1]["end"], params['end'])
-			logger.debug(node_mongo_info)
 			if node_mongo_info:
 				relation['end'] = node_mongo_info
 
 			# Append to result
 			result.append(relation)
+
+		logger.debug("It took " + str(time()-start))
 
 		#logger.debug(result)
 
