@@ -149,7 +149,7 @@ class Policies extends Component {
     processing: false
   };
 
-  async getPolicies(page, changePolicy) {
+  async getPolicies(page) {
     await fetch(baseURL + "policies/6/" + page + "/", {
       method: "GET",
       headers: {
@@ -248,17 +248,8 @@ class Policies extends Component {
           noPages: data.num_pages,
           curPage: page,
           empty: empty,
+          policy: this.state.policy
         })
-
-        if (changePolicy) {
-          this.setState({
-            policy: tempPolicies[0]
-          })
-
-          this.changeSelected(this.state.policy)
-        }
-
-
       }
     }).catch(error => {
       console.log("error: " + error);
@@ -307,45 +298,10 @@ class Policies extends Component {
     await this.getBotList(1)
 
     await this.setState({
-      policy: this.state.policies[0],
-    })
-
-    await this.setState({
       doneLoading: true
     })
 
-    if (document.getElementsByName(this.state.policy[0]) != null) {
-      for (var i = 0; i < 4; i++) {
-        document.getElementsByName(this.state.policy[0])[i].style.color = "#1da1f2"
-        document.getElementsByName(this.state.policy[0])[i].style.fontWeight = "bold"
-      }
-    }
-
-    if (document.getElementsByName(this.state.policy[0]) != null) {
-      for (var i = 0; i < 4; i++) {
-        document.getElementsByName(this.state.policy[0])[i].style.color = "#1da1f2"
-        document.getElementsByName(this.state.policy[0])[i].style.fontWeight = "bold"
-      }
-    }
-
-    document.getElementById("name").value = this.state.policy[7].name
-    document.getElementById("title").textContent = this.state.policy[7].name
-
-    var bots = []
-    this.state.policy[7].bots.forEach(bot => {
-      bots.push({ label: bot.bot_name, value: bot.bot_id })
-    })
-
-    var tags = []
-    this.state.policy[7].tags.forEach(tag => {
-      tags.push({ label: tag, value: tag })
-    })
-
-    await this.setState({
-      filter: { label: this.state.policy[7].filter, value: this.state.policy[7].filter },
-      bots: bots,
-      tags: tags
-    })
+    this.changeSelected(this.state.policies[0])
   }
 
 
@@ -546,8 +502,97 @@ class Policies extends Component {
           throw new Error(response.status);
         }
       }).then(data => {
+        var policy = data.data
 
-        this.getPolicies(this.state.curPage, false)
+        /////////////////////////////////////////////////////////////////////
+
+        if (this.state.policy != null) {
+          if (document.getElementsByName(this.state.policy[7].id) != null) {
+            console.log(document.getElementsByName(this.state.policy[0]).length)
+    
+            for (var i = 0; i < 4; i++) {
+              document.getElementsByName(this.state.policy[7].id)[i].style.color = ""
+              document.getElementsByName(this.state.policy[7].id)[i].style.fontWeight = ""
+            }
+          }
+        }
+
+        this.setState({policy: null})
+
+        var tempInfo = []
+
+        tempInfo.push(policy['name'])
+        tempInfo.push(policy['filter'])
+
+        var tags = ""
+        policy.tags.forEach(tag => {
+          tags += tag
+          tags += ", "
+        })
+
+        tags = tags.substr(0, tags.length - 2)
+        if (tags.length > 30) {
+          tags = tags.substr(0, 30) + "..."
+        }
+
+        tempInfo.push(tags)
+
+        var bots = ""
+        policy.bots.forEach(bot => {
+          bots += "@" + bot.bot_name
+
+          bots += ", "
+        })
+
+        bots = bots.substr(0, bots.length - 2)
+        if (bots.length > 45) {
+          bots = bots.substr(0, 45) + "..."
+        } else if (bots.length == "") {
+          bots = <span style={{ color: "#999" }}><i class="fas fa-minus"></i></span>
+        }
+
+        tempInfo.push(bots)
+
+        if (policy.active) {
+          tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Active</Badge>)
+          tempInfo.push(
+            <Button block outline color="warning"
+              onClick={() =>
+                this.handleOpenDeactivate(policy)
+              }
+            >
+              <i class="fas fa-pause"></i>
+            </Button>
+          )
+        } else {
+          tempInfo.push(<Badge pill color="danger" style={{ fontSize: "11px" }}>Inactive</Badge>)
+          tempInfo.push(
+            <Button block outline color="success"
+              onClick={() =>
+                this.handleOpenActivate(policy)
+              }
+            >
+              <i class="fas fa-play"></i>
+            </Button>
+          )
+        }
+
+        tempInfo.push(<Button block outline color="danger"
+          onClick={() =>
+            this.handleOpenDelete(policy)
+          }
+        >
+          <i class="fas fa-times"></i>
+        </Button>)
+
+        tempInfo.push(policy)
+
+        /////////////////////////////////////////////////////////////////////
+
+        this.getPolicies(this.state.curPage)
+
+        this.changeSelected(tempInfo)
+
 
         toast.info('Policy succesfully altered!', {
           position: "top-center",
@@ -592,7 +637,7 @@ class Policies extends Component {
       curPage: value
     })
 
-    await this.getPolicies(value, true)
+    await this.getPolicies(value)
 
     document.getElementById("loadedTable").style.visibility = "visible"
     document.getElementById("loadingTable").style.display = "none"
@@ -655,7 +700,7 @@ class Policies extends Component {
         document.getElementById("changed").style.visibility = "hidden"
       }
     } catch (err) {
-      console.log("oops")
+      console.log()
     }
   };
 
@@ -708,49 +753,48 @@ class Policies extends Component {
   }
 
   async changeSelected(selected) {
-    try{
-      if (this.state.policy != null) {
-        if (document.getElementsByName(this.state.policy[0]) != null) {
-          for (var i = 0; i < 4; i++) {
-            document.getElementsByName(this.state.policy[0])[i].style.color = ""
-            document.getElementsByName(this.state.policy[0])[i].style.fontWeight = ""
-          }
-        }
-      }
-      await this.setState({
-        policy: selected,
-      })
-  
-      if (document.getElementsByName(this.state.policy[0]) != null) {
+    if (this.state.policy != null) {
+      if (document.getElementsByName(this.state.policy[7].id) != null) {
+        console.log(document.getElementsByName(this.state.policy[0]).length)
+
         for (var i = 0; i < 4; i++) {
-          document.getElementsByName(this.state.policy[0])[i].style.color = "#1da1f2"
-          document.getElementsByName(this.state.policy[0])[i].style.fontWeight = "bold"
+          document.getElementsByName(this.state.policy[7].id)[i].style.color = ""
+          document.getElementsByName(this.state.policy[7].id)[i].style.fontWeight = ""
         }
       }
-  
-      document.getElementById("name").value = this.state.policy[7].name
-      document.getElementById("title").textContent = this.state.policy[7].name
-      document.getElementById("changed").style.visibility = "hidden"
-  
-      var bots = []
-      this.state.policy[7].bots.forEach(bot => {
-        bots.push({ label: bot.bot_name, value: bot.bot_id })
-      })
-  
-      var tags = []
-      this.state.policy[7].tags.forEach(tag => {
-        tags.push({ label: tag, value: tag })
-      })
-  
-      await this.setState({
-        filter: { label: this.state.policy[7].filter, value: this.state.policy[7].filter },
-        bots: bots,
-        tags: tags
-      })
-    }catch(erro){
-      console.log()
     }
-    
+    await this.setState({
+      policy: selected,
+    })
+
+    console.log(this.state.policy[7].id)
+
+    if (document.getElementsByName(this.state.policy[7].id) != null) {
+      for (var i = 0; i < 4; i++) {
+        document.getElementsByName(this.state.policy[7].id)[i].style.color = "#1da1f2"
+        document.getElementsByName(this.state.policy[7].id)[i].style.fontWeight = "bold"
+      }
+    }
+
+    document.getElementById("name").value = this.state.policy[7].name
+    document.getElementById("title").textContent = this.state.policy[7].name
+    document.getElementById("changed").style.visibility = "hidden"
+
+    var bots = []
+    this.state.policy[7].bots.forEach(bot => {
+      bots.push({ label: bot.bot_name, value: bot.bot_id })
+    })
+
+    var tags = []
+    this.state.policy[7].tags.forEach(tag => {
+      tags.push({ label: tag, value: tag })
+    })
+
+    await this.setState({
+      filter: { label: this.state.policy[7].filter, value: this.state.policy[7].filter },
+      bots: bots,
+      tags: tags
+    })
   };
 
   /////////////////////////////////////////////////////////////////////
@@ -926,7 +970,7 @@ class Policies extends Component {
 
                 <TableBody>
                   {this.state.policies.map((prop, key) => {
-                    var id = prop[0]
+                    var id = prop[7].id
                     return (
                       <TableRow hover key={key} className={classes.tableBodyRow} style={{ cursor: "pointer" }} onClick={() => this.changeSelected(prop)}>
                         {prop.map((prop, key) => {
