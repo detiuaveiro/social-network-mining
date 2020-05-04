@@ -151,12 +151,12 @@ def twitter_user_stats_grouped(user_id, types):
 	try:
 		start_date = UserStats.objects.filter(user_id=user_id).order_by('timestamp').values('timestamp')[0]['timestamp']
 
-		query = "UserStats.objects.filter(user_id=user_id)"
+		query = "UserStats.objects.filter(Q(user_id=user_id) & Q(followers__gt=0)  & Q(following__gt=0))"
 		for group_type in types:
 			query += f".annotate({group_type}=Extract{group_type.title()}('timestamp'))"
 
 		order_by_list = [f"'{group_type}'" for group_type in types]
-		query += f".values({','.join(order_by_list)}).annotate(sum_followers=Sum('followers'), sum_following=Sum('following')).order_by({','.join(order_by_list)})"
+		query += f".values({','.join(order_by_list)}).annotate(sum_followers=Max('followers'), sum_following=Max('following')).order_by({','.join(order_by_list)})"
 
 		users_stats = []
 		for obj in list(eval(query)):

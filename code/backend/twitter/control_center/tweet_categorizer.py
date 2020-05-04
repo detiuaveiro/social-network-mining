@@ -18,6 +18,7 @@ handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
 
+
 class TweetCategorizer:
 	"""
 	Class dedicated to categorize tweets it receives
