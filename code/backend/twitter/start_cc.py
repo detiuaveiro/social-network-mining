@@ -19,18 +19,26 @@ def tests(test_type):
 
 def export_tweets_text(file_name: str):
 	exporter = TweetsExporter()
-	exporter.export_json(file_name)
+	exporter.export(file_name, TweetsExporter.OutputType.TEXT)
+
+
+def export_tweets_json(file_name: str):
+	exporter = TweetsExporter()
+	exporter.export(file_name, TweetsExporter.OutputType.JSON)
 
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--test', type=str, default='')
-	parser.add_argument('--export_tweets_text', type=str, default='tweets.json')
+	parser.add_argument('--export_tweets_text', type=str, default='tweets')
+	parser.add_argument('--export_tweets_json', type=str, default='tweets')
 	args = parser.parse_args()
 
 	if args.test:
 		tests(args.test)
-	if args.export_tweets_text:
+	elif args.export_tweets_text:
 		export_tweets_text(args.export_tweets_text)
+	elif args.export_tweets_json:
+		export_tweets_text(args.export_tweets_json)
 	else:
 		main()
