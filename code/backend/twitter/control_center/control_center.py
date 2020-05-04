@@ -372,16 +372,7 @@ class Control_Center(Rabbitmq):
 			# remove urls, tags from text and emojis
 			prepared_text = tweet_to_simple_text(tweet['text'] if 'full_text' not in tweet else tweet['full_text'])
 
-			# portuguese text to english text
-			text_en = self.translator.from_pt_to_en(prepared_text)
-
-			# generate a response
-			reply_text = None
-			if text_en:
-				reply_text = self.replier.generate_response(text_en)
-				if reply_text:
-					reply_text = self.translator.from_en_to_pt(reply_text)
-
+			reply_text = self.replier.generate_response(prepared_text)
 			if reply_text:
 				log.info(f"Sending reply text <{reply_text}>")
 
