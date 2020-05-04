@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import baseURL from '../../variables/baseURL'
 import {
-  FormGroup,Label, Input, 
-  Container, Row, Col, Button, Badge, Form, 
+  FormGroup, Label, Input,
+  Container, Row, Col, Button, Badge, Form,
 } from 'reactstrap';
 
 import Table from "../../components/Table/Table.js";
@@ -87,16 +87,6 @@ class Bots extends Component {
           // Add wether its active or not
           tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Active</Badge>);
 
-
-          tempInfo.push(
-            <Button block outline color="primary"
-              onClick={() => this.handleOpenProfile(bot)}
-            >
-              <i class="far fa-user-circle"></i>
-              <strong style={{ marginLeft: "3px" }}>Profile</strong>
-            </Button>
-          )
-
           //TODO: change for if active
           if (true) {
             tempInfo.push(
@@ -127,6 +117,15 @@ class Bots extends Component {
               }
             >
               <i class="far fa-trash-alt"></i>
+            </Button>
+          )
+
+          tempInfo.push(
+            <Button block outline color="primary"
+              onClick={() => this.handleOpenProfile(bot)}
+            >
+              <i class="far fa-user-circle"></i>
+              <strong style={{ marginLeft: "3px" }}>Profile</strong>
             </Button>
           )
 
