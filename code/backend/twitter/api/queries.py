@@ -506,6 +506,27 @@ def bot_policies(bot_id, entries_per_page, page):
 		return False, None, f"Error obtaining bot's (id:{bot_id}) policy info"
 
 
+def get_number_policies():
+	"""
+	Returns: Total number of policies in the database
+	"""
+	try:
+		all_policies = Policy.objects.all()
+
+		data = paginator_factory(all_policies, entries_per_page, page)
+		data['entries'] = [serializers.Policy(policy_obj).data for policy_obj in data['entries']]
+		for entry in data['entries']:
+			for index in range(len(entry['bots'])):
+				bot_id = entry['bots'][index]
+				user_obj = User.objects.filter(user_id=bot_id)
+				bot_name = user_obj[0].screen_name if len(user_obj) > 0 else ''
+				entry['bots'][index] = {"bot_id": bot_id, "bot_name": bot_name}
+
+		return True, data, "Success obtaining all policies"
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {policies.__name__} -> {e}")
+		return False, None, "Error obtaining all policies"
+
 def add_policy(data):
 	"""
 	Add new policy to DB

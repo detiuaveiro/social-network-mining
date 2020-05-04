@@ -84,6 +84,50 @@ def bot_policies(_, bot_id, entries_per_page=None, page=None):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@api_view(["GET"])
+def get_number_policies(_):
+	"""
+	Args:
+		_: HTTP Request (ignored in this function)
+
+	Returns: Total number of policies in the database
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.get_number_policies()
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
+
+
+@api_view(["GET"])
+def get_number_act_policies(_):
+	"""
+	Args:
+		_: HTTP Request (ignored in this function)
+
+	Returns: Number of active policies in the database
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.get_number_act_policies()
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
+
+
 @api_view(["POST"])
 def add_policy(request):
 	"""
