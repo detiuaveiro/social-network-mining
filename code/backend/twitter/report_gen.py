@@ -100,6 +100,16 @@ class Report:
 		elif node_label == "Bot":
 			query_bots.append(node["properties"]["id"])
 
+	def __get_results(self, result, tweets, user, bots, placement, params):
+		result_tweets = self.__get_mongo_aggregate("tweets", tweets, params['Tweet'])
+		result_users = self.__get_mongo_aggregate("users", user, params['User'])
+		result_bots = self.__get_mongo_aggregate("users", bots, params['Bot'])
+
+		for res in [result_tweets, result_users, result_bots]:
+			result = self.__insert_info_list(result, res, placement)
+
+		return result
+
 	def create_report(self, match: dict, params: dict, limit: int = None, export='csv'):
 		query = f"MATCH r={self.__node_builder(match['start'])}" \
 				f"-{self.__relation_builder(match['rel'])}" \
@@ -161,33 +171,20 @@ class Report:
 			# Append to result
 			result.append(relation)
 
-		result_tweets_start = self.__get_mongo_aggregate("tweets", query_tweets_start, params['start']['Tweet'])
-		result_users_start = self.__get_mongo_aggregate("users", query_user_start, params['start']['User'])
-		result_bots_start = self.__get_mongo_aggregate("users", query_bots_start, params['start']['Bot'])
+		logger.debug("It took "+ str(time()-start) + " to finish analysing network")
 
-		result_tweets_interm = self.__get_mongo_aggregate("tweets", query_tweets_interm, params['inter']['Tweet'])
-		result_users_interm = self.__get_mongo_aggregate("users", query_user_interm, params['inter']['User'])
-		result_bots_interm = self.__get_mongo_aggregate("users", query_bots_interm, params['inter']['Bot'])
+		result = self.__get_results(result, query_tweets_start, query_user_start,
+									query_bots_start, keep_track_places, params['start'])
 
-		result_tweets_end = self.__get_mongo_aggregate("tweets", query_tweets_end, params['end']['Tweet'])
-		result_users_end = self.__get_mongo_aggregate("users", query_user_end, params['end']['User'])
-		result_bots_end = self.__get_mongo_aggregate("users", query_bots_end, params['end']['Bot'])
+		result = self.__get_results(result, query_tweets_interm, query_user_interm,
+									query_bots_interm, keep_track_places, params['inter'])
 
-		result = self.__insert_info_list(result, result_tweets_start, keep_track_places)
-		result = self.__insert_info_list(result, result_users_start, keep_track_places)
-		result = self.__insert_info_list(result, result_bots_start, keep_track_places)
-
-		result = self.__insert_info_list(result, result_tweets_interm, keep_track_places)
-		result = self.__insert_info_list(result, result_users_interm, keep_track_places)
-		result = self.__insert_info_list(result, result_bots_interm, keep_track_places)
-
-		result = self.__insert_info_list(result, result_tweets_end, keep_track_places)
-		result = self.__insert_info_list(result, result_users_end, keep_track_places)
-		result = self.__insert_info_list(result, result_bots_end, keep_track_places)
+		result = self.__get_results(result, query_tweets_end, query_user_end,
+									query_bots_end, keep_track_places, params['end'])
 
 		logger.debug("It took " + str(time()-start))
 
-		#logger.debug(result)
+		logger.debug(result)
 
 		if export == self.ExportType.CSV:
 			self.exporter.export_csv(result)
@@ -224,32 +221,30 @@ if __name__ == '__main__':
 	rep = Report()
 	query = {
 		'start': {},
-		'rel': {
-			'depth_start': 5,
-		},
+		'rel': {},
 		'end': {}
 	}
 	params = {
 		'start': {
 			'Tweet': ['retweet_count', 'favourite_count', 'text'],
-			'User': ['name', 'screen_name', 'followers_count', 'friends_count', 'verified'],
-			'Bot': ['name', 'screen_name', 'followers_count', 'friends_count']
+			'User': ['name', 'screen_name', 'followers_count'],
+			'Bot': ['name', 'screen_name', 'friends_count']
 		},
 		'inter': {
-			'Tweet': [],
-			'User': ['name', 'screen_name'],
+			'Tweet': ['id'],
+			'User': ['screen_name'],
 			'Bot': ['name']
 		},
 		'end': {
 			'Tweet': ['favorite_count'],
-			'User': ['listed_count'],
+			'User': ['followers_count'],
 			'Bot': ['friends_count']
 		}
 	}
-	limit = 10000
+
 	for export_type in Report.ExportType:
 		print(export_type)
-		rep.create_report(query, params, limit, export_type)
+		rep.create_report(query, params, export=export_type)
 #
 #
 #
