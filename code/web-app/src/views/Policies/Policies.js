@@ -407,7 +407,8 @@ class Policies extends Component {
       }
     }).then(data => {
 
-      this.getPolicies(this.state.curPage, true)
+      this.getPolicies(this.state.curPage)
+      this.changeSelected(this.state.policies[0])
 
       toast.warning('🗑️ Policy successfully deleted', {
         position: "top-center",
@@ -540,7 +541,6 @@ class Policies extends Component {
         var bots = ""
         policy.bots.forEach(bot => {
           bots += "@" + bot.bot_name
-
           bots += ", "
         })
 
