@@ -475,7 +475,7 @@ def policies(entries_per_page, page):
 				bot_id = entry['bots'][index]
 				user_obj = User.objects.filter(user_id=bot_id)
 				bot_name = user_obj[0].screen_name if len(user_obj) > 0 else ''
-				entry['bots'][index] = {bot_id: bot_name}
+				entry['bots'][index] = {"bot_id": bot_id, "bot_name": bot_name}
 
 		return True, data, "Success obtaining all policies"
 	except Exception as e:
