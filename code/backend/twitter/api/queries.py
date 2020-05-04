@@ -6,7 +6,7 @@ import api.serializers as serializers
 from api import neo4j
 import json
 from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
-from api.queries_utils import paginator_factory, paginator_factory_non_queryset, convert_policy
+from api.queries_utils import paginator_factory, paginator_factory_non_queryset
 
 logger = logging.getLogger('queries')
 
@@ -444,9 +444,7 @@ def policy(policy_id):
 	"""
 	try:
 		policy_by_id = Policy.objects.get(id=policy_id)
-
-		return True, convert_policy(
-			serializers.Policy(policy_by_id).data), f"Success obtaining policy's (id:{policy_id}) info"
+		return True, serializers.Policy(policy_by_id).data, f"Success obtaining policy's (id:{policy_id}) info"
 
 	except Policy.DoesNotExist as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {policy.__name__} -> {e}")
@@ -471,7 +469,7 @@ def policies(entries_per_page, page):
 		all_policies = Policy.objects.all()
 
 		data = paginator_factory(all_policies, entries_per_page, page)
-		data['entries'] = [convert_policy(serializers.Policy(policy_obj).data) for policy_obj in data['entries']]
+		data['entries'] = [serializers.Policy(policy_obj).data for policy_obj in data['entries']]
 
 		return True, data, "Success obtaining all policies"
 	except Exception as e:
@@ -494,7 +492,7 @@ def bot_policies(bot_id, entries_per_page, page):
 		policies_list = Policy.objects.filter(bots__contains=[bot_id])
 
 		data = paginator_factory(policies_list, entries_per_page, page)
-		data['entries'] = [convert_policy(serializers.Policy(policy_obj).data) for policy_obj in data['entries']]
+		data['entries'] = [serializers.Policy(policy_obj).data for policy_obj in data['entries']]
 
 		return True, data, f"Success obtaining bot's (id:{bot_id}) policy info"
 	except Exception as e:

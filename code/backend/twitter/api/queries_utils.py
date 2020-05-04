@@ -56,7 +56,3 @@ def paginator_factory_non_queryset(query_data, entries_per_page, page):
 
 	return data
 
-
-def convert_policy(policy):
-	policy['bots'] = [str(bot) for bot in policy['bots']]
-	return policy
