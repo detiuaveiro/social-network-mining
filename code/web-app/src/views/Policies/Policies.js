@@ -144,7 +144,7 @@ class Policies extends Component {
 
     filter: null,
     tags: [],
-    bots: []
+    bots: [],
   };
 
   async getPolicies(page) {
@@ -479,7 +479,24 @@ class Policies extends Component {
 
     console.log(this.state.policy[7])
     document.getElementById("name").value = this.state.policy[7].name
-    
+
+    var bots = []
+    this.state.policy[7].bots.forEach(bot => {
+      bots.push({label: bot, value: bot})
+    })
+
+    var tags = []
+    this.state.policy[7].tags.forEach(tag => {
+      tags.push({label: tag, value: tag})
+    })
+
+    await this.setState({
+      filter: {label: this.state.policy[7].filter, value: this.state.policy[7].filter},
+      bots: bots,
+      tags: tags
+    })
+
+    console.log(this.state.filter)
 
   };
 
@@ -846,6 +863,7 @@ class Policies extends Component {
                           <CreatableSelect
                             isMulti
                             id="tags"
+                            value={this.state.tags}
                             onChange={this.addNewTags}
                             options={[]}
                             components={makeAnimated()}
@@ -859,6 +877,7 @@ class Policies extends Component {
                           <CreatableSelect
                             isMulti
                             id="bots"
+                            value={this.state.bots}
                             onChange={this.addNewBots}
                             options={[]}
                             components={makeAnimated()}
