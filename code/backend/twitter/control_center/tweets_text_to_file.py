@@ -7,7 +7,6 @@ from typing import List
 from control_center.utils import tweet_to_simple_text
 from wrappers.mongo_wrapper import MongoAPI
 
-FIELDS = ['text', 'full_text']
 DIR_EXPORT = "tweets_text/"
 MIN_SIZE_TWEET = 3
 
@@ -18,9 +17,8 @@ class TweetsExporter:
 
 	def __get_tweets(self) -> List[dict]:
 		results = []
-		for field in FIELDS:
-			results += self.mongo_api.search(collection='tweets', query={field: {'$exists': True, '$ne': ''}},
-			                                fields=[field])
+		results += self.mongo_api.search(collection='tweets', query={'full_text': {'$exists': True, '$ne': ''}},
+		                                 fields=['full_text'])
 
 		for result in results:
 			if 'full_text' in result:
@@ -59,7 +57,6 @@ class TweetsExporter:
 	def __create_dir():
 		if not os.path.exists(DIR_EXPORT):
 			os.makedirs(DIR_EXPORT)
-
 
 	class OutputType(Enum):
 		TEXT = "txt"
