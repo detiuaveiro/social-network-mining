@@ -19,6 +19,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
 import Users from './Users';
+import BotProfile from '../Bots/BotProfile';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -207,7 +208,7 @@ class UserProfile extends Component {
                 data.entries.forEach(user => {
                     var tempInfo = []
 
-                    tempInfo.push(user.username)
+                    tempInfo.push("@"+user.username)
                     tempInfo.push(user.name)
 
                     if (user.label == "Bot") {
@@ -234,16 +235,11 @@ class UserProfile extends Component {
                     empty = true
                 }
 
-                var curPage = data.next_page - 1
-                if (curPage <= 0) {
-                    curPage = 1
-                }
-
                 this.setState({
                     followers: {
                         data: tempUsers,
                         noPage: data.num_pages,
-                        curPage: curPage,
+                        curPage: page,
                         empty: empty
                     }
                 })
@@ -278,7 +274,7 @@ class UserProfile extends Component {
                 data.entries.forEach(user => {
                     var tempInfo = []
 
-                    tempInfo.push(user.username)
+                    tempInfo.push("@"+user.username)
                     tempInfo.push(user.name)
                     if (user.label == "Bot") {
                         tempInfo.push(<span><i class="fas fa-robot" style={{ color: "#1da1f2" }}></i> Bot</span>)
@@ -302,16 +298,11 @@ class UserProfile extends Component {
                     empty = true
                 }
 
-                var curPage = data.next_page - 1
-                if (curPage <= 0) {
-                    curPage = 1
-                }
-
                 this.setState({
                     followings: {
                         data: tempUsers,
                         noPage: data.num_pages,
-                        curPage: curPage,
+                        curPage: page,
                         empty: empty
                     }
                 })
@@ -527,11 +518,15 @@ class UserProfile extends Component {
 
     render() {
         if (this.state.goBack) {
-            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "LIST")
-                return (<Users page={this.state.redirectionList[0].info} />)
+            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "USERS")
+                return (<Users page={this.state.redirectionList[0].info["page"]} searchQuery={this.state.redirectionList[0].info["query"]} />)
             else {
                 var lastUser = this.state.redirectionList.pop()
-                return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)
+                if(lastUser.type == "PROFILE"){
+                    return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)
+                }else{
+                    return (<BotProfile user={lastUser['info']} redirection={this.state.redirectionList}></BotProfile>)
+                }
             }
         } else if (this.state.redirectUser != null) {
             return (

@@ -21,8 +21,8 @@ class User(djongo_models.Model):
 
 
 class UserStats(models.Model):
-	user_id = models.BigIntegerField(primary_key=True)
-	timestamp = models.DateTimeField(default=now)
+	user_id = models.BigIntegerField()
+	timestamp = models.DateTimeField(default=now, primary_key=True)
 	followers = models.IntegerField()
 	following = models.IntegerField()
 
@@ -73,11 +73,11 @@ class Tweet(djongo_models.Model):
 
 
 class TweetStats(models.Model):
-	tweet_id = models.BigIntegerField(primary_key=True)
+	tweet_id = models.BigIntegerField()
 	user_id = models.IntegerField()
 	likes = models.IntegerField()
 	retweets = models.IntegerField()
-	timestamp = models.DateTimeField()
+	timestamp = models.DateTimeField(primary_key=True)
 
 	class Meta:
 		managed = True
@@ -90,7 +90,7 @@ class Policy(models.Model):
 	filter = models.TextField()
 	name = models.TextField(unique=True)  # alter table policies add constraint unique_name unique(name);
 	tags = ArrayField(models.TextField(), db_column="params")
-	bots = ArrayField(models.BigIntegerField())
+	bots = ArrayField(models.DecimalField(max_digits=128, decimal_places=6))
 	active = models.BooleanField(default=False)
 
 	class Meta:

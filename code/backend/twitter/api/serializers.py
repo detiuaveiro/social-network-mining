@@ -3,7 +3,7 @@ from api.enums import Policy as enum_policy
 
 
 class User(serializers.Serializer):
-	user_id = serializers.IntegerField()
+	user_id = serializers.CharField()
 	description = serializers.CharField()
 	location = serializers.CharField()
 	name = serializers.CharField()
@@ -14,7 +14,7 @@ class User(serializers.Serializer):
 
 
 class UserStats(serializers.Serializer):
-	user_id = serializers.IntegerField()
+	user_id = serializers.CharField()
 	timestamp = serializers.DateTimeField()
 	followers = serializers.IntegerField()
 	following = serializers.IntegerField()
@@ -42,19 +42,18 @@ class ExtendedEntities(serializers.Serializer):
 
 
 class Tweet(serializers.Serializer):
-	tweet_id = serializers.IntegerField(required=True)
-	user = serializers.IntegerField(required=True)
+	tweet_id = serializers.CharField(required=True)
+	user = serializers.CharField(required=True)
 	is_quote_status = serializers.BooleanField(required=True)
 	created_at = serializers.DateTimeField(required=True)
 	quoted_status_id = serializers.IntegerField()
 	in_reply_to_screen_name = serializers.CharField()
-	in_reply_to_user_id = serializers.IntegerField()
-	in_reply_to_status_id = serializers.IntegerField()
+	in_reply_to_user_id = serializers.CharField()
+	in_reply_to_status_id = serializers.CharField()
 	extended_entities = ExtendedEntities(required=False)
 	text = serializers.CharField()
 	retweet_count = serializers.IntegerField()
 	favorite_count = serializers.IntegerField()
-
 
 
 class TweetStats(serializers.Serializer):
@@ -71,15 +70,15 @@ class Policy(serializers.Serializer):
 	filter = serializers.ChoiceField(choices=enum_policy.api_filter())
 	name = serializers.CharField()
 	tags = serializers.ListField(child=serializers.CharField(), allow_empty=False)
-	bots = serializers.ListField(child=serializers.IntegerField(validators=[]), allow_empty=False)
+	bots = serializers.ListField(child=serializers.CharField(), allow_empty=False)
 	active = serializers.BooleanField(required=False)
 
 
 class Log(serializers.Serializer):
-	id_bot = serializers.IntegerField()
+	id_bot = serializers.CharField()
 	timestamp = serializers.DateTimeField()
 	action = serializers.CharField()
-	target_id = serializers.IntegerField()
+	target_id = serializers.CharField()
 
 
 class Url(serializers.Serializer):
