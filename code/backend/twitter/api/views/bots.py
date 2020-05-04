@@ -5,14 +5,15 @@ from api import queries
 from api.views.utils import create_response
 
 
-def twitter_create(request):
-	return None
-
-
 @api_view(["GET"])
-def twitter_bots(request):
+def twitter_bots(_):
 	"""
-	Returns all the bots info
+
+	Args:
+		_: Http Request (ignored in this function)
+
+	Returns: All bots's info saved on database wrapped on response's object
+
 	"""
 	error_messages = []
 	success_messages = []
@@ -25,71 +26,82 @@ def twitter_bots(request):
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-	                       success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
-def twitter_bot(_, id):
+def twitter_bot(_, bot_id):
 	"""
-	Returns a info associated to a bot saved on neo4j
-	:param id: bot's id
-	:return: response Object
+
+	Args:
+		_: Http Request (ignored in this function)
+		bot_id: Bot's ID
+
+	Returns: Bot's info wrapped on  response's object
+
 	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_bot(id)
+	success, data, message = queries.twitter_bot(bot_id)
 	if success:
 		success_messages.append(message)
 	else:
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-	                       success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
-def twitter_bot_logs(_, id, entries_per_page=None, page=None):
+def twitter_bot_logs(_, bot_id, entries_per_page=None, page=None):
 	"""
-	Returns all logs from a bot identified by his id
-	:param id: bot's id
-	:return: response object
+
+	Args:
+		_: Http Request (ignored in this function)
+		bot_id: Bots's ID
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: Bot's logs wrapped on response's object
+
 	"""
+
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_bot_logs(int(id), entries_per_page, page)
+	success, data, message = queries.twitter_bot_logs(bot_id, entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-	                       success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
-def twitter_bot_messages(_, id):
+def twitter_bot_messages(_, bot_id):
 	"""
-	Return all privates messages from a bot
-	:param id: bot's id
-	:return: response object
+
+	Args:
+		_: Http Request (ignored in this function)
+		bot_id: Bot's ID
+
+	Returns: Bot's direct messages wrapped on response's object
+
 	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_bot_messages(id)
+	success, data, message = queries.twitter_bot_messages(int(bot_id))
 	if success:
 		success_messages.append(message)
 	else:
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-	                       success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)

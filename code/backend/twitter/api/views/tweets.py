@@ -6,9 +6,16 @@ import api.queries as queries
 
 
 @api_view(["GET"])
-def twitter_tweets(request, entries_per_page=None, page=None):
-	"""Function to return all tweets within a given limit (if no limit is given, it returns all saved tweets)
-	:param limit: defines how many tweets to return
+def twitter_tweets(_, entries_per_page=None, page=None):
+	"""
+
+	Args:
+		_:  Http Request (ignored in this function)
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: All tweets saved on databases wrapped on response's object
+
 	"""
 	error_messages = []
 	success_messages = []
@@ -21,17 +28,20 @@ def twitter_tweets(request, entries_per_page=None, page=None):
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-	                       success_messages=success_messages, status=status)
-
-
-def twitter_tweets_export(request):
-	return None
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
-def twitter_tweets_stats(request, entries_per_page=None, page=None):
-	"""Function to obtain all the tweets stats saved on postgres
+def twitter_tweets_stats(_, entries_per_page=None, page=None):
+	"""
+
+	Args:
+		_: Http Request (ignored in this function)
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: All tweets stats saved on databases wrapped on response's object
+
 	"""
 	error_messages = []
 	success_messages = []
@@ -44,65 +54,82 @@ def twitter_tweets_stats(request, entries_per_page=None, page=None):
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-	                       success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
-def twitter_tweet(request, id):
-	"""Returns a list of all tweets with the given id
-	:param id: tweet id (in terms of the Tweet objects saved on the mongo db, it corresponds to str_id)
+def twitter_tweet(_, tweet_id):
+	"""
+
+	Args:
+		_: Http Request (ignored in this function)
+		tweet_id: Tweet's ID
+
+
+	Returns: Tweet info wrapped  on response's object
+
 	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_tweet(id)
+	success, data, message = queries.twitter_tweet(int(tweet_id))
 	if success:
 		success_messages.append(message)
 	else:
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-	                       success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
-def twitter_tweet_stats(request, id, entries_per_page=None, page=None):
-	"""Function to obtain the stats of a determined tweet
-	:param id: id of the tweet whom we want the stats
+def twitter_tweet_stats(_, tweet_id, entries_per_page=None, page=None):
+	"""
+
+	Args:
+		_: Http Request (ignored in this function)
+		tweet_id: Tweets's ID
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: Tweet's stats wrapped on response's object
+
 	"""
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_tweet_stats(id, entries_per_page, page)
+	success, data, message = queries.twitter_tweet_stats(int(tweet_id), entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
 		error_messages.append(message)
 		status = HTTP_403_FORBIDDEN
 
-	return create_response(data=data, error_messages=error_messages,
-	                       success_messages=success_messages, status=status)
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
 @api_view(["GET"])
-def twitter_tweet_replies(request,id):
-    """Returns a list of all tweets which are replies to the tweet with the given id
-    :param id: tweet id in relation to which we want the replies
-    """
-    error_messages = []
-    success_messages = []
-    status = HTTP_200_OK
+def twitter_tweet_replies(_, tweet_id):
+	"""
 
-    success, data, message = queries.twitter_tweet_replies(id)
-    if success:
-        success_messages.append(message)
-    else:
-        error_messages.append(message)
-        status = HTTP_403_FORBIDDEN
+	Args:
+		_: Http Request (ignored in this function)
+		tweet_id: Tweet's ID
 
-    return create_response(data=data, error_messages=error_messages,
-                           success_messages=success_messages, status=status)
+	Returns: Tweet's replies wrapped on response's object
+
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.twitter_tweet_replies(int(tweet_id))
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
