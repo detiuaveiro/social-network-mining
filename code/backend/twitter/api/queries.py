@@ -592,7 +592,7 @@ def update_policy(data, policy_id):
 		policy_obj.__dict__.update(data)
 		policy_obj.save()
 
-		return True, None, f"Success in updating the policy (id:{policy_id})"
+		return True, serializers.Policy(policy_obj).data, f"Success in updating the policy (id:{policy_id})"
 
 	except Policy.DoesNotExist as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {update_policy.__name__} -> {e}")
