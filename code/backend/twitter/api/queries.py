@@ -27,9 +27,9 @@ def twitter_users_count():
 	Returns: Number of  users saved on the mongo database wrapped on a dictionary
 	"""
 	try:
-		all_users_count = dict(list(neo4j.get_entities_stats()))
+		all_users_count = User.objects.all().count()
 
-		return True, {'count': all_users_count['User']}, "Success obtaining the number of users"
+		return True, {'count':  all_users_count}, "Success obtaining the number of users"
 
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_users_count.__name__} -> {e}")
