@@ -439,6 +439,7 @@ class TwitterBot(RabbitMessaging):
 
 				if task:
 					task_type, task_params = task['type'], task['params']
+					task_type, task_params = task['type'], task['params']
 					logger.debug(f"Received task of type {messages_types.ServerToBot(task_type).name}: {task_params}")
 
 					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
