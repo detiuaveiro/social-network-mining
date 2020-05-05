@@ -121,7 +121,11 @@ urlpatterns = [
 	url(r'^graphs/latest_tweets/(?P<counter>[0-9]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
 		graphics.latest_tweets, name="latest_tweets"),
 
-	path('graphs/latest_activities/daily/', graphics.latest_activities, name="latest_activities"),
+	path('graphs/latest_activities/daily/', graphics.latest_activities_daily, name="latest_activities_daily"),
 	url(r'^graphs/latest_activities/daily/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
+		graphics.latest_activities_daily, name="latest_activities_daily"),
+
+	url(r'^graphs/latest_activities/(?P<counter>[0-9]+)/$', graphics.latest_activities, name="latest_activities"),
+	url(r'^graphs/latest_activities/(?P<counter>[0-9]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
 		graphics.latest_activities, name="latest_activities"),
 ]

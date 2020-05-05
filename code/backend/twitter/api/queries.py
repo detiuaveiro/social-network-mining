@@ -801,7 +801,7 @@ def latest_tweets(counter, entries_per_page, page):
 		return False, None, f"Error obtaining latest tweets"
 
 
-def latest_activities(entries_per_page, page):
+def latest_activities_daily(entries_per_page, page):
 	"""
 
 	Args:
@@ -814,9 +814,39 @@ def latest_activities(entries_per_page, page):
 	"""
 	try:
 		activities = Log.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))
-										& Q(timestamp__lte=datetime.now()))
+										& Q(timestamp__lte=datetime.now())).order_by("-timestamp")
 
 		data = paginator_factory(activities, entries_per_page, page)
+		data['entries'] = [serializers.Log(activity).data for activity in data['entries']]
+
+		for entry in data['entries']:
+			entry['bot_screen_name'] = User.objects.get(user_id=int(entry['id_bot'])).screen_name
+			user_obj = User.objects.filter(user_id=int(entry['target_id']))
+			entry['target_screen_name'] = user_obj[0].screen_name if len(user_obj) > 0 else ''
+
+		return True, data, "Success obtaining latest bot's activities daily"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_activities_daily.__name__} -> {e}")
+		return False, None, "Error obtaining latest bot's activities daily"
+
+
+def latest_activities(counter, entries_per_page, page):
+	"""
+	Args:
+		counter: Number of tweets to return
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: All bots's activities limited by counter wrapped on dictionary divided by pages
+	if entries_per_page and page are both None then aAll bots's activities limited by counter will be returned
+
+	"""
+	try:
+		activities = Log.objects.all().order_by("-timestamp")[:counter].values()
+
+		data = paginator_factory_non_queryset(activities, entries_per_page, page)
 		data['entries'] = [serializers.Log(activity).data for activity in data['entries']]
 
 		for entry in data['entries']:
@@ -827,5 +857,6 @@ def latest_activities(entries_per_page, page):
 		return True, data, "Success obtaining latest bot's activities"
 
 	except Exception as e:
-		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_activities.__name__} -> {e}")
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_activities.__name__} -> {e}")
 		return False, None, "Error obtaining latest bot's activities"
