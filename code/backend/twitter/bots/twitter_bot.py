@@ -146,9 +146,6 @@ class TwitterBot(RabbitMessaging):
 		logger.info("Reading home timeline")
 		self.__read_timeline(self.user)
 
-		# TODO -> ver porque não está a dar (o twitter não está a deixar aceder)
-		# self.__direct_messages()
-
 	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
 		"""Function to get the 20 (default) most recent tweets (including retweets) from some user
 
@@ -192,11 +189,13 @@ class TwitterBot(RabbitMessaging):
 				keyword = random.choice(keywords)
 				keywords.remove(keyword)
 
+				# TODO -> 100 is the maximum number of tweets per page -> if we have time we can add pagination and
+				#  obtain more tweets
 				# get tweets in portuguese and from Portugal (center of Portugal and a radius equal form the center
 				# to the most distant point)
 				tweets = self._twitter_api.search(q=keyword, lang=language, geocode="39.557191,-8.1,300km",
-				                                  tweet_mode="extended")
-				total_read_time += self.__interpret_tweets(tweets)
+				                                  tweet_mode="extended", count=100)
+				total_read_time += self.__interpret_tweets(tweets, max_depth=1)
 
 		logger.debug(f"Search completed in {total_read_time} seconds")
 
