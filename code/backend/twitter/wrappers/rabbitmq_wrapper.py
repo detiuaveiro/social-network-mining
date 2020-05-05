@@ -64,12 +64,11 @@ class Rabbitmq:
         parameters given from the constructor
         """
     
-        self.connection: BlockingConnection = pika.SelectConnection(parameters=self.pika_parameters,
-                                                                    on_open_callback=self.__open_channel)
+        self.connection: BlockingConnection = pika.BlockingConnection(self.pika_parameters)
 
-        # self.channel = self.connection.channel()
-        # self.channel.basic_qos(prefetch_count=10, global_qos=True)
-        # self.channel.queue_declare(queue=API_QUEUE, durable=True)
+        self.channel: BlockingChannel = self.connection.channel()
+        self.channel.basic_qos(prefetch_count=10, global_qos=True)
+        self.channel.queue_declare(queue=API_QUEUE, durable=True)
 
         # Declare Exchanges
         log.info("Declaring exchanges")
@@ -118,10 +117,6 @@ class Rabbitmq:
         )
         
         log.info("Connection to Rabbit Established")
-
-    def __open_channel(self):
-        self.channel = self.connection.channel(on_open_callback=self.on_channel_open)
-        self.channel.basic_qos(prefetch_count=10, global_qos=True)
 
     def _send(self, routing_key, message):
         """ 
