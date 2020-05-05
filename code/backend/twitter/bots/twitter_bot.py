@@ -189,13 +189,11 @@ class TwitterBot(RabbitMessaging):
 				keyword = random.choice(keywords)
 				keywords.remove(keyword)
 
-				# TODO -> 100 is the maximum number of tweets per page -> if we have time we can add pagination and
-				#  obtain more tweets
 				# get tweets in portuguese and from Portugal (center of Portugal and a radius equal form the center
 				# to the most distant point)
 				tweets = self._twitter_api.search(q=keyword, lang=language, geocode="39.557191,-8.1,300km",
-				                                  tweet_mode="extended", count=100)
-				total_read_time += self.__interpret_tweets(tweets, max_depth=1)
+				                                  tweet_mode="extended")
+				total_read_time += self.__interpret_tweets(tweets, max_depth=4)
 
 		logger.debug(f"Search completed in {total_read_time} seconds")
 
