@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.db.models import Max, Count, Sum, Q
 from api.models import *
 import api.serializers as serializers
@@ -799,3 +799,28 @@ def latest_tweets(counter, entries_per_page, page):
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_tweets.__name__} -> {e}")
 		return False, None, f"Error obtaining latest tweets"
+
+
+def latest_activities(entries_per_page, page):
+	"""
+
+	Args:
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: All bots's daily activities wrapped on dictionary divided by pages
+	if entries_per_page and page are both None then all bots's daily activities  will be returned
+
+	"""
+	try:
+		activities = Log.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))
+										& Q(timestamp__lte=datetime.now()))
+
+		data = paginator_factory(activities, entries_per_page, page)
+		data['entries'] = [serializers.Log(activity).data for activity in data['entries']]
+
+		return True, data, "Success obtaining latest bot's activities"
+
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_activities.__name__} -> {e}")
+		return False, None, "Error obtaining latest bot's activities"

@@ -116,7 +116,12 @@ urlpatterns = [
 
 	# Graphics
 	path('entities/counter', graphics.entities_counter, name="entities_counter"),
+
 	url(r'^graphs/latest_tweets/(?P<counter>[0-9]+)$', graphics.latest_tweets, name="latest_tweets"),
 	url(r'^graphs/latest_tweets/(?P<counter>[0-9]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
-		graphics.latest_tweets, name="latest_tweets")
+		graphics.latest_tweets, name="latest_tweets"),
+
+	path('graphs/latest_activities/daily/', graphics.latest_activities, name="latest_activities"),
+	url(r'^graphs/latest_activities/daily/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
+		graphics.latest_activities, name="latest_activities"),
 ]
