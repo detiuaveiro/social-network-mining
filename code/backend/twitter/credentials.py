@@ -47,9 +47,9 @@ QUERY_ROUTING_KEY = "queries.twitter"
 DATA_EXCHANGE = "twitter_data"
 DATA_ROUTING_KEY = "data.twitter"
 
-FOLLOW_EXCHANGE = "follow_deliver"
-FOLLOW_ROUTING_KEY_PREFIX = "follow.twitter"
-FOLLOW_QUEUE = "follow"
+TASK_FOLLOW_EXCHANGE = "follow_deliver"
+TASK_FOLLOW_ROUTING_KEY_PREFIX = "follow.twitter"
+TASK_FOLLOW_QUEUE = "follow"
 
 SERVICE_QUERY_EXCHANGE = "follow_queries"
 SERVICE_QUERY_ROUTING_KEY = "follow_queries.twitter"

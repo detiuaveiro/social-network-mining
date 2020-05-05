@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 import json
 
@@ -12,6 +13,10 @@ def to_json(obj):
 
 def from_json(string):
     return json.loads(string)
+
+
+def wait(seconds: float):
+    time.sleep(seconds)
 
 
 def current_time(str_time=False):
