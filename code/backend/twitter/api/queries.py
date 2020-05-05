@@ -29,7 +29,7 @@ def twitter_users_count():
 	try:
 		all_users_count = User.objects.all().count()
 
-		return True, {'count':  all_users_count}, "Success obtaining the number of users"
+		return True, {'count': all_users_count}, "Success obtaining the number of users"
 
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_users_count.__name__} -> {e}")
@@ -775,3 +775,27 @@ def entities_counter():
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {entities_counter.__name__} -> {e}")
 		return False, None, f"Error obtaining entities counter"
+
+
+def latest_tweets(counter, entries_per_page, page):
+	"""
+
+	Args:
+		counter: Number of tweets to return
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: Latest tweets wrapped on dictionary divided by pages
+	if entries_per_page and page are both None then all latest tweets  will be returned
+	"""
+	try:
+		tweets = Tweet.objects.all().order_by("-created_at")[:counter].values()
+
+		data = paginator_factory_non_queryset(tweets, entries_per_page, page)
+		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]
+
+		return True, data, f"Success obtaining latest tweets"
+
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_tweets.__name__} -> {e}")
+		return False, None, f"Error obtaining latest tweets"

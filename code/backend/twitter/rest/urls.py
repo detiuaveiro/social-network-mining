@@ -115,6 +115,8 @@ urlpatterns = [
 	url(r"^policies/number", policies.get_number_policies, name="number_policies"),
 
 	# Graphics
-	path('entities/counter', graphics.entities_counter, name="entities_counter")
-
+	path('entities/counter', graphics.entities_counter, name="entities_counter"),
+	url(r'^graphs/latest_tweets/(?P<counter>[0-9]+)$', graphics.latest_tweets, name="latest_tweets"),
+	url(r'^graphs/latest_tweets/(?P<counter>[0-9]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
+		graphics.latest_tweets, name="latest_tweets")
 ]
