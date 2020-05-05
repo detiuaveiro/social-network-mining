@@ -195,7 +195,7 @@ class Users extends Component {
   }
 
   async getUserCount() {
-    await fetch(baseURL + "twitter/users/count/", {
+    await fetch(baseURL + "entities/counter", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -211,7 +211,7 @@ class Users extends Component {
 
 
         this.setState({
-          noUsers: data.count
+          noUsers: data.User
         })
       }
     }).catch(error => {
@@ -499,7 +499,7 @@ class Users extends Component {
                           lineHeight: "1"
                         }
                       }} >
-                        {this.state.noUsers}
+                        <span style={{color:"#999"}}>~</span>{this.state.noUsers}
                       </h3>
                     </CardHeader>
                     <CardBody style={{ minHeight: "38px" }}>
