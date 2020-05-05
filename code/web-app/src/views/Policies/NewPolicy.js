@@ -11,9 +11,7 @@ import Card from "../../components/Card/Card";
 import CardHeader from "../../components/Card/CardHeader";
 import CardBody from "../../components/Card/CardBody";
 
-import Bots from './Bots';
-import BotProfile from './BotProfile';
-
+import Policies from './Policies';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -32,7 +30,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast, Flip } from 'react-toastify';
 
 
-class PolicyForm extends Component {
+class NewPolicy extends Component {
     constructor() {
         super();
     }
@@ -55,62 +53,18 @@ class PolicyForm extends Component {
         filter: null,
         tags: [],
 
-        success: false
+        success: false,
+        allBots: [],
+
+        bots: []
     };
-
-    async getAllPolicies() {
-        await fetch(baseURL + "policies/", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        }).then(response => {
-            if (response.ok) return response.json();
-            else {
-                throw new Error(response.status);
-            }
-        }).then(data => {
-            if (data != null && data != {}) {
-                data = data.data
-
-                var tempPolicies = []
-
-                data.entries.forEach(policy => {
-                    var containsBot = false
-                    for (var i = 0; i < policy.bots.length; i++) {
-                        if (policy.bots[i].bot_id == this.props.bot.user_id) {
-                            containsBot = true
-                            break
-                        }
-                    }
-
-                    if (!containsBot) {
-                        tempPolicies.push({ 'value': policy, 'label': "(" + policy.filter + ") " + policy.name });
-                    }
-                })
-
-
-                this.setState({
-                    allPolicies: tempPolicies,
-                })
-            }
-        }).catch(error => {
-            console.log("error: " + error);
-            this.setState({
-                error: error
-            })
-        });
-    }
-
-
 
     async componentDidMount() {
         await this.setState({ redirectionList: this.props.redirection })
 
-        // Get Policy
-        if (this.state.error == null) {
-            await this.getAllPolicies()
-        }
+        // Get Bots
+        await this.getBotList()
+
 
         this.setState({
             doneLoading: true
@@ -130,29 +84,16 @@ class PolicyForm extends Component {
 
 
     // Policy //////////////////////////////////////////////////////////
-    changeSelectedPolicy = (selectedOption) => {
-        if (selectedOption != null) {
-            this.setState({ selectedPolicy: selectedOption });
-            document.getElementById("existingTags").style.visibility = ""
-
-            console.log(selectedOption.value.tags)
-            var tags = ""
-            selectedOption.value.tags.forEach(tag => {
-                tags += tag
-                tags += ", "
-            })
-
-            tags = tags.substr(0, tags.length - 2)
-
-            document.getElementById("existingTags2").textContent = tags
-            document.getElementById("existingTags2").style.visibility = ""
-
-        } else {
-            this.setState({ selectedPolicy: null });
-            document.getElementById("existingTags").style.visibility = "hidden"
-            document.getElementById("existingTags2").style.visibility = "hidden"
+    addNewBots = async (newValue, actionMeta) => {
+        var bots = []
+        if (newValue != null && newValue.length > 0) {
+            bots = newValue
         }
-    }
+
+        await this.setState({
+            bots: bots
+        })
+    };
 
     changeSelectedFilter = (selectedOption) => {
         if (selectedOption != null) {
@@ -175,17 +116,56 @@ class PolicyForm extends Component {
             tags: tags
         })
     };
+
+    async getBotList() {
+        await fetch(baseURL + "twitter/bots", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).then(response => {
+            if (response.ok) return response.json();
+            else {
+                throw new Error(response.status);
+            }
+        }).then(data => {
+            if (data != null && data != {}) {
+                data = data.data
+
+                var tempBots = []
+
+                data.forEach(bot => {
+                    tempBots.push({ label: "@" + bot.screen_name, value: bot.user_id });
+                })
+
+                this.setState({
+                    allBots: tempBots
+                })
+            }
+        }).catch(error => {
+            console.log("error: " + error);
+            this.setState({
+                error: true,
+            })
+        });
+    }
+
     /////////////////////////////////////////////////////////////////////
 
     // Confirm //////////////////////////////////////////////////////////
     async confirmNew() {
-        if (this.state.tags == null || this.state.tags.length <= 0 || document.getElementById("name") == null || document.getElementById("name").value == null || document.getElementById("name").value == "" || this.state.filter == null || this.state.filter == "") {
+        if (this.state.tags == null || this.state.tags.length <= 0 || document.getElementById("name") == null || document.getElementById("name").value == null || document.getElementById("name").value == "" || this.state.filter == null || this.state.filter == "" || this.state.bots == null || this.state.bots.length == 0) {
             document.getElementById("errorNew").style.visibility = ""
         } else {
             document.getElementById("errorNew").style.visibility = "hidden"
 
             await this.setState({
                 processing: true
+            })
+
+            var bots = []
+            this.state.bots.forEach(bot =>{
+                bots.push(bot.value)
             })
 
             await fetch(baseURL + "policies/add", {
@@ -199,7 +179,7 @@ class PolicyForm extends Component {
                     filter: this.state.filter.value,
                     name: document.getElementById("name").value,
                     tags: this.state.tags,
-                    bots: [this.props.bot.user_id]
+                    bots: bots
                 })
             }).then(response => {
                 if (response.ok) return response.json();
@@ -253,70 +233,13 @@ class PolicyForm extends Component {
             });
         }
     }
-
-    async confirmExisting() {
-
-        if (this.state.selectedPolicy == null || this.state.selectedPolicy == "") {
-            document.getElementById("errorExisting").style.visibility = ""
-        } else {
-            document.getElementById("errorExisting").style.visibility = "hidden"
-
-            var bots = []
-            for (var i = 0; i < this.state.selectedPolicy.value.bots.length; i++) {
-                bots.push(this.state.selectedPolicy.value.bots[i].bot_id)
-            }
-            
-            bots.push(this.props.bot.user_id)
-
-            await this.setState({
-                processing: true
-            })
-
-            await fetch(baseURL + "policies/update/" + this.state.selectedPolicy.value.id + "/", {
-                method: "PUT",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    bots: bots
-                })
-            }).then(response => {
-                if (response.ok) return response.json();
-                else {
-                    throw new Error(response.status);
-                }
-            }).then(data => {
-                this.setState({
-                    processing: false
-                })
-
-
-                this.setState({
-                    success: true,
-                    goBack: true
-                })
-
-            }).catch(error => {
-                console.log("error: " + error);
-                this.setState({
-                    processing: false,
-                    error: true,
-                })
-            });
-        }
-    }
     /////////////////////////////////////////////////////////////////////
 
 
     render() {
         if (this.state.goBack) {
-            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "LIST")
-                return (<Bots />)
-            else {
-                var lastBot = this.state.redirectionList.pop()
-                return (<BotProfile user={lastBot['info']} redirection={this.state.redirectionList} success={this.state.success}></BotProfile>)
-            }
+            return (<Policies success={this.state.success}/>)
+
         } else {
             if (!this.state.doneLoading) {
                 return (
@@ -406,10 +329,10 @@ class PolicyForm extends Component {
                                     <Card>
                                         <CardHeader color="primary">
                                             <h3 style={{ color: "white" }}>
-                                                <strong>Add new Policy to bot {this.props.bot.name}</strong> (@{this.props.bot.screen_name})
+                                                <strong>Create a new Policy</strong>
                                             </h3>
                                             <h5 style={{ color: "white" }}>
-                                                Create a new policy or pick from a list of existing ones to train the bot with
+                                                Define a new policy for our bots to follow
                                             </h5>
                                         </CardHeader>
                                         <CardBody>
@@ -422,7 +345,7 @@ class PolicyForm extends Component {
                             </Row>
 
                             <Row>
-                                <Col xs="12" sm="12" md="6">
+                                <Col xs="12" sm="12" md="12">
                                     <Card>
                                         <CardHeader color="primary">
                                             <h3 style={{ color: "white" }}>
@@ -431,12 +354,12 @@ class PolicyForm extends Component {
                                         </CardHeader>
                                         <CardBody>
                                             <Row style={{ marginTop: "25px" }}>
-                                                <Col md="8">
+                                                <Col md="10">
                                                     <FormGroup>
                                                         <Input type="text" id="name" placeholder="Policy name" required />
                                                     </FormGroup>
                                                 </Col>
-                                                <Col md="4">
+                                                <Col md="2">
                                                     <FormGroup>
                                                         <Select
                                                             defaultValue={[]}
@@ -464,9 +387,23 @@ class PolicyForm extends Component {
                                                 </Col>
                                             </Row>
 
+                                            <Row style={{ marginTop: "30px", minHeight: "48px" }}>
+                                                <Col md="12">
+                                                    <Select
+                                                        isMulti
+                                                        id="bots"
+                                                        value={this.state.bots}
+                                                        onChange={this.addNewBots}
+                                                        options={this.state.allBots}
+                                                        components={makeAnimated()}
+                                                        placeholder="Bots"
+                                                    />
+                                                </Col>
+                                            </Row>
+
                                             <Row style={{ marginTop: "30px" }}>
                                                 <Col sm="12" md="12" xs="12">
-                                                    <span id="errorNew" style={{ visibility: "hidden", color: "#f86c6b" }}>You need to fill all fields and define at least one tag!</span>
+                                                    <span id="errorNew" style={{ visibility: "hidden", color: "#f86c6b" }}>You need to, at least, pick a name, choose the filter type, define at least one tag and assign a bot before proceeding!</span>
                                                 </Col>
                                             </Row>
 
@@ -475,54 +412,6 @@ class PolicyForm extends Component {
                                                 <Col sm="12" md="12" xs="12">
                                                     <Button block outline color="success" onClick={() => this.confirmNew()} style={{
                                                         width: "150px", marginTop: "15px", borderWidth: "2px", float: "right"
-                                                    }}>Confirm</Button>
-                                                </Col>
-                                            </Row>
-                                        </CardBody>
-                                    </Card>
-                                </Col>
-
-                                <Col xs="12" sm="12" md="6">
-                                    <Card>
-                                        <CardHeader color="primary">
-                                            <h3 style={{ color: "white" }}>
-                                                Existing Policy
-                                            </h3>
-                                        </CardHeader>
-                                        <CardBody>
-                                            <Row style={{ marginTop: "25px" }}>
-                                                <Col sm="12" md="12" xs="12">
-                                                    <Select
-                                                        defaultValue={[]}
-                                                        id="findNode"
-                                                        onChange={this.changeSelectedPolicy}
-                                                        value={this.state.selectedPolicy || ''}
-                                                        options={this.state.allPolicies}
-                                                        className="basic-single"
-                                                        classNamePrefix="select"
-                                                        placeholder="Select from a list of existing policies"
-                                                    />
-                                                </Col>
-                                            </Row>
-
-                                            <Row style={{ marginTop: "30px", minHeight: "77px" }}>
-                                                <Col sm="12" md="12" xs="12">
-                                                    <p style={{ fontSize: "17px", color: "#999", visibility: "hidden" }} id="existingTags">Tags: <br />
-                                                        <span style={{ fontSize: "15px", visibility: "hidden", marginLeft: "10px", color: "#657786" }} id="existingTags2"></span>
-                                                    </p>
-                                                </Col>
-                                            </Row>
-
-                                            <Row style={{ marginTop: "30px" }}>
-                                                <Col sm="12" md="12" xs="12">
-                                                    <span id="errorExisting" style={{ visibility: "hidden", color: "#f86c6b" }}>You need to pick from the list of existing policies!</span>
-                                                </Col>
-                                            </Row>
-
-                                            <Row style={{ marginTop: "10px" }}>
-                                                <Col sm="12" md="12" xs="12">
-                                                    <Button block outline color="success" onClick={() => this.confirmExisting()} style={{
-                                                        width: "150px", marginTop: "10px", borderWidth: "2px", float: "right"
                                                     }}>Confirm</Button>
                                                 </Col>
                                             </Row>
@@ -540,4 +429,4 @@ class PolicyForm extends Component {
     }
 }
 
-export default PolicyForm;
+export default NewPolicy;
