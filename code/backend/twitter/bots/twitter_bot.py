@@ -195,7 +195,7 @@ class TwitterBot(RabbitMessaging):
 				# to the most distant point)
 				tweets = self._twitter_api.search(q=keyword, lang=language, geocode="39.557191,-8.1,300km",
 				                                  tweet_mode="extended", count=100)
-				total_read_time += self.__interpret_tweets(tweets)
+				total_read_time += self.__interpret_tweets(tweets, max_depth=2)
 
 		logger.debug(f"Search completed in {total_read_time} seconds")
 
