@@ -41,6 +41,9 @@ import ReactTooltip from "react-tooltip";
 
 import * as loadingAnim from "../../assets/animations/squares_1.json";
 
+import NewPolicy from './NewPolicy';
+
+
 import {
   warningColor,
   primaryColor,
@@ -149,7 +152,8 @@ class Policies extends Component {
     processing: false,
 
     noPolicies: 0,
-    noActivePolicies: 0
+    noActivePolicies: 0,
+    addNew: false
   };
 
   async getPolicies(page) {
@@ -325,7 +329,6 @@ class Policies extends Component {
   }
 
   async componentDidMount() {
-
     await this.getPolicies(1, true)
     await this.getBotList(1)
     await this.getNumbers()
@@ -338,6 +341,18 @@ class Policies extends Component {
       this.changeSelected(this.state.policies[0])
     }
 
+    console.log(this.props.success)
+
+    if (this.props.success != null && this.props.success) {
+      toast.success('🏷️ New policy succesfully assigned!', {
+        position: "top-center",
+        autoClose: 2500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+    }
   }
 
 
@@ -483,9 +498,9 @@ class Policies extends Component {
     });
   }
 
-  handleOpenProfile(bot) {
+  handleOpenAdd() {
     this.setState({
-      bot: bot
+      addNew: true
     })
   }
 
@@ -520,6 +535,8 @@ class Policies extends Component {
 
       var name = document.getElementById("name").value
 
+      var success = false
+      var tempInfo = []
 
       await this.setState({
         processing: true
@@ -540,99 +557,123 @@ class Policies extends Component {
       }).then(response => {
         if (response.ok) return response.json();
         else {
-          throw new Error(response.status);
+          if (response.status === 403) {
+            return { error: response.json(), code: 403 }
+          } else if (response.status === 409) {
+            return { error: response.json(), code: 409 }
+          } else {
+            throw new Error(response.status);
+          }
         }
       }).then(data => {
-        var policy = data.data
-
-        document.getElementById("loadedTable").style.visibility = "hidden"
-        document.getElementById("loadingTable").style.display = ""
-
-        /////////////////////////////////////////////////////////////////////
-
-        if (this.state.policy != null) {
-          if (document.getElementsByName(this.state.policy[7].id) != null) {
-            for (var i = 0; i < 4; i++) {
-              document.getElementsByName(this.state.policy[7].id)[i].style.color = ""
-              document.getElementsByName(this.state.policy[7].id)[i].style.fontWeight = ""
-            }
+        if (data.code != null) {
+          if (data.code == 403) {
+            toast.error('There already exists a policy with that name!', {
+              position: "top-center",
+              autoClose: 7500,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true
+            });
+          } else {
+            toast.error('There already exists a policy with those tags! (Two policies can\'t share more than 1 tag in common)', {
+              position: "top-center",
+              autoClose: 7500,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true
+            });
           }
-        }
-
-        this.setState({ policy: null })
-
-        var tempInfo = []
-
-        tempInfo.push(policy['name'])
-        tempInfo.push(policy['filter'])
-
-        var tags = ""
-        policy.tags.forEach(tag => {
-          tags += tag
-          tags += ", "
-        })
-
-        tags = tags.substr(0, tags.length - 2)
-        if (tags.length > 30) {
-          tags = tags.substr(0, 30) + "..."
-        }
-
-        tempInfo.push(tags)
-
-        var bots = ""
-        policy.bots.forEach(bot => {
-          bots += "@" + bot.bot_name
-          bots += ", "
-        })
-
-        bots = bots.substr(0, bots.length - 2)
-        if (bots.length > 45) {
-          bots = bots.substr(0, 45) + "..."
-        } else if (bots.length == "") {
-          bots = <span style={{ color: "#999" }}><i class="fas fa-minus"></i></span>
-        }
-
-        tempInfo.push(bots)
-
-        if (policy.active) {
-          tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Active</Badge>)
-          tempInfo.push(
-            <Button block outline color="warning"
-              onClick={() =>
-                this.handleOpenDeactivate(policy)
-              }
-            >
-              <i class="fas fa-pause"></i>
-            </Button>
-          )
         } else {
-          tempInfo.push(<Badge pill color="danger" style={{ fontSize: "11px" }}>Inactive</Badge>)
-          tempInfo.push(
-            <Button block outline color="success"
-              onClick={() =>
-                this.handleOpenActivate(policy)
-              }
-            >
-              <i class="fas fa-play"></i>
-            </Button>
-          )
+          document.getElementById("loadedTable").style.visibility = "hidden"
+          document.getElementById("loadingTable").style.display = ""
+
+          /////////////////////////////////////////////////////////////////////
+
+          this.setState({ policy: null, policies: [] })
+
+          var policy = data.data
+
+          tempInfo.push(policy['name'])
+          tempInfo.push(policy['filter'])
+
+          var tags = ""
+          policy.tags.forEach(tag => {
+            tags += tag
+            tags += ", "
+          })
+
+          tags = tags.substr(0, tags.length - 2)
+          if (tags.length > 30) {
+            tags = tags.substr(0, 30) + "..."
+          }
+
+          tempInfo.push(tags)
+
+          var bots = ""
+          policy.bots.forEach(bot => {
+            bots += "@" + bot.bot_name
+            bots += ", "
+          })
+
+          bots = bots.substr(0, bots.length - 2)
+          if (bots.length > 45) {
+            bots = bots.substr(0, 45) + "..."
+          } else if (bots.length == "") {
+            bots = <span style={{ color: "#999" }}><i class="fas fa-minus"></i></span>
+          }
+
+          tempInfo.push(bots)
+
+          if (policy.active) {
+            tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Active</Badge>)
+            tempInfo.push(
+              <Button block outline color="warning"
+                onClick={() =>
+                  this.handleOpenDeactivate(policy)
+                }
+              >
+                <i class="fas fa-pause"></i>
+              </Button>
+            )
+          } else {
+            tempInfo.push(<Badge pill color="danger" style={{ fontSize: "11px" }}>Inactive</Badge>)
+            tempInfo.push(
+              <Button block outline color="success"
+                onClick={() =>
+                  this.handleOpenActivate(policy)
+                }
+              >
+                <i class="fas fa-play"></i>
+              </Button>
+            )
+          }
+
+          tempInfo.push(<Button block outline color="danger"
+            onClick={() =>
+              this.handleOpenDelete(policy)
+            }
+          >
+            <i class="fas fa-times"></i>
+          </Button>)
+
+          tempInfo.push(policy)
+
+          /////////////////////////////////////////////////////////////////////
+
+          success = true
         }
 
-        tempInfo.push(<Button block outline color="danger"
-          onClick={() =>
-            this.handleOpenDelete(policy)
-          }
-        >
-          <i class="fas fa-times"></i>
-        </Button>)
+      }).catch(error => {
+        console.log("error: " + error);
+        success = false
+      });
 
-        tempInfo.push(policy)
-
-        /////////////////////////////////////////////////////////////////////
-
-        this.getPolicies(this.state.curPage)
-
-        this.changeSelected(tempInfo)
+      if (success) {
+        await this.getPolicies(this.state.curPage)
+        await this.changeSelected(tempInfo)
 
         document.getElementById("loadedTable").style.visibility = ""
         document.getElementById("loadingTable").style.display = "none"
@@ -645,17 +686,7 @@ class Policies extends Component {
           pauseOnHover: true,
           draggable: true
         });
-
-        this.setState({
-          processing: false
-        })
-
-      }).catch(error => {
-        console.log("error: " + error);
-        this.setState({
-          processing: false,
-        })
-
+      } else {
         toast.error('Sorry, there was an error updating the policy! Please try again later.', {
           position: "top-center",
           autoClose: 7500,
@@ -664,7 +695,10 @@ class Policies extends Component {
           pauseOnHover: true,
           draggable: true
         })
-      });
+      }
+      this.setState({
+        processing: false,
+      })
     }
   }
 
@@ -859,7 +893,7 @@ class Policies extends Component {
 
   render() {
 
-    if (this.state.bot == null) {
+    if (!this.state.addNew) {
       if (!this.state.doneLoading) {
         return (
           <div className="animated fadeOut animated" style={{ width: "100%", marginTop: "10%" }}>
@@ -1056,8 +1090,8 @@ class Policies extends Component {
                 style={{
                   zIndex: 10,
                   position: "absolute",
-                  top: "45%",
-                  left: "45%",
+                  top: "10%",
+                  left: "42%",
                   display: "none"
                 }}>
                 <ReactLoading width={"150px"} type={"cubes"} color="#1da1f2" />
@@ -1287,6 +1321,8 @@ class Policies extends Component {
           </div >
         );
       }
+    } else {
+      return (<NewPolicy />)
     }
   }
 }
