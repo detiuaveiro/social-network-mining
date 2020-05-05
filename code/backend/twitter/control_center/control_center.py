@@ -30,7 +30,7 @@ handler.setFormatter(logging.Formatter(
 log.addHandler(handler)
 
 
-PROBABILITY_SEARCH_KEYWORD = 0.001
+PROBABILITY_SEARCH_KEYWORD = 0.0001
 
 
 class Control_Center(Rabbitmq):
