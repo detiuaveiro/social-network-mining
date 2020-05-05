@@ -47,6 +47,9 @@ QUERY_ROUTING_KEY = "queries.twitter"
 DATA_EXCHANGE = "twitter_data"
 DATA_ROUTING_KEY = "data.twitter"
 
+REST_API_EXCHANGE = "rest_api"
+REST_API_ROUTING_KEY = "rest_api.twitter"
+
 API_QUEUE = 'API'
 
 # -----------------------------------------------------------
