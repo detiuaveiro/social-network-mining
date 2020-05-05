@@ -819,6 +819,11 @@ def latest_activities(entries_per_page, page):
 		data = paginator_factory(activities, entries_per_page, page)
 		data['entries'] = [serializers.Log(activity).data for activity in data['entries']]
 
+		for entry in data['entries']:
+			entry['bot_screen_name'] = User.objects.get(user_id=int(entry['id_bot'])).screen_name
+			user_obj = User.objects.filter(user_id=int(entry['target_id']))
+			entry['target_screen_name'] = user_obj[0].screen_name if len(user_obj) > 0 else ''
+
 		return True, data, "Success obtaining latest bot's activities"
 
 	except Exception as e:
