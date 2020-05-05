@@ -759,3 +759,18 @@ def twitter_network():
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_network.__name__} -> {e}")
 		return False, None, f"Error obtaining full network"
+
+
+def entities_counter():
+	"""
+
+	Returns: Entities counter (bots,users,tweets) info saved on database wrapped on dictionary
+
+	"""
+	try:
+		data = neo4j.get_entities_stats()
+		return True, dict(list(data)), f"Success obtaining entities counter"
+
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {entities_counter.__name__} -> {e}")
+		return False, None, f"Error obtaining entities counter"

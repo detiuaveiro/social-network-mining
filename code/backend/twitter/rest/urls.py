@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework_swagger.views import get_swagger_view
 
-from api.views import users, bots, tweets, policies, network
+from api.views import users, bots, tweets, policies, network, graphics
 
 schema_view = get_swagger_view(title='TwitterBots API')
 
@@ -113,4 +113,8 @@ urlpatterns = [
 	url(r"^policies/update/(?P<policy_id>[0-9]+)/$", policies.update_policy, name="update_policy"),
 
 	url(r"^policies/number", policies.get_number_policies, name="number_policies"),
+
+	# Graphics
+	path('entities/counter', graphics.entities_counter, name="entities_counter")
+
 ]
