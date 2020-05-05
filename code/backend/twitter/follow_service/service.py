@@ -58,12 +58,34 @@ class Service(RabbitMessaging):
 		#  se o modelo já existe, não fazer nada e fazer logo return
 		wait(10)
 
+		if 1 == 1:          # send the tweets we have collected with this method
+			self.__send_message(data={'tweets': []},
+			                    message_type=messages_types.FollowServiceToServer.SAVE_TWEETS)
+
 	def __predict_follow_user(self, user_id: str, tweets: List[str]):
 		"""
-
-		:param user: user_id to predict if we want to follow or not
+		:param user_id: user_id to predict if we want to follow or not
 		:param tweets: list of tweets to give the ml model to predict
 		"""
+		# TODO -> verificar se um dos modelos dá mais que um dado treshold para os tweets recebidos e, caso isso ocorra,
+		#  enviar um pedido para o control center seguir esse user
+		wait(10)
+
+		if 1 == 1:              # to follow the user
+			self.__send_message(data={'user': user_id},
+			                    message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
+
+	def __verify_if_new_policies(self, policies: List[str]):
+		"""
+		:param policies: list of policies names to verify if we have models for them all
+		"""
+		# TODO -> verificar se temos modelos para todas as policies. se há alguma que não tenhamos, mandamos msg para o
+		#  control center a pedir as keywords para as respetivas
+		wait(10)
+
+		if 1 == 1:          # to send the message requesting the respective policies
+			self.__send_message(data={'policies': []},
+			                    message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
 
 	def run(self):
 		"""Service's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
@@ -83,6 +105,7 @@ class Service(RabbitMessaging):
 					self.__train_models(policies=task_params)
 				elif task_type == messages_types.ServerToFollowService.REQUEST_FOLLOW_USER:
 					self.__predict_follow_user(user_id=task_params['user'], tweets=task_params['tweets'])
+					self.__verify_if_new_policies(policies=task_params['policies'])
 				else:
 					logger.warning(f"Received unknown task type: {task_type}")
 			else:
