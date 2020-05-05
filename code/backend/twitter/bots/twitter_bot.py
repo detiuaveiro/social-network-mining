@@ -8,8 +8,8 @@ import tweepy
 from tweepy.error import TweepError
 from tweepy.models import User, Status
 
-import bots.messages_types as messages_types
-from bots.rabbit_messaging import RabbitMessaging
+import messages_types as messages_types
+from rabbit_messaging import RabbitMessaging
 from bots.settings import *
 from bots.utils import *
 from credentials import VHOST, LOG_EXCHANGE, LOG_ROUTING_KEY, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, \
@@ -421,8 +421,6 @@ class TwitterBot(RabbitMessaging):
 		try:
 			tweet: Status = self._twitter_api.update_status(**args)
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
-			# if reply_id:
-			#	self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
 
 			logger.debug("Tweet posted with success")
 		except TweepError as error:
