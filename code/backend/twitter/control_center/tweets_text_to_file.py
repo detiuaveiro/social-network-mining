@@ -49,9 +49,13 @@ class TweetsExporter:
 
 		results = self.__get_tweets()
 
+		inserted = []
 		with open(path, 'w') as file:
 			for result in results:
-				file.write(f"{result['text']}\n")
+				text = result['text']
+				if text not in inserted:
+					file.write(f"{text}\n")
+					inserted.append(text)
 
 	@staticmethod
 	def __create_dir():
