@@ -77,7 +77,7 @@ urlpatterns = [
 	url(r"^twitter/bots/(?P<bot_id>[0-9]+)/logs/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", bots.twitter_bot_logs,
 		name="twitter_bot_logs"),
 
-		url(r"^twitter/bots/(?P<bot_id>[0-9]+)/messages/$", bots.twitter_bot_messages, name="twitter_bot_messages"),
+	url(r"^twitter/bots/(?P<bot_id>[0-9]+)/messages/$", bots.twitter_bot_messages, name="twitter_bot_messages"),
 
 	# Tweets
 	path(r"twitter/tweets/all", tweets.twitter_tweets, name="twitter_tweets"),
@@ -112,6 +112,6 @@ urlpatterns = [
 
 	url(r"^policies/update/(?P<policy_id>[0-9]+)/$", policies.update_policy, name="update_policy"),
 
-	url(r"^policies/number", policies.get_number_policies, name="number_policies")
+	url(r"^policies/number", policies.get_number_policies, name="number_policies"),
 
 ]
