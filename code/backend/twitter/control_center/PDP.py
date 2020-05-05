@@ -34,7 +34,7 @@ BOT_FOLLOWS_USER = 0.3
 BOT_RETWEETED_TWEET = 0.2
 BOT_LIKED_TWEET = 0.3
 
-NUMBER_TWEETS_FOLLOW_DECISION = 3
+NUMBER_TWEETS_FOLLOW_DECISION = 5
 
 LIMIT_REPLY_LOGS_QUANTITY = 1000
 
@@ -408,6 +408,7 @@ class PDP:
 			"target_id": data["tweet_id"]
 		})
 		if not bot_logs["success"] or bot_logs['data']:
+			log.info(f"Request to reply to tweet <{data['tweet_id']}> denied because the bot already replied to this tweet")
 			return 0
 
 		heuristic_value = 0
@@ -420,11 +421,11 @@ class PDP:
 		# We then check if the bot has liked the tweet
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
-			"action": log_actions.TWEET_LIKE,
+			"action": log_actions.RETWEET_REQ_ACCEPT,
 			"target_id": data["tweet_id"]
 		})
 		if bot_logs["success"]:
-			log.info("Bot already liked the tweet")
+			log.info(f"Bot already liked the tweet <{data['tweet_id']}>")
 			heuristic_value = heuristic_value + BOT_LIKED_TWEET if heuristic_value < 0.7 else 1
 
 		# Finally check if the bot already replied to the user recently
@@ -449,6 +450,7 @@ class PDP:
 						heuristic_value += PENALTY_REPLIED_USER_RECENTLY
 						break
 
+		log.info(f"Request to reply to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
 
 	def analyze_follow_user(self, data):
@@ -483,7 +485,7 @@ class PDP:
 		})
 
 		tweets = data['tweets']
-		tweets = random.sample(tweets, min(len(tweets), NUMBER_TWEETS_FOLLOW_DECISION))
+		tweets = sorted(tweets, key=lambda x: -len(x))[:min(len(tweets), NUMBER_TWEETS_FOLLOW_DECISION)]
 
 		user_description = user['description']
 		tweets_text = [t['full_text'] for t in tweets]

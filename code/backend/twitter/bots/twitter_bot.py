@@ -206,7 +206,7 @@ class TwitterBot(RabbitMessaging):
 		for tweet in tweets:
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
 
-			total_read_time += virtual_read_wait(tweet.text)
+			total_read_time += virtual_read_wait(tweet.full_text if 'full_text' in tweet._json else tweet.text)
 
 			# If it's our own tweet, we don't really need to do any logic
 			if self.user.id == tweet.user.id:
@@ -363,7 +363,7 @@ class TwitterBot(RabbitMessaging):
 		tweet: Status = self.__find_tweet_by_id(tweet_id)
 		if tweet:
 			# read the tweet
-			read_time = virtual_read_wait(tweet.text)
+			read_time = virtual_read_wait(tweet.full_text if 'full_text' in tweet._json else tweet.text)
 			logger.debug(f"Read Tweet in {read_time}")
 			try:
 				if tweet.favorited:
@@ -385,7 +385,7 @@ class TwitterBot(RabbitMessaging):
 		tweet: Status = self.__find_tweet_by_id(tweet_id)
 		if tweet:
 			# read the tweet
-			read_time = virtual_read_wait(tweet.text)
+			read_time = virtual_read_wait(tweet.full_text if 'full_text' in tweet._json else tweet.text)
 			logger.debug(f"Read Tweet in {read_time}")
 
 			try:

@@ -250,7 +250,7 @@ class Control_Center(Rabbitmq):
 			"user_id_str": data['data']['user']['id_str'],
 			"tweet_id": data['data']['id'],
 			"tweet_id_str": data['data']['id_str'],
-			"tweet_text": data['data']['text'],
+			"tweet_text": data['data']['full_text'] if 'full_text' in data['data'] else data['data']['text'],
 			"tweet_entities": data['data']['entities']
 		})
 
@@ -300,7 +300,7 @@ class Control_Center(Rabbitmq):
 			"user_id_str": data['data']['user']['id_str'],
 			"tweet_id": data['data']['id'],
 			"tweet_id_str": data['data']['id_str'],
-			"tweet_text": data['data']['text'],
+			"tweet_text": data['data']['full_text'] if 'full_text' in data['data'] else data['data']['text'],
 			"tweet_entities": data['data']['entities']
 		})
 
@@ -353,7 +353,7 @@ class Control_Center(Rabbitmq):
 			"tweet_id_str": tweet["id_str"],
 			"user_id": tweet['user']['id'],
 			"user_id_str": tweet["user"]["id_str"],
-			"tweet_text": tweet['text'],
+			"tweet_text": data['data']['full_text'] if 'full_text' in data['data'] else data['data']['text'],
 			"tweet_entities": tweet['entities'],
 			"tweet_in_reply_to_status_id_str": tweet['in_reply_to_status_id_str'],
 			"tweet_in_reply_to_user_id_str": tweet['in_reply_to_user_id_str'],
@@ -372,15 +372,7 @@ class Control_Center(Rabbitmq):
 			# remove urls, tags from text and emojis
 			prepared_text = tweet_to_simple_text(tweet['text'] if 'full_text' not in tweet else tweet['full_text'])
 
-			# portuguese text to english text
-			text_en = self.translator.from_pt_to_en(prepared_text)
-
-			# generate a response
-			reply_text = None
-			if text_en:
-				reply_text = self.replier.generate_response(text_en)
-				reply_text = self.translator.from_en_to_pt(reply_text)
-
+			reply_text = self.replier.generate_response(prepared_text)
 			if reply_text:
 				log.info(f"Sending reply text <{reply_text}>")
 

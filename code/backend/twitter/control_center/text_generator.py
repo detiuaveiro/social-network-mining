@@ -70,8 +70,6 @@ class ParlaiReplier:
 	"""
 
 	def __init__(self, host, port):
-		self.socket = zmq.Context().socket(zmq.REQ)
-		self.socket.setsockopt(zmq.LINGER, 1)
 		self.host = f"tcp://{host}:{port}"
 
 	def generate_response(self, text: str) -> str:
@@ -85,10 +83,12 @@ class ParlaiReplier:
 		}
 
 		try:
-			self.socket.connect(self.host)
-			self.socket.send_unicode(json.dumps(message))
-			reply = json.loads(self.socket.recv_unicode())
-			self.socket.close()
+			socket = zmq.Context().socket(zmq.REQ)
+			socket.setsockopt(zmq.LINGER, 1)
+			socket.connect(self.host)
+			socket.send_unicode(json.dumps(message))
+			reply = json.loads(socket.recv_unicode())
+			socket.close()
 
 			logger.info(f"Got response <{reply}> form ParlAI for the text <{text}>")
 
