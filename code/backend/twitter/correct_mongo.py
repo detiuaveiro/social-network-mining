@@ -9,7 +9,7 @@ mongo = MongoAPI()
 
 def update_mongo(check_prints):
 
-	list_of_tweets = mongo.search("tweets", {"user": {"$type": "long"}}, ["id_str", "user"])
+	list_of_tweets = mongo.search("tweets", {"$or": [{"user": {"$type": "long"}}, {"user": {"$type": "number"}}]}, ["id_str", "user"])
 	if check_prints:
 		print(list_of_tweets)
 
