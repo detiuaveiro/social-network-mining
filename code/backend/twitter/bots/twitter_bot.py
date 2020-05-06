@@ -1,6 +1,6 @@
 ## @package twitter.bots
 # coding: UTF-8
-
+import random
 import logging
 from typing import List, Union
 
@@ -55,7 +55,6 @@ class TwitterBot(RabbitMessaging):
 	@staticmethod
 	def __get_tweet_dict(tweet: Status):
 		tweet_dict = tweet._json.copy()
-		# tweet_dict['user'] = tweet_dict['user']['id']
 		return tweet_dict
 
 	def __send_message(self, data, message_type: messages_types.BotToServer, exchange):
@@ -393,7 +392,6 @@ class TwitterBot(RabbitMessaging):
 					retweet: Status = self._twitter_api.retweet(id=tweet.id)
 					logger.debug(f"Retweet: {retweet}")
 					self.__send_tweet(retweet, messages_types.BotToServer.SAVE_TWEET)
-					# self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_RETWEETED)
 			except Exception as error:
 				logger.exception(f"Error <{error}> retweeting tweet with id <{tweet_id}>: ")
 
@@ -418,8 +416,6 @@ class TwitterBot(RabbitMessaging):
 		try:
 			tweet: Status = self._twitter_api.update_status(**args)
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
-			# if reply_id:
-			#	self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_REPLIED)
 
 			logger.debug("Tweet posted with success")
 		except TweepError as error:
