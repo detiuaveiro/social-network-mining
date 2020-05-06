@@ -144,6 +144,26 @@ Then use the command to start the web app on port 3000:
  $ docker run --env-file ~/PI_2020/env_vars/watchtower.env -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock -v ~/.docker/config.json:/config.json containrrr/watchtower
  ```
 
+ - For the parlai service:
+   1. First, we have must have a copy of the [parlai repository](https://github.com/facebookresearch/ParlAI.git) on the server where we want to deploy the service. Then, we must run the command:
+      ```bash
+      $ python examples/interactive.py -m transformer/polyencoder \
+       -mf zoo:pretrained_transformers/model_poly/model \
+       --encode-candidate-vecs true \
+       --eval-candidates fixed  \
+       --fixed-candidates-path data/models/pretrained_transformers/convai_trainset_cands.txt
+      ```
+    - **ATTENTION:** you must stop this process once it begins to retrain with the given candidates (we just did this step to download an already trained model).
+   2. The next step is to copy the `tweets.txt` with the tweets candidates to the directory `ParlAI/data/models/pretrained_transformers`. This file can be obtained on the directory `code/backend/twitter/tweets_text/` once you run:
+      ```bash
+      $ python start_cc.py --export_tweets_text    # script in the directory code/backend/twitter of this repository. you also must run it in a virtual environment with the requirements in requirements_cc.txt installed
+      ```
+   3. Then, we have to copy the Dockerfile to build the correspondent image to the server. This can be found on the directory `code/backend/twitter/docker/parlai` and you must place it in the `ParlAI/` directory on the server.
+   4. At last, you have to build the docker image and to create the correspondent container:
+      ```bash
+      $ docker build -t parlai .
+      ```
+
 ## BDS AUTOMATIC IMPORT
 ```bash
 cd scripts
