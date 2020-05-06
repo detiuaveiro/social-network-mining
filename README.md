@@ -24,6 +24,7 @@ $ npm install react-paginate --save
 $ npm i @material-ui/lab
 $ npm i react-lottie react-fade-in
 $ npm i react-tooltip
+$ npm install react-minimal-pie-chart
 ```
 
 Then use the command to start the web app on port 3000:
