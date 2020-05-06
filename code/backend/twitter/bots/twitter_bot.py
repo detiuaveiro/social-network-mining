@@ -36,17 +36,18 @@ class TwitterBot(RabbitMessaging):
 	def __repr__(self):
 		return f"<TwitterBot id={self._id}, api={self._twitter_api}>"
 
-	def __send_error_suspended_log(self, error: TweepError):
+	def __send_error_suspended_log(self, error: TweepError, target_id: str):
 		logger.exception(f"TweepyError <{error}> with code=<{error.api_code}> and reason=<{error.reason}>: ")
 
 		if error.api_code in ACCOUNT_SUSPENDED_ERROR_CODES:
 			data = {
-				"type": messages_types.BotToServer.EVENT_USER_SUSPENDED,
+				"type": messages_types.BotToServer.EVENT_ERROR,
 				"bot_id": self._id,
 				"timestamp": current_time(),
 				"data": {
 					"code": error.api_code,
-					"msg": error.reason
+					"msg": error.reason,
+					"target_id": target_id
 				},
 			}
 
@@ -157,7 +158,10 @@ class TwitterBot(RabbitMessaging):
 		"""
 		logger.debug(f"Getting timeline tweets for User with id={user.id}")
 		if user.id == self.user.id:
-			return list(self._twitter_api.home_timeline(**kwargs))
+			try:
+				return list(self._twitter_api.home_timeline(**kwargs))
+			except TweepError as error:
+				self.__send_error_suspended_log(error, str(user.id))
 		return list(user.timeline(**kwargs))
 
 	def __read_timeline(self, user: User, jump_users: bool = False, max_depth: int = 3, current_depth: int = 0):
@@ -322,12 +326,17 @@ class TwitterBot(RabbitMessaging):
 		:param user_id: id of the user we want to send to the control center
 		"""
 		logger.info(f"Getting user of id {user_id}")
+		user = None
 
 		try:
-			self.__send_user(self._twitter_api.get_user(user_id), messages_types.BotToServer.SAVE_USER)
+			user = self._twitter_api.get_user(user_id)
 		except TweepError as error:
-			logger.exception(f"Error <{error}> finding user with id <{user_id}>: ")
-			return None
+			self.__send_error_suspended_log(error, str(user_id))
+
+		if user:
+			self.__send_user(self._twitter_api.get_user(user_id), messages_types.BotToServer.SAVE_USER)
+		else:
+			logger.warning(f"Could not find user with id <{user_id}>")
 
 	def __get_tweet_by_id(self, tweet_id: int):
 		"""
@@ -336,7 +345,17 @@ class TwitterBot(RabbitMessaging):
 		"""
 
 		logger.info(f"Getting tweet of id {tweet_id}")
-		self.__send_tweet(self.__find_tweet_by_id(tweet_id), messages_types.BotToServer.SAVE_TWEET)
+		tweet = None
+
+		try:
+			tweet = self.__find_tweet_by_id(tweet_id)
+		except TweepError as error:
+			self.__send_error_suspended_log(error, str(tweet_id))
+
+		if tweet:
+			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
+		else:
+			logger.warning(f"Could not find tweet with id <{tweet_id}>")
 
 	def __find_tweet_by_id(self, tweet_id: int) -> Union[Status, None]:
 		"""Function to find and return a tweet for a given id
@@ -390,7 +409,7 @@ class TwitterBot(RabbitMessaging):
 				else:
 					logger.info(f"Retweeting Tweet with id <{tweet.id}>")
 					retweet: Status = self._twitter_api.retweet(id=tweet.id)
-					logger.debug(f"Retweet: {retweet}")
+					logger.debug(f"Retweet with id <{retweet.id}>")
 					self.__send_tweet(retweet, messages_types.BotToServer.SAVE_TWEET)
 			except Exception as error:
 				logger.exception(f"Error <{error}> retweeting tweet with id <{tweet_id}>: ")
