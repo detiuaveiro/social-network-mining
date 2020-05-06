@@ -153,8 +153,8 @@ class Users extends Component {
           var tempInfo = []
           tempInfo.push("@" + user.screen_name);
           tempInfo.push("" + user.name);
-          tempInfo.push("" + user.followers_count);
           tempInfo.push("" + user.friends_count);
+          tempInfo.push("" + user.followers_count);
 
           tempInfo.push(
             <Button block outline color="primary"

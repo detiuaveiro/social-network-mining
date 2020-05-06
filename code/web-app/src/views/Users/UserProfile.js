@@ -1185,11 +1185,11 @@ class UserProfile extends Component {
 
                                             <div class="row" style={{ marginTop: "20px" }}>
                                                 <div class="col-sm-12 offset-md-3 col-md-3">
-                                                    <h6><b>{this.state.userInfo.followers_count}</b> <br />following</h6>
+                                                    <h6><b>{this.state.userInfo.friends_count}</b> <br />following</h6>
                                                 </div>
 
                                                 <div class="col-sm-12 col-md-3">
-                                                    <h6><b>{this.state.userInfo.friends_count}</b> <br />followers</h6>
+                                                    <h6><b>{this.state.userInfo.followers_count}</b> <br />followers</h6>
                                                 </div>
                                             </div>
                                         </CardBody>

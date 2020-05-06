@@ -14,7 +14,7 @@ from wrappers.rabbitmq_wrapper import Rabbitmq
 
 from control_center.policies_types import PoliciesTypes
 from control_center.PEP import PEP
-from bots.messages_types import ServerToBot, BotToServer
+from messages_types import ServerToBot, BotToServer
 
 import log_actions
 import neo4j_labels

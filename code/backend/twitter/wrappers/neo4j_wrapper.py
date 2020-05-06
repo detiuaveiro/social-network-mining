@@ -974,6 +974,24 @@ class Neo4jAPI:
 			# Caller for transactional unit of work
 			return session.write_transaction(self.__node_type, data)
 
+	def __get_entities_stats(self, tx):
+		log.debug("GETTING ENTITIES STATS")
+
+		query = "match (b:Bot) with count(b) as counter\
+			return 'Bot' as label,counter\
+			union all\
+			match (t:Tweet) with count(t) as counter\
+			return 'Tweet' as label,counter\
+			union all\
+			match (u:User) with count(u) as counter\
+			return 'User' as label,counter"
+
+		return tx.run(query)
+
+	def get_entities_stats(self):
+		with self.driver.session() as session:
+			return session.write_transaction(self.__get_entities_stats)
+
 
 if __name__ == "__main__":
 	neo = Neo4jAPI()

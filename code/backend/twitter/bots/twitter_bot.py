@@ -8,8 +8,8 @@ import tweepy
 from tweepy.error import TweepError
 from tweepy.models import User, Status
 
-import bots.messages_types as messages_types
-from bots.rabbit_messaging import RabbitMessaging
+import messages_types as messages_types
+from rabbit_messaging import RabbitMessaging
 from bots.settings import *
 from bots.utils import *
 from credentials import VHOST, LOG_EXCHANGE, LOG_ROUTING_KEY, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, \

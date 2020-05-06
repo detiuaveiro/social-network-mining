@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework_swagger.views import get_swagger_view
 
-from api.views import users, bots, tweets, policies, network
+from api.views import users, bots, tweets, policies, network, graphics
 
 schema_view = get_swagger_view(title='TwitterBots API')
 
@@ -113,4 +113,19 @@ urlpatterns = [
 	url(r"^policies/update/(?P<policy_id>[0-9]+)/$", policies.update_policy, name="update_policy"),
 
 	url(r"^policies/number", policies.get_number_policies, name="number_policies"),
+
+	# Graphics
+	path('entities/counter', graphics.entities_counter, name="entities_counter"),
+
+	url(r'^graphs/latest_tweets/(?P<counter>[0-9]+)$', graphics.latest_tweets, name="latest_tweets"),
+	url(r'^graphs/latest_tweets/(?P<counter>[0-9]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
+		graphics.latest_tweets, name="latest_tweets"),
+
+	path('graphs/latest_activities/daily/', graphics.latest_activities_daily, name="latest_activities_daily"),
+	url(r'^graphs/latest_activities/daily/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
+		graphics.latest_activities_daily, name="latest_activities_daily"),
+
+	url(r'^graphs/latest_activities/(?P<counter>[0-9]+)/$', graphics.latest_activities, name="latest_activities"),
+	url(r'^graphs/latest_activities/(?P<counter>[0-9]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
+		graphics.latest_activities, name="latest_activities"),
 ]

@@ -40,3 +40,21 @@ class BotToServer(IntEnum):
 
 	def __str__(self):
 		return self.name
+
+
+class FollowServiceToServer(IntEnum):
+	REQUEST_POLICIES = 0
+	SAVE_TWEETS = 1
+	FOLLOW_USER = 2
+
+	def __str__(self):
+		return self.name
+
+
+class ServerToFollowService(IntEnum):
+	POLICIES_KEYWORDS = 0
+	REQUEST_FOLLOW_USER = 1
+
+	def __str__(self):
+		return self.name
+
