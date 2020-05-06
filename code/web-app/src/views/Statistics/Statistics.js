@@ -18,10 +18,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ReactLoading from "react-loading";
 import Pagination from '@material-ui/lab/Pagination';
 
-//import { PieChart } from 'react-minimal-pie-chart';
-
-import { PieChart, Pie, Sector, Cell } from 'recharts';
-
+import { PieChart } from 'react-minimal-pie-chart';
 
 import FadeIn from "react-fade-in";
 import Lottie from "react-lottie";
@@ -33,6 +30,7 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
 import * as loadingAnim from "../../assets/animations/squares_1.json";
+import CardFooter from '../../components/Card/CardFooter';
 
 
 class Statistics extends Component {
@@ -49,10 +47,49 @@ class Statistics extends Component {
         preserveAspectRatio: "xMidYMid slice"
       }
     },
+
+    counter: {
+      noUsers: 0,
+      noBots: 0,
+      noTweets: 0
+    }
   };
+
+  async getEntitiesCount() {
+    await fetch(baseURL + "entities/counter", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+        data = data.data
+
+
+        this.setState({
+          counter: {
+            noUsers: data.User,
+            noBots: data.Bot,
+            noTweets: data.Tweet
+          }
+        })
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        error: true,
+      })
+    });
+  }
 
 
   async componentDidMount() {
+    await this.getEntitiesCount()
     this.setState({
       doneLoading: true
     })
@@ -60,6 +97,7 @@ class Statistics extends Component {
 
 
   // Methods //////////////////////////////////////////////////////////
+
 
   /////////////////////////////////////////////////////////////////////
 
@@ -88,85 +126,6 @@ class Statistics extends Component {
         </Container>
       )
     } else {
-      /*
-      <PieChart
-        style={{
-          fontFamily:
-            '"Cabin", -apple-system, Helvetica, Arial, sans-serif',
-          fontSize: '6px',
-        }}
-
-        label={({ dataEntry }) => dataEntry.value}
-        labelPosition={50}
-        labelStyle={{
-          fill: '#fff',
-          opacity: 0.75,
-          pointerEvents: 'none',
-        }}
-
-        animate
-        animationDuration={500}
-        animationEasing="ease-out"
-
-        center={[
-          50,
-          50
-        ]}
-
-        data={[
-          {
-            color: '#f77737',
-            title: 'Users',
-            value: 10
-          },
-          {
-            color: '#63c2de',
-            title: 'Tweets',
-            value: 15
-          },
-          {
-            color: '#833ab4',
-            title: 'Bots',
-            value: 20
-          }
-        ]}
-
-        lengthAngle={360}
-        lineWidth={100}
-        paddingAngle={0}
-        radius={40}
-
-        startAngle={0}
-        viewBoxSize={[
-          100,
-          100
-        ]}
-      />
-      */
-
-      const data = [
-        { name: 'Users', value: 400 },
-        { name: 'Tweets', value: 300 },
-        { name: 'Bots', value: 300 },
-      ];
-
-      const COLORS = ['#f77737', '#63c2de', '#833ab4'];
-
-      const RADIAN = Math.PI / 180;
-      const renderCustomizedLabel = ({
-        cx, cy, midAngle, innerRadius, outerRadius, percent, index,
-      }) => {
-        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-        const x = cx + radius * Math.cos(-midAngle * RADIAN);
-        const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-        return (
-          <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-            {`${(percent * 100).toFixed(0)}%`}
-          </text>
-        );
-      };
-
       return (
         <div className="animated fadeIn">
 
@@ -238,24 +197,75 @@ class Statistics extends Component {
                     }} > Recorded Entities</h4>
                   </CardHeader>
                   <CardBody>
-                    <PieChart width={400} height={400}>
-                      <Pie
-                        data={data}
-                        cx={200}
-                        cy={200}
-                        labelLine={false}
-                        label={renderCustomizedLabel}
-                        outerRadius={80}
-                        
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {
-                          data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)
-                        }
-                      </Pie>
-                    </PieChart>
+                    <div class="row" style={{ maxHeight: "350px" }}>
+                      <PieChart
+                        style={{
+                          fontFamily:
+                            '"Cabin", -apple-system, Helvetica, Arial, sans-serif',
+                          fontSize: '6px',
+                          maxHeight: "350px"
+                        }}
+
+                        label={({ dataEntry }) => dataEntry.value}
+                        labelPosition={50}
+                        labelStyle={{
+                          fill: '#fff',
+                          opacity: 0.75,
+                          pointerEvents: 'none',
+                        }}
+
+                        animate
+                        animationDuration={500}
+                        animationEasing="ease-out"
+
+                        center={[
+                          50,
+                          50
+                        ]}
+
+                        data={[
+                          {
+                            color: '#f77737',
+                            title: 'Users',
+                            value: this.state.counter.noUsers
+                          },
+                          {
+                            color: '#63c2de',
+                            title: 'Tweets',
+                            value: this.state.counter.noTweets
+                          }
+                        ]}
+
+                        lengthAngle={360}
+                        lineWidth={100}
+                        paddingAngle={0}
+                        radius={40}
+
+                        startAngle={0}
+                        viewBoxSize={[
+                          100,
+                          100
+                        ]}
+                      />
+                    </div>
+
+                    <Row style={{ marginLeft: "37%", width: "100%" }}>
+                      <Col xs="12" sm="12" md="2">
+                        <Row>
+                          <h5><i class="fas fa-square" style={{ color: "#f77737" }}></i> Users</h5>
+                        </Row>
+                      </Col>
+                      <Col xs="12" sm="12" md="2">
+                        <Row>
+                          <h5><i class="fas fa-square" style={{ color: "#63c2de" }}></i> Tweets</h5>
+                        </Row>
+                      </Col>
+                    </Row>
                   </CardBody>
+
+                  <CardFooter>
+                    <h5><i class="fas fa-circle fa-sm" style={{ color: "#4dbd74" }}></i> {this.state.counter.noBots} Bots</h5>
+                  </CardFooter>
                 </Card>
               </Col>
             </Row>
