@@ -154,7 +154,7 @@ class TwitterBot(RabbitMessaging):
 			- since_id: Returns only statuses with an ID greater than (that is, more recent than) the specified ID
 			- max_id: Returns only statuses with an ID less than (that is, older than) or equal to the specified ID
 			- count: Specifies the number of statuses to retrieve
-			- page: Specifies the page of results to retrieve. Note: there are pagination limits
+			- page: Specifies the page of results to retrieve. Note: there are pagination limits 
 		"""
 		logger.debug(f"Getting timeline tweets for User with id={user.id}")
 		if user.id == self.user.id:
