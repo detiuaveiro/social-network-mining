@@ -61,7 +61,7 @@ urlpatterns = [
 
 	url(r"^twitter/users/(?P<user_id>[0-9]+)/stats/grouped/(?P<group_type>(?:year)|(?:month)|(?:day))/$",
 		users.twitter_user_stats_grouped, name="twitter_user_stats_grouped"),
-	url(r"twitter/users/(?P<id>[0-9]+)/type/$", users.twitter_users_type, name="users.twitter_users_type"),
+	url(r"twitter/users/(?P<user_id>[0-9]+)/type/$", users.twitter_users_type, name="users.twitter_users_type"),
 
 	# Network
 	path("twitter/network", network.twitter_network, name="twitter_network"),
