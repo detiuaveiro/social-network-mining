@@ -364,7 +364,7 @@ class BotProfile extends Component {
                     tempInfo.push(activity.action)
 
                     if (activity.target_screen_name == null || activity.target_screen_name == "") {
-                        tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(activity.target_id)}>#{activity.target_id}</span>);
+                        tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenTweet(activity.target_id)}>#{activity.target_id}</span>);
                     } else {
                         tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(activity.target_id)}>@{activity.target_screen_name}</span>);
                     }
@@ -746,6 +746,7 @@ class BotProfile extends Component {
             }).then(data => {
                 if (data != null && data != {}) {
                     data = data.data
+                    console.log(data)
 
                     this.setState({
                         modal: true,
@@ -755,7 +756,7 @@ class BotProfile extends Component {
                             noPage: this.state.tweets.noPage,
                             curPage: this.state.tweets.curPage,
                             latestTweet: this.state.tweets.latestTweet,
-                            tweet: data[0]
+                            tweet: data
                         }
                     });
 
@@ -1603,7 +1604,7 @@ class BotProfile extends Component {
                                 }}>
                                 <Table
                                     tableHeaderColor="primary"
-                                    tableHead={["Type", "User", "Date"]}
+                                    tableHead={["Type", "Target", "Date"]}
                                     tableData={this.state.activities.data}
                                 />
 

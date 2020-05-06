@@ -491,6 +491,7 @@ class UserProfile extends Component {
             }).then(data => {
                 if (data != null && data != {}) {
                     data = data.data
+                    console.log(data)
     
                     this.setState({
                         modal: true,
@@ -500,7 +501,7 @@ class UserProfile extends Component {
                             noPage: this.state.tweets.noPage,
                             curPage: this.state.tweets.curPage,
                             latestTweet: this.state.tweets.latestTweet,
-                            tweet: data[0]
+                            tweet: data
                         }
                     });
     
