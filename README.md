@@ -162,6 +162,7 @@ Then use the command to start the web app on port 3000:
    4. At last, you have to build the docker image and to create the correspondent container:
       ```bash
       $ docker build -t parlai .
+      $ docker container run --network host --detach --name parlai parlai
       ```
 
 ## BDS AUTOMATIC IMPORT
