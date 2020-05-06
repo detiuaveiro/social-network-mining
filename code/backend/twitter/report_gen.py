@@ -110,35 +110,25 @@ class Report:
 
 		return result
 
-	def create_report(self, match: dict, params: dict, limit: int = None, export='csv'):
-		query = f"MATCH r={self.__node_builder(match['start'])}" \
-				f"-{self.__relation_builder(match['rel'])}" \
-				f"->{self.__node_builder(match['end'])} " \
-				f"return r"
-		logger.info(query)
+	def create_report(self, query: str, params: dict, export='csv'):
+		#query = f"MATCH r={self.__node_builder(match['start'])}" \
+		#		f"-{self.__relation_builder(match['rel'])}" \
+		#		f"->{self.__node_builder(match['end'])} " \
+		#		f"return r"
+		#logger.info(query)
 
-		if limit:
-			query += f" limit {limit}"
+		#if limit:
+		#	query += f" limit {limit}"
 
 		result = []
 
 		query_result = self.neo.export_query(query, rel_node_properties=True)
 
-		#logger.debug(query_result)
+		self.exporter.export_json(query_result)
 
 		start = time()
 
-		query_tweets_start = []
-		query_tweets_interm = []
-		query_tweets_end = []
-
-		query_bots_start = []
-		query_bots_interm = []
-		query_bots_end = []
-
-		query_user_start = []
-		query_user_interm = []
-		query_user_end = []
+		query_for_mongo = params.copy()
 
 		keep_track_places = {}
 
@@ -150,7 +140,7 @@ class Report:
 
 			# Add the detailed start node
 			node_start = relations[0]["start"]
-			self.__query_builder(query_tweets_start, query_bots_start, query_user_start, node_start)
+			self.__query_builder(query_for_mongo, node_start)
 			keep_track_places[node_start["properties"]["id"]] = (row_index, "start")
 			relation["start"] = {param: None for param in params['start'][node_start["labels"][0]]}
 
@@ -219,11 +209,7 @@ class Report:
 
 if __name__ == '__main__':
 	rep = Report()
-	query = {
-		'start': {},
-		'rel': {},
-		'end': {}
-	}
+	query = "MATCH r=(a: User) - [*2..4] -> (b) - [*..4] -> (c: Tweet) return r,a,b,c limit 10"
 	params = {
 		'start': {
 			'Tweet': ['retweet_count', 'favourite_count', 'text'],
