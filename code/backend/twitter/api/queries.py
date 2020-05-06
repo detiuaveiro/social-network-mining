@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.db.models import Max, Count, Sum, Q
 from api.models import *
 import api.serializers as serializers
@@ -29,7 +29,7 @@ def twitter_users_count():
 	try:
 		all_users_count = User.objects.all().count()
 
-		return True, {'count':  all_users_count}, "Success obtaining the number of users"
+		return True, {'count': all_users_count}, "Success obtaining the number of users"
 
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_users_count.__name__} -> {e}")
@@ -775,3 +775,88 @@ def entities_counter():
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {entities_counter.__name__} -> {e}")
 		return False, None, f"Error obtaining entities counter"
+
+
+def latest_tweets(counter, entries_per_page, page):
+	"""
+
+	Args:
+		counter: Number of tweets to return
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: Latest tweets wrapped on dictionary divided by pages
+	if entries_per_page and page are both None then all latest tweets  will be returned
+	"""
+	try:
+		tweets = Tweet.objects.all().order_by("-created_at")[:counter].values()
+
+		data = paginator_factory_non_queryset(tweets, entries_per_page, page)
+		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]
+
+		return True, data, f"Success obtaining latest tweets"
+
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_tweets.__name__} -> {e}")
+		return False, None, f"Error obtaining latest tweets"
+
+
+def latest_activities_daily(entries_per_page, page):
+	"""
+
+	Args:
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: All bots's daily activities wrapped on dictionary divided by pages
+	if entries_per_page and page are both None then all bots's daily activities  will be returned
+
+	"""
+	try:
+		activities = Log.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))
+										& Q(timestamp__lte=datetime.now())).order_by("-timestamp")
+
+		data = paginator_factory(activities, entries_per_page, page)
+		data['entries'] = [serializers.Log(activity).data for activity in data['entries']]
+
+		for entry in data['entries']:
+			entry['bot_screen_name'] = User.objects.get(user_id=int(entry['id_bot'])).screen_name
+			user_obj = User.objects.filter(user_id=int(entry['target_id']))
+			entry['target_screen_name'] = user_obj[0].screen_name if len(user_obj) > 0 else ''
+
+		return True, data, "Success obtaining latest bot's activities daily"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_activities_daily.__name__} -> {e}")
+		return False, None, "Error obtaining latest bot's activities daily"
+
+
+def latest_activities(counter, entries_per_page, page):
+	"""
+	Args:
+		counter: Number of tweets to return
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: All bots's activities limited by counter wrapped on dictionary divided by pages
+	if entries_per_page and page are both None then aAll bots's activities limited by counter will be returned
+
+	"""
+	try:
+		activities = Log.objects.all().order_by("-timestamp")[:counter].values()
+
+		data = paginator_factory_non_queryset(activities, entries_per_page, page)
+		data['entries'] = [serializers.Log(activity).data for activity in data['entries']]
+
+		for entry in data['entries']:
+			entry['bot_screen_name'] = User.objects.get(user_id=int(entry['id_bot'])).screen_name
+			user_obj = User.objects.filter(user_id=int(entry['target_id']))
+			entry['target_screen_name'] = user_obj[0].screen_name if len(user_obj) > 0 else ''
+
+		return True, data, "Success obtaining latest bot's activities"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_activities.__name__} -> {e}")
+		return False, None, "Error obtaining latest bot's activities"

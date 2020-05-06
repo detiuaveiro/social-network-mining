@@ -2,7 +2,7 @@
 
 import os
 
-from bots.rabbit_messaging import MessagingSettings
+from rabbit_messaging import MessagingSettings
 import tweepy
 from bots.twitter_bot import TwitterBot
 from credentials import TASKS_EXCHANGE, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, LOG_EXCHANGE, LOG_ROUTING_KEY, \
