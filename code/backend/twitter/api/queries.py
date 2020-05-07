@@ -862,7 +862,7 @@ def latest_activities(counter, entries_per_page, page):
 		return False, None, "Error obtaining latest bot's activities"
 
 
-def __get_count_stats(types, action=None):
+def __get_count_stats(types, accum, action=None):
 	query = "Log.objects"
 	if action:
 		query += f".filter(action='{action}')"
@@ -872,23 +872,21 @@ def __get_count_stats(types, action=None):
 
 	order_by_list = [f"'{group_type}'" for group_type in types]
 	query += f".values({','.join(order_by_list)})" \
-			 f".annotate(new_activity=Count('*'))" \
+			 f".annotate(activity=Count('*'))" \
 			 f".order_by({','.join(order_by_list)})"
 
 	stats = []
 	for obj in list(eval(query)):
 		full_date = '/'.join(str(obj.pop(group_type)) for group_type in types)
 		obj['full_date'] = full_date
-		if len(stats) > 0:
-			obj['accum_activity'] = stats[-1]['accum_activity'] + obj['new_activity']
-		else:
-			obj['accum_activity'] = 0
+		if len(stats) > 0 and accum:
+			obj['activity'] += stats[-1]['activity']
 		stats.append(obj)
 
 	return stats
 
 
-def stats_grouped(types):
+def stats_grouped(types, accum=False):
 	"""
 
 		Args:
@@ -898,28 +896,27 @@ def stats_grouped(types):
 
 		"""
 	try:
-		gen_stats = __get_count_stats(types)
+		gen_stats = __get_count_stats(types, accum)
 
-		user_stats = __get_count_stats(types, action='INSERT USER')
+		user_stats = __get_count_stats(types, accum, action='INSERT USER')
 
-		tweet_stats = __get_count_stats(types, action='INSERT TWEET')
+		tweet_stats = __get_count_stats(types, accum, action='INSERT TWEET')
 
-		follow_stats = __get_count_stats(types, action='FOLLOW')
+		follow_stats = __get_count_stats(types, accum, action='FOLLOW')
 
-		like_stats = __get_count_stats(types, action="TWEET LIKE")
+		like_stats = __get_count_stats(types, accum, action="TWEET LIKE")
 
-		reply_stats = __get_count_stats(types, action="TWEET REPLY")
+		reply_stats = __get_count_stats(types, accum, action="TWEET REPLY")
 
-		retweet_stats = __get_count_stats(types, action="RETWEET")
+		retweet_stats = __get_count_stats(types, accum, action="RETWEET")
 
-		quote_stats = __get_count_stats(types, action="TWEET QUOTE")
+		quote_stats = __get_count_stats(types, accum, action="TWEET QUOTE")
 
 		data = {'data': gen_stats, 'tweets': tweet_stats, 'users': user_stats, 'follow_stats': follow_stats,
 				'like_stats': like_stats, 'reply_stats': reply_stats, 'retweet_stats': retweet_stats,
 				'quote_stats': quote_stats}
 
-		return True,data, \
-			   f"Success obtaining stats grouped"
+		return True, data, f"Success obtaining stats grouped"
 
 	except Exception as e:
 		logger.error(
