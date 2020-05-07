@@ -888,7 +888,10 @@ class Statistics extends Component {
                         fontWeight: "400",
                         lineHeight: "1"
                       }
-                    }} > Progress</h4>
+                    }} ><strong>Activities</strong></h4>
+                    <h6>
+                      Accumulative number of activities recorded over time
+                    </h6>
                   </CardHeader>
                   <CardBody>
                     <div class="row" style={{ maxHeight: "350px" }}>
@@ -915,7 +918,10 @@ class Statistics extends Component {
                         fontWeight: "400",
                         lineHeight: "1"
                       }
-                    }} > Recorded Entities</h4>
+                    }} ><strong>Total Number of Entities</strong></h4>
+                    <h6>
+                      Current accumulative number of twitter and user entities stored
+                    </h6>
                   </CardHeader>
                   <CardBody>
                     <div class="row" style={{ maxHeight: "350px" }}>
@@ -1007,12 +1013,21 @@ class Statistics extends Component {
                         fontWeight: "400",
                         lineHeight: "1"
                       }
-                    }} > Latest Activities</h4>
+                    }} ><strong>Entities</strong></h4>
+                    <h6>
+                      Accumulative number of entities recorded over time
+                    </h6>
                   </CardHeader>
-                  {activity}
+                  <CardBody>
+                    <div class="row" style={{ maxHeight: "350px" }}>
+
+                    </div>
+                  </CardBody>
 
                 </Card>
               </Col>
+
+
               <Col xs="12" sm="12" md="6">
                 <Card>
                   <CardHeader color="primary">
@@ -1028,7 +1043,64 @@ class Statistics extends Component {
                         fontWeight: "400",
                         lineHeight: "1"
                       }
-                    }} > Latest Tweets</h4>
+                    }} ><strong>Relations</strong></h4>
+                    <h6>
+                      Accumulative number of relations recorded over time
+                    </h6>
+                  </CardHeader>
+                  <CardBody>
+                    <div class="row" style={{ maxHeight: "350px" }}>
+
+                    </div>
+                  </CardBody>
+                </Card>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col xs="12" sm="12" md="6">
+                <Card>
+                  <CardHeader color="primary">
+                    <h4 style={{
+                      color: "#FFFFFF",
+                      marginTop: "0px",
+                      minHeight: "auto",
+                      marginBottom: "3px",
+                      textDecoration: "none",
+                      "& small": {
+                        color: "#777",
+                        fontSize: "65%",
+                        fontWeight: "400",
+                        lineHeight: "1"
+                      }
+                    }} ><strong>Latest Activities</strong></h4>
+                    <h6>
+                      The most recent activities recorded
+                    </h6>
+                  </CardHeader>
+                  {activity}
+
+                </Card>
+              </Col>
+              <Col xs="12" sm="12" md="6">
+                <Card>
+                  <CardHeader color="primary">
+                  <h4 style={{
+                      color: "#FFFFFF",
+                      marginTop: "0px",
+                      minHeight: "auto",
+                      marginBottom: "3px",
+                      textDecoration: "none",
+                      "& small": {
+                        color: "#777",
+                        fontSize: "65%",
+                        fontWeight: "400",
+                        lineHeight: "1"
+                      }
+                    }} ><strong>Latest Tweets</strong></h4>
+                    <h6>
+                      The most recent tweets recorded
+                    </h6>
                   </CardHeader>
                   {tweets}
                 </Card>
