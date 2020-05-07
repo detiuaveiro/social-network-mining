@@ -887,7 +887,7 @@ def __get_count_stats(types, accum, action=None):
 	return stats
 
 
-def stats_grouped(types, accum=False):
+def gen_stats_grouped(types, accum=False):
 	"""
 
 		Args:
@@ -899,10 +899,46 @@ def stats_grouped(types, accum=False):
 	try:
 		gen_stats = __get_count_stats(types, accum)
 
+		data = []
+		for date in gen_stats:
+			stats = {'general': gen_stats[date], 'date': date}
+
+			data.append(stats)
+
+		return True, data, f"Success obtaining stats grouped"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {gen_stats_grouped.__name__} -> {e}")
+		return False, None, f"Error obtaining stats grouped"
+
+
+def user_tweets_stats_grouped(types, accum=False):
+	try:
 		user_stats = __get_count_stats(types, accum, action='INSERT USER')
 
 		tweet_stats = __get_count_stats(types, accum, action='INSERT TWEET')
 
+		data = []
+		for date in user_stats:
+			stats = {'date': date, 'users': user_stats[date], 'tweets': 0}
+			if len(data) > 0 and accum:
+				stats['tweets'] = data[-1]['tweets']
+
+			if date in tweet_stats:
+				stats['tweets'] = tweet_stats[date]
+			data.append(stats)
+
+		return True, data, f"Success obtaining stats grouped"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+		return False, None, f"Error obtaining stats grouped"
+
+
+def relations_stats_grouped(types, accum=False):
+	try:
 		follow_stats = __get_count_stats(types, accum, action='FOLLOW')
 
 		like_stats = __get_count_stats(types, accum, action="TWEET LIKE")
@@ -914,25 +950,15 @@ def stats_grouped(types, accum=False):
 		quote_stats = __get_count_stats(types, accum, action="TWEET QUOTE")
 
 		data = []
-		for date in gen_stats:
-			stats = {'general': gen_stats[date], 'date': date, 'users': 0, 'tweets': 0, 'follows': 0, 'likes': 0,
-					 'replies': 0, 'retweets': 0, 'quote': 0}
+		for date in follow_stats:
+			stats = {'date': date, 'follows': follow_stats[date], 'likes': 0, 'replies': 0, 'retweets': 0, 'quote': 0}
 
 			if len(data) > 0 and accum:
-				stats['users'] = data[-1]['users']
-				stats['tweets'] = data[-1]['tweets']
-				stats['follows'] = data[-1]['follows']
 				stats['likes'] = data[-1]['likes']
 				stats['replies'] = data[-1]['replies']
 				stats['retweets'] = data[-1]['retweets']
 				stats['quote'] = data[-1]['quote']
 
-			if date in user_stats:
-				stats['users'] = user_stats[date]
-			if date in tweet_stats:
-				stats['tweets'] = tweet_stats[date]
-			if date in follow_stats:
-				stats['follows'] = follow_stats[date]
 			if date in like_stats:
 				stats['likes'] = like_stats[date]
 			if date in reply_stats:
@@ -948,5 +974,5 @@ def stats_grouped(types, accum=False):
 
 	except Exception as e:
 		logger.error(
-			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {stats_grouped.__name__} -> {e}")
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
 		return False, None, f"Error obtaining stats grouped"
