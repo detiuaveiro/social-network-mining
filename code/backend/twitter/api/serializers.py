@@ -43,7 +43,7 @@ class ExtendedEntities(serializers.Serializer):
 
 class Tweet(serializers.Serializer):
 	tweet_id = serializers.CharField(required=True)
-	user = serializers.CharField()
+	user = serializers.DictField()
 	is_quote_status = serializers.BooleanField(required=True)
 	created_at = serializers.DateTimeField(required=True)
 	quoted_status_id = serializers.IntegerField()

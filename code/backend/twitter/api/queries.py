@@ -187,7 +187,7 @@ def twitter_user_tweets(user_id, entries_per_page, page):
 
 	"""
 	try:
-		user_tweets = Tweet.objects.filter(user=user_id).order_by('-created_at')
+		user_tweets = Tweet.objects.filter(user__id=user_id).order_by('-created_at')
 
 		data = paginator_factory(user_tweets, entries_per_page, page)
 		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]
