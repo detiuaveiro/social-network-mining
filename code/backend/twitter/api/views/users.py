@@ -238,7 +238,6 @@ def twitter_search_users(_, keywords, entries_per_page=None, page=None):
 @api_view(["GET"])
 def twitter_user_stats_grouped(_, user_id, group_type):
 	"""
-
 	Args:
 		_:  Http Request (ignored in this function)
 		user_id: User's ID

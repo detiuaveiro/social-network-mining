@@ -128,4 +128,11 @@ urlpatterns = [
 	url(r'^graphs/latest_activities/(?P<counter>[0-9]+)/$', graphics.latest_activities, name="latest_activities"),
 	url(r'^graphs/latest_activities/(?P<counter>[0-9]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
 		graphics.latest_activities, name="latest_activities"),
+
+	url(r'^graphs/stats_grouped/accumulative/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.stats_grouped_accum, name="stats_grouped_accum"),
+
+	url(r'^graphs/stats_grouped/new/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.stats_grouped_new, name="stats_grouped_new")
+
 ]
