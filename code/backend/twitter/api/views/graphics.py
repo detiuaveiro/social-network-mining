@@ -105,3 +105,35 @@ def latest_activities(_, counter, entries_per_page=None, page=None):
 		status = HTTP_403_FORBIDDEN
 
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
+
+@api_view(["GET"])
+def stats_grouped(_, group_type):
+	"""
+	Args:
+		_:  Http Request (ignored in this function)
+		user_id: User's ID
+		group_type: Keyword defining group label (day,month,year)
+
+	Returns: Activities grouped by (day or month or year) wrapped on response's object
+
+	"""
+
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	index_per_type = {
+		'year': 0,
+		'month': 1,
+		'day': 2
+	}
+	types = ["year", "month", "day"]
+
+	success, data, message = queries.stats_grouped(types[:index_per_type[group_type] + 1])
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)

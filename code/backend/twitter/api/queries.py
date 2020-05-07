@@ -860,3 +860,77 @@ def latest_activities(counter, entries_per_page, page):
 		logger.error(
 			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_activities.__name__} -> {e}")
 		return False, None, "Error obtaining latest bot's activities"
+
+
+def stats_grouped(types):
+	"""
+
+		Args:
+			types: Group labels (day,month,year)
+
+		Returns: User's stats  grouped by (day or month or year) wrapped on dictionary
+
+		"""
+	try:
+		start_date = Log.objects.order_by('timestamp').values('timestamp')[0]['timestamp']
+
+		query = "Log.objects"
+		for group_type in types:
+			query += f".annotate({group_type}=Extract{group_type.title()}('timestamp'))"
+
+		order_by_list = [f"'{group_type}'" for group_type in types]
+		query += f".values({','.join(order_by_list)})" \
+				 f".annotate(new_activity=Count('*'))" \
+				 f".order_by({','.join(order_by_list)})"
+
+		stats = []
+		for obj in list(eval(query)):
+			full_date = '/'.join(str(obj.pop(group_type)) for group_type in types)
+			obj['full_date'] = full_date
+			if len(stats) > 0:
+				obj['accum_activity'] = stats[-1]['accum_activity'] + obj['new_activity']
+			else:
+				obj['accum_activity'] = 0
+			stats.append(obj)
+
+		query = "Log.objects.filter(action='INSERT USER')"
+		for group_type in types:
+			query += f".annotate({group_type}=Extract{group_type.title()}('timestamp'))"
+
+		order_by_list = [f"'{group_type}'" for group_type in types]
+		query += f".values({','.join(order_by_list)}).annotate(new_users=Count('*')).order_by({','.join(order_by_list)})"
+
+		user_stats = []
+		for obj in list(eval(query)):
+			full_date = '/'.join(str(obj.pop(group_type)) for group_type in types)
+			obj['full_date'] = full_date
+			if len(user_stats) > 0:
+				obj['accum_users'] = user_stats[-1]['accum_users'] + obj['new_users']
+			else:
+				obj['accum_users'] = 0
+			user_stats.append(obj)
+
+		query = "Log.objects.filter(action='INSERT TWEET')"
+		for group_type in types:
+			query += f".annotate({group_type}=Extract{group_type.title()}('timestamp'))"
+
+		order_by_list = [f"'{group_type}'" for group_type in types]
+		query += f".values({','.join(order_by_list)}).annotate(new_tweets=Count('*')).order_by({','.join(order_by_list)})"
+
+		tweet_stats = []
+		for obj in list(eval(query)):
+			full_date = '/'.join(str(obj.pop(group_type)) for group_type in types)
+			obj['full_date'] = full_date
+			if len(tweet_stats) > 0:
+				obj['accum_tweets'] = tweet_stats[-1]['accum_tweets'] + obj['new_tweets']
+			else:
+				obj['accum_tweets'] = 0
+			tweet_stats.append(obj)
+
+		return True, {'data': stats, 'start_date': start_date, 'tweets': tweet_stats, 'users': user_stats}, \
+			   f"Success obtaining stats grouped"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_user_stats_grouped.__name__} -> {e}")
+		return False, None, f"Error obtaining stats grouped"
