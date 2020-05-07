@@ -875,13 +875,14 @@ def __get_count_stats(types, accum, action=None):
 			 f".annotate(activity=Count('*'))" \
 			 f".order_by({','.join(order_by_list)})"
 
-	stats = []
-	for obj in list(eval(query)):
+	stats = {}
+	query_res = list(eval(query))
+	for index in range(len(query_res)):
+		obj = query_res[index]
+		if index > 0 and accum:
+			obj['activity'] += query_res[index-1]['activity']
 		full_date = '/'.join(str(obj.pop(group_type)) for group_type in types)
-		obj['full_date'] = full_date
-		if len(stats) > 0 and accum:
-			obj['activity'] += stats[-1]['activity']
-		stats.append(obj)
+		stats[full_date] = obj['activity']
 
 	return stats
 
@@ -912,9 +913,36 @@ def stats_grouped(types, accum=False):
 
 		quote_stats = __get_count_stats(types, accum, action="TWEET QUOTE")
 
-		data = {'data': gen_stats, 'tweets': tweet_stats, 'users': user_stats, 'follow_stats': follow_stats,
-				'like_stats': like_stats, 'reply_stats': reply_stats, 'retweet_stats': retweet_stats,
-				'quote_stats': quote_stats}
+		data = []
+		for date in gen_stats:
+			stats = {'general': gen_stats[date], 'date': date, 'users': 0, 'tweets': 0, 'follows': 0, 'likes': 0,
+					 'replies': 0, 'retweets': 0, 'quote': 0}
+
+			if len(data) > 0 and accum:
+				stats['users'] = data[-1]['users']
+				stats['tweets'] = data[-1]['tweets']
+				stats['follows'] = data[-1]['follows']
+				stats['likes'] = data[-1]['likes']
+				stats['replies'] = data[-1]['replies']
+				stats['retweets'] = data[-1]['retweets']
+				stats['quote'] = data[-1]['quote']
+
+			if date in user_stats:
+				stats['users'] = user_stats[date]
+			if date in tweet_stats:
+				stats['tweets'] = tweet_stats[date]
+			if date in follow_stats:
+				stats['follows'] = follow_stats[date]
+			if date in like_stats:
+				stats['likes'] = like_stats[date]
+			if date in reply_stats:
+				stats['replies'] = reply_stats[date]
+			if date in retweet_stats:
+				stats['retweets'] = retweet_stats[date]
+			if date in quote_stats:
+				stats['quote'] = quote_stats[date]
+
+			data.append(stats)
 
 		return True, data, f"Success obtaining stats grouped"
 
