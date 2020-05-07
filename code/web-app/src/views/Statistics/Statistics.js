@@ -20,6 +20,10 @@ import ReactLoading from "react-loading";
 import Pagination from '@material-ui/lab/Pagination';
 
 import { PieChart } from 'react-minimal-pie-chart';
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Brush } from 'recharts';
+
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 
 import FadeIn from "react-fade-in";
 import Lottie from "react-lottie";
@@ -81,6 +85,21 @@ class Statistics extends Component {
       empty: false,
       noActivities: 100
     },
+
+    generalStats: {
+      data: [],
+      type: "month"
+    },
+
+    entityStats: {
+      data: [],
+      type: "month"
+    },
+
+    relationStats: {
+      data: [],
+      type: "month"
+    }
 
   };
 
@@ -270,10 +289,150 @@ class Statistics extends Component {
     });
   }
 
+  async getActivityStats(type) {
+    await fetch(baseURL + "graphs/gen_stats_grouped/accumulative/" + type + "/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+        data = data.data
+
+        var tempData = []
+
+        data.forEach(entry => {
+          var tempInfo = {}
+
+          tempInfo['name'] = entry['date'] + ""
+
+
+          tempInfo['activities'] = entry['general']
+
+          tempData.push(tempInfo)
+        })
+
+
+        this.setState({
+          generalStats: {
+            data: tempData,
+            type: type
+          }
+        })
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        error: error
+      })
+    });
+  }
+
+  async getEntityStats(type) {
+    await fetch(baseURL + "graphs/user_tweets_stats_grouped/accumulative/" + type + "/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+        data = data.data
+
+        var tempData = []
+
+        data.forEach(entry => {
+          var tempInfo = {}
+
+          tempInfo['name'] = entry['date'] + ""
+
+          tempInfo['tweets'] = entry['tweets']
+          tempInfo['users'] = entry['users']
+
+          tempData.push(tempInfo)
+        })
+
+
+        this.setState({
+          entityStats: {
+            data: tempData,
+            type: type
+          }
+        })
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        error: error
+      })
+    });
+  }
+
+  async getRelationStats(type) {
+    await fetch(baseURL + "graphs/relations_stats_grouped/accumulative/" + type + "/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+        data = data.data
+
+        var tempData = []
+
+        data.forEach(entry => {
+          var tempInfo = {}
+
+          tempInfo['name'] = entry['date'] + ""
+
+          tempInfo['follows'] = entry['follows']
+          tempInfo['likes'] = entry['likes']
+          tempInfo['replies'] = entry['replies']
+          tempInfo['retweets'] = entry['retweets']
+          tempInfo['quote'] = entry['quote']
+
+          tempData.push(tempInfo)
+        })
+
+
+        this.setState({
+          relationStats: {
+            data: tempData,
+            type: type
+          }
+        })
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        error: error
+      })
+    });
+  }
+
   async componentDidMount() {
+    await this.getActivityStats("month")
+    await this.getRelationStats("month")
+    await this.getEntityStats("month")
+
+    await this.getActivities(1)
+
     await this.getEntitiesCount()
     await this.getTweets(1)
-    await this.getActivities(1)
 
     this.setState({
       doneLoading: true
@@ -481,6 +640,45 @@ class Statistics extends Component {
   }
   /////////////////////////////////////////////////////////////////////
 
+
+  changeGeneralType = async (event, value) => {
+    if (value != null) {
+      this.setState({
+        generalStats: {
+          data: this.state.generalStats.data,
+          type: value
+        }
+      })
+
+      await this.getActivityStats(value)
+    }
+  };
+
+  changeEntityType = async (event, value) => {
+    if (value != null) {
+      this.setState({
+        entityStats: {
+          data: this.state.entityStats.data,
+          type: value
+        }
+      })
+
+      await this.getEntityStats(value)
+    }
+  };
+
+  changeRelationType = async (event, value) => {
+    if (value != null) {
+      this.setState({
+        relationStats: {
+          data: this.state.relationStats.data,
+          type: value
+        }
+      })
+
+      await this.getRelationStats(value)
+    }
+  };
 
   // Pagination //////////////////////////////////////////////////////////
   changePageTweets = async (event, value) => {
@@ -894,8 +1092,44 @@ class Statistics extends Component {
                     </h6>
                   </CardHeader>
                   <CardBody>
-                    <div class="row" style={{ maxHeight: "350px" }}>
+                    <div class="row" style={{ marginTop: "10px" }}>
+                      <ToggleButtonGroup
+                        value={this.state.generalStats.type}
+                        exclusive
+                        aria-label="text alignment"
+                        onChange={this.changeGeneralType}
+                        style={{ display: "block", marginLeft: "auto", marginRight: "auto" }}
+                      >
+                        <ToggleButton value="day" aria-label="Daily">
+                          Daily
+                        </ToggleButton>
+                        <ToggleButton value="month" aria-label="Monthly">
+                          Monthly
+                        </ToggleButton>
+                        <ToggleButton value="year" aria-label="Yearly">
+                          Yearly
+                        </ToggleButton>
+                      </ToggleButtonGroup>
+                    </div>
+                    <div class="row" style={{ marginTop: "15px" }}>
+                      <ResponsiveContainer width="100%" height={350}>
+                        <LineChart data={this.state.generalStats.data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                          <Legend verticalAlign="bottom" height={36} />
+                          <Line name="Activities" type="monotone" dataKey="activities" stroke="#f86c6b" strokeWidth={3} />
 
+                          <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+                          <XAxis dataKey="name" />
+                          <YAxis width={82} angle={-25} />
+                          <Tooltip />
+
+                          <Brush dataKey="name" height={50} stroke="#1da1f2" >
+                            <LineChart data={this.state.generalStats.data}>
+                              <Line name="Activities" type="monotone" dataKey="activities" stroke="#f86c6b" strokeWidth={3} />
+                            </LineChart>
+                          </Brush>
+
+                        </LineChart>
+                      </ResponsiveContainer>
                     </div>
                   </CardBody>
 
@@ -1019,8 +1253,46 @@ class Statistics extends Component {
                     </h6>
                   </CardHeader>
                   <CardBody>
-                    <div class="row" style={{ maxHeight: "350px" }}>
+                    <div class="row" style={{ marginTop: "10px" }}>
+                      <ToggleButtonGroup
+                        value={this.state.entityStats.type}
+                        exclusive
+                        aria-label="text alignment"
+                        onChange={this.changeEntityType}
+                        style={{ display: "block", marginLeft: "auto", marginRight: "auto" }}
+                      >
+                        <ToggleButton value="day" aria-label="Daily">
+                          Daily
+                        </ToggleButton>
+                        <ToggleButton value="month" aria-label="Monthly">
+                          Monthly
+                        </ToggleButton>
+                        <ToggleButton value="year" aria-label="Yearly">
+                          Yearly
+                        </ToggleButton>
+                      </ToggleButtonGroup>
+                    </div>
+                    <div class="row" style={{ marginTop: "15px" }}>
+                      <ResponsiveContainer width="100%" height={350}>
+                        <LineChart data={this.state.entityStats.data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                          <Legend verticalAlign="bottom" height={36} />
+                          <Line name="Users" type="monotone" dataKey="users" stroke="#f77737" strokeWidth={3} />
+                          <Line name="Tweets" type="monotone" dataKey="tweets" stroke="#63c2de" strokeWidth={3} />
 
+                          <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+                          <XAxis dataKey="name" />
+                          <YAxis width={82} angle={-25} />
+                          <Tooltip />
+
+                          <Brush dataKey="name" height={50} stroke="#1da1f2" >
+                            <LineChart data={this.state.entityStats.data}>
+                              <Line name="Users" type="monotone" dataKey="users" stroke="#f77737" strokeWidth={3} />
+                              <Line name="Tweets" type="monotone" dataKey="tweets" stroke="#63c2de" strokeWidth={3} />
+                            </LineChart>
+                          </Brush>
+
+                        </LineChart>
+                      </ResponsiveContainer>
                     </div>
                   </CardBody>
 
@@ -1049,8 +1321,52 @@ class Statistics extends Component {
                     </h6>
                   </CardHeader>
                   <CardBody>
-                    <div class="row" style={{ maxHeight: "350px" }}>
+                    <div class="row" style={{ marginTop: "10px" }}>
+                      <ToggleButtonGroup
+                        value={this.state.relationStats.type}
+                        exclusive
+                        aria-label="text alignment"
+                        onChange={this.changeRelationType}
+                        style={{ display: "block", marginLeft: "auto", marginRight: "auto" }}
+                      >
+                        <ToggleButton value="day" aria-label="Daily">
+                          Daily
+                        </ToggleButton>
+                        <ToggleButton value="month" aria-label="Monthly">
+                          Monthly
+                        </ToggleButton>
+                        <ToggleButton value="year" aria-label="Yearly">
+                          Yearly
+                        </ToggleButton>
+                      </ToggleButtonGroup>
+                    </div>
+                    <div class="row" style={{ marginTop: "15px" }}>
+                      <ResponsiveContainer width="100%" height={350}>
+                        <LineChart data={this.state.relationStats.data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                          <Legend verticalAlign="bottom" height={36} />
+                          <Line name="Follows" type="monotone" dataKey="follows" stroke="#f8cb00" strokeWidth={3} />
+                          <Line name="Likes" type="monotone" dataKey="likes" stroke="#c13584" strokeWidth={3} />
+                          <Line name="Replies" type="monotone" dataKey="replies" stroke="#833ab4" strokeWidth={3} />
+                          <Line name="Retweets" type="monotone" dataKey="retweets" stroke="#fd1d1d" strokeWidth={3} />
+                          <Line name="Quotes" type="monotone" dataKey="quote" stroke="#17a2b8" strokeWidth={3} />
 
+                          <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+                          <XAxis dataKey="name" />
+                          <YAxis width={82} angle={-25} />
+                          <Tooltip />
+
+                          <Brush dataKey="name" height={50} stroke="#1da1f2" >
+                            <LineChart data={this.state.relationStats.data}>
+                              <Line name="Follows" type="monotone" dataKey="follows" stroke="#f8cb00" strokeWidth={3} />
+                              <Line name="Likes" type="monotone" dataKey="likes" stroke="#c13584" strokeWidth={3} />
+                              <Line name="Replies" type="monotone" dataKey="replies" stroke="#833ab4" strokeWidth={3} />
+                              <Line name="Retweets" type="monotone" dataKey="retweets" stroke="#fd1d1d" strokeWidth={3} />
+                              <Line name="Quotes" type="monotone" dataKey="quote" stroke="#17a2b8" strokeWidth={3} />
+                            </LineChart>
+                          </Brush>
+
+                        </LineChart>
+                      </ResponsiveContainer>
                     </div>
                   </CardBody>
                 </Card>
@@ -1085,7 +1401,7 @@ class Statistics extends Component {
               <Col xs="12" sm="12" md="6">
                 <Card>
                   <CardHeader color="primary">
-                  <h4 style={{
+                    <h4 style={{
                       color: "#FFFFFF",
                       marginTop: "0px",
                       minHeight: "auto",

@@ -394,8 +394,6 @@ class BotProfile extends Component {
                         empty: empty
                     }
                 })
-
-
             }
         }).catch(error => {
             console.log("error: " + error);
@@ -913,7 +911,6 @@ class BotProfile extends Component {
         })
 
         await this.getStats(value)
-
     };
     /////////////////////////////////////////////////////////////////////
 
