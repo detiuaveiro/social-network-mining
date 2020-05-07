@@ -869,10 +869,10 @@ class Control_Center(Rabbitmq):
 		message = json.loads(body)
 		self.action(message)
 
-	def run(self):
-		while True:
-			self._receive()
-			log.warning("Restarting again...")
+	# def run(self):
+	# 	while True:
+	# 		self._receive()
+	# 		log.warning("Restarting again...")
 
 	def close(self):
 		self.neo4j_client.close()
