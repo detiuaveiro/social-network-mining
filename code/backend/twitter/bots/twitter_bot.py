@@ -334,7 +334,7 @@ class TwitterBot(RabbitMessaging):
 			self.__send_error_suspended_log(error, str(user_id))
 
 		if user:
-			self.__send_user(self._twitter_api.get_user(user_id), messages_types.BotToServer.SAVE_USER)
+			self.__send_user(user, messages_types.BotToServer.SAVE_USER)
 		else:
 			logger.warning(f"Could not find user with id <{user_id}>")
 
@@ -344,14 +344,7 @@ class TwitterBot(RabbitMessaging):
 		:param tweet_id: id of the tweet we want to send to the control center
 		"""
 
-		logger.info(f"Getting tweet of id {tweet_id}")
-		tweet = None
-
-		try:
-			tweet = self.__find_tweet_by_id(tweet_id)
-		except TweepError as error:
-			self.__send_error_suspended_log(error, str(tweet_id))
-
+		tweet = self.__find_tweet_by_id(tweet_id)
 		if tweet:
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
 		else:
@@ -362,11 +355,14 @@ class TwitterBot(RabbitMessaging):
 
 		:param tweet_id: id of the tweet which we want to find
 		"""
+		tweet = None
 		try:
-			return self._twitter_api.get_status(tweet_id)
+			tweet = self._twitter_api.get_status(tweet_id)
 		except TweepError as error:
-			logger.exception(f"Error <{error}> finding tweet with id <{tweet_id}>: ")
-			return None
+			logger.warning(f"Error <{error}> finding tweet with id <{tweet_id}>")
+			self.__send_error_suspended_log(error, str(tweet_id))
+
+		return tweet
 
 	def __like_tweet(self, tweet_id: int):
 		"""Function to like a tweet
