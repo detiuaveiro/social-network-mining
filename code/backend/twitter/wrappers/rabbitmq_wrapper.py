@@ -1,12 +1,11 @@
 ## @package twitter.wrappers
 # coding: UTF-8
-
+import functools
 import pika
 import time
 import logging
 import json
 
-from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
 from pika.adapters.asyncio_connection import AsyncioConnection
 
 from credentials import *
@@ -73,10 +72,19 @@ class Rabbitmq:
 		parameters given from the constructor
 		"""
 
-		self.channel = self.connection.channel()
+		self.connection.channel(on_open_callback=self.on_channel_open)
 
-		self.channel.basic_qos(prefetch_count=10, global_qos=True)
-		self.channel.queue_declare(queue=API_QUEUE, durable=True)
+		# self.channel.basic_qos(prefetch_count=10, global_qos=True)
+		# cb = functools.partial(self.on_queue_declareok, userdata=API_QUEUE)
+		# print("ola1")
+		# self.channel.queue_declare(queue=API_QUEUE, callback=cb)            # durable=True
+		# print("ola2")
+
+	def on_channel_open(self, channel):
+		self.channel = channel
+
+		data = {}
+		cb = functools.partial(self.on_queue_declareok, data=data)
 
 		# Declare Exchanges
 		log.info("Declaring exchanges")
@@ -86,45 +94,50 @@ class Rabbitmq:
 			durable=True
 		)
 
+		data['exchange'] = DATA_EXCHANGE
+		data['routing_key'] = DATA_ROUTING_KEY
 		self.channel.exchange_declare(
 			exchange=DATA_EXCHANGE,
 			exchange_type='direct',
-			durable=True
+			durable=True,
+			callback=cb
 		)
 
+		data['exchange'] = LOG_EXCHANGE
+		data['routing_key'] = LOG_ROUTING_KEY
 		self.channel.exchange_declare(
 			exchange=LOG_EXCHANGE,
 			exchange_type='direct',
-			durable=True
+			durable=True,
+			callback=cb
 		)
 
+		data['exchange'] = QUERY_EXCHANGE
+		data['routing_key'] = QUERY_ROUTING_KEY
 		self.channel.exchange_declare(
 			exchange=QUERY_EXCHANGE,
 			exchange_type='direct',
-			durable=True
+			durable=True,
+			callback=cb
 		)
+
+	def on_queue_declareok(self, _unused_frame, data):
+		# cb = functools.partial(self.set_prefetch, userdata=data)
 
 		# Create Bindings
 		log.info("Creating bindings")
 		self.channel.queue_bind(
-			exchange=DATA_EXCHANGE,
+			exchange=data['exchange'],
 			queue=API_QUEUE,
-			routing_key=DATA_ROUTING_KEY
-		)
-
-		self.channel.queue_bind(
-			exchange=LOG_EXCHANGE,
-			queue=API_QUEUE,
-			routing_key=LOG_ROUTING_KEY
-		)
-
-		self.channel.queue_bind(
-			exchange=QUERY_EXCHANGE,
-			queue=API_QUEUE,
-			routing_key=QUERY_ROUTING_KEY
+			routing_key=data['routing_key'],
+			callback=self.set_prefetch
 		)
 
 		log.info("Connection to Rabbit Established")
+
+	def set_prefetch(self):
+		print("ola")
+		self.channel.basic_qos(prefetch_count=1, global_qos=True)
 
 	def _send(self, routing_key, message):
 		"""
