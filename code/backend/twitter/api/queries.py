@@ -904,7 +904,21 @@ def stats_grouped(types):
 
 		tweet_stats = __get_count_stats(types, action='INSERT TWEET')
 
-		return True, {'data': gen_stats, 'tweets': tweet_stats, 'users': user_stats}, \
+		follow_stats = __get_count_stats(types, action='FOLLOW')
+
+		like_stats = __get_count_stats(types, action="TWEET LIKE")
+
+		reply_stats = __get_count_stats(types, action="TWEET REPLY")
+
+		retweet_stats = __get_count_stats(types, action="RETWEET")
+
+		quote_stats = __get_count_stats(types, action="TWEET QUOTE")
+
+		data = {'data': gen_stats, 'tweets': tweet_stats, 'users': user_stats, 'follow_stats': follow_stats,
+				'like_stats': like_stats, 'reply_stats': reply_stats, 'retweet_stats': retweet_stats,
+				'quote_stats': quote_stats}
+
+		return True,data, \
 			   f"Success obtaining stats grouped"
 
 	except Exception as e:

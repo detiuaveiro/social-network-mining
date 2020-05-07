@@ -131,4 +131,5 @@ urlpatterns = [
 
 	url(r'^graphs/stats_grouped/stats/grouped/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
 		graphics.stats_grouped, name="stats_grouped")
+
 ]
