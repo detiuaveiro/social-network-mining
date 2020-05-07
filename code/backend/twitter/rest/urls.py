@@ -128,4 +128,23 @@ urlpatterns = [
 	url(r'^graphs/latest_activities/(?P<counter>[0-9]+)/$', graphics.latest_activities, name="latest_activities"),
 	url(r'^graphs/latest_activities/(?P<counter>[0-9]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
 		graphics.latest_activities, name="latest_activities"),
+
+	url(r'^graphs/gen_stats_grouped/accumulative/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.gen_stats_grouped_accum, name="stats_grouped_accum"),
+
+	url(r'^graphs/gen_stats_grouped/new/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.gen_stats_grouped_new, name="stats_grouped_new"),
+
+	url(r'^graphs/user_tweets_stats_grouped/accumulative/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.user_tweets_stats_grouped_accum, name="user_tweets_stats_grouped_accum"),
+
+	url(r'^graphs/user_tweets_stats_grouped/new/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.user_tweets_stats_grouped_new, name="user_tweets_stats_grouped_new"),
+
+	url(r'^graphs/relations_stats_grouped/accumulative/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.relations_stats_grouped_accum, name="relations_stats_grouped_accum"),
+
+	url(r'^graphs/relations_stats_grouped/new/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.relations_stats_grouped_new, name="relations_stats_grouped_new")
+
 ]

@@ -1,6 +1,6 @@
 ## @package twitter.bots
 # coding: UTF-8
-
+import random
 import logging
 from typing import List, Union
 
@@ -55,7 +55,6 @@ class TwitterBot(RabbitMessaging):
 	@staticmethod
 	def __get_tweet_dict(tweet: Status):
 		tweet_dict = tweet._json.copy()
-		# tweet_dict['user'] = tweet_dict['user']['id']
 		return tweet_dict
 
 	def __send_message(self, data, message_type: messages_types.BotToServer, exchange):
@@ -146,9 +145,6 @@ class TwitterBot(RabbitMessaging):
 		logger.info("Reading home timeline")
 		self.__read_timeline(self.user)
 
-		# TODO -> ver porque não está a dar (o twitter não está a deixar aceder)
-		# self.__direct_messages()
-
 	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
 		"""Function to get the 20 (default) most recent tweets (including retweets) from some user
 
@@ -196,7 +192,7 @@ class TwitterBot(RabbitMessaging):
 				# to the most distant point)
 				tweets = self._twitter_api.search(q=keyword, lang=language, geocode="39.557191,-8.1,300km",
 				                                  tweet_mode="extended")
-				total_read_time += self.__interpret_tweets(tweets)
+				total_read_time += self.__interpret_tweets(tweets, max_depth=4)
 
 		logger.debug(f"Search completed in {total_read_time} seconds")
 
@@ -396,7 +392,6 @@ class TwitterBot(RabbitMessaging):
 					retweet: Status = self._twitter_api.retweet(id=tweet.id)
 					logger.debug(f"Retweet: {retweet}")
 					self.__send_tweet(retweet, messages_types.BotToServer.SAVE_TWEET)
-					# self.__send_event(self.__get_tweet_dict(tweet), messages_types.BotToServer.EVENT_TWEET_RETWEETED)
 			except Exception as error:
 				logger.exception(f"Error <{error}> retweeting tweet with id <{tweet_id}>: ")
 
