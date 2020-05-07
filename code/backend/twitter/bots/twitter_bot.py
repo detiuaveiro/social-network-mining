@@ -206,7 +206,7 @@ class TwitterBot(RabbitMessaging):
 		for tweet in tweets:
 			self.__send_tweet(tweet, messages_types.BotToServer.SAVE_TWEET)
 
-			total_read_time += virtual_read_wait(tweet.full_text if 'full_text' in tweet._json else tweet.text)
+			# total_read_time += virtual_read_wait(tweet.full_text if 'full_text' in tweet._json else tweet.text)
 
 			# If it's our own tweet, we don't really need to do any logic
 			if self.user.id == tweet.user.id:
