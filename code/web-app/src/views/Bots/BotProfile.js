@@ -23,6 +23,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import Bots from './Bots';
 import PolicyForm from './PolicyForm';
 import UserProfile from '../Users/UserProfile';
+import Statistics from '../Statistics/Statistics';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -603,7 +604,6 @@ class BotProfile extends Component {
     }
 
     handleOpenProfile(user) {
-        console.log(user)
         fetch(baseURL + "twitter/users/" + user + "/type/", {
             method: "GET",
             headers: {
@@ -920,9 +920,11 @@ class BotProfile extends Component {
 
     render() {
         if (this.state.goBack) {
-            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "BOTS")
+            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "BOTS") {
                 return (<Bots />)
-            else {
+            } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "STATS") {
+                return (<Statistics />)
+            } else {
                 var lastUser = this.state.redirectionList.pop()
                 if (lastUser.type == "PROFILE") {
                     return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)
