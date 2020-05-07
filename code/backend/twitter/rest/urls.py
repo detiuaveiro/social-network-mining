@@ -145,6 +145,12 @@ urlpatterns = [
 		graphics.relations_stats_grouped_accum, name="relations_stats_grouped_accum"),
 
 	url(r'^graphs/relations_stats_grouped/new/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
-		graphics.relations_stats_grouped_new, name="relations_stats_grouped_new")
+		graphics.relations_stats_grouped_new, name="relations_stats_grouped_new"),
+
+	url(r'^graphs/user_tweets/today/$', graphics.user_tweets_today, name="user_tweets_today"),
+
+	url(r'^graphs/general/today/$', graphics.general_today, name="general_today"),
+
+	url(r'^graphs/relations/today/$', graphics.relations_today, name="relations_today")
 
 ]
