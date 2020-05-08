@@ -136,7 +136,7 @@ class Statistics extends Component {
   }
 
   async getTweets(page) {
-    await fetch(baseURL + "graphs/latest_tweets/" + this.state.tweets.noTweets + "/8/" + page + "/", {
+    await fetch(baseURL + "graphs/latest_tweets/" + this.state.tweets.noTweets + "/5/" + page + "/", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -224,7 +224,7 @@ class Statistics extends Component {
   }
 
   async getActivities(page) {
-    await fetch(baseURL + "graphs/latest_activities/" + this.state.activities.noActivities + "/10/" + page + "/", {
+    await fetch(baseURL + "graphs/latest_activities/" + this.state.activities.noActivities + "/6/" + page + "/", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -1024,7 +1024,7 @@ class Statistics extends Component {
             </div>
 
             <div style={{
-              marginTop: "25px",
+              marginTop: "38px",
               width: "100%",
               textAlign: "center"
             }}>
@@ -1164,7 +1164,7 @@ class Statistics extends Component {
                           fontFamily:
                             '"Cabin", -apple-system, Helvetica, Arial, sans-serif',
                           fontSize: '6px',
-                          maxHeight: "350px"
+                          maxHeight: "346px"
                         }}
 
                         label={({ dataEntry }) => dataEntry.value}
@@ -1344,24 +1344,24 @@ class Statistics extends Component {
                       <ResponsiveContainer width="100%" height={350}>
                         <LineChart data={this.state.relationStats.data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                           <Legend verticalAlign="bottom" height={36} />
-                          <Line name="Follows" type="monotone" dataKey="follows" stroke="#f8cb00" strokeWidth={3} />
-                          <Line name="Likes" type="monotone" dataKey="likes" stroke="#c13584" strokeWidth={3} />
-                          <Line name="Replies" type="monotone" dataKey="replies" stroke="#833ab4" strokeWidth={3} />
-                          <Line name="Retweets" type="monotone" dataKey="retweets" stroke="#fd1d1d" strokeWidth={3} />
-                          <Line name="Quotes" type="monotone" dataKey="quote" stroke="#17a2b8" strokeWidth={3} />
+                          <Line name="Follows" type="monotone" dataKey="follows" stroke="#f8cb00" strokeWidth={2} />
+                          <Line name="Likes" type="monotone" dataKey="likes" stroke="#c13584" strokeWidth={2} />
+                          <Line name="Replies" type="monotone" dataKey="replies" stroke="#833ab4" strokeWidth={2} />
+                          <Line name="Retweets" type="monotone" dataKey="retweets" stroke="#fd1d1d" strokeWidth={2} />
+                          <Line name="Quotes" type="monotone" dataKey="quote" stroke="#17a2b8" strokeWidth={2} />
 
                           <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
                           <XAxis dataKey="name" />
                           <YAxis width={82} angle={-25} />
                           <Tooltip />
 
-                          <Brush dataKey="name" height={50} stroke="#1da1f2" >
+                          <Brush dataKey="name" height={50} stroke="#1da1f2">
                             <LineChart data={this.state.relationStats.data}>
-                              <Line name="Follows" type="monotone" dataKey="follows" stroke="#f8cb00" strokeWidth={3} />
-                              <Line name="Likes" type="monotone" dataKey="likes" stroke="#c13584" strokeWidth={3} />
-                              <Line name="Replies" type="monotone" dataKey="replies" stroke="#833ab4" strokeWidth={3} />
-                              <Line name="Retweets" type="monotone" dataKey="retweets" stroke="#fd1d1d" strokeWidth={3} />
-                              <Line name="Quotes" type="monotone" dataKey="quote" stroke="#17a2b8" strokeWidth={3} />
+                              <Line name="Follows" type="monotone" dataKey="follows" stroke="#f8cb00" strokeWidth={2} />
+                              <Line name="Likes" type="monotone" dataKey="likes" stroke="#c13584" strokeWidth={2} />
+                              <Line name="Replies" type="monotone" dataKey="replies" stroke="#833ab4" strokeWidth={2} />
+                              <Line name="Retweets" type="monotone" dataKey="retweets" stroke="#fd1d1d" strokeWidth={2} />
+                              <Line name="Quotes" type="monotone" dataKey="quote" stroke="#17a2b8" strokeWidth={2} />
                             </LineChart>
                           </Brush>
 
