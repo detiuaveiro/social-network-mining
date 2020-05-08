@@ -49,14 +49,19 @@ class Rabbitmq:
             port=port,
             virtual_host=vhost,
             credentials=pika_credentials,
-            heartbeat=10000,
-            blocked_connection_timeout=10000
+            heartbeat=600,
+            blocked_connection_timeout=300
         )
 
         self.reconnection_attempt = 0
         self.MAX_RECONNECTIONS = 10
         self.connection = None
         self.channel = None
+
+        self.exchange = {API_QUEUE: []}
+        self.exchange[API_QUEUE].append({'exchange': DATA_EXCHANGE, 'routing_key': DATA_ROUTING_KEY})
+        self.exchange[API_QUEUE].append({'exchange': LOG_EXCHANGE, 'routing_key': LOG_ROUTING_KEY})
+        self.exchange[API_QUEUE].append({'exchange': QUERY_EXCHANGE, 'routing_key': QUERY_ROUTING_KEY})
 
     def run(self):
         self.connection = AsyncioConnection(parameters=self.pika_parameters,
@@ -69,17 +74,13 @@ class Rabbitmq:
         parameters given from the constructor
         """
 
-        self.connection.channel(on_open_callback=self.on_channel_open)
+        self.connection.channel(on_open_callback=self.on_api_channel_open)
 
-        # self.channel.basic_qos(prefetch_count=10, global_qos=True)
-        # callback = functools.partial(self.on_queue_declareok, userdata=API_QUEUE)
-        # print("ola1")
-        # self.channel.queue_declare(queue=API_QUEUE, callback=callback)            # durable=True
-        # print("ola2")
+    def on_api_channel_open(self, channel):
+        self.on_channel_open(channel=channel, queue=API_QUEUE)
 
-    def on_channel_open(self, channel):
+    def on_channel_open(self, channel, queue):
         self.channel = channel
-
         # Declare Exchanges
         # log.info("Declaring exchanges")
         # self.channel.exchange_declare(
@@ -88,60 +89,35 @@ class Rabbitmq:
         #     durable=True
         # )
 
-        callback = functools.partial(self.setup_queue, data={
-            'exchange': DATA_EXCHANGE,
-            'routing_key': DATA_ROUTING_KEY,
-            'queue': API_QUEUE
-        })
-        self.channel.exchange_declare(
-            exchange=DATA_EXCHANGE,
-            durable=True,
-            callback=callback
-        )
+        for exchange_data in self.exchange[queue]:
+            callback = functools.partial(self.setup_queue, queue=queue, **exchange_data)
+            self.channel.exchange_declare(
+                exchange=exchange_data['exchange'],
+                durable=True,
+                callback=callback
+            )
 
-        callback = functools.partial(self.setup_queue, data={
-            'exchange': LOG_EXCHANGE,
-            'routing_key': LOG_ROUTING_KEY,
-            'queue': API_QUEUE
-        })
-        self.channel.exchange_declare(
-            exchange=LOG_EXCHANGE,
-            durable=True,
-            callback=callback
-        )
+    def setup_queue(self, _unused_frame, queue, exchange, routing_key):
+        callback = functools.partial(self.on_queue_declareok, queue=queue, exchange=exchange, routing_key=routing_key)
+        self.channel.queue_declare(queue=queue, durable=True, callback=callback)
 
-        callback = functools.partial(self.setup_queue, data={
-            'exchange': QUERY_EXCHANGE,
-            'routing_key': QUERY_ROUTING_KEY,
-            'queue': API_QUEUE
-        })
-        self.channel.exchange_declare(
-            exchange=QUERY_EXCHANGE,
-            durable=True,
-            callback=callback
-        )
+    def on_queue_declareok(self, _unused_frame, queue, exchange, routing_key):
 
-    def setup_queue(self, _unused_frame, data):
-        callback = functools.partial(self.on_queue_declareok, data=data)
-        self.channel.queue_declare(queue=data['queue'], durable=True, callback=callback)
-
-    def on_queue_declareok(self, _unused_frame, data):
-
-        callback = functools.partial(self.set_prefetch, queue_name=data['queue'])
+        callback = functools.partial(self.set_prefetch, queue=queue)
 
         # Create Bindings
         log.info("Creating bindings")
         self.channel.queue_bind(
-            queue=data['queue'],
-            exchange=data['exchange'],
-            routing_key=data['routing_key'],
+            queue=queue,
+            exchange=exchange,
+            routing_key=routing_key,
             callback=callback
         )
 
         log.info("Connection to Rabbit Established")
 
-    def set_prefetch(self, _unused_frame, queue_name):
-        self.channel.basic_qos(prefetch_count=10, callback=functools.partial(self._receive, queue_name=queue_name))
+    def set_prefetch(self, _unused_frame, queue):
+        self.channel.basic_qos(prefetch_count=10, callback=functools.partial(self._receive, queue=queue))
 
     def _send(self, routing_key, message):
         """
@@ -159,7 +135,7 @@ class Rabbitmq:
             body=json.dumps(message)
         )
 
-    def _receive(self, _unused_frame, queue_name):
+    def _receive(self, _unused_frame, queue):
         """
         Receives messages and puts them in the queue given from the argument
 
@@ -171,7 +147,7 @@ class Rabbitmq:
         try:
             log.info(" [*] Waiting for Messages. To exit press CTRL+C")
 
-            self.channel.basic_consume(queue=queue_name, on_message_callback=self.received_message_handler,
+            self.channel.basic_consume(queue=queue, on_message_callback=self.received_message_handler,
                                        auto_ack=True)
             # self.channel.start_consuming()
         except Exception as e:
