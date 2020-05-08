@@ -176,8 +176,8 @@ class PDP:
 		@return: List of users the bot will start following
 		"""
 		log.info(f"Creating users for the bot to start following")
-		num_users = 6 #random.randint(2, 10)
-		with open("first_time_users.json", "r") as f:
+		num_users = 6   # random.randint(2, 10)
+		with open("control_center/first_time_users.json", "r") as f:
 			users = json.load(f)
 
 		bot_list = []
