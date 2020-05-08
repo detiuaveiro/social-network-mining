@@ -106,6 +106,7 @@ class Report:
 		result_bots = self.__get_mongo_aggregate("users", bots, params['Bot'])
 
 		for res in [result_tweets, result_users, result_bots]:
+			print(res)
 			result = self.__insert_info_list(result, res, placement)
 
 		return result
@@ -180,7 +181,7 @@ class Report:
 			# Append to result
 			result.append(relation)
 
-		logger.debug(f"It took {time()-start} to finish analysing network")
+		logger.debug(f"It took <{time() - start} s> to finish analysing network")
 
 		result = self.__get_results(result, query_tweets_start, query_user_start,
 									query_bots_start, keep_track_places, params['start'])
@@ -191,7 +192,7 @@ class Report:
 		result = self.__get_results(result, query_tweets_end, query_user_end,
 									query_bots_end, keep_track_places, params['end'])
 
-		logger.debug(f"It took {time()-start}")
+		logger.debug(f"It took <{time() - start} s>")
 
 		if export == self.ExportType.CSV:
 			self.exporter.export_csv(result)
