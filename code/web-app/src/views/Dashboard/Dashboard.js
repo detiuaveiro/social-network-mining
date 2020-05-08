@@ -517,7 +517,7 @@ class Dashboard extends Component {
     await this.getEntityStats("month")
 
     await this.getActivities(1)
-    //await this.getTweets(1)
+    await this.getTweets(1)
 
     await this.getTodayStats()
 
