@@ -959,7 +959,11 @@ class Neo4jAPI:
 	def __node_type(self, tx, data):
 		log.debug("GETTING NODE TYPE")
 		query = "match (a {id : $id}) return labels(a)"
-		return list(tx.run(query, id=data['id']))[0].values()[0][0]
+		result = tx.run(query, id=data['id'])
+		try:
+			return list(result)[0].values()[0][0]
+		except Exception as e:
+			return None
 
 	def node_type(self, data):
 		if "id" not in data.keys():

@@ -236,12 +236,13 @@ def twitter_search_users(_, keywords, entries_per_page=None, page=None):
 
 
 @api_view(["GET"])
-def twitter_search_users_strict(_, keyword):
+def twitter_search_users_strict(_, keyword, type):
 	"""
 
 	Args:
 		_:  Http Request (ignored in this function)
 		keyword: Word to be searched
+		type: Type of User to be searched (Bot or User)
 
 	Returns: Users that match keyword wrapped on response's object
 
@@ -250,7 +251,7 @@ def twitter_search_users_strict(_, keyword):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_search_users_strict(keyword)
+	success, data, message = queries.twitter_search_users_strict(keyword, type)
 	if success:
 		success_messages.append(message)
 	else:
