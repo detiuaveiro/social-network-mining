@@ -1054,7 +1054,7 @@ def latest_tweets_daily(entries_per_page, page):
 
 	"""
 	try:
-		tweets = TweetStats.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=10))
+		tweets = TweetStats.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))
 										& Q(timestamp__lte=datetime.now())).order_by("-timestamp")
 
 		data = paginator_factory(tweets, entries_per_page, page)
