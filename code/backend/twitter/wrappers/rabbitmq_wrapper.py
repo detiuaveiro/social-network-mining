@@ -58,10 +58,12 @@ class Rabbitmq:
         self.connection = None
         self.channel = None
 
-        self.exchange = {API_QUEUE: []}
+        self.exchange = {API_QUEUE: [], API_FOLLOW_QUEUE: []}
         self.exchange[API_QUEUE].append({'exchange': DATA_EXCHANGE, 'routing_key': DATA_ROUTING_KEY})
         self.exchange[API_QUEUE].append({'exchange': LOG_EXCHANGE, 'routing_key': LOG_ROUTING_KEY})
         self.exchange[API_QUEUE].append({'exchange': QUERY_EXCHANGE, 'routing_key': QUERY_ROUTING_KEY})
+        self.exchange[API_FOLLOW_QUEUE].append({'exchange': SERVICE_QUERY_EXCHANGE,
+                                                'routing_key': SERVICE_QUERY_ROUTING_KEY})
 
     def run(self):
         self.connection = AsyncioConnection(parameters=self.pika_parameters,
@@ -75,9 +77,13 @@ class Rabbitmq:
         """
 
         self.connection.channel(on_open_callback=self.on_api_channel_open)
+        self.connection.channel(on_open_callback=self.on_api_follow_channel_open)
 
     def on_api_channel_open(self, channel):
         self.on_channel_open(channel=channel, queue=API_QUEUE)
+
+    def on_api_follow_channel_open(self, channel):
+        self.on_channel_open(channel=channel, queue=API_FOLLOW_QUEUE)
 
     def on_channel_open(self, channel, queue):
         self.channel = channel
