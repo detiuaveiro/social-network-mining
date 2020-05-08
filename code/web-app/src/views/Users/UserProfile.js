@@ -20,6 +20,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 
 import Users from './Users';
 import BotProfile from '../Bots/BotProfile';
+import Statistics from '../Statistics/Statistics';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -112,9 +113,9 @@ class UserProfile extends Component {
 
                     if (tweet.is_quote_status) {
                         tempInfo.push(<Badge pill color="warning" style={{ fontSize: "11px" }}>Quote</Badge>);
-                        if(tweet.quoted_status_id != null){
+                        if (tweet.quoted_status_id != null) {
                             tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenTweet(tweet.quoted_status_id)}>#{tweet.quoted_status_id}</span>);
-                        }else{
+                        } else {
                             tempInfo.push(<span style={{ color: "#999" }}><i class="fas fa-minus"></i></span>);
                         }
 
@@ -465,7 +466,7 @@ class UserProfile extends Component {
     // Methods //////////////////////////////////////////////////////////
 
     handleOpenTweet(tweet) {
-        if(tweet.tweet_id != null){
+        if (tweet.tweet_id != null) {
             this.setState({
                 modal: true,
                 modalType: "TWEET",
@@ -477,7 +478,7 @@ class UserProfile extends Component {
                     tweet: tweet
                 }
             });
-        }else{
+        } else {
             fetch(baseURL + "twitter/tweets/" + tweet + "/", {
                 method: "GET",
                 headers: {
@@ -491,7 +492,8 @@ class UserProfile extends Component {
             }).then(data => {
                 if (data != null && data != {}) {
                     data = data.data
-    
+                    console.log(data)
+
                     this.setState({
                         modal: true,
                         modalType: "TWEET",
@@ -500,10 +502,10 @@ class UserProfile extends Component {
                             noPage: this.state.tweets.noPage,
                             curPage: this.state.tweets.curPage,
                             latestTweet: this.state.tweets.latestTweet,
-                            tweet: data[0]
+                            tweet: data
                         }
                     });
-    
+
                 }
             }).catch(error => {
                 console.log("error: " + error);
@@ -516,7 +518,7 @@ class UserProfile extends Component {
                     draggable: true
                 });
             });
-        } 
+        }
     }
 
     handleClose() {
@@ -590,9 +592,11 @@ class UserProfile extends Component {
 
     render() {
         if (this.state.goBack) {
-            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "USERS")
+            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "USERS") {
                 return (<Users page={this.state.redirectionList[0].info["page"]} searchQuery={this.state.redirectionList[0].info["query"]} />)
-            else {
+            } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "STATS") {
+                return (<Statistics />)
+            } else {
                 var lastUser = this.state.redirectionList.pop()
                 if (lastUser.type == "PROFILE") {
                     return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)

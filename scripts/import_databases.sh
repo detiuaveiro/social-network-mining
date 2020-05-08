@@ -11,9 +11,9 @@ echo "Deleting local mongo DB data"
 mongo twitter -u $MONGO_USERNAME_LOCAL -p $MONGO_PASSWORD_LOCAL --host "localhost:27017" --eval "db.dropDatabase()" 
 
 echo "Loading mongo DB data locally"
-mongoimport --collection tweets  --db twitter --file  "mongodb/tweets.json"  -u $MONGO_USERNAME_LOCAL -p $MONGO_PASSWORD_LOCAL --host "localhost:27017"
-mongoimport --collection messages  --db twitter --file  "mongodb/messages.json"  -u $MONGO_USERNAME_LOCAL -p $MONGO_PASSWORD_LOCAL --host "localhost:27017"
-mongoimport --collection users  --db twitter --file  "mongodb/users.json"  -u $MONGO_USERNAME_LOCAL -p $MONGO_PASSWORD_LOCAL --host "localhost:27017"
+mongoimport --collection tweets  --db twitter --file  "mongodb/tweets.json" --authenticationDatabase admin -u $MONGO_USERNAME_LOCAL -p $MONGO_PASSWORD_LOCAL --host "localhost:27017"
+mongoimport --collection messages  --db twitter --file  "mongodb/messages.json" --authenticationDatabase admin -u $MONGO_USERNAME_LOCAL -p $MONGO_PASSWORD_LOCAL --host "localhost:27017"
+mongoimport --collection users  --db twitter --file  "mongodb/users.json" --authenticationDatabase admin -u $MONGO_USERNAME_LOCAL -p $MONGO_PASSWORD_LOCAL --host "localhost:27017"
 
 
 echo "Importing postgresql DB"

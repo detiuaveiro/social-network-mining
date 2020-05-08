@@ -4,6 +4,8 @@ import random
 import datetime
 import json
 import logging
+
+from control_center.utils import tweet_to_simple_text
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
@@ -33,6 +35,7 @@ PENALTY_REPLIED_USER_RECENTLY = -0.5
 BOT_FOLLOWS_USER = 0.3
 BOT_RETWEETED_TWEET = 0.2
 BOT_LIKED_TWEET = 0.3
+REPLY_TWEET_MIN_SIZE = 60               # min length of tweet
 
 NUMBER_TWEETS_FOLLOW_DECISION = 5
 
@@ -401,7 +404,15 @@ class PDP:
 				@param: data - dictionary containing the data of the bot and the tweet it wants to like
 				@returns: float that will then be compared to the threshold previously defined
 				"""
-		# first, we verify if the bot already replied to the tweet
+
+		# first, ew verify the length of the tweet
+		len_tweet = len(tweet_to_simple_text(data["tweet_text"]))
+		if len_tweet < REPLY_TWEET_MIN_SIZE:
+			log.info(f"Request to reply to tweet <{data['tweet_id']}> denied because the tweet text has lentgh of "
+			         f"{len_tweet}")
+			return 0
+
+		# second, we verify if the bot already replied to the tweet
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
 			"action": log_actions.REPLY_REQ_ACCEPT,

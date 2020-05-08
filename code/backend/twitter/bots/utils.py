@@ -8,7 +8,6 @@ import readtime
 # -----------------------------------------------------------
 # json
 # -----------------------------------------------------------
-from bots.settings import MAX_READ_TIME_RANDOM
 
 
 def to_json(obj):
@@ -36,6 +35,6 @@ def virtual_read_wait(text: str) -> float:
     :return: time taken to read the provided text
     """
     time_to_read = readtime.of_text(text).seconds
-    wait(time_to_read*1.3)           # random.randint(1, MAX_READ_TIME_RANDOM)
+    wait(time_to_read*1.3)
 
     return time_to_read

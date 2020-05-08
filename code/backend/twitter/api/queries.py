@@ -803,7 +803,6 @@ def latest_tweets(counter, entries_per_page, page):
 
 def latest_activities_daily(entries_per_page, page):
 	"""
-
 	Args:
 		entries_per_page: Number of entries per page or None
 		page: Number of page the user wants to retrieve or None
@@ -860,3 +859,210 @@ def latest_activities(counter, entries_per_page, page):
 		logger.error(
 			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_activities.__name__} -> {e}")
 		return False, None, "Error obtaining latest bot's activities"
+
+
+def __get_count_stats(types, accum, action=None):
+	query = "Log.objects"
+	if action:
+		query += f".filter(action='{action}')"
+
+	for group_type in types:
+		query += f".annotate({group_type}=Extract{group_type.title()}('timestamp'))"
+
+	order_by_list = [f"'{group_type}'" for group_type in types]
+	query += f".values({','.join(order_by_list)})" \
+			 f".annotate(activity=Count('*'))" \
+			 f".order_by({','.join(order_by_list)})"
+
+	print(query)
+	stats = {}
+	query_res = list(eval(query))
+	for index in range(len(query_res)):
+		obj = query_res[index]
+		if index > 0 and accum:
+			obj['activity'] += query_res[index-1]['activity']
+		full_date = '/'.join(str(obj.pop(group_type)) for group_type in types)
+		stats[full_date] = obj['activity']
+
+	return stats
+
+
+def __get_today_stats(action=None):
+	query = "Log.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))"\
+									"& Q(timestamp__lte=datetime.now())"
+	if action:
+		query += f" & Q(action='{action}')"
+
+	query += ").count()"
+
+	return eval(query)
+
+
+def gen_stats_grouped(types, accum=False):
+	"""
+	Args:
+		types: Group labels (day,month,year)
+
+	Returns: User's stats  grouped by (day or month or year) wrapped on dictionary
+
+	"""
+	try:
+		gen_stats = __get_count_stats(types, accum)
+
+		data = []
+		for date in gen_stats:
+			stats = {'general': gen_stats[date], 'date': date}
+
+			data.append(stats)
+
+		return True, data, f"Success obtaining stats grouped"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {gen_stats_grouped.__name__} -> {e}")
+		return False, None, f"Error obtaining stats grouped"
+
+
+def user_tweets_stats_grouped(types, accum=False):
+	try:
+		user_stats = __get_count_stats(types, accum, action='INSERT USER')
+
+		tweet_stats = __get_count_stats(types, accum, action='INSERT TWEET')
+
+		data = []
+		for date in user_stats:
+			stats = {'date': date, 'users': user_stats[date], 'tweets': 0}
+			if len(data) > 0 and accum:
+				stats['tweets'] = data[-1]['tweets']
+
+			if date in tweet_stats:
+				stats['tweets'] = tweet_stats[date]
+			data.append(stats)
+
+		return True, data, f"Success obtaining stats grouped"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+		return False, None, f"Error obtaining stats grouped"
+
+
+def relations_stats_grouped(types, accum=False):
+	try:
+		follow_stats = __get_count_stats(types, accum, action='FOLLOW')
+
+		like_stats = __get_count_stats(types, accum, action="TWEET LIKE")
+
+		reply_stats = __get_count_stats(types, accum, action="TWEET REPLY")
+
+		retweet_stats = __get_count_stats(types, accum, action="RETWEET")
+
+		quote_stats = __get_count_stats(types, accum, action="TWEET QUOTE")
+
+		data = []
+		for date in follow_stats:
+			stats = {'date': date, 'follows': follow_stats[date], 'likes': 0, 'replies': 0, 'retweets': 0, 'quote': 0}
+
+			if len(data) > 0 and accum:
+				stats['likes'] = data[-1]['likes']
+				stats['replies'] = data[-1]['replies']
+				stats['retweets'] = data[-1]['retweets']
+				stats['quote'] = data[-1]['quote']
+
+			if date in like_stats:
+				stats['likes'] = like_stats[date]
+			if date in reply_stats:
+				stats['replies'] = reply_stats[date]
+			if date in retweet_stats:
+				stats['retweets'] = retweet_stats[date]
+			if date in quote_stats:
+				stats['quote'] = quote_stats[date]
+
+			data.append(stats)
+
+		return True, data, f"Success obtaining stats grouped"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+		return False, None, f"Error obtaining stats grouped"
+
+
+def rafa_is_lindo():
+	"""
+	Most important function in this module
+
+	Returns: Most important message in this module
+	"""
+
+	try:
+		return True, "Rafa é lindo", "Success obtaining stats grouped"
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+		return False, None, f"Error obtaining stats grouped"
+
+
+def general_today():
+	"""
+	Returns: number of activities the bots had today
+	"""
+	try:
+		return True, {"data": __get_today_stats()}, "Success obtaining stats grouped"
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+		return False, None, f"Error obtaining stats grouped"
+
+
+def user_tweets_today():
+	"""
+	Returns: number of users and tweets the bot found today
+	"""
+	try:
+		data = {"user": __get_today_stats("INSERT USER"), "tweets": __get_today_stats("INSERT TWEET")}
+		return True, data, "Success obtaining stats grouped"
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_today.__name__} -> {e}")
+		return False, None, f"Error obtaining stats grouped"
+
+
+def relations_today():
+	"""
+	Returns: number of relations betweens entities the bot found today
+	"""
+	try:
+		data = {"follow": __get_today_stats("FOLLOW"), "likes": __get_today_stats("TWEET LIKE"),
+				"retweet": __get_today_stats("RETWEET"), "quotes": __get_today_stats("TWEET QUOTE"),
+				"replies": __get_today_stats("REPLIES")}
+		return True, data, "Success obtaining stats grouped"
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {relations_today.__name__} -> {e}")
+		return False, None, f"Error obtaining stats grouped"
+
+
+def latest_tweets_daily(entries_per_page, page):
+	"""
+	Args:
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: All bots's daily tweets wrapped on dictionary divided by pages
+	if entries_per_page and page are both None then all bots's daily activities  will be returned
+
+	"""
+	try:
+		tweets = TweetStats.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))
+										& Q(timestamp__lte=datetime.now())).order_by("-timestamp")
+
+		data = paginator_factory(tweets, entries_per_page, page)
+		tweet_list = [serializers.TweetStats(tweet).data["tweet_id"] for tweet in data['entries']]
+		data['entries'] = [serializers.Tweet(Tweet.objects.get(tweet_id=tweet)).data for tweet in tweet_list]
+		return True, data, "Success obtaining latest bot's tweets daily"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_tweets_daily.__name__} -> {e}")
+		return False, None, "Error obtaining latest bot's tweets daily"
