@@ -8,7 +8,7 @@ from control_center.utils import tweet_to_simple_text
 from wrappers.mongo_wrapper import MongoAPI
 
 DIR_EXPORT = "tweets_text/"
-MIN_SIZE_TWEET = 3
+MIN_SIZE_TWEET = 5
 
 
 class TweetsExporter:

@@ -88,7 +88,7 @@ class Control_Center(Rabbitmq):
 		elif message_type == BotToServer.SAVE_DIRECT_MESSAGES:
 			self.save_dm(message)
 
-		elif message_type == BotToServer.EVENT_USER_BLOCKED:
+		elif message_type == BotToServer.EVENT_ERROR:
 			self.error(message)
 
 		elif message_type == BotToServer.SAVE_FOLLOWERS:
@@ -765,7 +765,8 @@ class Control_Center(Rabbitmq):
 		"""
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"ERROR: {data['data']}"
+			"action": f"ERROR: {data['data']['message']}",
+			"target_id": data['data']['target_id']
 		})
 		log.error(f"Error in trying to do action <{data['data']}>")
 
