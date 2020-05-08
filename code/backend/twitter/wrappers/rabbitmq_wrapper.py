@@ -8,7 +8,10 @@ import json
 
 from pika.adapters.asyncio_connection import AsyncioConnection
 
-from credentials import *
+from credentials import RABBITMQ_URL, RABBITMQ_PORT, VHOST, RABBITMQ_USERNAME, RABBITMQ_PASSWORD, API_QUEUE, \
+    API_FOLLOW_QUEUE, DATA_EXCHANGE, DATA_ROUTING_KEY, LOG_ROUTING_KEY, LOG_EXCHANGE, QUERY_EXCHANGE, \
+    QUERY_ROUTING_KEY, SERVICE_QUERY_EXCHANGE, SERVICE_QUERY_ROUTING_KEY, TASKS_QUEUE_PREFIX, TASKS_EXCHANGE, \
+    TASK_FOLLOW_QUEUE, TASK_FOLLOW_EXCHANGE
 
 log = logging.getLogger('Rabbit')
 log.setLevel(logging.DEBUG)
@@ -67,6 +70,7 @@ class Rabbitmq:
 
         # publisher exchanges data
         self.publish_exchange = {TASKS_QUEUE_PREFIX: {'exchange': TASKS_EXCHANGE}}
+        self.publish_exchange = {TASK_FOLLOW_QUEUE: {'exchange': TASK_FOLLOW_EXCHANGE}}
 
     def run(self):
         self.connection = AsyncioConnection(parameters=self.pika_parameters,
@@ -121,10 +125,10 @@ class Rabbitmq:
             )
 
     def __setup_queue(self, _unused_frame, queue, exchange, routing_key):
-        callback = functools.partial(self.__on_queue_declareok, queue=queue, exchange=exchange, routing_key=routing_key)
+        callback = functools.partial(self.__on_queue_declared, queue=queue, exchange=exchange, routing_key=routing_key)
         self.channels[queue].queue_declare(queue=queue, durable=True, callback=callback)
 
-    def __on_queue_declareok(self, _unused_frame, queue, exchange, routing_key):
+    def __on_queue_declared(self, _unused_frame, queue, exchange, routing_key):
 
         callback = functools.partial(self.__set_prefetch, queue=queue)
 
