@@ -53,17 +53,20 @@ class Rabbitmq:
             blocked_connection_timeout=300
         )
 
-        self.reconnection_attempt = 0
-        self.MAX_RECONNECTIONS = 10
         self.connection = None
         self.channels = {}
 
         self.exchange = {API_QUEUE: [], API_FOLLOW_QUEUE: []}
+
+        # consumer exchanges data
         self.exchange[API_QUEUE].append({'exchange': DATA_EXCHANGE, 'routing_key': DATA_ROUTING_KEY})
         self.exchange[API_QUEUE].append({'exchange': LOG_EXCHANGE, 'routing_key': LOG_ROUTING_KEY})
         self.exchange[API_QUEUE].append({'exchange': QUERY_EXCHANGE, 'routing_key': QUERY_ROUTING_KEY})
         self.exchange[API_FOLLOW_QUEUE].append({'exchange': SERVICE_QUERY_EXCHANGE,
                                                 'routing_key': SERVICE_QUERY_ROUTING_KEY})
+
+        # publisher exchanges data
+        self.publish_exchange = {TASKS_QUEUE_PREFIX: {'exchange': TASKS_EXCHANGE}}
 
     def run(self):
         self.connection = AsyncioConnection(parameters=self.pika_parameters,
@@ -76,8 +79,12 @@ class Rabbitmq:
         parameters given from the constructor
         """
 
+        # consume queues
         self.connection.channel(on_open_callback=self.__on_api_channel_open)
         self.connection.channel(on_open_callback=self.__on_api_follow_channel_open)
+
+        # publish queues
+        self.connection.channel(on_open_callback=self.__on_bot_tasks_channel_open)
 
     def __on_api_channel_open(self, channel):
         self.__on_channel_open(channel=channel, queue=API_QUEUE)
@@ -85,17 +92,27 @@ class Rabbitmq:
     def __on_api_follow_channel_open(self, channel):
         self.__on_channel_open(channel=channel, queue=API_FOLLOW_QUEUE)
 
+    def __on_bot_tasks_channel_open(self, channel):
+        self.__on_tasks_channel_open(channel=channel, queue=TASKS_QUEUE_PREFIX)
+
+    def __on_tasks_channel_open(self, channel, queue):
+        self.channels[queue] = channel
+
+        exchange = self.publish_exchange[queue]['exchange']
+
+        log.info(f"Declaring exchange <{exchange}>")
+
+        self.channels[queue].exchange_declare(
+            exchange=exchange,
+            durable=True
+        )
+
     def __on_channel_open(self, channel, queue):
         self.channels[queue] = channel
-        # Declare Exchanges
-        # log.info("Declaring exchanges")
-        # self.channel.exchange_declare(
-        #     exchange=TASKS_EXCHANGE,
-        #     exchange_type='direct',
-        #     durable=True
-        # )
 
         for exchange_data in self.exchange[queue]:
+            log.info(f"Declaring exchange <{exchange_data['exchange']}>")
+
             callback = functools.partial(self.__setup_queue, queue=queue, **exchange_data)
             self.channels[queue].exchange_declare(
                 exchange=exchange_data['exchange'],
@@ -125,7 +142,7 @@ class Rabbitmq:
     def __set_prefetch(self, _unused_frame, queue):
         self.channels[queue].basic_qos(prefetch_count=10, callback=functools.partial(self._receive, queue=queue))
 
-    def _send(self, routing_key, message):
+    def _send(self, queue, routing_key, message):
         """
         Routes the message to corresponding channel
 
@@ -135,8 +152,8 @@ class Rabbitmq:
         message: (Dictionary) dictionary to be stringified and sent
         """
 
-        self.channel.basic_publish(
-            exchange="tasks_deliver",
+        self.channels[queue].basic_publish(
+            exchange=self.publish_exchange[queue]['exchange'],
             routing_key=routing_key,
             body=json.dumps(message)
         )
