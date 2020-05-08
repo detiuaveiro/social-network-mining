@@ -87,8 +87,8 @@ class Report:
 	def __insert_info_list(info_dict, results_list, placement_dict):
 		if results_list:
 			for result in results_list:
-				index, key = placement_dict[result["id_str"]]
-				info_dict[index][key] = result
+				for index, key in placement_dict[result["id_str"]]:
+					info_dict[index][key] = result
 		return info_dict
 
 	def __query_builder(self, query_tweets, query_bots, query_users, node):
@@ -110,7 +110,12 @@ class Report:
 
 		return result
 
-	def create_report(self, match: dict, params: dict, limit: int = None, export='csv'):
+	def __add_to_keep_track(self, locations_dict, node, location):
+		if node not in locations_dict:
+			locations_dict[node] = []
+		locations_dict[node].append(location)
+
+	def create_report(self, match: dict, params: dict, limit: int = 50, export='csv'):
 		query = f"MATCH r={self.__node_builder(match['start'])}" \
 				f"-{self.__relation_builder(match['rel'])}" \
 				f"->{self.__node_builder(match['end'])} " \
@@ -151,27 +156,31 @@ class Report:
 			# Add the detailed start node
 			node_start = relations[0]["start"]
 			self.__query_builder(query_tweets_start, query_bots_start, query_user_start, node_start)
-			keep_track_places[node_start["properties"]["id"]] = (row_index, "start")
+			self.__add_to_keep_track(keep_track_places, node_start["properties"]["id"], (row_index, "start"))
 			relation["start"] = {param: None for param in params['start'][node_start["labels"][0]]}
+			relation["start"]["id_str"] = node_start["properties"]["id"]
 
 			for index in range(len(relations) - 1):
 				rel = relations[index]
 				relation['rel' + str(index+1)] = {"name": rel["label"]}
 				self.__query_builder(query_tweets_interm, query_bots_interm, query_user_interm, rel["end"])
-				keep_track_places[rel["end"]["properties"]["id"]] = (row_index, "interm" + str(index + 1))
+				self.__add_to_keep_track(keep_track_places, rel["end"]["properties"]["id"],
+										 (row_index, "interm" + str(index + 1)))
 				relation["interm" + str(index+1)] = {param: None for param in params['inter'][rel["end"]["labels"][0]]}
+				relation["interm" + str(index + 1)]["id_str"] = rel["end"]["properties"]["id"]
 
 			# Add ending node
 			relation['rel' + str(len(relations))] = {"name": relations[-1]["label"]}
 			node_end = relations[-1]["end"]
 			self.__query_builder(query_tweets_end, query_bots_end, query_user_end, node_end)
-			keep_track_places[node_end["properties"]["id"]] = (row_index, "end")
+			self.__add_to_keep_track(keep_track_places, node_end["properties"]["id"], (row_index, "end"))
 			relation["end"] = {param: None for param in params['end'][node_end["labels"][0]]}
+			relation["end"]["id_str"] = node_end["properties"]["id"]
 
 			# Append to result
 			result.append(relation)
 
-		logger.debug("It took "+ str(time()-start) + " to finish analysing network")
+		logger.debug(f"It took {time()-start} to finish analysing network")
 
 		result = self.__get_results(result, query_tweets_start, query_user_start,
 									query_bots_start, keep_track_places, params['start'])
@@ -182,9 +191,7 @@ class Report:
 		result = self.__get_results(result, query_tweets_end, query_user_end,
 									query_bots_end, keep_track_places, params['end'])
 
-		logger.debug("It took " + str(time()-start))
-
-		logger.debug(result)
+		logger.debug(f"It took {time()-start}")
 
 		if export == self.ExportType.CSV:
 			self.exporter.export_csv(result)
@@ -226,19 +233,19 @@ if __name__ == '__main__':
 	}
 	params = {
 		'start': {
-			'Tweet': ['retweet_count', 'favourite_count', 'text'],
-			'User': ['name', 'screen_name', 'followers_count'],
-			'Bot': ['name', 'screen_name', 'friends_count']
+			'Tweet': ['retweet_count', 'favourite_count', 'text', "id_str"],
+			'User': ['name', 'screen_name', 'followers_count', "id_str"],
+			'Bot': ['name', 'screen_name', 'friends_count', "id_str"]
 		},
 		'inter': {
-			'Tweet': ['id'],
-			'User': ['screen_name'],
-			'Bot': ['name']
+			'Tweet': ['id', "id_str"],
+			'User': ['screen_name', "id_str"],
+			'Bot': ['name', "id_str"]
 		},
 		'end': {
-			'Tweet': ['favorite_count'],
-			'User': ['followers_count'],
-			'Bot': ['friends_count']
+			'Tweet': ['favorite_count', "id_str"],
+			'User': ['followers_count', "id_str"],
+			'Bot': ['friends_count', "id_str"]
 		}
 	}
 
