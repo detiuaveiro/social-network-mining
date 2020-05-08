@@ -21,6 +21,7 @@ import ReactTooltip from "react-tooltip";
 import * as loadingAnim from "../../assets/animations/squares_1.json";
 
 import Select from 'react-select';
+import AsyncSelect from 'react-select/async';
 import CreatableSelect from 'react-select/creatable';
 import makeAnimated from 'react-select/animated';
 
@@ -33,6 +34,8 @@ class Reports extends Component {
     super();
   }
 
+  firstErrorToast = null;
+
   state = {
     error: null,
     doneLoading: false,
@@ -42,6 +45,19 @@ class Reports extends Component {
         preserveAspectRatio: "xMidYMid slice"
       }
     },
+
+    start: {
+      type: { value: "Bot", label: "Bot" },
+      nodes: [],
+      relation: { value: "FOLLOWS", label: "Follows" }
+    },
+
+    intermediate: [],
+
+    end: {
+      type: { value: "Bot", label: "Bot" },
+      nodes: []
+    }
   };
 
   async componentDidMount() {
@@ -51,8 +67,141 @@ class Reports extends Component {
 
   }
 
-  // Methods //////////////////////////////////////////////////////////
+  // Search ///////////////////////////////////////////////////////////
+  loadOptions = async (inputValue, callback) => {
+    if (inputValue == "" || inputValue == null) {
+      toast.dismiss(this.firstErrorToast)
+    } else {
+      if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
+        this.firstErrorToast = toast.error('Sorry, the search parameter can\'t include characters like @ or #. Please use only letters and numbers', {
+          position: "top-center",
+          autoClose: false,
+        });
+      } else {
+        toast.dismiss(this.firstErrorToast)
+        var requestValues = await this.search(inputValue, this.state.start.type.value)
+        callback(requestValues)
+      }
+    }
+  }
 
+  loadOptions2 = async (inputValue, callback) => {
+    if (inputValue == "" || inputValue == null) {
+      toast.dismiss(this.firstErrorToast)
+    } else {
+      if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
+        this.firstErrorToast = toast.error('Sorry, the search parameter can\'t include characters like @ or #. Please use only letters and numbers', {
+          position: "top-center",
+          autoClose: false,
+        });
+      } else {
+        toast.dismiss(this.firstErrorToast)
+        var requestValues = await this.search(inputValue, this.state.end.type.value)
+        callback(requestValues)
+      }
+    }
+  }
+
+  async search(input, type) {
+    var tempData = []
+    if (type != "Tweet") {
+      await fetch(baseURL + "twitter/users/strict/search/" + type + "/" + input + "/", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      }).then(response => {
+        if (response.ok) return response.json();
+        else {
+          throw new Error(response.status);
+        }
+      }).then(data => {
+        if (data != null && data != {}) {
+          data = data.data
+
+          data.forEach(user => {
+            tempData.push({ "value": user.id, "label": user.name + " (@" + user.screen_name + ")" })
+          })
+
+        }
+      }).catch(error => {
+        console.log("error: " + error);
+        this.setState({
+          error: true,
+        })
+      });
+    }
+    else {
+      await fetch(baseURL + "twitter/tweets/strict/search/" + input + "/", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      }).then(response => {
+        if (response.ok) return response.json();
+        else {
+          throw new Error(response.status);
+        }
+      }).then(data => {
+        if (data != null && data != {}) {
+          data = data.data
+
+          data.forEach(tweet => {
+            tempData.push({ "value": tweet, "label": "#" + tweet })
+          })
+
+        }
+      }).catch(error => {
+        console.log("error: " + error);
+        this.setState({
+          error: true,
+        })
+      });
+    }
+
+    return tempData
+  }
+
+  // Methods //////////////////////////////////////////////////////////
+  changeSelectedStartType = (selectedOption) => {
+    if (selectedOption != null) {
+      this.setState({ start: { type: selectedOption, nodes: [], relation: this.state.start.startRelationshiop  } });
+    } else {
+      this.setState({ start: { type: { value: "Bot", label: "Bot" }, nodes: [], relation: this.state.start.startRelationshiop } });
+    }
+  }
+
+  changeSelectedStartNodes = (selectedOption) => {
+    if (selectedOption != null) {
+      this.setState({ start: { type: this.state.start.type, nodes: selectedOption, relation: this.state.start.startRelationshiop  } });
+    } else {
+      this.setState({ start: { type: this.state.start.type, nodes: [], relation: this.state.start.startRelationshiop  } });
+    }
+  }
+
+  changeSelectedStartRelationType = (selectedOption) => {
+    if (selectedOption != null) {
+      this.setState({ start: { type: this.state.start.type, nodes: this.state.start.nodes, relation: selectedOption } });
+    } else {
+      this.setState({ start: { type: this.state.start.type, nodes: this.state.start.nodes, relation: { value: "FOLLOWS", label: "Follows" } } });
+    }
+  }
+
+  changeSelectedEndType = (selectedOption) => {
+    if (selectedOption != null) {
+      this.setState({ end: { type: selectedOption, nodes: [] } });
+    } else {
+      this.setState({ end: { type: { value: "Bot", label: "Bot" }, nodes: [] } });
+    }
+  }
+
+  changeSelectedEndNodes = (selectedOption) => {
+    if (selectedOption != null) {
+      this.setState({ end: { type: this.state.end.type, nodes: selectedOption } });
+    } else {
+      this.setState({ end: { type: this.state.end.type, nodes: [] } });
+    }
+  }
 
   /////////////////////////////////////////////////////////////////////
 
@@ -145,7 +294,7 @@ class Reports extends Component {
             </Row>
 
             <Row>
-              <Col xs="12" sm="12" md="12">
+              <Col xs="12" sm="12" md="8">
                 <Card>
                   <CardHeader color="primary">
                     <h3 style={{ color: "white" }}>
@@ -158,46 +307,75 @@ class Reports extends Component {
                         <FormGroup>
                           <Select
                             defaultValue={[]}
-                            id="firstType" onChange={this.changeSelectedFilter}
-                            value={this.state.filter || ''}
+                            id="startType" onChange={this.changeSelectedStartType}
+                            value={this.state.start.type}
                             options={[{ value: "Bot", label: "Bot" }, { value: "User", label: "User" }, { value: "Tweet", label: "Tweet" }]}
                             className="basic-single"
                             classNamePrefix="select"
-                            placeholder="Filter"
+                            placeholder="Node Type"
                           />
-                          <i data-tip="Target specifies the twitter name of users you want the bot to attempt to follow, whilst Keywords define tags that a tweet should be classified as for the bot to have interest in" style={{ color: "#1da1f2", float: "right", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
+                          <i data-tip="Specify the starting nodes and their type" style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
                         </FormGroup>
                       </Col>
                       <Col md="10">
                         <FormGroup>
-                          <Input type="text" id="name" placeholder="Policy name" required />
+
+                          <AsyncSelect
+                            placeholder="User/Bot Username or Tweet ID"
+                            components={makeAnimated()}
+                            loadOptions={this.loadOptions}
+                            onChange={this.changeSelectedStartNodes}
+                            isMulti
+                          />
+
                         </FormGroup>
                       </Col>
                     </Row>
 
-                    <Row style={{ marginTop: "30px", minHeight: "48px" }}>
-                      <Col md="12">
-                        <CreatableSelect
-                          isMulti
-                          onChange={this.addNewTags}
-                          options={[]}
-                          components={makeAnimated()}
-                          placeholder="Tags"
-                        />
+                    <Row style={{ marginTop: "25px" }}>
+                      <Col md="2">
+                        <FormGroup>
+                          <Select
+                            defaultValue={[]}
+                            id="startRelType" onChange={this.changeSelectedStartRelationType}
+                            value={this.state.start.relation}
+                            options={[{ value: "FOLLOWS", label: "Follows" }, { value: "WROTE", label: "Wrote" }, { value: "REPLIED", label: "Replied" }, { value: "RETWEETED", label: "Retweeted" }, { value: "QUOTED", label: "Quoted" }]}
+                            className="basic-single"
+                            classNamePrefix="select"
+                            placeholder="Relation Type"
+                          />
+                          <i data-tip="Specify the relation type" style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
+                        </FormGroup>
                       </Col>
                     </Row>
 
-                    <Row style={{ marginTop: "30px", minHeight: "48px" }}>
-                      <Col md="12">
-                        <Select
-                          isMulti
-                          id="bots"
-                          value={this.state.bots}
-                          onChange={this.addNewBots}
-                          options={this.state.allBots}
-                          components={makeAnimated()}
-                          placeholder="Bots"
-                        />
+                    <Row style={{ marginTop: "25px" }}>
+                      <Col md="2">
+                        <FormGroup>
+                          <Select
+                            defaultValue={[]}
+                            id="endType" onChange={this.changeSelectedEndType}
+                            value={this.state.end.type}
+                            options={[{ value: "Bot", label: "Bot" }, { value: "User", label: "User" }, { value: "Tweet", label: "Tweet" }]}
+                            className="basic-single"
+                            classNamePrefix="select"
+                            placeholder="Node Type"
+                          />
+                          <i data-tip="Specify the ending nodes and their type" style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
+                        </FormGroup>
+                      </Col>
+                      <Col md="10">
+                        <FormGroup>
+
+                          <AsyncSelect
+                            placeholder="User/Bot Username or Tweet ID"
+                            components={makeAnimated()}
+                            loadOptions={this.loadOptions2}
+                            onChange={this.changeSelectedEndNodes}
+                            isMulti
+                          />
+
+                        </FormGroup>
                       </Col>
                     </Row>
 
@@ -219,6 +397,8 @@ class Reports extends Component {
                 </Card>
               </Col>
             </Row>
+
+
 
           </Container>
         </div>
