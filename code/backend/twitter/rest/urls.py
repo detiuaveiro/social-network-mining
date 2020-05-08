@@ -61,6 +61,8 @@ urlpatterns = [
 	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
 		users.twitter_search_users, name="twitter_search_users"),
 
+	url(r"^twitter/strict/search/(?P<keyword>[\w\s()]+)/$", users.twitter_strict_search, name="twitter_strict_search"),
+
 	url(r"^twitter/users/(?P<user_id>[0-9]+)/stats/grouped/(?P<group_type>(?:year)|(?:month)|(?:day))/$",
 		users.twitter_user_stats_grouped, name="twitter_user_stats_grouped"),
 	url(r"twitter/users/(?P<user_id>[0-9]+)/type/$", users.twitter_users_type, name="users.twitter_users_type"),
