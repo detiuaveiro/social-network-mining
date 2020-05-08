@@ -55,6 +55,32 @@ def latest_tweets(_, counter, entries_per_page=None, page=None):
 
 
 @api_view(["GET"])
+def latest_tweets_daily(_, entries_per_page=None, page=None):
+	"""
+
+	Args:
+		_: Http Request (ignored in this function)
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: All bots's daily tweets wrapped on response's object
+
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.latest_tweets_daily(entries_per_page, page)
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
+
+
+@api_view(["GET"])
 def latest_activities_daily(_, entries_per_page=None, page=None):
 	"""
 
