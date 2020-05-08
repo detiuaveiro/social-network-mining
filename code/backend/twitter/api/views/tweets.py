@@ -133,3 +133,28 @@ def twitter_tweet_replies(_, tweet_id):
 		status = HTTP_403_FORBIDDEN
 
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
+
+
+@api_view(["GET"])
+def twitter_search_tweets(_, tweet):
+	"""
+
+	Args:
+		_:  Http Request (ignored in this function)
+		tweet: Tweet to be searched
+
+	Returns: Tweets  that matches keywords wrapped on response's object
+
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.twitter_search_tweets(tweet)
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)

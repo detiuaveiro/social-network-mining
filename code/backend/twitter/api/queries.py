@@ -430,6 +430,25 @@ def twitter_tweet_replies(tweet_id):
 		return False, None, f"Error obtaining all tweet's (id:{tweet_id}) replies"
 
 
+def twitter_search_tweets(tweet):
+	"""
+	Args:
+		tweet_id: Tweet's ID
+
+	Return: Search tweet that starts with the id
+	"""
+	try:
+		tweets = Tweet.objects.filter(Q(tweet_id_str__startswith=tweet))
+
+		data = [serializers.Tweet(tweet).data["tweet_id"] for tweet in tweets]
+
+		return True, data, f"Success searching users by {tweet}"
+
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_search_tweets.__name__} -> {e}")
+		return False, None, f"Error searching users by {tweet}"
+
+
 # -----------------------------------------------------------
 # policies
 # -----------------------------------------------------------

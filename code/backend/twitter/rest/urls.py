@@ -96,6 +96,8 @@ urlpatterns = [
 
 	url(r"^twitter/tweets/(?P<tweet_id>[0-9]+)/replies/$", tweets.twitter_tweet_replies, name="twitter_tweet_replies"),
 
+	url(r"^twitter/tweets/search/(?P<tweet>[\w\s()]+)/$", tweets.twitter_search_tweets, name="twitter_search_tweets"),
+
 	# Policies
 	url(r"^policies/$", policies.policies, name="policies"),
 	url(r"^policies/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", policies.policies, name="policies"),
