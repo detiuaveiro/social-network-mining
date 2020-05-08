@@ -2,7 +2,6 @@
 # coding: UTF-8
 import functools
 import pika
-import time
 import logging
 import json
 
@@ -18,8 +17,6 @@ log.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(open("rabbitmq.log", "w"))
 handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
-
-WAIT_TIME = 1
 
 
 class Rabbitmq:
@@ -176,21 +173,12 @@ class Rabbitmq:
         queue_name : (string) Name of the queue to be declared
         """
 
-        try:
-            log.info(" [*] Waiting for Messages. To exit press CTRL+C")
+        log.info(" [*] Waiting for Messages. To exit press CTRL+C")
 
-            self.channels[queue].basic_consume(queue=queue, on_message_callback=self.received_message_handler,
-                                               auto_ack=True)
-            # self.channel.start_consuming()
-        except Exception as e:
-            log.exception(f"Exception <{e}> detected:")
-            log.warning("Attempting reconnection after waiting time...")
-            time.sleep(WAIT_TIME)
-            # self.connect()
-            log.debug("Setup completed")
-            # self._receive(queue_name)
+        self.channels[queue].basic_consume(queue=queue, on_message_callback=self._received_message_handler,
+                                           auto_ack=True)
 
-    def received_message_handler(self, channel, method, properties, body):
+    def _received_message_handler(self, channel, method, properties, body):
         """Function to rewrite on the class that inherits this class
         """
         pass
