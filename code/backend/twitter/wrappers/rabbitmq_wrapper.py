@@ -56,7 +56,7 @@ class Rabbitmq:
         self.reconnection_attempt = 0
         self.MAX_RECONNECTIONS = 10
         self.connection = None
-        self.channel = None
+        self.channels = {}
 
         self.exchange = {API_QUEUE: [], API_FOLLOW_QUEUE: []}
         self.exchange[API_QUEUE].append({'exchange': DATA_EXCHANGE, 'routing_key': DATA_ROUTING_KEY})
@@ -67,26 +67,26 @@ class Rabbitmq:
 
     def run(self):
         self.connection = AsyncioConnection(parameters=self.pika_parameters,
-                                            on_open_callback=self._setup)
+                                            on_open_callback=self.__setup)
         self.connection.ioloop.run_forever()
 
-    def _setup(self, _unused_connection):
+    def __setup(self, _unused_connection):
         """
         Set up function, will start the connection, create all necessary exchanges and respective bindings from the
         parameters given from the constructor
         """
 
-        self.connection.channel(on_open_callback=self.on_api_channel_open)
-        self.connection.channel(on_open_callback=self.on_api_follow_channel_open)
+        self.connection.channel(on_open_callback=self.__on_api_channel_open)
+        self.connection.channel(on_open_callback=self.__on_api_follow_channel_open)
 
-    def on_api_channel_open(self, channel):
-        self.on_channel_open(channel=channel, queue=API_QUEUE)
+    def __on_api_channel_open(self, channel):
+        self.__on_channel_open(channel=channel, queue=API_QUEUE)
 
-    def on_api_follow_channel_open(self, channel):
-        self.on_channel_open(channel=channel, queue=API_FOLLOW_QUEUE)
+    def __on_api_follow_channel_open(self, channel):
+        self.__on_channel_open(channel=channel, queue=API_FOLLOW_QUEUE)
 
-    def on_channel_open(self, channel, queue):
-        self.channel = channel
+    def __on_channel_open(self, channel, queue):
+        self.channels[queue] = channel
         # Declare Exchanges
         # log.info("Declaring exchanges")
         # self.channel.exchange_declare(
@@ -96,24 +96,24 @@ class Rabbitmq:
         # )
 
         for exchange_data in self.exchange[queue]:
-            callback = functools.partial(self.setup_queue, queue=queue, **exchange_data)
-            self.channel.exchange_declare(
+            callback = functools.partial(self.__setup_queue, queue=queue, **exchange_data)
+            self.channels[queue].exchange_declare(
                 exchange=exchange_data['exchange'],
                 durable=True,
                 callback=callback
             )
 
-    def setup_queue(self, _unused_frame, queue, exchange, routing_key):
-        callback = functools.partial(self.on_queue_declareok, queue=queue, exchange=exchange, routing_key=routing_key)
-        self.channel.queue_declare(queue=queue, durable=True, callback=callback)
+    def __setup_queue(self, _unused_frame, queue, exchange, routing_key):
+        callback = functools.partial(self.__on_queue_declareok, queue=queue, exchange=exchange, routing_key=routing_key)
+        self.channels[queue].queue_declare(queue=queue, durable=True, callback=callback)
 
-    def on_queue_declareok(self, _unused_frame, queue, exchange, routing_key):
+    def __on_queue_declareok(self, _unused_frame, queue, exchange, routing_key):
 
-        callback = functools.partial(self.set_prefetch, queue=queue)
+        callback = functools.partial(self.__set_prefetch, queue=queue)
 
         # Create Bindings
         log.info("Creating bindings")
-        self.channel.queue_bind(
+        self.channels[queue].queue_bind(
             queue=queue,
             exchange=exchange,
             routing_key=routing_key,
@@ -122,8 +122,8 @@ class Rabbitmq:
 
         log.info("Connection to Rabbit Established")
 
-    def set_prefetch(self, _unused_frame, queue):
-        self.channel.basic_qos(prefetch_count=10, callback=functools.partial(self._receive, queue=queue))
+    def __set_prefetch(self, _unused_frame, queue):
+        self.channels[queue].basic_qos(prefetch_count=10, callback=functools.partial(self._receive, queue=queue))
 
     def _send(self, routing_key, message):
         """
@@ -153,8 +153,8 @@ class Rabbitmq:
         try:
             log.info(" [*] Waiting for Messages. To exit press CTRL+C")
 
-            self.channel.basic_consume(queue=queue, on_message_callback=self.received_message_handler,
-                                       auto_ack=True)
+            self.channels[queue].basic_consume(queue=queue, on_message_callback=self.received_message_handler,
+                                               auto_ack=True)
             # self.channel.start_consuming()
         except Exception as e:
             log.exception(f"Exception <{e}> detected:")
