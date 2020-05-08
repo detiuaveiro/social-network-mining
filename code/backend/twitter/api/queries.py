@@ -282,6 +282,35 @@ def twitter_search_users(keywords, entries_per_page, page):
 		return False, None, f"Error searching users by {keywords}"
 
 
+def twitter_search_users_strict(keyword):
+	"""
+
+	Args:
+		keyword: Words to be searched
+
+	Returns: User's  that matches keywords on name and screen_name wrapped on response's object divided by pages
+	if entries_per_page and page are both None then all users will be returned
+
+	"""
+	try:
+		print("Keyword")
+		users = User.objects.filter(Q(screen_name__startswith=keyword))
+
+		user_serializer = [serializers.User(user).data for user in users]
+
+		data = [{
+			"id": user["user_id"], "screen_name": user["screen_name"], "name": user["name"]
+		} for user in user_serializer]
+
+		return True, data, f"Success searching users by {keyword}"
+
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: "
+					 f"Function {twitter_search_users_strict().__name__} -> {e}")
+		return False, None, f"Error searching users by {keyword}"
+
+
+
 def twitter_users_type(user_id):
 	"""
 	Args:

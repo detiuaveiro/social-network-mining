@@ -236,6 +236,31 @@ def twitter_search_users(_, keywords, entries_per_page=None, page=None):
 
 
 @api_view(["GET"])
+def twitter_search_users_strict(_, keyword):
+	"""
+
+	Args:
+		_:  Http Request (ignored in this function)
+		keyword: Word to be searched
+
+	Returns: Users that match keyword wrapped on response's object
+
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.twitter_search_users_strict(keyword)
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
+
+
+@api_view(["GET"])
 def twitter_user_stats_grouped(_, user_id, group_type):
 	"""
 	Args:

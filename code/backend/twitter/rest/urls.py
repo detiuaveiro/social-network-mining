@@ -56,6 +56,8 @@ urlpatterns = [
 		users.twitter_user_stats, name="twitter_user_stats"),
 
 	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/$", users.twitter_search_users, name="twitter_search_users"),
+	url(r"^twitter/users/strict/search/(?P<keyword>[\w\s()]+)/$",
+		users.twitter_search_users_strict, name="twitter_search_users_strict"),
 	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
 		users.twitter_search_users, name="twitter_search_users"),
 
@@ -96,7 +98,8 @@ urlpatterns = [
 
 	url(r"^twitter/tweets/(?P<tweet_id>[0-9]+)/replies/$", tweets.twitter_tweet_replies, name="twitter_tweet_replies"),
 
-	url(r"^twitter/tweets/search/(?P<tweet>[\w\s()]+)/$", tweets.twitter_search_tweets, name="twitter_search_tweets"),
+	url(r"^twitter/tweets/strict/search/(?P<tweet>[\w\s()]+)/$",
+		tweets.twitter_search_tweets, name="twitter_search_tweets"),
 
 	# Policies
 	url(r"^policies/$", policies.policies, name="policies"),
