@@ -72,9 +72,9 @@ class Rabbitmq:
         self.connection.channel(on_open_callback=self.on_channel_open)
 
         # self.channel.basic_qos(prefetch_count=10, global_qos=True)
-        # cb = functools.partial(self.on_queue_declareok, userdata=API_QUEUE)
+        # callback = functools.partial(self.on_queue_declareok, userdata=API_QUEUE)
         # print("ola1")
-        # self.channel.queue_declare(queue=API_QUEUE, callback=cb)            # durable=True
+        # self.channel.queue_declare(queue=API_QUEUE, callback=callback)            # durable=True
         # print("ola2")
 
     def on_channel_open(self, channel):
@@ -88,7 +88,7 @@ class Rabbitmq:
         #     durable=True
         # )
 
-        cb = functools.partial(self.setup_queue, data={
+        callback = functools.partial(self.setup_queue, data={
             'exchange': DATA_EXCHANGE,
             'routing_key': DATA_ROUTING_KEY,
             'queue': API_QUEUE
@@ -96,36 +96,38 @@ class Rabbitmq:
         self.channel.exchange_declare(
             exchange=DATA_EXCHANGE,
             durable=True,
-            callback=cb
+            callback=callback
         )
 
-        # cb = functools.partial(self.setup_queue, data={
-        #     'exchange': LOG_EXCHANGE,
-        #     'routing_key': LOG_ROUTING_KEY
-        # })
-        # self.channel.exchange_declare(
-        #     exchange=LOG_EXCHANGE,
-        #     durable=True,
-        #     callback=cb
-        # )
-#
-        # cb = functools.partial(self.setup_queue, data={
-        #     'exchange': QUERY_EXCHANGE,
-        #     'routing_key': QUERY_ROUTING_KEY
-        # })
-        # self.channel.exchange_declare(
-        #     exchange=QUERY_EXCHANGE,
-        #     durable=True,
-        #     callback=cb
-        # )
+        callback = functools.partial(self.setup_queue, data={
+            'exchange': LOG_EXCHANGE,
+            'routing_key': LOG_ROUTING_KEY,
+            'queue': API_QUEUE
+        })
+        self.channel.exchange_declare(
+            exchange=LOG_EXCHANGE,
+            durable=True,
+            callback=callback
+        )
+
+        callback = functools.partial(self.setup_queue, data={
+            'exchange': QUERY_EXCHANGE,
+            'routing_key': QUERY_ROUTING_KEY,
+            'queue': API_QUEUE
+        })
+        self.channel.exchange_declare(
+            exchange=QUERY_EXCHANGE,
+            durable=True,
+            callback=callback
+        )
 
     def setup_queue(self, _unused_frame, data):
-        cb = functools.partial(self.on_queue_declareok, data=data)
-        self.channel.queue_declare(queue=data['queue'], durable=True, callback=cb)
+        callback = functools.partial(self.on_queue_declareok, data=data)
+        self.channel.queue_declare(queue=data['queue'], durable=True, callback=callback)
 
     def on_queue_declareok(self, _unused_frame, data):
 
-        cb = functools.partial(self.set_prefetch, queue_name=data['queue'])
+        callback = functools.partial(self.set_prefetch, queue_name=data['queue'])
 
         # Create Bindings
         log.info("Creating bindings")
@@ -133,7 +135,7 @@ class Rabbitmq:
             queue=data['queue'],
             exchange=data['exchange'],
             routing_key=data['routing_key'],
-            callback=cb
+            callback=callback
         )
 
         log.info("Connection to Rabbit Established")
