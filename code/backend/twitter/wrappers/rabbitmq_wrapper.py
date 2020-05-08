@@ -69,8 +69,10 @@ class Rabbitmq:
                                                 'routing_key': SERVICE_QUERY_ROUTING_KEY})
 
         # publisher exchanges data
-        self.publish_exchange = {TASKS_QUEUE_PREFIX: {'exchange': TASKS_EXCHANGE}}
-        self.publish_exchange = {TASK_FOLLOW_QUEUE: {'exchange': TASK_FOLLOW_EXCHANGE}}
+        self.publish_exchange = {
+            TASKS_QUEUE_PREFIX: {'exchange': TASKS_EXCHANGE},
+            TASK_FOLLOW_QUEUE: {'exchange': TASK_FOLLOW_EXCHANGE}
+        }
 
     def run(self):
         self.connection = AsyncioConnection(parameters=self.pika_parameters,
@@ -98,6 +100,9 @@ class Rabbitmq:
 
     def __on_bot_tasks_channel_open(self, channel):
         self.__on_tasks_channel_open(channel=channel, queue=TASKS_QUEUE_PREFIX)
+
+    def __on_follow_tasks_channel_open(self, channel):
+        self.__on_tasks_channel_open(channel=channel, queue=TASK_FOLLOW_QUEUE)
 
     def __on_tasks_channel_open(self, channel, queue):
         self.channels[queue] = channel
