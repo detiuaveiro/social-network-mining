@@ -43,7 +43,19 @@ class Report:
 
 		if len(node) > 0:
 			if "label" in node:
-				query_node += ":" + "|".join(node['label'])
+				query_node += ":" + node['label']
+			if 'properties' in node:
+				query_node += "{"
+				control = False
+				for prop in node['properties']:
+					if control:
+						query_node += "|"
+					if 'screen_name' in prop:
+						query_node += f"username:'{prop['screen_name']}'"
+					elif 'id' in prop:
+						query_node += f"id:'{prop['id']}'"
+					control = True
+				query_node += "}"
 
 		return query_node+")"
 
@@ -52,7 +64,7 @@ class Report:
 		query_rel = "["
 		if len(rel) > 0:
 			if 'label' in rel:
-				query_rel += ":" + "|".join(rel['label'])
+				query_rel += ":" + '|'.join(rel['label'])
 			if 'depth_start' in rel:
 				query_rel += "*" + str(rel['depth_start'])
 			if 'depth_end' in rel:
@@ -110,15 +122,15 @@ class Report:
 
 		return result
 
-	def create_report(self, query: str, params: dict, export='csv'):
-		#query = f"MATCH r={self.__node_builder(match['start'])}" \
-		#		f"-{self.__relation_builder(match['rel'])}" \
-		#		f"->{self.__node_builder(match['end'])} " \
-		#		f"return r"
-		#logger.info(query)
+	def create_report(self, match: dict, params: dict, limit=None, export='csv'):
+		query = f"MATCH r={self.__node_builder(match['start']['node'])}" \
+				f"-{self.__relation_builder(match['start']['relation'])}" \
+				f"->{self.__node_builder(match['end']['node'])} " \
+				f"return r"
+		logger.info(query)
 
-		#if limit:
-		#	query += f" limit {limit}"
+		if limit:
+			query += f" limit {limit}"
 
 		result = []
 
@@ -209,7 +221,27 @@ class Report:
 
 if __name__ == '__main__':
 	rep = Report()
-	query = "MATCH r=(a: User) - [*2..4] -> (b) - [*..4] -> (c: Tweet) return r,a,b,c limit 10"
+	query = {
+		'start': {
+			'node': {
+				'properties': [
+					{'screen_name': 'RaffaMasse'},
+					{'screen_name': 'KingstonBrasil'},
+					{'id': '1250175440020529152'}
+				],
+				'label': "User"
+			},
+			'relation': {
+				'label': ['FOLLOWS']
+			}
+		},
+		'end': {
+			'node': {
+				'properties': [{'screen_name': 'KimKardashian'}],
+				'label': "User"
+			}
+		}
+	}
 	params = {
 		'start': {
 			'Tweet': ['retweet_count', 'favourite_count', 'text'],
