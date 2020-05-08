@@ -294,7 +294,14 @@ def twitter_search_users_strict(keyword, user_type):
 
 	"""
 	try:
-		users = User.objects.filter(Q(screen_name__istartswith=keyword))
+		query_params = Q()
+		if user_type == "Bot":
+			for bot in neo4j.search_bots():
+				if bot["username"].lower().startswith(keyword.lower()):
+					query_params |= Q(user_id=bot["id"])
+		else:
+			query_params = Q(screen_name__istartswith=keyword)
+		users = User.objects.filter(query_params)
 
 		user_serializer = [serializers.User(user).data for user in users]
 
@@ -921,7 +928,6 @@ def __get_count_stats(types, accum, action=None):
 			 f".annotate(activity=Count('*'))" \
 			 f".order_by({','.join(order_by_list)})"
 
-	print(query)
 	stats = {}
 	query_res = list(eval(query))
 	for index in range(len(query_res)):
