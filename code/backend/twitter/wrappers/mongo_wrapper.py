@@ -35,7 +35,7 @@ class MongoAPI:
 
         @param collection: The collection we want to insert the document into
         @param document: The document we want to insert
-        @return: True or false wether the integrity is verified or not
+        @return: True or false whether the integrity is verified or not
         """
         pass
 
