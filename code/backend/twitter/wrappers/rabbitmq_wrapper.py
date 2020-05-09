@@ -72,10 +72,11 @@ class Rabbitmq:
                                                 'publish_exchange': TASK_FOLLOW_EXCHANGE, 'publish_channel': None})
 
         # publisher exchanges data
-        # self.publish_exchange = {
-        #     TASKS_QUEUE_PREFIX: {'exchange': TASKS_EXCHANGE},
-        #     TASK_FOLLOW_QUEUE: {'exchange': TASK_FOLLOW_EXCHANGE}
-        # }
+        self.publish_exchange = {
+            TASKS_QUEUE_PREFIX: {'exchange': TASKS_EXCHANGE},
+            TASK_FOLLOW_QUEUE: {'exchange': TASK_FOLLOW_EXCHANGE}
+        }
+        self.publish_channels = {}
 
     def run(self):
         self.__connect()
@@ -113,14 +114,14 @@ class Rabbitmq:
     def __on_follow_tasks_channel_open(self, channel):
         self.__on_tasks_channel_open(channel=channel, queue=TASK_FOLLOW_QUEUE)
 
-    def __on_tasks_channel_open(self, channel, queue, exchange_data):
-        self.channels[queue] = channel
+    def __on_tasks_channel_open(self, channel, queue):
+        # self.channels[queue] = channel
 
         exchange = self.publish_exchange[queue]['exchange']
 
         log.info(f"Declaring exchange <{exchange}>")
 
-        self.channels[queue].exchange_declare(
+        channel.exchange_declare(
             exchange=exchange,
             durable=True
         )
@@ -142,8 +143,9 @@ class Rabbitmq:
             )
 
             # create the publish channel to each consumer channel
-            self._connection.channel(on_open_callback=self.__on_bot_tasks_channel_open)
-            self.__on_tasks_channel_open(channel=channel, queue=queue, exchange_data=exchange_data)
+            self.publish_channels[channel] = self._connection.channel(
+                on_open_callback=self.__on_bot_tasks_channel_open if exchange_data['publish_exchange'] == TASKS_EXCHANGE
+                else self.__on_follow_tasks_channel_open)
 
     def __setup_queue(self, _unused_frame, queue, exchange, routing_key):
         callback = functools.partial(self.__on_queue_declared, queue=queue, exchange=exchange, routing_key=routing_key)
@@ -225,7 +227,7 @@ class Rabbitmq:
         log.info('Closing the channel')
         channel.close()
 
-    def _send(self, queue, routing_key, message):
+    def _send(self, queue, routing_key, message, channel):
         """
         Routes the message to corresponding channel
 
@@ -235,7 +237,8 @@ class Rabbitmq:
         message: (Dictionary) dictionary to be stringified and sent
         """
 
-        self.channels[queue].basic_publish(
+        # self.channels[queue]
+        channel.basic_publish(
             exchange=self.publish_exchange[queue]['exchange'],
             routing_key=routing_key,
             body=json.dumps(message)

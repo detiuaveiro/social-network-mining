@@ -55,6 +55,8 @@ class Control_Center(Rabbitmq):
 		self.replier = ParlaiReplier(PARLAI_URL, PARLAI_PORT)
 		self.translator = Translator()
 
+		self.channel = None
+
 	def action(self, message):
 		message_type = message['type']
 		log.info(f"Received new action: {message['bot_id']} wants to do {BotToServer(message_type).name}")
@@ -859,12 +861,14 @@ class Control_Center(Rabbitmq):
 			'params': params
 		}
 		try:
-			self._send(queue=TASKS_QUEUE_PREFIX, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload)
+			self._send(queue=TASKS_QUEUE_PREFIX, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload,
+			           channel=self.channel)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
 
 	def _received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
+		self.channel = channel
 		message = json.loads(body)
 		self.action(message)
 

@@ -14,7 +14,7 @@ MONGO_FULL_URL = f"{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_URL}:{MONGO_PORT}/{M
 # POSTGRES 
 # -----------------------------------------------------------
 POSTGRES_URL = os.environ.get('POSTGRES_URL', 'localhost')
-POSTGRES_PORT = 5432
+POSTGRES_PORT = os.environ.get('POSTGRES_PORT', 5432)
 POSTGRES_FULL_URL = f"{POSTGRES_URL}:{POSTGRES_PORT}"
 POSTGRES_DB = os.environ.get('POSTGRES_DB', 'twitter')
 POSTGRES_USERNAME = os.environ.get('POSTGRES_USERNAME', 'admin')
