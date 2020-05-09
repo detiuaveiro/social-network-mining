@@ -803,7 +803,6 @@ def latest_tweets(counter, entries_per_page, page):
 
 def latest_activities_daily(entries_per_page, page):
 	"""
-
 	Args:
 		entries_per_page: Number of entries per page or None
 		page: Number of page the user wants to retrieve or None
@@ -1042,3 +1041,28 @@ def relations_today():
 		logger.error(
 			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {relations_today.__name__} -> {e}")
 		return False, None, f"Error obtaining stats grouped"
+
+
+def latest_tweets_daily(entries_per_page, page):
+	"""
+	Args:
+		entries_per_page: Number of entries per page or None
+		page: Number of page the user wants to retrieve or None
+
+	Returns: All bots's daily tweets wrapped on dictionary divided by pages
+	if entries_per_page and page are both None then all bots's daily activities  will be returned
+
+	"""
+	try:
+		tweets = TweetStats.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))
+										& Q(timestamp__lte=datetime.now())).order_by("-timestamp")
+
+		data = paginator_factory(tweets, entries_per_page, page)
+		tweet_list = [serializers.TweetStats(tweet).data["tweet_id"] for tweet in data['entries']]
+		data['entries'] = [serializers.Tweet(Tweet.objects.get(tweet_id=tweet)).data for tweet in tweet_list]
+		return True, data, "Success obtaining latest bot's tweets daily"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_tweets_daily.__name__} -> {e}")
+		return False, None, "Error obtaining latest bot's tweets daily"

@@ -859,32 +859,34 @@ class Policies extends Component {
       policy: selected,
     })
 
-    if (document.getElementsByName(this.state.policy[7].id) != null) {
-      for (var i = 0; i < 4; i++) {
-        document.getElementsByName(this.state.policy[7].id)[i].style.color = "#1da1f2"
-        document.getElementsByName(this.state.policy[7].id)[i].style.fontWeight = "bold"
+    if (this.state.policy != null) {
+      if (document.getElementsByName(this.state.policy[7].id) != null) {
+        for (var i = 0; i < 4; i++) {
+          document.getElementsByName(this.state.policy[7].id)[i].style.color = "#1da1f2"
+          document.getElementsByName(this.state.policy[7].id)[i].style.fontWeight = "bold"
+        }
       }
+
+      document.getElementById("name").value = this.state.policy[7].name
+      document.getElementById("title").textContent = this.state.policy[7].name
+      document.getElementById("changed").style.visibility = "hidden"
+
+      var bots = []
+      this.state.policy[7].bots.forEach(bot => {
+        bots.push({ label: bot.bot_name, value: bot.bot_id })
+      })
+
+      var tags = []
+      this.state.policy[7].tags.forEach(tag => {
+        tags.push({ label: tag, value: tag })
+      })
+
+      await this.setState({
+        filter: { label: this.state.policy[7].filter, value: this.state.policy[7].filter },
+        bots: bots,
+        tags: tags
+      })
     }
-
-    document.getElementById("name").value = this.state.policy[7].name
-    document.getElementById("title").textContent = this.state.policy[7].name
-    document.getElementById("changed").style.visibility = "hidden"
-
-    var bots = []
-    this.state.policy[7].bots.forEach(bot => {
-      bots.push({ label: bot.bot_name, value: bot.bot_id })
-    })
-
-    var tags = []
-    this.state.policy[7].tags.forEach(tag => {
-      tags.push({ label: tag, value: tag })
-    })
-
-    await this.setState({
-      filter: { label: this.state.policy[7].filter, value: this.state.policy[7].filter },
-      bots: bots,
-      tags: tags
-    })
   };
 
   /////////////////////////////////////////////////////////////////////

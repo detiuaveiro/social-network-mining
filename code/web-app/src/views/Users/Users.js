@@ -272,9 +272,8 @@ class Users extends Component {
     document.getElementById("loadingTable").style.display = "none"
   };
 
-
   async search() {
-    if (document.getElementById("searchUser").value != null &&  document.getElementById("searchUser").value!="" && !document.getElementById("searchUser").value.match("^[A-Za-z0-9]+$")) {
+    if (document.getElementById("searchUser").value != null &&  document.getElementById("searchUser").value!="" && !document.getElementById("searchUser").value.match("^[A-Za-z0-9 ]+$")) {
       toast.error('Sorry, the search parameter can\'t include characters like @ or #. Please use only letters and numbers', {
         position: "top-center",
         autoClose: 7500,
