@@ -259,7 +259,7 @@ def twitter_user_following(user_id, entries_per_page, page):
 		return False, None, f"Error obtaining users's (id:{user_id}) following"
 
 
-def twitter_search_users(keywords, entries_per_page, page):
+def twitter_search_users(keywords, protected, entries_per_page, page):
 	"""
 
 	Args:
@@ -277,6 +277,8 @@ def twitter_search_users(keywords, entries_per_page, page):
 			query_filters |= Q(name__icontains=word) | Q(screen_name__icontains=word)
 
 		users = User.objects.filter(query_filters)
+		if protected:
+			users = users.filter(protected=True)
 
 		data = paginator_factory(users, entries_per_page, page)
 		data['entries'] = [serializers.User(user).data for user in data['entries']]

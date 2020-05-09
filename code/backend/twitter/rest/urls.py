@@ -56,7 +56,8 @@ urlpatterns = [
 	url(r"^twitter/users/(?P<user_id>[0-9]+)/stats/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
 		users.twitter_user_stats, name="twitter_user_stats"),
 
-	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/$", users.twitter_search_users, name="twitter_search_users"),
+	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/(?P<protected>(?:T)|(?:F))/$", users.twitter_search_users,
+		name="twitter_search_users"),
 	url(r"^twitter/users/strict/search/(?P<type>(?:User)|(?:Bot))/(?P<keyword>[\w\s()]+)/$",
 		users.twitter_search_users_strict, name="twitter_search_users_strict"),
 	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
