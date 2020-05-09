@@ -17,7 +17,7 @@ handler.setFormatter(logging.Formatter(
 logger.addHandler(handler)
 
 
-EXPORT_DIR = "export"
+EXPORT_DIR = "../export"
 
 
 class Report:
