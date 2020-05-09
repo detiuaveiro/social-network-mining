@@ -14,6 +14,7 @@ class User(djongo_models.Model):
 	followers_count = djongo_models.IntegerField()
 	friends_count = djongo_models.IntegerField()
 	profile_image_url_https = djongo_models.TextField()
+	protected = models.BooleanField()
 
 	class Meta:
 		managed = True
@@ -25,6 +26,7 @@ class UserStats(models.Model):
 	timestamp = models.DateTimeField(default=now, primary_key=True)
 	followers = models.IntegerField()
 	following = models.IntegerField()
+	protected = models.BooleanField()
 
 	class Meta:
 		managed = True
