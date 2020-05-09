@@ -36,7 +36,7 @@ def twitter_users_count():
 		return False, None, "Error obtaining the number of users"
 
 
-def twitter_users(entries_per_page, page):
+def twitter_users(entries_per_page, page, protected):
 	"""
 	Args:
 		entries_per_page: Number of entries per page or None
@@ -45,7 +45,10 @@ def twitter_users(entries_per_page, page):
 	if entries_per_page and page are both None then all users will be returned
 	"""
 	try:
-		all_users = User.objects.all()
+		if protected:
+			all_users = User.objects.filter(protected=True)
+		else:
+			all_users = User.objects.all()
 
 		data = paginator_factory(all_users, entries_per_page, page)
 		data['entries'] = [serializers.User(user).data for user in data['entries']]
@@ -82,7 +85,7 @@ def twitter_user(user_id):
 		return False, None, f"Error obtaining user (id:{user_id})"
 
 
-def twitter_users_stats(entries_per_page, page):
+def twitter_users_stats(entries_per_page, page, protected):
 	"""
 
 	Args:
@@ -93,7 +96,10 @@ def twitter_users_stats(entries_per_page, page):
 	if entries_per_page and page are both None then all stats will be returned
 	"""
 	try:
-		stats = UserStats.objects.all()
+		if protected:
+			stats = UserStats.objects.filter(protected=True)
+		else:
+			stats = UserStats.objects.all()
 
 		data = paginator_factory(stats, entries_per_page, page)
 		data['entries'] = [serializers.UserStats(us).data for us in data['entries']]
