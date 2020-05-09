@@ -1081,5 +1081,10 @@ def create_report(report):
 	Returns:
 	"""
 	report = Report()
-	report.create_report(report['match'], params=report['params'], limit=report['limit'], export=report['export'])
-
+	try:
+		if not report['export']:
+			report.create_report(report['match'], params=report['fields'], limit=report['limit'])
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_tweets_daily.__name__} -> {e}")
+		return False, None, "Error obtaining latest bot's tweets daily"
