@@ -305,7 +305,7 @@ class Reports extends Component {
     if (selectedOption != null) {
       this.setState({ start: { type: selectedOption, nodes: [], relation: this.state.start.relation } });
     } else {
-      this.setState({ start: { type: { value: "Bot", label: "Bot" }, nodes: [], relation: this.state.start.relation } });
+      this.setState({ start: { type: { value: "a_0", label: "Non Specified" }, nodes: [], relation: this.state.start.relation } });
     }
   }
 
@@ -328,9 +328,9 @@ class Reports extends Component {
 
   changeSelectedEndType = (selectedOption) => {
     if (selectedOption != null) {
-      this.setState({ end: { type: selectedOption, nodes: [] } });
+      this.setState({ end: { type: selectedOption, nodes: this.state.end.nodes } });
     } else {
-      this.setState({ end: { type: { value: "Bot", label: "Bot" }, nodes: [] } });
+      this.setState({ end: { type: { value: "a_0", label: "Non Specified" }, nodes: [] } });
     }
   }
 
@@ -419,7 +419,7 @@ class Reports extends Component {
       document.getElementById("errorNothing").style.display = "none"
     }
 
-    if (document.getElementById("limit") != null && !document.getElementById("limit").value.match("^[0-9]+$")) {
+    if (document.getElementById("limit") != null && document.getElementById("limit").value != "" && !document.getElementById("limit").value.match("^[0-9]+$")) {
       toast.error('The specified limit must be a number!', {
         position: "top-center",
         autoClose: 7500,
@@ -472,11 +472,16 @@ class Reports extends Component {
 
     if (!error) {
       //////////////////////////////////////////////////
-
       var checkboxes = document.querySelectorAll('input[name=option-check]:checked')
-      var fields = {}
+      var fields = {"Bots": [], "Tweets": [], "Users": []}
       checkboxes.forEach(checked => {
-        fields[checked.id] = true
+        if(checked.id.split("_")[0] == "b"){
+          fields["Bots"].push(checked.id)
+        }else if(checked.id.split("_")[0] == "t"){
+          fields["Tweets"].push(checked.id)
+        }{
+          fields["Users"].push(checked.id)
+        }
       })
 
       search["fields"] = fields
@@ -484,7 +489,7 @@ class Reports extends Component {
       //////////////////////////////////////////////////
 
       var start = {}
-      var startType = this.state.start.type
+      var startType = this.state.start.type.value
       if (startType == null || startType == "" || startType.split("_").length == 2) {
         startType = null
       }
@@ -501,7 +506,7 @@ class Reports extends Component {
       //////////////////////////////////////////////////
 
       var end = {}
-      var endType = this.state.end.type
+      var endType = this.state.end.type.value
       if (endType == null || endType == "" || endType.split("_").length == 2) {
         endType = null
       }
@@ -846,43 +851,43 @@ class Reports extends Component {
 
                     <Row style={{ marginTop: "30px" }}>
                       <Col md="12">
-                        <h5 style={{ color: "#999" }}>User/Bot Fields</h5>
+                        <h5 style={{ color: "#999" }}>User Fields</h5>
                       </Col>
                     </Row>
                     <Row style={{ marginTop: "10px" }}>
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="name" name="option-check" defaultChecked value="option2" />
+                          <Input className="form-check-input" type="checkbox" id="u_name" name="option-check" defaultChecked value="option2" />
                           <Label className="form-check-label" check htmlFor="inline-checkbox2">Name</Label>
                         </FormGroup>
                       </Col>
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="username" name="option-check" defaultChecked value="option2" />
+                          <Input className="form-check-input" type="checkbox" id="u_username" name="option-check" defaultChecked value="option2" />
                           <Label className="form-check-label" check htmlFor="inline-checkbox2">Username</Label>
                         </FormGroup>
                       </Col>
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="location" name="option-check" defaultChecked value="option2" />
+                          <Input className="form-check-input" type="checkbox" id="u_location" name="option-check" defaultChecked value="option2" />
                           <Label className="form-check-label" check htmlFor="inline-checkbox2">Location</Label>
                         </FormGroup>
                       </Col>
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="description" name="option-check" defaultChecked value="option2" />
+                          <Input className="form-check-input" type="checkbox" id="u_description" name="option-check" defaultChecked value="option2" />
                           <Label className="form-check-label" check htmlFor="inline-checkbox2">Description</Label>
                         </FormGroup>
                       </Col>
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="tweets" name="option-check" defaultChecked value="option2" />
+                          <Input className="form-check-input" type="checkbox" id="u_tweets" name="option-check" defaultChecked value="option2" />
                           <Label className="form-check-label" check htmlFor="inline-checkbox2">Number of Tweets</Label>
                         </FormGroup>
                       </Col>
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="followers" name="option-check" defaultChecked />
+                          <Input className="form-check-input" type="checkbox" id="u_followers" name="option-check" defaultChecked />
                           <Label className="form-check-label" check htmlFor="inline-checkbox1">Number of Followers</Label>
                         </FormGroup>
                       </Col>
@@ -892,14 +897,76 @@ class Reports extends Component {
 
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="following" name="option-check" defaultChecked />
+                          <Input className="form-check-input" type="checkbox" id="u_following" name="option-check" defaultChecked />
                           <Label className="form-check-label" check htmlFor="inline-checkbox1">Number of Followings</Label>
                         </FormGroup>
                       </Col>
 
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="protected" name="option-check" defaultChecked />
+                          <Input className="form-check-input" type="checkbox" id="u_protected" name="option-check" defaultChecked />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Is Protected</Label>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+
+                    <Row style={{ marginTop: "30px" }}>
+                      <Col md="12">
+                        <h5 style={{ color: "#999" }}>Bot Fields</h5>
+                      </Col>
+                    </Row>
+                    <Row style={{ marginTop: "10px" }}>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="b_name" name="option-check" defaultChecked value="option2" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox2">Name</Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="b_username" name="option-check" defaultChecked value="option2" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox2">Username</Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="b_location" name="option-check" defaultChecked value="option2" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox2">Location</Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="b_description" name="option-check" defaultChecked value="option2" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox2">Description</Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="b_tweets" name="option-check" defaultChecked value="option2" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox2">Number of Tweets</Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="b_followers" name="option-check" defaultChecked />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Number of Followers</Label>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "10px" }}>
+
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="b_following" name="option-check" defaultChecked />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Number of Followings</Label>
+                        </FormGroup>
+                      </Col>
+
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="b_protected" name="option-check" defaultChecked />
                           <Label className="form-check-label" check htmlFor="inline-checkbox1">Is Protected</Label>
                         </FormGroup>
                       </Col>
@@ -914,42 +981,42 @@ class Reports extends Component {
                     <Row style={{ marginTop: "10px" }}>
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="creation" name="option-check" defaultChecked />
+                          <Input className="form-check-input" type="checkbox" id="t_creation" name="option-check" defaultChecked />
                           <Label className="form-check-label" check htmlFor="inline-checkbox1">Creation Date</Label>
                         </FormGroup>
                       </Col>
 
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="text" name="option-check" defaultChecked />
+                          <Input className="form-check-input" type="checkbox" id="t_text" name="option-check" defaultChecked />
                           <Label className="form-check-label" check htmlFor="inline-checkbox1">Text</Label>
                         </FormGroup>
                       </Col>
 
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="lang" name="option-check" defaultChecked />
+                          <Input className="form-check-input" type="checkbox" id="t_lang" name="option-check" defaultChecked />
                           <Label className="form-check-label" check htmlFor="inline-checkbox1">Lang</Label>
                         </FormGroup>
                       </Col>
 
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="noRetweets" name="option-check" defaultChecked />
+                          <Input className="form-check-input" type="checkbox" id="t_noRetweets" name="option-check" defaultChecked />
                           <Label className="form-check-label" check htmlFor="inline-checkbox1">Number of Retweets</Label>
                         </FormGroup>
                       </Col>
 
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="noLikes" name="option-check" checked />
+                          <Input className="form-check-input" type="checkbox" id="t_noLikes" name="option-check" checked />
                           <Label className="form-check-label" check htmlFor="inline-checkbox1">Number of Likes</Label>
                         </FormGroup>
                       </Col>
 
                       <Col md="2">
                         <FormGroup check>
-                          <Input className="form-check-input" type="checkbox" id="sensitive" name="option-check" defaultChecked />
+                          <Input className="form-check-input" type="checkbox" id="t_sensitive" name="option-check" defaultChecked />
                           <Label className="form-check-label" check htmlFor="inline-checkbox1">Is Sensitive Content</Label>
                         </FormGroup>
                       </Col>
