@@ -34,8 +34,6 @@ class Reports extends Component {
     super();
   }
 
-  firstErrorToast = null;
-
   state = {
     error: null,
     doneLoading: false,
@@ -47,9 +45,9 @@ class Reports extends Component {
     },
 
     start: {
-      type: { value: "Bot", label: "Bot" },
+      type: [],
       nodes: [],
-      relation: { value: "FOLLOWS", label: "Follows" }
+      relation: []
     },
 
     intermediate: {
@@ -59,12 +57,12 @@ class Reports extends Component {
     },
 
     end: {
-      type: { value: "Bot", label: "Bot" },
+      type: [],
       nodes: []
     },
 
-    intermediateRelOptions: [{ value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }],
-    intermediateTypeOptions: [{ value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }]
+    intermediateRelOptions: [{ value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "WROTE_1", label: "Wrote" }, { value: "FOLLOWS_1", label: "Follows" }, { value: "a_0", label: "Non Specified" }],
+    intermediateTypeOptions: [{ value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }, { value: "a_0", label: "Non Specified" }]
   };
 
   async componentDidMount() {
@@ -77,16 +75,16 @@ class Reports extends Component {
   // Search ///////////////////////////////////////////////////////////
   loadOptions = async (inputValue, callback) => {
     if (inputValue == "" || inputValue == null) {
-      toast.dismiss(this.firstErrorToast)
+      return
     } else {
       if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
-        this.firstErrorToast = toast.error('Sorry, the search parameter can\'t include characters like @ or #. Please use only letters and numbers', {
-          position: "top-center",
-          autoClose: false,
-        });
+        return
       } else {
-        toast.dismiss(this.firstErrorToast)
-        var requestValues = await this.search(inputValue, this.state.start.type.value)
+        var type = this.state.start.type.value
+        if (type == null || type == "" || type.split("_").length == 2) {
+          type = null
+        }
+        var requestValues = await this.search(inputValue, type)
         callback(requestValues)
       }
     }
@@ -94,16 +92,16 @@ class Reports extends Component {
 
   loadOptions2 = async (inputValue, callback) => {
     if (inputValue == "" || inputValue == null) {
-      toast.dismiss(this.firstErrorToast)
+      return
     } else {
       if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
-        this.firstErrorToast = toast.error('Sorry, the search parameter can\'t include characters like @ or #. Please use only letters and numbers', {
-          position: "top-center",
-          autoClose: false,
-        });
+        return
       } else {
-        toast.dismiss(this.firstErrorToast)
-        var requestValues = await this.search(inputValue, this.state.end.type.value)
+        var type = this.state.end.type.value
+        if (type == null || type == "" || type.split("_").length == 2) {
+          type = null
+        }
+        var requestValues = await this.search(inputValue, type)
         callback(requestValues)
       }
     }
@@ -111,13 +109,10 @@ class Reports extends Component {
 
   loadOptions3 = async (inputValue, callback) => {
     if (inputValue == "" || inputValue == null) {
-      toast.dismiss(this.firstErrorToast)
+      return
     } else {
       if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
-        this.firstErrorToast = toast.error('Sorry, the search parameter can\'t include characters like @ or #. Please use only letters and numbers', {
-          position: "top-center",
-          autoClose: false,
-        });
+        return
       } else {
         toast.dismiss(this.firstErrorToast)
         var requestValues = await this.search(inputValue, null)
@@ -130,60 +125,176 @@ class Reports extends Component {
     var tempData = []
 
     if (type == null) {
+      await fetch(baseURL + "twitter/strict/search/" + input + "/", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      }).then(response => {
+        if (response.ok) return response.json();
+        else {
+          throw new Error(response.status);
+        }
+      }).then(data => {
+        if (data != null && data != {}) {
+          data = data.data
+
+          data.User.forEach(user => {
+            tempData.push({ "value": user.id, "label": "(User) " + user.name + " - @" + user.screen_name })
+          })
+
+          data.Bot.forEach(user => {
+            tempData.push({ "value": user.id, "label": "(Bot) " + user.name + " - @" + user.screen_name })
+          })
+
+          data.Tweet.forEach(user => {
+            tempData.push({ "value": user.id, "label": "(Tweet) #" + user })
+          })
+
+        }
+      }).catch(error => {
+        console.log("error: " + error);
+        this.setState({
+          error: true,
+        })
+      });
 
     } else if (type != "Tweet") {
-      await fetch(baseURL + "twitter/users/strict/search/" + type + "/" + input + "/", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      }).then(response => {
-        if (response.ok) return response.json();
-        else {
-          throw new Error(response.status);
-        }
-      }).then(data => {
-        if (data != null && data != {}) {
-          data = data.data
+      if (input != "") {
+        await fetch(baseURL + "twitter/users/strict/search/" + type + "/" + input + "/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }).then(response => {
+          if (response.ok) return response.json();
+          else {
+            throw new Error(response.status);
+          }
+        }).then(data => {
+          if (data != null && data != {}) {
+            data = data.data
 
-          data.forEach(user => {
-            tempData.push({ "value": user.id, "label": user.name + " (@" + user.screen_name + ")" })
+            data.forEach(user => {
+              tempData.push({ "value": user.id, "label": "(" + type + ") " + user.name + " - @" + user.screen_name })
+            })
+
+          }
+        }).catch(error => {
+          console.log("error: " + error);
+          this.setState({
+            error: true,
           })
+        });
+      }
+      else {
+        if (type == "Bot") {
+          await fetch(baseURL + "twitter/bots", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            }
+          }).then(response => {
+            if (response.ok) return response.json();
+            else {
+              throw new Error(response.status);
+            }
+          }).then(data => {
+            if (data != null && data != {}) {
+              data = data.data
 
-        }
-      }).catch(error => {
-        console.log("error: " + error);
-        this.setState({
-          error: true,
-        })
-      });
-    }
-    else {
-      await fetch(baseURL + "twitter/tweets/strict/search/" + input + "/", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      }).then(response => {
-        if (response.ok) return response.json();
-        else {
-          throw new Error(response.status);
-        }
-      }).then(data => {
-        if (data != null && data != {}) {
-          data = data.data
+              data.forEach(user => {
+                tempData.push({ "value": user.user_id, "label": "(" + type + ") " + user.name + " - @" + user.screen_name })
+              })
+            }
+          }).catch(error => {
+            console.log("error: " + error);
+            this.setState({
+              error: true,
+            })
+          });
+        } else {
+          await fetch(baseURL + "twitter/users/30/1", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            }
+          }).then(response => {
+            if (response.ok) return response.json();
+            else {
+              throw new Error(response.status);
+            }
+          }).then(data => {
+            if (data != null && data != {}) {
+              data = data.data
 
-          data.forEach(tweet => {
-            tempData.push({ "value": tweet, "label": "#" + tweet })
+              data.entries.forEach(user => {
+                tempData.push({ "value": user.user_id, "label": "(" + type + ") " + user.name + " - @" + user.screen_name })
+              })
+
+            }
+          }).catch(error => {
+            console.log("error: " + error);
+            this.setState({
+              error: true,
+            })
+          });
+        }
+      }
+    } else {
+      if (input == "") {
+        await fetch(baseURL + "twitter/tweets/all/30/1/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }).then(response => {
+          if (response.ok) return response.json();
+          else {
+            throw new Error(response.status);
+          }
+        }).then(data => {
+          if (data != null && data != {}) {
+            data = data.data
+
+            data.entries.forEach(tweet => {
+              tempData.push({ "value": tweet.tweet_id, "label": "(Tweet) #" + tweet.tweet_id })
+            })
+
+          }
+        }).catch(error => {
+          console.log("error: " + error);
+          this.setState({
+            error: true,
           })
+        });
+      } else {
+        await fetch(baseURL + "twitter/tweets/strict/search/" + input + "/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }).then(response => {
+          if (response.ok) return response.json();
+          else {
+            throw new Error(response.status);
+          }
+        }).then(data => {
+          if (data != null && data != {}) {
+            data = data.data
 
-        }
-      }).catch(error => {
-        console.log("error: " + error);
-        this.setState({
-          error: true,
-        })
-      });
+            data.forEach(tweet => {
+              tempData.push({ "value": tweet.id, "label": "(Tweet) #" + tweet })
+            })
+
+          }
+        }).catch(error => {
+          console.log("error: " + error);
+          this.setState({
+            error: true,
+          })
+        });
+      }
     }
 
     return tempData
@@ -233,14 +344,13 @@ class Reports extends Component {
 
   changeSelectedIntermediateType = (selectedOption) => {
     if (selectedOption != null) {
-
-      if (selectedOption.length + 3 > this.state.intermediateTypeOptions.length) {
+      if (selectedOption.length + 4 > this.state.intermediateTypeOptions.length) {
         var newPush = selectedOption[selectedOption.length - 1]
         var newValue = newPush.value
         var newNumber = parseInt(newValue.split("_")[1]) + 1
         newValue = newValue.split("_")[0] + "_" + newNumber
 
-        var newElement = { value: newValue, label: newValue.split("_")[0] }
+        var newElement = { value: newValue, label: newPush.label }
 
         var newTypes = this.state.intermediateTypeOptions
         newTypes.push(newElement)
@@ -258,7 +368,7 @@ class Reports extends Component {
   changeSelectedIntermediateRelation = (selectedOption) => {
     if (selectedOption != null) {
 
-      if (selectedOption.length + 5 > this.state.intermediateRelOptions.length) {
+      if (selectedOption.length + 6 > this.state.intermediateRelOptions.length) {
         var newPush = selectedOption[selectedOption.length - 1]
         var newValue = newPush.value
         var newNumber = parseInt(newValue.split("_")[1]) + 1
@@ -283,8 +393,179 @@ class Reports extends Component {
     if (selectedOption != null) {
       this.setState({ intermediate: { type: this.state.intermediate.type, nodes: selectedOption, relation: this.state.intermediate.relation } });
     } else {
-      this.setState({ start: { type: this.state.intermediate.type, nodes: [], relation: this.state.intermediate.relation } });
+      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: [], relation: this.state.intermediate.relation } });
     }
+  }
+
+  confirm() {
+    var search = {}
+
+    var error = false
+
+    if (this.state.end.nodes == null || this.state.end.nodes.length == 0) {
+      toast.error('You need to specify the finishing node!', {
+        position: "top-center",
+        autoClose: 7500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+
+      error = true
+      document.getElementById("errorNothing").style.display = ""
+
+    } else {
+      document.getElementById("errorNothing").style.display = "none"
+    }
+
+    if (document.getElementById("limit") != null && !document.getElementById("limit").value.match("^[0-9]+$")) {
+      toast.error('The specified limit must be a number!', {
+        position: "top-center",
+        autoClose: 7500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+
+      error = true
+      document.getElementById("errorNumber").style.display = ""
+
+    } else {
+      document.getElementById("errorNumber").style.display = "none"
+    }
+
+    if (this.state.intermediate.type != null || this.state.intermediate.nodes != null || this.state.intermediate.relation != null) {
+      try {
+        if (this.state.intermediate.type.length != this.state.intermediate.nodes.length || this.state.intermediate.type.length != this.state.intermediate.relation.length || this.state.intermediate.nodes.length != this.state.intermediate.relation.length) {
+          error = true
+          toast.error('You need to specify the same amount of intermediate nodes, node types and relation types!', {
+            position: "top-center",
+            autoClose: 7500,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true
+          });
+          document.getElementById("errorOops").style.visibility = ""
+        } else {
+          document.getElementById("errorOops").style.visibility = "hidden"
+        }
+      } catch (erro) {
+        error = true
+        toast.error('You need to specify the same amount of intermediate nodes, node types and relation types!', {
+          position: "top-center",
+          autoClose: 7500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        });
+
+        document.getElementById("errorOops").style.visibility = ""
+      }
+    } else {
+      document.getElementById("errorOops").style.visibility = "hidden"
+    }
+
+
+    if (!error) {
+      //////////////////////////////////////////////////
+
+      var checkboxes = document.querySelectorAll('input[name=option-check]:checked')
+      var fields = {}
+      checkboxes.forEach(checked => {
+        fields[checked.id] = true
+      })
+
+      search["fields"] = fields
+
+      //////////////////////////////////////////////////
+
+      var start = {}
+      var startType = this.state.start.type
+      if (startType == null || startType == "" || startType.split("_").length == 2) {
+        startType = null
+      }
+      start["type"] = startType
+
+      var startNode = this.state.start.nodes
+      if (startNode != null) {
+        startNode = startNode.value
+      }
+      start["node"] = startNode
+
+      search["start"] = start
+
+      //////////////////////////////////////////////////
+
+      var end = {}
+      var endType = this.state.end.type
+      if (endType == null || endType == "" || endType.split("_").length == 2) {
+        endType = null
+      }
+      end["type"] = endType
+
+      var endNode = this.state.end.nodes
+      if (endNode != null) {
+        endNode = endNode.value
+      }
+      end["node"] = endNode
+
+      search["end"] = end
+
+      //////////////////////////////////////////////////
+
+      var intermediate = {}
+
+      var intermediateTypes = []
+      if (this.state.intermediate.type != null && this.state.intermediate.type.length > 0) {
+        this.state.intermediate.type.forEach(type => {
+          var value = type["value"].split("_")[0]
+          if (value == "a") {
+            value = ""
+          }
+
+          intermediateTypes.push(value)
+        })
+      }
+      intermediate["types"] = intermediateTypes
+
+      var intermediateRels = []
+      if (this.state.intermediate.relation != null && this.state.intermediate.relation.length > 0) {
+        this.state.intermediate.relation.forEach(type => {
+          var value = type["value"].split("_")[0]
+          if (value == "a") {
+            value = ""
+          }
+
+          intermediateRels.push(value)
+        })
+      }
+      intermediate["relations"] = intermediateRels
+
+      var intermediateNodes = []
+      if (this.state.intermediate.nodes != null && this.state.intermediate.nodes.length > 0) {
+        this.state.intermediate.nodes.forEach(type => {
+          intermediateNodes.push(type.value)
+        })
+      }
+      intermediate["nodes"] = intermediateNodes
+
+      search["intermediate"] = intermediate
+
+      //////////////////////////////////////////////////
+
+      var limit = null
+      if (document.getElementById("limit") != null && document.getElementById("limit").value != "" && document.getElementById("limit").value != null){
+        limit = document.getElementById("limit").value
+      }
+
+      search["limit"] = limit
+    }
+
+    console.log(search)
   }
 
   /////////////////////////////////////////////////////////////////////
@@ -387,13 +668,19 @@ class Reports extends Component {
                   </CardHeader>
                   <CardBody>
                     <Row style={{ marginTop: "25px" }}>
+                      <Col md="12">
+                        <h5 style={{ color: "#999" }}>Start Node</h5>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "5px" }}>
                       <Col md="2">
                         <FormGroup>
                           <Select
                             defaultValue={[]}
                             id="startType" onChange={this.changeSelectedStartType}
                             value={this.state.start.type}
-                            options={[{ value: "Bot", label: "Bot" }, { value: "User", label: "User" }, { value: "Tweet", label: "Tweet" }]}
+                            options={[{ value: "Bot", label: "Bot" }, { value: "User", label: "User" }, { value: "Tweet", label: "Tweet" }, { value: "a_0", label: "Non Specified" }]}
                             className="basic-single"
                             classNamePrefix="select"
                             placeholder="Node Type"
@@ -409,6 +696,8 @@ class Reports extends Component {
                             components={makeAnimated()}
                             loadOptions={this.loadOptions}
                             onChange={this.changeSelectedStartNodes}
+                            cacheOptions
+                            defaultOptions
                           />
 
                         </FormGroup>
@@ -422,7 +711,7 @@ class Reports extends Component {
                             defaultValue={[]}
                             id="startRelType" onChange={this.changeSelectedStartRelationType}
                             value={this.state.start.relation}
-                            options={[{ value: "FOLLOWS", label: "Follows" }, { value: "QUOTED", label: "Quoted" }, { value: "REPLIED", label: "Replied" }, { value: "RETWEETED", label: "Retweeted" }, { value: "WROTE", label: "Wrote" }]}
+                            options={[{ value: "FOLLOWS", label: "Follows" }, { value: "QUOTED", label: "Quoted" }, { value: "REPLIED", label: "Replied" }, { value: "RETWEETED", label: "Retweeted" }, { value: "WROTE", label: "Wrote" }, { value: "a_0", label: "Non Specified" }]}
                             className="basic-single"
                             classNamePrefix="select"
                             placeholder="Relation Type"
@@ -433,8 +722,13 @@ class Reports extends Component {
                     </Row>
 
                     <hr />
-
                     <Row style={{ marginTop: "25px" }}>
+                      <Col md="12">
+                        <h5 style={{ color: "#999" }}>Intermediate Node</h5>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "5px" }}>
                       <Col md="12">
                         <FormGroup>
                           <Select
@@ -460,6 +754,7 @@ class Reports extends Component {
                             components={makeAnimated()}
                             loadOptions={this.loadOptions3}
                             onChange={this.changeIntermediateNodes}
+                            isMulti
                           />
                           <i data-tip="Specify the intermediate nodes. Please mind the order." style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
                         </FormGroup>
@@ -485,15 +780,20 @@ class Reports extends Component {
                     </Row>
 
                     <hr />
-
                     <Row style={{ marginTop: "25px" }}>
+                      <Col md="12">
+                        <h5 style={{ color: "#999" }}>End Node *</h5>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "5px" }}>
                       <Col md="2">
                         <FormGroup>
                           <Select
                             defaultValue={[]}
                             id="endType" onChange={this.changeSelectedEndType}
                             value={this.state.end.type}
-                            options={[{ value: "Bot", label: "Bot" }, { value: "User", label: "User" }, { value: "Tweet", label: "Tweet" }]}
+                            options={[{ value: "Bot", label: "Bot" }, { value: "User", label: "User" }, { value: "Tweet", label: "Tweet" }, { value: "a_0", label: "Non Specified" }]}
                             className="basic-single"
                             classNamePrefix="select"
                             placeholder="Node Type"
@@ -515,18 +815,156 @@ class Reports extends Component {
                       </Col>
                     </Row>
 
+                    <Row>
+                      <Col sm="12" md="12" xs="12">
+                        <span id="errorNothing" style={{ display: "none", color: "#f86c6b", marginTop: "50px" }}>You need to pick the finishing node!</span>
+                      </Col>
+                    </Row>
+
                     <hr />
 
                     <Row style={{ marginTop: "30px" }}>
+                      <Col md="12">
+                        <h5 style={{ color: "#999" }}>Entity Limit</h5>
+                      </Col>
+                    </Row>
+                    <Row style={{ marginTop: "10px" }}>
+                      <Col md="2">
+                        <FormGroup>
+                          <Input type="number" id="limit"  value="" placeholder="Max number of entities"/>
+                          <i data-tip="Specify the max number of entities to be included. By default all entities resulting from the other parameters get returned" style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
                       <Col sm="12" md="12" xs="12">
-                        <span id="errorNew" style={{ visibility: "hidden", color: "#f86c6b" }}>You need to, at least, pick a name, choose the filter type, define at least one tag and assign a bot before proceeding!</span>
+                        <span id="errorNumber" style={{ display: "none", color: "#f86c6b", marginTop: "50px" }}>The limit must be a number!</span>
+                      </Col>
+                    </Row>
+
+                    <hr />
+
+                    <Row style={{ marginTop: "30px" }}>
+                      <Col md="12">
+                        <h5 style={{ color: "#999" }}>User/Bot Fields</h5>
+                      </Col>
+                    </Row>
+                    <Row style={{ marginTop: "10px" }}>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="name" name="option-check" defaultChecked value="option2" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox2">Name</Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="username" name="option-check" defaultChecked value="option2" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox2">Username</Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="location" name="option-check" defaultChecked value="option2" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox2">Location</Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="description" name="option-check" defaultChecked value="option2" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox2">Description</Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="tweets" name="option-check" defaultChecked value="option2" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox2">Number of Tweets</Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="followers" name="option-check" defaultChecked />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Number of Followers</Label>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "10px" }}>
+
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="following" name="option-check" defaultChecked />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Number of Followings</Label>
+                        </FormGroup>
+                      </Col>
+
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="protected" name="option-check" defaultChecked />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Is Protected</Label>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+
+                    <Row style={{ marginTop: "30px" }}>
+                      <Col md="12">
+                        <h5 style={{ color: "#999" }}>Tweet Fields</h5>
+                      </Col>
+                    </Row>
+                    <Row style={{ marginTop: "10px" }}>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="creation" name="option-check" defaultChecked />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Creation Date</Label>
+                        </FormGroup>
+                      </Col>
+
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="text" name="option-check" defaultChecked />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Text</Label>
+                        </FormGroup>
+                      </Col>
+
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="lang" name="option-check" defaultChecked />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Lang</Label>
+                        </FormGroup>
+                      </Col>
+
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="noRetweets" name="option-check" defaultChecked />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Number of Retweets</Label>
+                        </FormGroup>
+                      </Col>
+
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="noLikes" name="option-check" checked />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Number of Likes</Label>
+                        </FormGroup>
+                      </Col>
+
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="sensitive" name="option-check" defaultChecked />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Is Sensitive Content</Label>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "35px" }}>
+                      <Col sm="12" md="12" xs="12">
+                        <span id="errorOops" style={{ visibility: "hidden", color: "#f86c6b" }}>The intermediate node's list must have the same number of elements as the intermediate nodes' and relations' types!</span>
                       </Col>
                     </Row>
 
 
                     <Row style={{ marginTop: "10px" }}>
                       <Col sm="12" md="12" xs="12">
-                        <Button block outline color="success" onClick={() => this.confirmNew()} style={{
+                        <Button block outline color="success" onClick={() => this.confirm()} style={{
                           width: "150px", marginTop: "15px", borderWidth: "2px", float: "right"
                         }}>Confirm</Button>
                       </Col>
