@@ -262,8 +262,10 @@ class Users extends Component {
       doneLoading: true,
     })
 
-    if (document.getElementById("searchUser") != null) {
-      document.getElementById("searchUser").value = this.state.searchQuery
+    if (this.state.error == null || !this.state.error) {
+      if (document.getElementById("searchUser") != null) {
+        document.getElementById("searchUser").value = this.state.searchQuery
+      }
     }
   }
 
@@ -284,14 +286,23 @@ class Users extends Component {
       curPage: value
     })
 
-    if (this.state.searchQuery.length == 0) {
-      await this.getUserList(value)
-    } else {
-      await this.searchUsers(value)
+    var protec = "F"
+    if (document.getElementById('protected') != null) {
+      if (document.getElementById("protected").checked) {
+        protec = "T"
+      }
     }
 
-    document.getElementById("loadedTable").style.visibility = "visible"
-    document.getElementById("loadingTable").style.display = "none"
+    if (this.state.searchQuery.length == 0) {
+      await this.getUserList(value, protec)
+    } else {
+      await this.searchUsers(value, protec)
+    }
+
+    if (this.state.error == null || !this.state.error) {
+      document.getElementById("loadedTable").style.visibility = "visible"
+      document.getElementById("loadingTable").style.display = "none"
+    }
   };
 
   async search() {
