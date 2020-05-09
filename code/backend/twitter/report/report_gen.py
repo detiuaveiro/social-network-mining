@@ -18,9 +18,9 @@ handler.setFormatter(logging.Formatter(
 logger.addHandler(handler)
 
 
-EXPORT_DIR = "export"
 NORMAL_REL = 'Normal'
 REVERSE_REL = 'Reverse'
+EXPORT_DIR = "../export"
 
 
 class Report:
