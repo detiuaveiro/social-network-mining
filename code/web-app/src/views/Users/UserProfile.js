@@ -12,6 +12,7 @@ import Card from "../../components/Card/Card";
 import CardHeader from "../../components/Card/CardHeader";
 import CardBody from "../../components/Card/CardBody";
 import CardAvatar from "../../components/Card/CardAvatar.js";
+import CardFooter from "../../components/Card/CardFooter";
 
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
@@ -593,7 +594,7 @@ class UserProfile extends Component {
     render() {
         if (this.state.goBack) {
             if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "USERS") {
-                return (<Users page={this.state.redirectionList[0].info["page"]} searchQuery={this.state.redirectionList[0].info["query"]} />)
+                return (<Users page={this.state.redirectionList[0].info["page"]} searchQuery={this.state.redirectionList[0].info["query"]} protec={this.state.redirectionList[0].info["protec"]} />)
             } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "STATS") {
                 return (<Statistics />)
             } else {
@@ -1129,6 +1130,13 @@ class UserProfile extends Component {
                 }
 
                 ///////////////////////
+
+                var locked = null
+                if(this.state.userInfo.protected){
+                    locked = <i class="fas fa-lock" style={{ color: "#1da1f2" }}></i>
+                }else{
+                    locked = <i class="fas fa-lock-open" style={{ color: "#1da1f2" }}></i>
+                }
                 return (
                     <div className="animated fadeIn">
                         <Container fluid>
@@ -1197,6 +1205,9 @@ class UserProfile extends Component {
                                                 </div>
                                             </div>
                                         </CardBody>
+                                        <CardFooter>
+                                            <h5><b>{locked}</b></h5>
+                                        </CardFooter>
                                     </Card>
 
                                 </Col>

@@ -61,7 +61,7 @@ class Reports extends Component {
       nodes: []
     },
 
-    intermediateRelOptions: [{ value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "WROTE_1", label: "Wrote" }, { value: "FOLLOWS_1", label: "Follows" }, { value: "a_0", label: "Non Specified" }],
+    intermediateRelOptions: [{ value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }, { value: "a_0", label: "Non Specified" }],
     intermediateTypeOptions: [{ value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }, { value: "a_0", label: "Non Specified" }]
   };
 
@@ -73,53 +73,62 @@ class Reports extends Component {
   }
 
   // Search ///////////////////////////////////////////////////////////
-  loadOptions = async (inputValue, callback) => {
-    if (inputValue == "" || inputValue == null) {
-      return
-    } else {
-      if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
-        return
-      } else {
-        var type = this.state.start.type.value
-        if (type == null || type == "" || type.split("_").length == 2) {
-          type = null
-        }
-        var requestValues = await this.search(inputValue, type)
-        callback(requestValues)
-      }
-    }
-  }
 
-  loadOptions2 = async (inputValue, callback) => {
-    if (inputValue == "" || inputValue == null) {
-      return
-    } else {
-      if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
-        return
-      } else {
-        var type = this.state.end.type.value
-        if (type == null || type == "" || type.split("_").length == 2) {
-          type = null
-        }
-        var requestValues = await this.search(inputValue, type)
-        callback(requestValues)
-      }
-    }
-  }
 
-  loadOptions3 = async (inputValue, callback) => {
-    if (inputValue == "" || inputValue == null) {
-      return
-    } else {
-      if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
-        return
+  loadOptions = inputValue =>
+    new Promise(resolve => {
+      if (inputValue == "" || inputValue == null) {
+        var requestValues = [{ "value": null, "label": "Non Specified" }]
+        resolve(requestValues)
       } else {
-        toast.dismiss(this.firstErrorToast)
-        var requestValues = await this.search(inputValue, null)
-        callback(requestValues)
+        if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
+          return
+        } else {
+          var type = this.state.start.type.value
+          if (type == null || type == "" || type.split("_").length == 2) {
+            type = null
+          }
+          var requestValues = this.search(inputValue, type)
+          resolve(requestValues)
+        }
       }
-    }
-  }
+    });
+
+  loadOptions2 = inputValue =>
+    new Promise(resolve => {
+      if (inputValue == "" || inputValue == null) {
+        var requestValues = [{ "value": null, "label": "Non Specified" }]
+        resolve(requestValues)
+      } else {
+        if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
+          return
+        } else {
+          var type = this.state.end.type.value
+          if (type == null || type == "" || type.split("_").length == 2) {
+            type = null
+          }
+          var requestValues = this.search(inputValue, type)
+          resolve(requestValues)
+        }
+      }
+    });
+
+
+  loadOptions3 = inputValue =>
+    new Promise(resolve => {
+      if (inputValue == "" || inputValue == null) {
+        var requestValues = [{ "value": null, "label": "Non Specified" }]
+        resolve(requestValues)
+      } else {
+        if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
+          return
+        } else {
+          toast.dismiss(this.firstErrorToast)
+          var requestValues = this.search(inputValue, null)
+          resolve(requestValues)
+        }
+      }
+    });
 
   async search(input, type) {
     var tempData = []
@@ -136,6 +145,8 @@ class Reports extends Component {
           throw new Error(response.status);
         }
       }).then(data => {
+        tempData.push({ "value": "aaaaaaaaaaaaaaa_" + Date.now(), "label": "Non Specified" })
+
         if (data != null && data != {}) {
           data = data.data
 
@@ -174,7 +185,7 @@ class Reports extends Component {
         }).then(data => {
           if (data != null && data != {}) {
             data = data.data
-
+            tempData.push({ "value": null, "label": "Non Specified" })
             data.forEach(user => {
               tempData.push({ "value": user.id, "label": "(" + type + ") " + user.name + " - @" + user.screen_name })
             })
@@ -202,7 +213,7 @@ class Reports extends Component {
           }).then(data => {
             if (data != null && data != {}) {
               data = data.data
-
+              tempData.push({ "value": null, "label": "Non Specified" })
               data.forEach(user => {
                 tempData.push({ "value": user.user_id, "label": "(" + type + ") " + user.name + " - @" + user.screen_name })
               })
@@ -227,7 +238,7 @@ class Reports extends Component {
           }).then(data => {
             if (data != null && data != {}) {
               data = data.data
-
+              tempData.push({ "value": null, "label": "Non Specified" })
               data.entries.forEach(user => {
                 tempData.push({ "value": user.user_id, "label": "(" + type + ") " + user.name + " - @" + user.screen_name })
               })
@@ -256,7 +267,7 @@ class Reports extends Component {
         }).then(data => {
           if (data != null && data != {}) {
             data = data.data
-
+            tempData.push({ "value": null, "label": "Non Specified" })
             data.entries.forEach(tweet => {
               tempData.push({ "value": tweet.tweet_id, "label": "(Tweet) #" + tweet.tweet_id })
             })
@@ -282,7 +293,7 @@ class Reports extends Component {
         }).then(data => {
           if (data != null && data != {}) {
             data = data.data
-
+            tempData.push({ "value": null, "label": "Non Specified" })
             data.forEach(tweet => {
               tempData.push({ "value": tweet.id, "label": "(Tweet) #" + tweet })
             })
@@ -385,7 +396,7 @@ class Reports extends Component {
       }
 
     } else {
-      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: [] }, intermediateTypeOptions: [{ value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }] });
+      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: [] }, intermediateRelOptions: [{ value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }] });
     }
   }
 
@@ -402,6 +413,7 @@ class Reports extends Component {
 
     var error = false
 
+    /*
     if (this.state.end.nodes == null || this.state.end.nodes.length == 0) {
       toast.error('You need to specify the finishing node!', {
         position: "top-center",
@@ -418,6 +430,7 @@ class Reports extends Component {
     } else {
       document.getElementById("errorNothing").style.display = "none"
     }
+    */
 
     if (document.getElementById("limit") != null && document.getElementById("limit").value != "" && !document.getElementById("limit").value.match("^[0-9]+$")) {
       toast.error('The specified limit must be a number!', {
@@ -473,13 +486,13 @@ class Reports extends Component {
     if (!error) {
       //////////////////////////////////////////////////
       var checkboxes = document.querySelectorAll('input[name=option-check]:checked')
-      var fields = {"Bots": [], "Tweets": [], "Users": []}
+      var fields = { "Bots": [], "Tweets": [], "Users": [] }
       checkboxes.forEach(checked => {
-        if(checked.id.split("_")[0] == "b"){
+        if (checked.id.split("_")[0] == "b") {
           fields["Bots"].push(checked.id)
-        }else if(checked.id.split("_")[0] == "t"){
+        } else if (checked.id.split("_")[0] == "t") {
           fields["Tweets"].push(checked.id)
-        }{
+        } else {
           fields["Users"].push(checked.id)
         }
       })
@@ -529,7 +542,7 @@ class Reports extends Component {
         this.state.intermediate.type.forEach(type => {
           var value = type["value"].split("_")[0]
           if (value == "a") {
-            value = ""
+            value = null
           }
 
           intermediateTypes.push(value)
@@ -542,7 +555,7 @@ class Reports extends Component {
         this.state.intermediate.relation.forEach(type => {
           var value = type["value"].split("_")[0]
           if (value == "a") {
-            value = ""
+            value = null
           }
 
           intermediateRels.push(value)
@@ -553,7 +566,11 @@ class Reports extends Component {
       var intermediateNodes = []
       if (this.state.intermediate.nodes != null && this.state.intermediate.nodes.length > 0) {
         this.state.intermediate.nodes.forEach(type => {
-          intermediateNodes.push(type.value)
+          var value = type["value"]
+          if (value.length > 15 && value[0] == "a") {
+            value = null
+          }
+          intermediateNodes.push(value)
         })
       }
       intermediate["nodes"] = intermediateNodes
@@ -563,7 +580,7 @@ class Reports extends Component {
       //////////////////////////////////////////////////
 
       var limit = null
-      if (document.getElementById("limit") != null && document.getElementById("limit").value != "" && document.getElementById("limit").value != null){
+      if (document.getElementById("limit") != null && document.getElementById("limit").value != "" && document.getElementById("limit").value != null) {
         limit = document.getElementById("limit").value
       }
 
@@ -699,10 +716,10 @@ class Reports extends Component {
                           <AsyncSelect
                             placeholder="User/Bot Username or Tweet ID"
                             components={makeAnimated()}
+                            defaultOptions
                             loadOptions={this.loadOptions}
                             onChange={this.changeSelectedStartNodes}
                             cacheOptions
-                            defaultOptions
                           />
 
                         </FormGroup>
@@ -744,6 +761,7 @@ class Reports extends Component {
                             className="basic-single"
                             classNamePrefix="select"
                             placeholder="Node Types"
+                            components={makeAnimated()}
                             isMulti
                           />
                           <i data-tip="Specify the intermediate nodes' types. Please mind the order." style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
@@ -760,6 +778,7 @@ class Reports extends Component {
                             loadOptions={this.loadOptions3}
                             onChange={this.changeIntermediateNodes}
                             isMulti
+                            defaultOptions
                           />
                           <i data-tip="Specify the intermediate nodes. Please mind the order." style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
                         </FormGroup>
@@ -787,7 +806,7 @@ class Reports extends Component {
                     <hr />
                     <Row style={{ marginTop: "25px" }}>
                       <Col md="12">
-                        <h5 style={{ color: "#999" }}>End Node *</h5>
+                        <h5 style={{ color: "#999" }}>End Node</h5>
                       </Col>
                     </Row>
 
@@ -802,6 +821,7 @@ class Reports extends Component {
                             className="basic-single"
                             classNamePrefix="select"
                             placeholder="Node Type"
+                            components={makeAnimated()}
                           />
                           <i data-tip="Specify the ending nodes and their type" style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
                         </FormGroup>
@@ -814,6 +834,7 @@ class Reports extends Component {
                             components={makeAnimated()}
                             loadOptions={this.loadOptions2}
                             onChange={this.changeSelectedEndNodes}
+                            defaultOptions
                           />
 
                         </FormGroup>
@@ -836,7 +857,7 @@ class Reports extends Component {
                     <Row style={{ marginTop: "10px" }}>
                       <Col md="2">
                         <FormGroup>
-                          <Input type="number" id="limit"  value="" placeholder="Max number of entities"/>
+                          <Input type="number" id="limit" value="" placeholder="Max number of entities" />
                           <i data-tip="Specify the max number of entities to be included. By default all entities resulting from the other parameters get returned" style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
                         </FormGroup>
                       </Col>
