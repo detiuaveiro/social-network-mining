@@ -993,6 +993,7 @@ class Neo4jAPI:
 			return session.write_transaction(self.__get_entities_stats)
 
 
+
 if __name__ == "__main__":
 	neo = Neo4jAPI()
 	# neo.add_bot({"id":0,"name":"Jonas","username":"Jonas_Pistolas"})
