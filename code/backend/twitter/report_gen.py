@@ -7,6 +7,7 @@ from time import time
 
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
+from neo4j_labels import USER_LABEL, BOT_LABEL, TWEET_LABEL
 
 
 logger = logging.getLogger("report")
@@ -18,6 +19,8 @@ logger.addHandler(handler)
 
 
 EXPORT_DIR = "export"
+NORMAL_REL = 'Normal'
+REVERSE_REL = 'Reverse'
 
 
 class Report:
@@ -59,9 +62,9 @@ class Report:
 			if 'depth_end' in rel:
 				query_rel += ".."+str(rel['depth_end'])
 		query_rel += "]"
-		if "direction" not in rel or rel["direction"] == "Normal":
+		if "direction" not in rel or rel["direction"] == NORMAL_REL:
 			return f"-{query_rel}->"
-		elif rel["direction"] == "Reverse":
+		elif rel["direction"] == REVERSE_REL:
 			return f"<-{query_rel}-"
 		return f"-{query_rel}-"
 
@@ -70,7 +73,7 @@ class Report:
 
 		if node_type in params and len(params[node_type]) > 0:
 
-			if node_type == "Tweet":
+			if node_type == TWEET_LABEL:
 				mongo_info = self.mongo.search('tweets', query={"id_str": node['properties']['id']},
 										 fields=params[node_type], single=True)
 			# It's a user or a bot
@@ -99,11 +102,11 @@ class Report:
 
 	def __query_builder(self, query, node):
 		node_label = node["labels"][0]
-		if node_label == "Tweet":
+		if node_label == TWEET_LABEL:
 			query["Tweet"].append(node["properties"]["id"])
-		elif node_label == "User":
+		elif node_label == USER_LABEL:
 			query["User"].append(node["properties"]["id"])
-		elif node_label == "Bot":
+		elif node_label == BOT_LABEL:
 			query["Bot"].append(node["properties"]["id"])
 
 	def __get_results(self, result, query, placement, params):
