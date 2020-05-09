@@ -885,7 +885,7 @@ class Neo4jAPI:
 
 		with self.driver.session() as session:
 			query = QUERY
-			result = session.write_transaction(self.__export_query, export_type, query)
+			result = session.write_transaction(self.__export_query, export_type, query, False)
 
 			output = result.data()[0]["data"]
 
@@ -894,7 +894,7 @@ class Neo4jAPI:
 
 			return json.loads(output)
 
-	def export_query(self, query, export_type="json"):
+	def export_query(self, query, export_type="json", rel_node_properties=False):
 		if export_type not in ["json", "csv", "graphml"]:
 			log.error("ERROR EXPORTING RESULT")
 			log.error(
@@ -905,7 +905,7 @@ class Neo4jAPI:
 			return
 
 		with self.driver.session() as session:
-			result = session.write_transaction(self.__export_query, export_type, query)
+			result = session.write_transaction(self.__export_query, export_type, query, rel_node_properties)
 
 			output = result.data()[0]["data"]
 
@@ -914,10 +914,11 @@ class Neo4jAPI:
 
 			return json.loads(output)
 
-	def __export_query(self, tx, export_type, query):
+	def __export_query(self, tx, export_type, query, rel_node_properties):
 		log.debug("EXPORTING QUERY NETWORK")
 
-		return tx.run(f"CALL apoc.export.{export_type}.query(\"{query}\",null,{{useTypes:true, stream:true}})")
+		return tx.run(f"CALL apoc.export.{export_type}.query(\"{query}\",null,"
+					  f"{{useTypes:true, stream:true, writeNodeProperties:{rel_node_properties}}})")
 
 	def export_network(self, export_type="graphml"):
 		"""Method used to export the entire database
@@ -944,7 +945,8 @@ class Neo4jAPI:
 
 			return json.loads(result)
 
-	def __export_network(self, tx, export_type):
+	@staticmethod
+	def __export_network(tx, export_type):
 		log.debug("EXPORTING NETWORK")
 
 		if export_type == "json":
@@ -956,7 +958,8 @@ class Neo4jAPI:
 
 		return result
 
-	def __node_type(self, tx, data):
+	@staticmethod
+	def __node_type(tx, data):
 		log.debug("GETTING NODE TYPE")
 		query = "match (a {id : $id}) return labels(a)"
 		result = tx.run(query, id=data['id'])
