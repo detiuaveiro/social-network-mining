@@ -23,6 +23,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import Bots from './Bots';
 import PolicyForm from './PolicyForm';
 import UserProfile from '../Users/UserProfile';
+import Statistics from '../Statistics/Statistics';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -364,7 +365,7 @@ class BotProfile extends Component {
                     tempInfo.push(activity.action)
 
                     if (activity.target_screen_name == null || activity.target_screen_name == "") {
-                        tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(activity.target_id)}>#{activity.target_id}</span>);
+                        tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenTweet(activity.target_id)}>#{activity.target_id}</span>);
                     } else {
                         tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(activity.target_id)}>@{activity.target_screen_name}</span>);
                     }
@@ -393,8 +394,6 @@ class BotProfile extends Component {
                         empty: empty
                     }
                 })
-
-
             }
         }).catch(error => {
             console.log("error: " + error);
@@ -603,7 +602,6 @@ class BotProfile extends Component {
     }
 
     handleOpenProfile(user) {
-        console.log(user)
         fetch(baseURL + "twitter/users/" + user + "/type/", {
             method: "GET",
             headers: {
@@ -746,6 +744,7 @@ class BotProfile extends Component {
             }).then(data => {
                 if (data != null && data != {}) {
                     data = data.data
+                    console.log(data)
 
                     this.setState({
                         modal: true,
@@ -755,7 +754,7 @@ class BotProfile extends Component {
                             noPage: this.state.tweets.noPage,
                             curPage: this.state.tweets.curPage,
                             latestTweet: this.state.tweets.latestTweet,
-                            tweet: data[0]
+                            tweet: data
                         }
                     });
 
@@ -912,16 +911,17 @@ class BotProfile extends Component {
         })
 
         await this.getStats(value)
-
     };
     /////////////////////////////////////////////////////////////////////
 
 
     render() {
         if (this.state.goBack) {
-            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "BOTS")
+            if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "BOTS") {
                 return (<Bots />)
-            else {
+            } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "STATS") {
+                return (<Statistics />)
+            } else {
                 var lastUser = this.state.redirectionList.pop()
                 if (lastUser.type == "PROFILE") {
                     return (<UserProfile user={lastUser['info']} redirection={this.state.redirectionList}></UserProfile>)
@@ -1603,7 +1603,7 @@ class BotProfile extends Component {
                                 }}>
                                 <Table
                                     tableHeaderColor="primary"
-                                    tableHead={["Type", "User", "Date"]}
+                                    tableHead={["Type", "Target", "Date"]}
                                     tableData={this.state.activities.data}
                                 />
 

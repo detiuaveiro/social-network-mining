@@ -61,7 +61,7 @@ urlpatterns = [
 
 	url(r"^twitter/users/(?P<user_id>[0-9]+)/stats/grouped/(?P<group_type>(?:year)|(?:month)|(?:day))/$",
 		users.twitter_user_stats_grouped, name="twitter_user_stats_grouped"),
-	url(r"twitter/users/(?P<id>[0-9]+)/type/$", users.twitter_users_type, name="users.twitter_users_type"),
+	url(r"twitter/users/(?P<user_id>[0-9]+)/type/$", users.twitter_users_type, name="users.twitter_users_type"),
 
 	# Network
 	path("twitter/network", network.twitter_network, name="twitter_network"),
@@ -121,6 +121,10 @@ urlpatterns = [
 	url(r'^graphs/latest_tweets/(?P<counter>[0-9]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
 		graphics.latest_tweets, name="latest_tweets"),
 
+	path('graphs/latest_tweets/daily/', graphics.latest_tweets_daily, name="latest_tweets_daily"),
+	url(r'^graphs/latest_tweets/daily/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
+		graphics.latest_tweets_daily, name="latest_tweets_daily"),
+
 	path('graphs/latest_activities/daily/', graphics.latest_activities_daily, name="latest_activities_daily"),
 	url(r'^graphs/latest_activities/daily/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
 		graphics.latest_activities_daily, name="latest_activities_daily"),
@@ -128,4 +132,29 @@ urlpatterns = [
 	url(r'^graphs/latest_activities/(?P<counter>[0-9]+)/$', graphics.latest_activities, name="latest_activities"),
 	url(r'^graphs/latest_activities/(?P<counter>[0-9]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$',
 		graphics.latest_activities, name="latest_activities"),
+
+	url(r'^graphs/gen_stats_grouped/accumulative/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.gen_stats_grouped_accum, name="stats_grouped_accum"),
+
+	url(r'^graphs/gen_stats_grouped/new/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.gen_stats_grouped_new, name="stats_grouped_new"),
+
+	url(r'^graphs/user_tweets_stats_grouped/accumulative/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.user_tweets_stats_grouped_accum, name="user_tweets_stats_grouped_accum"),
+
+	url(r'^graphs/user_tweets_stats_grouped/new/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.user_tweets_stats_grouped_new, name="user_tweets_stats_grouped_new"),
+
+	url(r'^graphs/relations_stats_grouped/accumulative/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.relations_stats_grouped_accum, name="relations_stats_grouped_accum"),
+
+	url(r'^graphs/relations_stats_grouped/new/(?P<group_type>(?:year)|(?:month)|(?:day))/$',
+		graphics.relations_stats_grouped_new, name="relations_stats_grouped_new"),
+
+	url(r'^graphs/user_tweets/today/$', graphics.user_tweets_today, name="user_tweets_today"),
+
+	url(r'^graphs/general/today/$', graphics.general_today, name="general_today"),
+
+	url(r'^graphs/relations/today/$', graphics.relations_today, name="relations_today")
+
 ]

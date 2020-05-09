@@ -6,7 +6,7 @@ jobs:
 
   rest_tests:
     name: "Rest Api Tests"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     container:
       image: python:latest

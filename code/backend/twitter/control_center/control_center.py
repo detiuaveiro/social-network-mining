@@ -30,6 +30,9 @@ handler.setFormatter(logging.Formatter(
 log.addHandler(handler)
 
 
+PROBABILITY_SEARCH_KEYWORD = 0.0001
+
+
 class Control_Center(Rabbitmq):
 	"""
 	Class to simulate the behaviour of a bot:
@@ -56,6 +59,11 @@ class Control_Center(Rabbitmq):
 		message_type = message['type']
 		log.info(f"Received new action: {message['bot_id']} wants to do {BotToServer(message_type).name}")
 
+		# search for keyword tweets time to time
+		if random.random() < PROBABILITY_SEARCH_KEYWORD:
+			log.info(f"Random sending a request to search for tweets of keywords to bot with id <{message['bot_id']}>")
+			self.__send_keywords(message)
+
 		if message_type == BotToServer.EVENT_TWEET_LIKED:
 			self.__like_tweet_log(message)
 
@@ -80,14 +88,14 @@ class Control_Center(Rabbitmq):
 		elif message_type == BotToServer.SAVE_DIRECT_MESSAGES:
 			self.save_dm(message)
 
-		elif message_type == BotToServer.EVENT_USER_BLOCKED:
+		elif message_type == BotToServer.EVENT_ERROR:
 			self.error(message)
 
 		elif message_type == BotToServer.SAVE_FOLLOWERS:
 			self.__add_followers(message)
 
 		elif message_type == BotToServer.QUERY_KEYWORDS:
-			self.send_keywords(message)
+			self.__send_keywords(message)
 
 	# Need DB API now
 	def __follow_user(self, user1_id, user2_id):
@@ -757,7 +765,8 @@ class Control_Center(Rabbitmq):
 		"""
 		self.postgres_client.insert_log({
 			"bot_id": data["bot_id"],
-			"action": f"ERROR: {data['data']}"
+			"action": f"ERROR: {data['data']['message']}",
+			"target_id": data['data']['target_id']
 		})
 		log.error(f"Error in trying to do action <{data['data']}>")
 
@@ -799,7 +808,7 @@ class Control_Center(Rabbitmq):
 
 	# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
 
-	def send_keywords(self, data):
+	def __send_keywords(self, data):
 		log.info("Starting to sending the keywords to the bot")
 
 		bot_id = data["bot_id"]
