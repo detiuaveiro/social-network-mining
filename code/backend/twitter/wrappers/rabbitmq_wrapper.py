@@ -154,7 +154,7 @@ class Rabbitmq:
         log.info("Connection to Rabbit Established")
 
     def __set_prefetch(self, _unused_frame, queue):
-        self.channels[queue].basic_qos(prefetch_count=10, callback=functools.partial(self._receive, queue=queue))
+        self.channels[queue].basic_qos(prefetch_count=3, callback=functools.partial(self._receive, queue=queue))
 
     def __on_connection_open_error(self, _unused_connection, err):
         """This method is called by pika if the connection to RabbitMQ
