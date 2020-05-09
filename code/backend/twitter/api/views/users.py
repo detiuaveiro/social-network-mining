@@ -40,7 +40,7 @@ def twitter_users(_, protected, entries_per_page=None, page=None):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_users(entries_per_page, page, protected == 'True')
+	success, data, message = queries.twitter_users(entries_per_page, page, protected == 'T')
 	if success:
 		success_messages.append(message)
 	else:
