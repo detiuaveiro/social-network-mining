@@ -203,7 +203,7 @@ class Rabbitmq:
                 callback = functools.partial(self.__close_channel, channel=channel)
                 channel.basic_cancel(callback=callback)
             except Exception as error:
-                log.exception(f"Could not cancel the channel because of error <{error}>: ")
+                log.exception(f"Could not cancel the channel because of error <{error}>")
 
     @staticmethod
     def __close_channel(_unused_frame, channel):
