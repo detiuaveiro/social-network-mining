@@ -52,12 +52,19 @@ class Reports extends Component {
       relation: { value: "FOLLOWS", label: "Follows" }
     },
 
-    intermediate: [],
+    intermediate: {
+      type: [],
+      nodes: [],
+      relation: []
+    },
 
     end: {
       type: { value: "Bot", label: "Bot" },
       nodes: []
-    }
+    },
+
+    intermediateRelOptions: [{ value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }],
+    intermediateTypeOptions: [{ value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }]
   };
 
   async componentDidMount() {
@@ -102,9 +109,29 @@ class Reports extends Component {
     }
   }
 
+  loadOptions3 = async (inputValue, callback) => {
+    if (inputValue == "" || inputValue == null) {
+      toast.dismiss(this.firstErrorToast)
+    } else {
+      if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
+        this.firstErrorToast = toast.error('Sorry, the search parameter can\'t include characters like @ or #. Please use only letters and numbers', {
+          position: "top-center",
+          autoClose: false,
+        });
+      } else {
+        toast.dismiss(this.firstErrorToast)
+        var requestValues = await this.search(inputValue, null)
+        callback(requestValues)
+      }
+    }
+  }
+
   async search(input, type) {
     var tempData = []
-    if (type != "Tweet") {
+
+    if (type == null) {
+
+    } else if (type != "Tweet") {
       await fetch(baseURL + "twitter/users/strict/search/" + type + "/" + input + "/", {
         method: "GET",
         headers: {
@@ -165,17 +192,18 @@ class Reports extends Component {
   // Methods //////////////////////////////////////////////////////////
   changeSelectedStartType = (selectedOption) => {
     if (selectedOption != null) {
-      this.setState({ start: { type: selectedOption, nodes: [], relation: this.state.start.startRelationshiop  } });
+      this.setState({ start: { type: selectedOption, nodes: [], relation: this.state.start.relation } });
     } else {
-      this.setState({ start: { type: { value: "Bot", label: "Bot" }, nodes: [], relation: this.state.start.startRelationshiop } });
+      this.setState({ start: { type: { value: "Bot", label: "Bot" }, nodes: [], relation: this.state.start.relation } });
     }
   }
 
+
   changeSelectedStartNodes = (selectedOption) => {
     if (selectedOption != null) {
-      this.setState({ start: { type: this.state.start.type, nodes: selectedOption, relation: this.state.start.startRelationshiop  } });
+      this.setState({ start: { type: this.state.start.type, nodes: selectedOption, relation: this.state.start.relation } });
     } else {
-      this.setState({ start: { type: this.state.start.type, nodes: [], relation: this.state.start.startRelationshiop  } });
+      this.setState({ start: { type: this.state.start.type, nodes: [], relation: this.state.start.relation } });
     }
   }
 
@@ -200,6 +228,62 @@ class Reports extends Component {
       this.setState({ end: { type: this.state.end.type, nodes: selectedOption } });
     } else {
       this.setState({ end: { type: this.state.end.type, nodes: [] } });
+    }
+  }
+
+  changeSelectedIntermediateType = (selectedOption) => {
+    if (selectedOption != null) {
+
+      if (selectedOption.length + 3 > this.state.intermediateTypeOptions.length) {
+        var newPush = selectedOption[selectedOption.length - 1]
+        var newValue = newPush.value
+        var newNumber = parseInt(newValue.split("_")[1]) + 1
+        newValue = newValue.split("_")[0] + "_" + newNumber
+
+        var newElement = { value: newValue, label: newValue.split("_")[0] }
+
+        var newTypes = this.state.intermediateTypeOptions
+        newTypes.push(newElement)
+        this.setState({ intermediate: { type: selectedOption, nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation }, intermediateTypeOptions: newTypes.sort((a, b) => a.value > b.value) });
+
+      } else {
+        this.setState({ intermediate: { type: selectedOption, nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation } });
+      }
+
+    } else {
+      this.setState({ intermediate: { type: [], nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation }, intermediateTypeOptions: [{ value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }] });
+    }
+  }
+
+  changeSelectedIntermediateRelation = (selectedOption) => {
+    if (selectedOption != null) {
+
+      if (selectedOption.length + 5 > this.state.intermediateRelOptions.length) {
+        var newPush = selectedOption[selectedOption.length - 1]
+        var newValue = newPush.value
+        var newNumber = parseInt(newValue.split("_")[1]) + 1
+        newValue = newValue.split("_")[0] + "_" + newNumber
+
+        var newElement = { value: newValue, label: newPush.label }
+
+        var newTypes = this.state.intermediateRelOptions
+        newTypes.push(newElement)
+        this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: selectedOption }, intermediateRelOptions: newTypes.sort((a, b) => a.value > b.value) });
+
+      } else {
+        this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: selectedOption } });
+      }
+
+    } else {
+      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: [] }, intermediateTypeOptions: [{ value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }] });
+    }
+  }
+
+  changeIntermediateNodes = (selectedOption) => {
+    if (selectedOption != null) {
+      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: selectedOption, relation: this.state.intermediate.relation } });
+    } else {
+      this.setState({ start: { type: this.state.intermediate.type, nodes: [], relation: this.state.intermediate.relation } });
     }
   }
 
@@ -294,7 +378,7 @@ class Reports extends Component {
             </Row>
 
             <Row>
-              <Col xs="12" sm="12" md="8">
+              <Col xs="12" sm="12" md="12">
                 <Card>
                   <CardHeader color="primary">
                     <h3 style={{ color: "white" }}>
@@ -325,7 +409,6 @@ class Reports extends Component {
                             components={makeAnimated()}
                             loadOptions={this.loadOptions}
                             onChange={this.changeSelectedStartNodes}
-                            isMulti
                           />
 
                         </FormGroup>
@@ -339,7 +422,7 @@ class Reports extends Component {
                             defaultValue={[]}
                             id="startRelType" onChange={this.changeSelectedStartRelationType}
                             value={this.state.start.relation}
-                            options={[{ value: "FOLLOWS", label: "Follows" }, { value: "WROTE", label: "Wrote" }, { value: "REPLIED", label: "Replied" }, { value: "RETWEETED", label: "Retweeted" }, { value: "QUOTED", label: "Quoted" }]}
+                            options={[{ value: "FOLLOWS", label: "Follows" }, { value: "QUOTED", label: "Quoted" }, { value: "REPLIED", label: "Replied" }, { value: "RETWEETED", label: "Retweeted" }, { value: "WROTE", label: "Wrote" }]}
                             className="basic-single"
                             classNamePrefix="select"
                             placeholder="Relation Type"
@@ -348,6 +431,60 @@ class Reports extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
+
+                    <hr />
+
+                    <Row style={{ marginTop: "25px" }}>
+                      <Col md="12">
+                        <FormGroup>
+                          <Select
+                            defaultValue={[]}
+                            id="interType" onChange={this.changeSelectedIntermediateType}
+                            value={this.state.intermediate.type || ''}
+                            options={this.state.intermediateTypeOptions}
+                            className="basic-single"
+                            classNamePrefix="select"
+                            placeholder="Node Types"
+                            isMulti
+                          />
+                          <i data-tip="Specify the intermediate nodes' types. Please mind the order." style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "25px" }}>
+                      <Col md="12">
+                        <FormGroup>
+                          <AsyncSelect
+                            placeholder="User/Bot Username or Tweet ID"
+                            components={makeAnimated()}
+                            loadOptions={this.loadOptions3}
+                            onChange={this.changeIntermediateNodes}
+                          />
+                          <i data-tip="Specify the intermediate nodes. Please mind the order." style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "25px" }}>
+                      <Col md="12">
+                        <FormGroup>
+                          <Select
+                            defaultValue={[]}
+                            id="startRelType" onChange={this.changeSelectedIntermediateRelation}
+                            value={this.state.intermediate.relation || ''}
+                            options={this.state.intermediateRelOptions}
+                            className="basic-single"
+                            classNamePrefix="select"
+                            placeholder="Relation Type"
+                            isMulti
+                          />
+                          <i data-tip="Specify the nodes' relation type. Please mind the order" style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <hr />
 
                     <Row style={{ marginTop: "25px" }}>
                       <Col md="2">
@@ -372,12 +509,13 @@ class Reports extends Component {
                             components={makeAnimated()}
                             loadOptions={this.loadOptions2}
                             onChange={this.changeSelectedEndNodes}
-                            isMulti
                           />
 
                         </FormGroup>
                       </Col>
                     </Row>
+
+                    <hr />
 
                     <Row style={{ marginTop: "30px" }}>
                       <Col sm="12" md="12" xs="12">
