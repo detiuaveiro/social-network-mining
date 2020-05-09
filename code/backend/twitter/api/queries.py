@@ -7,7 +7,6 @@ from api import neo4j
 import json
 from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
 from api.queries_utils import paginator_factory, paginator_factory_non_queryset
-from report.report_gen import Report
 
 logger = logging.getLogger('queries')
 
@@ -1063,27 +1062,6 @@ def latest_tweets_daily(entries_per_page, page):
 		data['entries'] = [serializers.Tweet(Tweet.objects.get(tweet_id=tweet)).data for tweet in tweet_list]
 		return True, data, "Success obtaining latest bot's tweets daily"
 
-	except Exception as e:
-		logger.error(
-			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_tweets_daily.__name__} -> {e}")
-		return False, None, "Error obtaining latest bot's tweets daily"
-
-
-# -----------------------------------------------------------
-# reports
-# -----------------------------------------------------------
-
-def create_report(report):
-	"""
-	Args:
-		report: JSON object with the specifics to create the report
-
-	Returns:
-	"""
-	report = Report()
-	try:
-		if not report['export']:
-			report.create_report(report['match'], params=report['fields'], limit=report['limit'])
 	except Exception as e:
 		logger.error(
 			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_tweets_daily.__name__} -> {e}")
