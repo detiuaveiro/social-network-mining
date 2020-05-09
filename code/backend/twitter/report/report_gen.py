@@ -18,9 +18,9 @@ handler.setFormatter(logging.Formatter(
 logger.addHandler(handler)
 
 
+EXPORT_DIR = "../export"
 NORMAL_REL = 'Normal'
 REVERSE_REL = 'Reverse'
-EXPORT_DIR = "../export"
 
 
 class Report:
@@ -193,10 +193,11 @@ class Report:
 
 		logger.debug(f"It took <{time() - start} s>")
 
-		if export == self.ExportType.CSV:
-			self.exporter.export_csv(result)
-		elif export == self.ExportType.JSON:
-			self.exporter.export_json(result)
+		#if export == self.ExportType.CSV:
+		#	self.exporter.export_csv(result)
+		#elif export == self.ExportType.JSON:
+		#	self.exporter.export_json(result)
+		return result
 
 	class __Exporter:
 		def __init__(self, directory):
@@ -253,31 +254,39 @@ if __name__ == '__main__':
 		rep.create_report(query, params, export=export_type)
 
 	# Test intermediates
-	query2 = {
-		'start': {
-			'node': {
-				'label': "User"
-			},
-			'relation': {
-				'label': ['WROTE']
-			}
-		},
-		'intermediates': [
-			{
-				'node': {
-					'label': "Tweet"
+	query = {
+		"match": {
+			"start": {
+				"node": {
+					"label": "User"
 				},
-				'relation': {
-					'label': ['RETWEETED', "QUOTED", "REPLIED"],
-					"direction": "Reverse"
+				"relation": {
+					"label": ["WROTE"]
+				}
+			},
+			"intermediates": [
+				{
+					"node": {
+						"label": "Tweet"
+					},
+					"relation": {
+						"label": ["RETWEETED", "QUOTED", "REPLIED"],
+						"direction": "Reverse"
+					}
+				}
+			],
+			"end": {
+				"node": {
+					"label": "User"
 				}
 			}
-		],
-		'end': {
-			'node': {
-				'label': "User"
-			}
-		}
+		},
+		"fields": {
+			"Tweet": ["retweet_count", "favourite_count", "text", "id_str"],
+			"User": ["name", "screen_name", "followers_count", "id_str"],
+			"Bot": ["name", "screen_name", "friends_count", "id_str"]
+		},
+		"limit": None
 	}
 	for export_type in Report.ExportType:
 		print(export_type)

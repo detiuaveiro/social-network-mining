@@ -1,7 +1,10 @@
 from rest_framework.decorators import api_view
-from api.views.utils import create_response
+from django.http import HttpResponse
+from django.http import FileResponse
 from rest_framework.status import *
-import api.queries as queries
+from report.report_gen import Report
+from django.core.files.base import ContentFile
+import json
 
 
 @api_view(["POST"])
@@ -11,15 +14,14 @@ def create_report(request):
 		request: HTTP Request
 	Returns: Create a new Report based on Request
 	"""
-	error_messages = []
-	success_messages = []
-	status = HTTP_200_OK
 
-	success, data, message = queries.create_report(request.data)
-	if success:
-		success_messages.append(message)
-	else:
-		error_messages.append(message)
-		status = HTTP_403_FORBIDDEN
+	report = Report()
 
-	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
+	result = report.create_report(request.data['match'], params=request.data['fields'], limit=request.data['limit'])
+	result_json = json.dumps(result)
+	file_to_send = ContentFile(result_json)
+	response = HttpResponse(file_to_send, content_type='application/json')
+	response["Access-Control-Allow-Origin"] = "*"
+	response['Content-Length'] = file_to_send.size
+	response['Content-Disposition'] = 'attachment; filename=report.json'
+	return response

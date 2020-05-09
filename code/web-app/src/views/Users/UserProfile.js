@@ -586,7 +586,6 @@ class UserProfile extends Component {
         })
 
         await this.getStats(value)
-
     };
     /////////////////////////////////////////////////////////////////////
 
@@ -1133,9 +1132,9 @@ class UserProfile extends Component {
 
                 var locked = null
                 if(this.state.userInfo.protected){
-                    locked = <i class="fas fa-lock" style={{ color: "#1da1f2" }}></i>
+                    locked = <span style={{ color: "#1da1f2" }}><i class="fas fa-lock" style={{marginRight:"5px"}}/>Private</span>
                 }else{
-                    locked = <i class="fas fa-lock-open" style={{ color: "#1da1f2" }}></i>
+                    locked = <span style={{ color: "#1da1f2" }}><i class="fas fa-lock-open" style={{marginRight:"5px"}} /> Public</span>
                 }
                 return (
                     <div className="animated fadeIn">

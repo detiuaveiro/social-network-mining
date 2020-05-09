@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework_swagger.views import get_swagger_view
 
-from api.views import users, bots, tweets, policies, network, graphics
+from api.views import users, bots, tweets, policies, network, graphics, report
 
 schema_view = get_swagger_view(title='TwitterBots API')
 
@@ -166,6 +166,7 @@ urlpatterns = [
 
 	url(r'^graphs/general/today/$', graphics.general_today, name="general_today"),
 
-	url(r'^graphs/relations/today/$', graphics.relations_today, name="relations_today")
+	url(r'^graphs/relations/today/$', graphics.relations_today, name="relations_today"),
 
+	url(r'^report/$', report.create_report, name="create_report")
 ]

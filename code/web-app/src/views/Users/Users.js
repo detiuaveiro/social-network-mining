@@ -351,7 +351,28 @@ class Users extends Component {
   }
 
   changeProtected = async () => {
+    document.getElementById("loadedTable").style.visibility = "hidden"
+    document.getElementById("loadingTable").style.display = ""
+
+
     await this.setState({ protec: !this.state.protec })
+
+    var protec = "F"
+    if (document.getElementById('protected') != null) {
+      if (document.getElementById("protected").checked) {
+        protec = "T"
+      }
+    }
+    if (this.state.searchQuery.length == 0) {
+      await this.getUserList(1, protec)
+    } else {
+      await this.searchUsers(1, protec)
+    }
+
+    if (document.getElementById("loadedTable") != null) {
+      document.getElementById("loadedTable").style.visibility = "visible"
+      document.getElementById("loadingTable").style.display = "none"
+    }
   }
   /////////////////////////////////////////////////////////////////////
 

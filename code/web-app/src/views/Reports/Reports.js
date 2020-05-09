@@ -28,6 +28,8 @@ import makeAnimated from 'react-select/animated';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast, Flip } from 'react-toastify';
 
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 
 class Reports extends Component {
   constructor() {
@@ -37,6 +39,7 @@ class Reports extends Component {
   state = {
     error: null,
     doneLoading: false,
+    processing: false,
 
     animationOptions: {
       loop: true, autoplay: true, animationData: loadingAnim.default, rendererSettings: {
@@ -60,6 +63,8 @@ class Reports extends Component {
       type: [],
       nodes: []
     },
+
+    fileType: "csv",
 
     intermediateRelOptions: [{ value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }, { value: "a_0", label: "Non Specified" }],
     intermediateTypeOptions: [{ value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }, { value: "a_0", label: "Non Specified" }]
@@ -408,6 +413,12 @@ class Reports extends Component {
     }
   }
 
+  changeType = async (event, value) => {
+    await this.setState({
+      fileType: value
+    })
+  };
+
   confirm() {
     var search = {}
 
@@ -481,7 +492,6 @@ class Reports extends Component {
     } else {
       document.getElementById("errorOops").style.visibility = "hidden"
     }
-
 
     if (!error) {
       //////////////////////////////////////////////////
@@ -578,6 +588,10 @@ class Reports extends Component {
       search["intermediate"] = intermediate
 
       //////////////////////////////////////////////////
+      var fileType = this.state.fileType
+      search["fileType"] = fileType
+
+      //////////////////////////////////////////////////
 
       var limit = null
       if (document.getElementById("limit") != null && document.getElementById("limit").value != "" && document.getElementById("limit").value != null) {
@@ -585,9 +599,62 @@ class Reports extends Component {
       }
 
       search["limit"] = limit
+
+      this.startDownload(search, fileType)
     }
 
     console.log(search)
+  }
+
+  async startDownload(search, fileType) {
+    console.log("here we go boys")
+    this.setState({
+      processing: true
+    })
+
+    await fetch(baseURL + "report/", {
+      method: "POST",
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(search)
+    }).then(response => {
+      if (response.ok) return response.blob();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(blob => {
+      this.setState({
+        processing: false
+      })
+
+      // 2. Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+
+      var name = "report." + fileType
+      link.setAttribute('download', name);  // 3. Append to html page
+      document.body.appendChild(link);  // 4. Force download
+      link.click();  // 5. Clean up and remove the link
+      link.parentNode.removeChild(link);
+
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        processing: false,
+      })
+
+      toast.error('Sorry, something went wrong on our end. Please try again later!', {
+        position: "top-center",
+        autoClose: 7500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+    });
   }
 
   /////////////////////////////////////////////////////////////////////
@@ -631,17 +698,18 @@ class Reports extends Component {
     } else {
       var processing = <div></div>
       if (this.state.processing) {
-        processing = <div id="loading">
-          <div className="animated fadeOut animated" style={{ width: "100%", height: "100%", top: 0, left: 0, position: "absolute", backgroundColor: "white", opacity: 0.6, zIndex: 11 }}>
-          </div>
-          <div style={{ zIndex: 11, position: "relative" }}>
-            <div className="animated fadeOut animated" style={{ width: "100%", marginTop: "10%", position: "absolute", zIndex: 12 }}>
-              <FadeIn>
-                <Lottie options={this.state.animationOptions} height={"30%"} width={"30%"} />
-              </FadeIn>
+        processing =
+          <div id="loading">
+            <div className="animated fadeOut animated" style={{ width: "100%", height: "100%", top: 0, left: 0, position: "fixed", backgroundColor: "white", opacity: 0.8, zIndex: 11 }}>
+            </div>
+            <div style={{ zIndex: 11, position: "relative" }}>
+              <div className="animated fadeOut animated" style={{ width: "100%", top: "25%", left: "5%", position: "fixed", zIndex: 12 }}>
+                <FadeIn>
+                  <Lottie options={this.state.animationOptions} height={"30%"} width={"30%"} />
+                </FadeIn>
+              </div>
             </div>
           </div>
-        </div>
       }
       return (
         <div className="animated fadeIn">
@@ -1052,6 +1120,19 @@ class Reports extends Component {
 
                     <Row style={{ marginTop: "10px" }}>
                       <Col sm="12" md="12" xs="12">
+                        <ToggleButtonGroup
+                          value={this.state.fileType}
+                          exclusive
+                          aria-label="text alignment"
+                          onChange={this.changeType}
+                        >
+                          <ToggleButton value="csv" aria-label="CSV">
+                            CSV
+                        </ToggleButton>
+                          <ToggleButton value="json" aria-label="Json">
+                            Json
+                        </ToggleButton>
+                        </ToggleButtonGroup>
                         <Button block outline color="success" onClick={() => this.confirm()} style={{
                           width: "150px", marginTop: "15px", borderWidth: "2px", float: "right"
                         }}>Confirm</Button>
