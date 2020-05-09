@@ -1,6 +1,8 @@
 ## @package twitter.wrappers
 # coding: UTF-8
 import functools
+import time
+
 import pika
 import logging
 import json
@@ -53,7 +55,7 @@ class Rabbitmq:
             blocked_connection_timeout=300
         )
 
-        self.connection = None
+        self._connection = None
         self.channels = {}
 
         self.exchange = {API_QUEUE: [], API_FOLLOW_QUEUE: []}
@@ -72,9 +74,15 @@ class Rabbitmq:
         }
 
     def run(self):
-        self.connection = AsyncioConnection(parameters=self.pika_parameters,
-                                            on_open_callback=self.__setup)
-        self.connection.ioloop.run_forever()
+        self.__connect()
+        self._connection.ioloop.run_forever()
+
+    def __connect(self):
+        self._connection = AsyncioConnection(parameters=self.pika_parameters,
+                                             on_open_callback=self.__setup,
+                                             on_open_error_callback=self.__on_connection_open_error,
+                                             on_close_callback=self.__on_connection_closed)
+        log.info("Connected")
 
     def __setup(self, _unused_connection):
         """
@@ -83,11 +91,11 @@ class Rabbitmq:
         """
 
         # consume queues
-        self.connection.channel(on_open_callback=self.__on_api_channel_open)
-        self.connection.channel(on_open_callback=self.__on_api_follow_channel_open)
+        self._connection.channel(on_open_callback=self.__on_api_channel_open)
+        self._connection.channel(on_open_callback=self.__on_api_follow_channel_open)
 
         # publish queues
-        self.connection.channel(on_open_callback=self.__on_bot_tasks_channel_open)
+        self._connection.channel(on_open_callback=self.__on_bot_tasks_channel_open)
 
     def __on_api_channel_open(self, channel):
         self.__on_channel_open(channel=channel, queue=API_QUEUE)
@@ -148,6 +156,63 @@ class Rabbitmq:
     def __set_prefetch(self, _unused_frame, queue):
         self.channels[queue].basic_qos(prefetch_count=10, callback=functools.partial(self._receive, queue=queue))
 
+    def __on_connection_open_error(self, _unused_connection, err):
+        """This method is called by pika if the connection to RabbitMQ
+        can't be established.
+        Adapted from the example on https://github.com/pika/pika/blob/master/examples/asynchronous_consumer_example.py
+        :param pika.SelectConnection _unused_connection: The connection
+        :param Exception err: The error
+        """
+        log.error('Connection open failed: %s', err)
+        self.__reconnect()
+
+    def __on_connection_closed(self, _unused_connection, reason):
+        """This method is invoked by pika when the connection to RabbitMQ is
+        closed unexpectedly. Since it is unexpected, we will reconnect to
+        RabbitMQ if it disconnects.
+        Adapted from the example on https://github.com/pika/pika/blob/master/examples/asynchronous_consumer_example.py
+        :param Exception reason: exception representing reason for loss of
+            connection.
+        """
+        log.warning('Connection closed, reconnect necessary: %s', reason)
+        self.__reconnect()
+
+    def __reconnect(self):
+        """Will be invoked if the connection can't be opened or is
+        closed. Indicates that a reconnect is necessary then stops the
+        ioloop.
+        Adapted from the example on https://github.com/pika/pika/blob/master/examples/asynchronous_consumer_example.py
+        """
+        self.__stop_and_restart()
+
+    def __stop_and_restart(self):
+        log.info('Stopping')
+        self.__stop_consuming()
+        log.info('Stopped')
+        time.sleep(2)
+        self.__connect()
+
+    def __stop_consuming(self):
+        """Tell RabbitMQ that you would like to stop consuming by sending the
+        Basic.Cancel RPC command.
+        Adapted from the example on https://github.com/pika/pika/blob/master/examples/asynchronous_consumer_example.py
+        """
+        log.info('Sending a Basic.Cancel RPC command to RabbitMQ')
+        for channel in self.channels.values():
+            try:
+                callback = functools.partial(self.__close_channel, channel=channel)
+                channel.basic_cancel(callback=callback)
+            except Exception as error:
+                log.exception(f"Could not cancel the channel because of error <{error}>: ")
+
+    @staticmethod
+    def __close_channel(_unused_frame, channel):
+        """Call to close the channel with RabbitMQ cleanly by issuing the
+        Channel.Close RPC command.
+        """
+        log.info('Closing the channel')
+        channel.close()
+
     def _send(self, queue, routing_key, message):
         """
         Routes the message to corresponding channel
@@ -188,5 +253,5 @@ class Rabbitmq:
         Close the connection with the Rabbit MQ server
         """
         log.info("Closing connection")
-        self.connection.ioloop.stop()
-        self.connection.close()
+        self._connection.ioloop.stop()
+        self._connection.close()

@@ -20,7 +20,7 @@ import log_actions
 import neo4j_labels
 from control_center import mongo_utils
 
-from credentials import PARLAI_URL, PARLAI_PORT, API_QUEUE, TASKS_ROUTING_KEY_PREFIX
+from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
@@ -859,21 +859,14 @@ class Control_Center(Rabbitmq):
 			'params': params
 		}
 		try:
-			self._send(queue=API_QUEUE, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload)
+			self._send(queue=TASKS_QUEUE_PREFIX, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
-			# self.__setup()
-			# self.send(bot, message_type, params)
 
 	def _received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
 		message = json.loads(body)
 		self.action(message)
-
-	# def run(self):
-	# 	while True:
-	# 		self._receive()
-	# 		log.warning("Restarting again...")
 
 	def close(self):
 		self.neo4j_client.close()
