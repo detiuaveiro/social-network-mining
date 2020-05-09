@@ -5,6 +5,40 @@ from api.models import User, Tweet
 from api.views import users
 from mixer.backend.django import mixer
 from api.tests.utils import *
+from api import neo4j
+
+
+@pytest.fixture(autouse=True)
+def delete_neo4j_data():
+	for id in ["1", "2", "3"]:
+		neo4j.delete_bot(id)
+		neo4j.delete_tweet(id)
+		if neo4j.check_bot_exists(id):
+			return False
+		if neo4j.check_tweet_exists(id):
+			return False
+	return True
+
+
+def add_bot_neo4j(list_id):
+	for id in list_id:
+		neo4j.add_bot({'id': id, 'name': 'bot_test', 'username': 'bot_test_username'})
+		if not neo4j.check_bot_exists(id):
+			return False
+	return True
+
+
+def add_tweet_neo4j(list_id):
+	for id in list_id:
+		neo4j.add_tweet({'id': id})
+		if not neo4j.check_tweet_exists(id):
+			return False
+	return True
+
+
+def add_relationship(id_1, id_2):
+	neo4j.add_wrote_relationship({"user_id": id_1, "tweet_id": id_2, "user_type": "Bot"})
+	return neo4j.check_writer_relationship({"user_id": id_1, "tweet_id": id_2, "user_type": "Bot"})
 
 
 @pytest.fixture(scope='module')
@@ -24,7 +58,7 @@ def user(db):
 
 @pytest.fixture
 def tweets(db):
-	return mixer.cycle(20).blend(Tweet, user="1")
+	return mixer.cycle(20).blend(Tweet, user={"id": 1, "name": "user"}, tweet_id="1")
 
 
 @catch_exception
@@ -93,6 +127,7 @@ def test_unsuccessfully_twitter_user_request(error_catcher, factory, db):
 
 @catch_exception
 def test_successful_twitter_user_tweets_request(error_catcher, factory, tweets):
+	assert add_bot_neo4j(["1"]) and add_tweet_neo4j(["1"]) and add_relationship("1", "1")
 	path = reverse('twitter_user_tweets', kwargs={'user_id': 1})
 	request = factory.get(path)
 	response = users.twitter_user_tweets(request, user_id="1")
@@ -101,6 +136,7 @@ def test_successful_twitter_user_tweets_request(error_catcher, factory, tweets):
 
 @catch_exception
 def test_successful_twitter_user_tweets_request_with_pagination(error_catcher, factory, tweets):
+	assert add_bot_neo4j(["1"]) and add_tweet_neo4j(["1"]) and add_relationship("1", "1")
 	path = reverse('twitter_user_tweets', kwargs={'user_id': 1, 'entries_per_page': 10, 'page': 1})
 	request = factory.get(path)
 	response = users.twitter_user_tweets(request, user_id="1", entries_per_page='10', page='1')
@@ -117,6 +153,7 @@ def test_empty_twitter_user_tweets_request(error_catcher, factory, db):
 
 @catch_exception
 def test_unsuccessfully_twitter_user_tweets_request_with_pagination(error_catcher, factory, tweets):
+	assert add_bot_neo4j(["1"]) and add_tweet_neo4j(["1"]) and add_relationship("1", "1")
 	path = reverse('twitter_user_tweets', kwargs={'user_id': 1, 'entries_per_page': 0, 'page': 1})
 	request = factory.get(path)
 	response = users.twitter_user_tweets(request, user_id="1", entries_per_page='0', page='1')
@@ -143,7 +180,7 @@ def test_successful_twitter_search_users_request_with_pagination(error_catcher, 
 def test_empty_twitter_search_users_tweets_request(error_catcher, factory, db):
 	path = reverse('twitter_search_users', kwargs={'keywords': "user"})
 	request = factory.get(path)
-	response = users.twitter_search_users(request,  keywords="user")
+	response = users.twitter_search_users(request, keywords="user")
 	assert is_response_empty_with_pagination(response)
 
 
@@ -151,5 +188,5 @@ def test_empty_twitter_search_users_tweets_request(error_catcher, factory, db):
 def test_unsuccessfully_twitter_search_users_request_with_pagination(error_catcher, factory, users_list):
 	path = reverse('twitter_search_users', kwargs={'keywords': "user", 'entries_per_page': 0, 'page': 1})
 	request = factory.get(path)
-	response = users.twitter_search_users(request,  keywords="user", entries_per_page='0', page='1')
+	response = users.twitter_search_users(request, keywords="user", entries_per_page='0', page='1')
 	assert is_response_unsuccessful(response)

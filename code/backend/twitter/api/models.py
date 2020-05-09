@@ -6,7 +6,7 @@ from django.db import models
 
 class User(djongo_models.Model):
 	id = djongo_models.IntegerField(primary_key=True, db_column="_id")
-	user_id = djongo_models.TextField(db_column="id")
+	user_id = djongo_models.TextField(db_column="id_str")
 	description = djongo_models.TextField()
 	location = djongo_models.TextField()
 	name = djongo_models.TextField()
@@ -54,7 +54,7 @@ class ExtendedEntities(djongo_models.Model):
 
 class Tweet(djongo_models.Model):
 	id = djongo_models.BigIntegerField(primary_key=True, db_column="_id")
-	tweet_id = djongo_models.TextField(db_column="id")
+	tweet_id = djongo_models.TextField(db_column="id_str")
 	user = djongo_models.DictField()
 	is_quote_status = djongo_models.BooleanField()
 	created_at = djongo_models.DateTimeField()
@@ -62,6 +62,7 @@ class Tweet(djongo_models.Model):
 	in_reply_to_screen_name = djongo_models.TextField(null=True, blank=True)
 	in_reply_to_user_id = djongo_models.BigIntegerField(null=True, blank=True)
 	in_reply_to_status_id = djongo_models.BigIntegerField(null=True, blank=True)
+	in_reply_to_status_id_str = djongo_models.TextField(null=True, blank=True)
 	extended_entities = djongo_models.EmbeddedField(ExtendedEntities, blank=True, null=True)
 	text = djongo_models.TextField()
 	retweet_count = djongo_models.BigIntegerField()

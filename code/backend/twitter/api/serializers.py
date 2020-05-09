@@ -50,6 +50,7 @@ class Tweet(serializers.Serializer):
 	in_reply_to_screen_name = serializers.CharField()
 	in_reply_to_user_id = serializers.CharField()
 	in_reply_to_status_id = serializers.CharField()
+	in_reply_to_status_id_str = serializers.CharField(required=False)
 	extended_entities = ExtendedEntities(required=False)
 	text = serializers.CharField()
 	retweet_count = serializers.IntegerField()

@@ -188,7 +188,8 @@ def twitter_user_tweets(user_id, entries_per_page, page):
 	"""
 	try:
 
-		user_tweets = Tweet.objects.filter(user__id=user_id).order_by('-created_at')
+		tweets_id = neo4j.get_tweets_written({'id': user_id})
+		user_tweets = Tweet.objects.filter(tweet_id__in=tweets_id).order_by('-created_at')
 
 		data = paginator_factory(user_tweets, entries_per_page, page)
 		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]
@@ -315,7 +316,7 @@ def twitter_tweets(entries_per_page, page):
 	if entries_per_page and page are both None then all tweets will be returned
 	"""
 	try:
-		all_tweets = Tweet.objects.all()
+		all_tweets = Tweet.objects.all().order_by('-created_at')
 
 		data = paginator_factory(all_tweets, entries_per_page, page)
 		data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]
@@ -369,9 +370,9 @@ def twitter_tweet(tweet_id):
 
 	"""
 	try:
+		tweet = Tweet.objects.get(tweet_id=tweet_id)
 
-		return True, serializers.Tweet(Tweet.objects.get(tweet_id=tweet_id)).data, \
-			   f"Success obtaining tweet's (id:{tweet_id}) info"
+		return True, serializers.Tweet(tweet).data, f"Success obtaining tweet's (id:{tweet_id}) info"
 
 	except Tweet.DoesNotExist as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_tweet.__name__} -> {e}")
@@ -420,10 +421,11 @@ def twitter_tweet_replies(tweet_id):
 
 	"""
 	try:
-		all_tweets = Tweet.objects.filter(in_reply_to_status_id=tweet_id)
+		all_tweets = Tweet.objects.filter(in_reply_to_status_id_str=tweet_id).order_by('-created_at')
 
-		return True, [serializers.Tweet(tweet).data for tweet in
-					  all_tweets], f"Success obtaining all tweet's (id:{tweet_id}) replies"
+		data = [serializers.Tweet(tweet).data for tweet in all_tweets]
+
+		return True, data, f"Success obtaining all tweet's (id:{tweet_id}) replies"
 
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: "
@@ -881,7 +883,7 @@ def __get_count_stats(types, accum, action=None):
 	for index in range(len(query_res)):
 		obj = query_res[index]
 		if index > 0 and accum:
-			obj['activity'] += query_res[index-1]['activity']
+			obj['activity'] += query_res[index - 1]['activity']
 		full_date = '/'.join(str(obj.pop(group_type)) for group_type in types)
 		stats[full_date] = obj['activity']
 
@@ -889,8 +891,8 @@ def __get_count_stats(types, accum, action=None):
 
 
 def __get_today_stats(action=None):
-	query = "Log.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))"\
-									"& Q(timestamp__lte=datetime.now())"
+	query = "Log.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))" \
+			"& Q(timestamp__lte=datetime.now())"
 	if action:
 		query += f" & Q(action='{action}')"
 
@@ -1056,7 +1058,7 @@ def latest_tweets_daily(entries_per_page, page):
 	"""
 	try:
 		tweets = TweetStats.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))
-										& Q(timestamp__lte=datetime.now())).order_by("-timestamp")
+										   & Q(timestamp__lte=datetime.now())).order_by("-timestamp")
 
 		data = paginator_factory(tweets, entries_per_page, page)
 		tweet_list = [serializers.TweetStats(tweet).data["tweet_id"] for tweet in data['entries']]

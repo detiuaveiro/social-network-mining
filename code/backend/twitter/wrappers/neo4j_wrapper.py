@@ -995,6 +995,45 @@ class Neo4jAPI:
 		with self.driver.session() as session:
 			return session.write_transaction(self.__get_entities_stats)
 
+	def __get_tweets_written(self, tx, data):
+		log.debug("GETTING WRITTEN  TWEETS")
+
+		if 'id' not in data:
+			log.error("ERROR GETTING WRITTEN  TWEETS")
+			log.error("Error: ", "id not defined.")
+			return
+
+		query = "match (a {id: $id})-[:WROTE]->(b) return distinct  b"
+		return [d.values()[0]['id'] for d in list(tx.run(query, id=data['id']))]
+
+	def get_tweets_written(self, data):
+		with self.driver.session() as session:
+			return session.write_transaction(self.__get_tweets_written, data)
+
+	"""
+			result = tx.run(f"MATCH (u: {data['type_1']} {{ id: $id1 }}), (r: {data['type_2']} {{ id: $id2 }}) "
+						f"MERGE (u)-[:{data['label']}]->(r)", id1=str(data['id_1']), id2=str(data['id_2']))
+	"""
+
+	def add_wrote_relationship(self, data):
+		"""Method used to create a new WROTE relationship
+
+		@param data: The params of the new relationship we want to create. Should include a tweet and the reply
+		"""
+		if "user_id" not in data.keys() or "tweet_id" not in data.keys() or 'user_type' not in data.keys():
+			log.error("ERROR CREATING A WROTE RELATIONSHIP")
+			log.error("Error: Specified data doesn't contain necessary fields - tweet_id, user_id and user_type")
+			return
+
+		with self.driver.session() as session:
+			data['label'] = WROTE_LABEL
+			data['type_1'] = data['user_type']
+			data['type_2'] = TWEET_LABEL
+			data['id_1'] = data['user_id']
+			data['id_2'] = data['tweet_id']
+
+			# Caller for transactional unit of work
+			return session.write_transaction(self.__create_relationship, data)
 
 
 if __name__ == "__main__":
