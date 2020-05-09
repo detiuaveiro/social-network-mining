@@ -28,7 +28,7 @@ def twitter_users_count(_):
 
 
 @api_view(["GET"])
-def twitter_users(_, entries_per_page=None, page=None, protected=False):
+def twitter_users(_, protected, entries_per_page=None, page=None):
 	"""
 	Args:
 		_:  Http Request (ignored in this function)
@@ -40,7 +40,7 @@ def twitter_users(_, entries_per_page=None, page=None, protected=False):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_users(entries_per_page, page, protected)
+	success, data, message = queries.twitter_users(entries_per_page, page, protected == 'True')
 	if success:
 		success_messages.append(message)
 	else:
@@ -51,7 +51,7 @@ def twitter_users(_, entries_per_page=None, page=None, protected=False):
 
 
 @api_view(["GET"])
-def twitter_users_stats(_, entries_per_page=None, page=None, protected=False):
+def twitter_users_stats(_, entries_per_page=None, page=None):
 	"""
 	Args:
 		_: Http Request (ignored in this function)
@@ -65,7 +65,7 @@ def twitter_users_stats(_, entries_per_page=None, page=None, protected=False):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_users_stats(entries_per_page, page, protected)
+	success, data, message = queries.twitter_users_stats(entries_per_page, page)
 	if success:
 		success_messages.append(message)
 	else:
