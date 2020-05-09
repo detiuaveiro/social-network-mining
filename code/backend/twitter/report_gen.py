@@ -7,6 +7,7 @@ from time import time
 
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
+from neo4j_labels import USER_LABEL, BOT_LABEL, TWEET_LABEL
 
 
 logger = logging.getLogger("report")
@@ -18,6 +19,8 @@ logger.addHandler(handler)
 
 
 EXPORT_DIR = "export"
+NORMAL_REL = 'Normal'
+REVERSE_REL = 'Reverse'
 
 
 class Report:
@@ -40,10 +43,11 @@ class Report:
 	@staticmethod
 	def __node_builder(node):
 		query_node = "("
-
 		if len(node) > 0:
 			if "label" in node:
-				query_node += ":" + "|".join(node['label'])
+				query_node += ":" + node['label']
+			if 'screen_name' in node:
+				query_node += f"{{username:'{node['screen_name']}'}}"
 
 		return query_node+")"
 
@@ -52,19 +56,24 @@ class Report:
 		query_rel = "["
 		if len(rel) > 0:
 			if 'label' in rel:
-				query_rel += ":" + "|".join(rel['label'])
+				query_rel += ":" + '|'.join(rel['label'])
 			if 'depth_start' in rel:
 				query_rel += "*" + str(rel['depth_start'])
 			if 'depth_end' in rel:
 				query_rel += ".."+str(rel['depth_end'])
-		return query_rel + "]"
+		query_rel += "]"
+		if "direction" not in rel or rel["direction"] == NORMAL_REL:
+			return f"-{query_rel}->"
+		elif rel["direction"] == REVERSE_REL:
+			return f"<-{query_rel}-"
+		return f"-{query_rel}-"
 
 	def __get_mongo_info(self, node, params):
 		node_type = node["labels"][0]
 
 		if node_type in params and len(params[node_type]) > 0:
 
-			if node_type == "Tweet":
+			if node_type == TWEET_LABEL:
 				mongo_info = self.mongo.search('tweets', query={"id_str": node['properties']['id']},
 										 fields=params[node_type], single=True)
 			# It's a user or a bot
@@ -91,36 +100,42 @@ class Report:
 					info_dict[index][key] = result
 		return info_dict
 
-	def __query_builder(self, query_tweets, query_bots, query_users, node):
+	def __query_builder(self, query, node):
 		node_label = node["labels"][0]
-		if node_label == "Tweet":
-			query_tweets.append(node["properties"]["id"])
-		elif node_label == "User":
-			query_users.append(node["properties"]["id"])
-		elif node_label == "Bot":
-			query_bots.append(node["properties"]["id"])
+		if node_label == TWEET_LABEL:
+			query["Tweet"].append(node["properties"]["id"])
+		elif node_label == USER_LABEL:
+			query["User"].append(node["properties"]["id"])
+		elif node_label == BOT_LABEL:
+			query["Bot"].append(node["properties"]["id"])
 
-	def __get_results(self, result, tweets, user, bots, placement, params):
-		result_tweets = self.__get_mongo_aggregate("tweets", tweets, params['Tweet'])
-		result_users = self.__get_mongo_aggregate("users", user, params['User'])
-		result_bots = self.__get_mongo_aggregate("users", bots, params['Bot'])
+	def __get_results(self, result, query, placement, params):
+		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweet'], params['Tweet'])
+		result_users = self.__get_mongo_aggregate("users", query['User'], params['User'])
+		result_bots = self.__get_mongo_aggregate("users", query['Bot'], params['Bot'])
 
 		for res in [result_tweets, result_users, result_bots]:
-			print(res)
 			result = self.__insert_info_list(result, res, placement)
 
 		return result
-
+	
 	def __add_to_keep_track(self, locations_dict, node, location):
 		if node not in locations_dict:
 			locations_dict[node] = []
 		locations_dict[node].append(location)
 
-	def create_report(self, match: dict, params: dict, limit: int = 50, export='csv'):
-		query = f"MATCH r={self.__node_builder(match['start'])}" \
-				f"-{self.__relation_builder(match['rel'])}" \
-				f"->{self.__node_builder(match['end'])} " \
-				f"return r"
+	def create_report(self, match: dict, params: dict, limit=None, export='csv'):
+		query = f"MATCH r={self.__node_builder(match['start']['node'])}" \
+				f"{self.__relation_builder(match['start']['relation'])}"
+
+		if "intermediates" in match:
+			for interm in match["intermediates"]:
+				query += f"{self.__node_builder(interm['node'])}" \
+						f"{self.__relation_builder(interm['relation'])}"
+
+		query += f"{self.__node_builder(match['end']['node'])} " \
+				 f"return r"
+
 		logger.info(query)
 
 		if limit:
@@ -128,23 +143,14 @@ class Report:
 
 		result = []
 
-		query_result = self.neo.export_query(query, rel_node_properties=True)
-
-		#logger.debug(query_result)
-
 		start = time()
 
-		query_tweets_start = []
-		query_tweets_interm = []
-		query_tweets_end = []
+		query_result = self.neo.export_query(query, rel_node_properties=True)
 
-		query_bots_start = []
-		query_bots_interm = []
-		query_bots_end = []
+		logger.info(f"It took <{time() - start}>s to get the network")
+		self.exporter.export_json(query_result)
 
-		query_user_start = []
-		query_user_interm = []
-		query_user_end = []
+		query_for_mongo = {key: [] for key in params}
 
 		keep_track_places = {}
 
@@ -156,26 +162,26 @@ class Report:
 
 			# Add the detailed start node
 			node_start = relations[0]["start"]
-			self.__query_builder(query_tweets_start, query_bots_start, query_user_start, node_start)
+			self.__query_builder(query_for_mongo, node_start)
 			self.__add_to_keep_track(keep_track_places, node_start["properties"]["id"], (row_index, "start"))
-			relation["start"] = {param: None for param in params['start'][node_start["labels"][0]]}
+			relation["start"] = {param: None for param in params[node_start["labels"][0]]}
 			relation["start"]["id_str"] = node_start["properties"]["id"]
 
 			for index in range(len(relations) - 1):
 				rel = relations[index]
 				relation['rel' + str(index+1)] = {"name": rel["label"]}
-				self.__query_builder(query_tweets_interm, query_bots_interm, query_user_interm, rel["end"])
+				self.__query_builder(query_for_mongo, rel["end"])
 				self.__add_to_keep_track(keep_track_places, rel["end"]["properties"]["id"],
 										 (row_index, "interm" + str(index + 1)))
-				relation["interm" + str(index+1)] = {param: None for param in params['inter'][rel["end"]["labels"][0]]}
+				relation["interm" + str(index+1)] = {param: None for param in params[rel["end"]["labels"][0]]}
 				relation["interm" + str(index + 1)]["id_str"] = rel["end"]["properties"]["id"]
 
 			# Add ending node
 			relation['rel' + str(len(relations))] = {"name": relations[-1]["label"]}
 			node_end = relations[-1]["end"]
-			self.__query_builder(query_tweets_end, query_bots_end, query_user_end, node_end)
+			self.__query_builder(query_for_mongo, node_end)
 			self.__add_to_keep_track(keep_track_places, node_end["properties"]["id"], (row_index, "end"))
-			relation["end"] = {param: None for param in params['end'][node_end["labels"][0]]}
+			relation["end"] = {param: None for param in params[node_end["labels"][0]]}
 			relation["end"]["id_str"] = node_end["properties"]["id"]
 
 			# Append to result
@@ -183,14 +189,7 @@ class Report:
 
 		logger.debug(f"It took <{time() - start} s> to finish analysing network")
 
-		result = self.__get_results(result, query_tweets_start, query_user_start,
-									query_bots_start, keep_track_places, params['start'])
-
-		result = self.__get_results(result, query_tweets_interm, query_user_interm,
-									query_bots_interm, keep_track_places, params['inter'])
-
-		result = self.__get_results(result, query_tweets_end, query_user_end,
-									query_bots_end, keep_track_places, params['end'])
+		result = self.__get_results(result, query_for_mongo, keep_track_places, params)
 
 		logger.debug(f"It took <{time() - start} s>")
 
@@ -228,31 +227,61 @@ class Report:
 if __name__ == '__main__':
 	rep = Report()
 	query = {
-		'start': {},
-		'rel': {},
-		'end': {}
-	}
-	params = {
 		'start': {
-			'Tweet': ['retweet_count', 'favourite_count', 'text', "id_str"],
-			'User': ['name', 'screen_name', 'followers_count', "id_str"],
-			'Bot': ['name', 'screen_name', 'friends_count', "id_str"]
-		},
-		'inter': {
-			'Tweet': ['id', "id_str"],
-			'User': ['screen_name', "id_str"],
-			'Bot': ['name', "id_str"]
+			'node': {
+				'label': "User"
+			},
+			'relation': {
+				'label': ['FOLLOWS']
+			}
 		},
 		'end': {
-			'Tweet': ['favorite_count', "id_str"],
-			'User': ['followers_count', "id_str"],
-			'Bot': ['friends_count', "id_str"]
+			'node': {
+				'screen_name': 'KimKardashian',
+				'label': "User"
+			}
 		}
+	}
+	params = {
+		'Tweet': ['retweet_count', 'favourite_count', 'text', "id_str"],
+		'User': ['name', 'screen_name', 'followers_count', "id_str"],
+		'Bot': ['name', 'screen_name', 'friends_count', "id_str"]
 	}
 
 	for export_type in Report.ExportType:
 		print(export_type)
 		rep.create_report(query, params, export=export_type)
+
+	# Test intermediates
+	query2 = {
+		'start': {
+			'node': {
+				'label': "User"
+			},
+			'relation': {
+				'label': ['WROTE']
+			}
+		},
+		'intermediates': [
+			{
+				'node': {
+					'label': "Tweet"
+				},
+				'relation': {
+					'label': ['RETWEETED', "QUOTED", "REPLIED"],
+					"direction": "Reverse"
+				}
+			}
+		],
+		'end': {
+			'node': {
+				'label': "User"
+			}
+		}
+	}
+	for export_type in Report.ExportType:
+		print(export_type)
+		rep.create_report(query2, params, export=export_type)
 #
 #
 #
