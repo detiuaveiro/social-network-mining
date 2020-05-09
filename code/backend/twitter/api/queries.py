@@ -299,6 +299,8 @@ def twitter_search_users_strict(keyword, user_type):
 			for bot in neo4j.search_bots():
 				if bot["username"].lower().startswith(keyword.lower()):
 					query_params |= Q(user_id=bot["id"])
+			if len(query_params) == 0:
+				return True, [], f"Success searching users by {keyword}"
 		else:
 			query_params = Q(screen_name__istartswith=keyword)
 		users = User.objects.filter(query_params)
@@ -482,6 +484,46 @@ def twitter_search_tweets(tweet):
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_search_tweets.__name__} -> {e}")
 		return False, None, f"Error searching users by {tweet}"
+
+
+def twitter_strict_search(keyword):
+	"""
+	Args:
+		keyword: The keyword with which we want to look up the user
+
+	Return: Data with entities that have that keyword
+	"""
+	try:
+		data = {"User": [], "Bot": [], "Tweet": []}
+		if keyword.isdigit():
+			tweets = Tweet.objects.filter(Q(tweet_id_str__startswith=keyword))
+			data["Tweet"] = [serializers.Tweet(tweet).data["tweet_id"] for tweet in tweets]
+
+		bot_query = Q()
+		print(len(bot_query))
+		for bot in neo4j.search_bots():
+			if bot["username"].lower().startswith(keyword.lower()):
+				bot_query |= Q(user_id=bot["id"])
+
+		if len(bot_query) > 0:
+			bots = User.objects.filter(bot_query)
+			bots_serializer = [serializers.User(bot).data for bot in bots]
+			data["Bot"] = [{
+				"id": bot["user_id"], "screen_name": bot["screen_name"], "name": bot["name"]
+			} for bot in bots_serializer]
+
+		users = User.objects.filter(Q(screen_name__istartswith=keyword)).exclude(bot_query)
+		users_serializer = [serializers.User(user).data for user in users]
+		data["User"] = [{
+			"id": user["user_id"], "screen_name": user["screen_name"], "name": user["name"]
+		} for user in users_serializer]
+
+		return True, data, f"Success searching entities by {keyword}"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_strict_search.__name__} -> {e}")
+		return False, None, f"Error searching users by {keyword}"
 
 
 # -----------------------------------------------------------
