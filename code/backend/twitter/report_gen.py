@@ -101,7 +101,8 @@ class Report:
 					info_dict[index][key] = result
 		return info_dict
 
-	def __query_builder(self, query, node):
+	@staticmethod
+	def __query_builder(query, node):
 		node_label = node["labels"][0]
 		if node_label == TWEET_LABEL:
 			query["Tweet"].append(node["properties"]["id"])
@@ -122,7 +123,8 @@ class Report:
 
 		return result
 	
-	def __add_to_keep_track(self, locations_dict, node, location):
+	@staticmethod
+	def __add_to_keep_track(locations_dict, node, location):
 		if node not in locations_dict:
 			locations_dict[node] = []
 		locations_dict[node].append(location)

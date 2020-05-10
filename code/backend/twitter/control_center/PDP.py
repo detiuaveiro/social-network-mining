@@ -342,7 +342,7 @@ class PDP:
 			if users_of_tweets_liked:
 				for user_of_tweet_liked in users_of_tweets_liked:
 					id_str = user_of_tweet_liked['user']['id_str']
-					if id_str == str(data["user_id"]):
+					if id_str == str(data["user_id"]) and id_str in bot_logs_dict:
 						log.info(f"Found a past like to the user with id <{data['user_id']}>: {user_of_tweet_liked}")
 						date = bot_logs_dict[id_str]['timestamp']
 						now = datetime.datetime.now()
@@ -405,7 +405,7 @@ class PDP:
 			if users_of_retweets:
 				for user_of_retweet in users_of_retweets:
 					id_str = user_of_retweet['user']['id_str']
-					if id_str == str(data["user_id"]):
+					if id_str == str(data["user_id"]) and id_str in bot_logs_dict:
 						log.info(f"Found a past retweet to the user with id <{data['user_id']}>: {user_of_retweet}")
 						log.debug("Bot has recently retweet the user")
 						heuristic_value += PENALTY_RETWEETED_USER_RECENTLY
@@ -479,10 +479,15 @@ class PDP:
 
 			if users_of_replies:
 				for user_of_reply in users_of_replies:
-					if user_of_reply['user']['id_str'] == str(data['user_id']):
-						log.info(f"Found a recent reply to the user with id <{data['user_id']}>: {user_of_reply}")
-						heuristic_value += PENALTY_REPLIED_USER_RECENTLY
-						break
+					id_str = user_of_reply['user']['id_str']
+					if id_str == str(data['user_id']) and id_str in bot_logs_dict:
+						log.info(f"Found a past reply to the user with id <{data['user_id']}>: {user_of_reply}")
+						date = bot_logs_dict[id_str]['timestamp']
+						now = datetime.datetime.now()
+						if (now - date).seconds < PENALTY_REPLIED_USER_RECENTLY_INTERVAL:
+							log.debug("Bot recently replied to another tweet from user")
+							heuristic_value += PENALTY_REPLIED_USER_RECENTLY
+							break
 
 		log.info(f"Request to reply to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
