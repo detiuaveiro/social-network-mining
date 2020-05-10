@@ -119,19 +119,19 @@ class Report:
 	def __query_builder(self, query, node):
 		node_label = node["labels"][0]
 		if node_label == TWEET_LABEL:
-			query["Tweet"].append(node["properties"]["id"])
+			query["Tweets"].append(node["properties"]["id"])
 		elif node_label == USER_LABEL:
-			query["User"].append(node["properties"]["id"])
+			query["Users"].append(node["properties"]["id"])
 		elif node_label == BOT_LABEL:
-			query["Bot"].append(node["properties"]["id"])
+			query["Bots"].append(node["properties"]["id"])
 
 	#@staticmethod
 	def __get_results(self, result, query, placement, params):
-		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweet'], params['Tweet'])
+		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweets'], params['Tweets'])
 
-		result_users = self.__get_mongo_aggregate("users", query['User'], params['User'])
+		result_users = self.__get_mongo_aggregate("users", query['Users'], params['Users'])
 
-		result_bots = self.__get_mongo_aggregate("users", query['Bot'], params['Bot'])
+		result_bots = self.__get_mongo_aggregate("users", query['Bots'], params['Bots'])
 
 		for res in [result_tweets, result_users, result_bots]:
 			result = self.__insert_info_list(result, res, placement)
@@ -147,6 +147,7 @@ class Report:
 	#@staticmethod
 	def create_report(self, match: dict, params: dict, limit=None):
 		params = self.__translate_params(params)
+		logger.debug(params)
 		query = "MATCH r="
 		if "relation" in match['start']:
 			query += f"{self.__node_builder(match['start']['type'], match['start']['node'])}" \
@@ -174,6 +175,7 @@ class Report:
 
 		logger.info(f"It took <{time() - start}>s to get the network")
 		self.exporter.export_json(query_result)
+		logger.info(query_result)
 
 		query_for_mongo = {key: [] for key in params}
 
@@ -186,12 +188,13 @@ class Report:
 			relation = {}
 
 			# Add the detailed start node
-			node_start = relations[0]["start"]
-			self.__query_builder(query_for_mongo, node_start)
-			self.__add_to_keep_track(keep_track_places, node_start["properties"]["id"], (row_index, "start"))
-			relation["start"] = {param: None for param in params[node_start["labels"][0]]}
-			relation["start"]["id_str"] = node_start["properties"]["id"]
-			relation["start"]["label"] = node_start["labels"][0]
+			if len(relations) > 0:
+				node_start = relations[0]["start"]
+				self.__query_builder(query_for_mongo, node_start)
+				self.__add_to_keep_track(keep_track_places, node_start["properties"]["id"], (row_index, "start"))
+				relation["start"] = {param: None for param in params[node_start["labels"][0]]}
+				relation["start"]["id_str"] = node_start["properties"]["id"]
+				relation["start"]["label"] = node_start["labels"][0]
 
 			for index in range(len(relations) - 1):
 				rel = relations[index]
@@ -204,11 +207,12 @@ class Report:
 				relation["interm" + str(index + 1)]["label"] = rel["end"]["labels"][0]
 
 			# Add ending node
-			relation['rel' + str(len(relations))] = {"name": relations[-1]["label"]}
-			node_end = relations[-1]["end"]
+			if len(relations) > 0:
+				relation['rel' + str(len(relations))] = {"name": relations[-1]["label"]}
+			node_end = row['r']['nodes'][-1]
 			self.__query_builder(query_for_mongo, node_end)
 			self.__add_to_keep_track(keep_track_places, node_end["properties"]["id"], (row_index, "end"))
-			relation["end"] = {param: None for param in params[node_end["labels"][0]]}
+			relation["end"] = {param: None for param in params[node_end["labels"][0] + "s"]}
 			relation["end"]["id_str"] = node_end["properties"]["id"]
 			relation["end"]["label"] = node_end["labels"][0]
 
