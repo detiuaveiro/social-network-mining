@@ -296,6 +296,8 @@ class PDP:
 		@returns: float that will then be compared to the threshold previously defined
 		"""
 
+		log.info(f"Analyzing possibility to like tweet with id: <{data['tweet_id']}>")
+
 		heuristic_value = 0
 
 		# Verify if there's a relation between the bot and the user
@@ -321,23 +323,31 @@ class PDP:
 			"action": log_actions.TWEET_LIKE
 		}, limit=LIMIT_LOGS)
 		if bot_logs['success']:
+			bot_logs_dict = {}
 			for bot_log in bot_logs['data']:
-				user_of_tweet_liked = self.mongo.search(
-					collection="tweets",
-					query={"id_str": str(bot_log["target_id"])},
-					fields=["user"],
-					single=True
-				)
-				if user_of_tweet_liked == data["user_id"]:
-					date = bot_log["timestamp"]
-					now = datetime.datetime.now()
-					if (now - date).seconds < PENALTY_LIKED_RECENTLY_LARGE_INTERVAL:
-						log.info("Bot has recently liked a tweet from the same user")
-						heuristic_value += PENALTY_LIKED_RECENTLY_LARGE
-					elif (now - date).seconds < PENALTY_LIKED_RECENTLY_SMALL_INTERVAL:
-						log.info("Bot has liked a tweet from the same user, but may not be that suspicious")
-						heuristic_value += PENALTY_LIKED_RECENTLY_SMALL
+				bot_logs_dict[str(bot_log['target_id'])] = {'timestamp': bot_log["timestamp"]}
 
+			users_of_tweets_liked = self.mongo.search(
+				collection="tweets",
+				query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
+				fields=["user"],
+				single=False
+			)
+
+			if users_of_tweets_liked:
+				for user_of_tweet_liked in users_of_tweets_liked:
+					if user_of_tweet_liked['user']['id_str'] == str(data["user_id"]):
+						log.info(f"Found a past like to the user with id <{data['user_id']}>: {user_of_tweet_liked}")
+						date = bot_logs_dict[user_of_tweet_liked['id_str']]['timestamp']
+						now = datetime.datetime.now()
+						if (now - date).seconds < PENALTY_LIKED_RECENTLY_LARGE_INTERVAL:
+							log.info("Bot has recently liked a tweet from the same user")
+							heuristic_value += PENALTY_LIKED_RECENTLY_LARGE
+						elif (now - date).seconds < PENALTY_LIKED_RECENTLY_SMALL_INTERVAL:
+							log.info("Bot has liked a tweet from the same user, but may not be that suspicious")
+							heuristic_value += PENALTY_LIKED_RECENTLY_SMALL
+
+		log.info(f"Request to like to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
 
 	def analyze_tweet_retweet(self, data):
@@ -348,6 +358,8 @@ class PDP:
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
 		"""
+
+		log.info(f"Analyzing possibility to like retweet with id: <{data['tweet_id']}>")
 
 		heuristic_value = 0
 		# Verify if there's a relation between the bot and the user
@@ -372,20 +384,28 @@ class PDP:
 			"action": log_actions.RETWEET
 		}, limit=LIMIT_LOGS)
 		if bot_logs['success']:
+			bot_logs_dict = {}
 			for bot_log in bot_logs['data']:
-				user_of_retweet = self.mongo.search(
-					collection="tweets",
-					query={"id_str": str(bot_log["target_id"])},
-					fields=["user"],
-					single=True
-				)
-				if user_of_retweet == data["user_id"]:
-					date = bot_log["timestamp"]
-					now = datetime.datetime.now()
-					if (now - date).seconds < PENALTY_RETWEETED_USER_RECENTLY_INTERVAL:
-						log.debug("Bot has recently retweet the user")
-						heuristic_value += PENALTY_RETWEETED_USER_RECENTLY
+				bot_logs_dict[str(bot_log['target_id'])] = {'timestamp': bot_log["timestamp"]}
 
+			users_of_retweets = self.mongo.search(
+				collection="tweets",
+				query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
+				fields=["user"],
+				single=False
+			)
+
+			if users_of_retweets:
+				for user_of_retweet in users_of_retweets:
+					if user_of_retweet['user']['id_str'] == str(data["user_id"]):
+						log.info(f"Found a past retweet to the user with id <{data['user_id']}>: {user_of_retweet}")
+						date = bot_logs_dict[user_of_retweet['id_str']]['timestamp']
+						now = datetime.datetime.now()
+						if (now - date).seconds < PENALTY_RETWEETED_USER_RECENTLY_INTERVAL:
+							log.debug("Bot has recently retweet the user")
+							heuristic_value += PENALTY_RETWEETED_USER_RECENTLY
+
+		log.info(f"Request to retweet to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
 
 	def analyze_tweet_reply(self, data):
@@ -403,6 +423,8 @@ class PDP:
 				@param: data - dictionary containing the data of the bot and the tweet it wants to like
 				@returns: float that will then be compared to the threshold previously defined
 				"""
+
+		log.info(f"Analyzing possibility to reply tweet with id: <{data['tweet_id']}>")
 
 		# first, ew verify the length of the tweet
 		len_tweet = len(tweet_to_simple_text(data["tweet_text"]))
@@ -445,20 +467,27 @@ class PDP:
 		}, limit=LIMIT_LOGS)
 
 		if bot_logs['success']:
+			bot_logs_dict = {}
 			for bot_log in bot_logs['data']:
-				user_of_reply = self.mongo.search(
-					collection="tweets",
-					query={"id_str": str(bot_log["target_id"])},
-					fields=["user"],
-					single=True
-				)
-				if user_of_reply == data["user_id"]:
-					date = bot_log["timestamp"]
-					now = datetime.datetime.now()
-					if (now - date).seconds < PENALTY_REPLIED_USER_RECENTLY_INTERVAL:
-						log.debug("Bot recently replied to another tweet from user")
-						heuristic_value += PENALTY_REPLIED_USER_RECENTLY
-						break
+				bot_logs_dict[str(bot_log['target_id'])] = {'timestamp': bot_log["timestamp"]}
+
+			users_of_replies = self.mongo.search(
+				collection="tweets",
+				query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
+				fields=["user"],
+				single=False
+			)
+
+			if users_of_replies:
+				for user_of_reply in users_of_replies:
+					if user_of_reply['user']['id_str'] == str(data['user_id']):
+						log.info(f"Found a past reply to the user with id <{data['user_id']}>: {user_of_reply}")
+						date = bot_logs_dict[user_of_reply['id_str']]['timestamp']
+						now = datetime.datetime.now()
+						if (now - date).seconds < PENALTY_REPLIED_USER_RECENTLY_INTERVAL:
+							log.debug("Bot recently replied to another tweet from user")
+							heuristic_value += PENALTY_REPLIED_USER_RECENTLY
+							break
 
 		log.info(f"Request to reply to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value

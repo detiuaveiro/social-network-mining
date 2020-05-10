@@ -871,8 +871,6 @@ class Control_Center(Rabbitmq):
 		log.info("MESSAGE RECEIVED")
 		self.channel = channel
 		self.exchange = method.exchange
-		print(method.exchange)
-		print(self.channel.channel_number)
 		message = json.loads(body)
 		self.action(message)
 
