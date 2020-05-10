@@ -447,7 +447,7 @@ class Reports extends Component {
     }
     */
 
-    if (document.getElementById("limit") != null && document.getElementById("limit").value != "" && !document.getElementById("limit").value.match("^[0-9]+$")) {
+    if (document.getElementById("limit") == null || (document.getElementById("limit").value != "" && document.getElementById("limit").value.match("^[0-9]+$") == null)) {
       toast.error('The specified limit must be a number!', {
         position: "top-center",
         autoClose: 7500,
@@ -931,7 +931,7 @@ class Reports extends Component {
                     <Row style={{ marginTop: "10px" }}>
                       <Col md="2">
                         <FormGroup>
-                          <Input type="number" id="limit" value="" placeholder="Max number of entities" />
+                          <Input type="text" id="limit" placeholder="Max number of entities" />
                           <i data-tip="Specify the max number of entities to be included. By default all entities resulting from the other parameters get returned" style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
                         </FormGroup>
                       </Col>
