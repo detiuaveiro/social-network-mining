@@ -41,13 +41,12 @@ class Report:
 		self.exporter = Report.__Exporter(EXPORT_DIR)
 
 	@staticmethod
-	def __node_builder(node):
+	def __node_builder(label, node):
 		query_node = "("
-		if len(node) > 0:
-			if "type" in node and node["type"]:
-				query_node += ":" + node['label']
-			if 'node' in node and node["node"]:
-				query_node += f"{{username:'{node['screen_name']}'}}"
+		if label:
+			query_node += f":{label}"
+		if node:
+			query_node += f"{{id: '{node}'}}"
 
 		return query_node+")"
 
@@ -62,6 +61,7 @@ class Report:
 			if 'depth_end' in rel:
 				query_rel += ".."+str(rel['depth_end'])
 		query_rel += "]"
+
 		if "direction" not in rel or rel["direction"] == NORMAL_REL:
 			return f"-{query_rel}->"
 		elif rel["direction"] == REVERSE_REL:
@@ -131,8 +131,10 @@ class Report:
 
 	@staticmethod
 	def create_report(self, match: dict, params: dict, limit=None):
-		query = f"MATCH r={self.__node_builder(match['start']['node'])}" \
-				f"{self.__relation_builder(match['start']['relation'])}"
+		query = "MATCH "
+		if "relation" in match['start']:
+			query += f"r={self.__node_builder(match['start']['type'], match['start']['node'])}" \
+					f"{self.__relation_builder(match['start']['relation'])}"
 
 		if "intermediates" in match:
 			for interm in match["intermediates"]:
