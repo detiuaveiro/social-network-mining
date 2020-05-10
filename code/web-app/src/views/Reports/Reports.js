@@ -48,9 +48,9 @@ class Reports extends Component {
     },
 
     start: {
-      type: [],
-      nodes: [],
-      relation: []
+      type: null,
+      nodes: null,
+      relation: null
     },
 
     intermediate: {
@@ -60,8 +60,8 @@ class Reports extends Component {
     },
 
     end: {
-      type: [],
-      nodes: []
+      type: null,
+      nodes: null
     },
 
     fileType: "csv",
@@ -89,9 +89,11 @@ class Reports extends Component {
         if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
           return
         } else {
-          var type = this.state.start.type.value
-          if (type == null || type == "" || type.split("_").length == 2) {
+          var type = this.state.start.type
+          if (type == null || type.value == "" || type.value.split("_").length == 2) {
             type = null
+          }else{
+            type = type.value
           }
           var requestValues = this.search(inputValue, type)
           resolve(requestValues)
@@ -108,9 +110,11 @@ class Reports extends Component {
         if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
           return
         } else {
-          var type = this.state.end.type.value
-          if (type == null || type == "" || type.split("_").length == 2) {
+          var type = this.state.end.type
+          if (type == null || type.value == "" || type.value.split("_").length == 2) {
             type = null
+          }else{
+            type = type.value
           }
           var requestValues = this.search(inputValue, type)
           resolve(requestValues)
@@ -512,10 +516,11 @@ class Reports extends Component {
       //////////////////////////////////////////////////
 
       var start = {}
-      var startType = this.state.start.type.value
-      if (startType == null || startType == "" || startType.split("_").length == 2) {
-        startType = null
+      var startType = this.state.start.type
+      if (!startType == null && !startType == "" && !startType.split("_").length == 2) {
+        startType = startType.value
       }
+
       start["type"] = startType
 
       var startNode = this.state.start.nodes
@@ -529,9 +534,9 @@ class Reports extends Component {
       //////////////////////////////////////////////////
 
       var end = {}
-      var endType = this.state.end.type.value
-      if (endType == null || endType == "" || endType.split("_").length == 2) {
-        endType = null
+      var endType = this.state.end.type
+      if (!endType == null && !endType == "" && !endType.split("_").length == 2) {
+        endType = endType.value
       }
       end["type"] = endType
 
@@ -600,10 +605,11 @@ class Reports extends Component {
 
       search["limit"] = limit
 
+      console.log(search)
+
       this.startDownload(search, fileType)
     }
 
-    console.log(search)
   }
 
   async startDownload(search, fileType) {
