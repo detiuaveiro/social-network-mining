@@ -14,13 +14,14 @@ from wrappers.rabbitmq_wrapper import Rabbitmq
 
 from control_center.policies_types import PoliciesTypes
 from control_center.PEP import PEP
-from messages_types import ServerToBot, BotToServer
+from messages_types import ServerToBot, BotToServer, ServerToFollowService, FollowServiceToServer
 
 import log_actions
 import neo4j_labels
 from control_center import mongo_utils
 
-from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX
+from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, TASK_FOLLOW_QUEUE, \
+	TASK_FOLLOW_ROUTING_KEY_PREFIX
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
@@ -28,7 +29,6 @@ handler = logging.StreamHandler(open("dbwritter.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
-
 
 PROBABILITY_SEARCH_KEYWORD = 0.0001
 
@@ -96,6 +96,9 @@ class Control_Center(Rabbitmq):
 
 		elif message_type == BotToServer.QUERY_KEYWORDS:
 			self.__send_keywords(message)
+
+		elif message_type == FollowServiceToServer.REQUEST_POLICIES:
+			print("OLA???????")
 
 	# Need DB API now
 	def __follow_user(self, user1_id, user2_id):
@@ -430,13 +433,31 @@ class Control_Center(Rabbitmq):
 			"target_id": user_id_str
 		})
 
-		request_accepted = self.pep.receive_message({
-			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
-			"bot_id": data['bot_id'],
-			"bot_id_str": data['bot_id_str'],
-			"user": user,
-			"tweets": tweets
+		request_accepted = False
+
+		policies = self.postgres_client.search_policies({
+			"bot_id": int(data["bot_id_str"])  # , "filter": "Keywords"
 		})
+		if policies['success']:
+			payload = {
+				'type': ServerToFollowService.REQUEST_FOLLOW_USER,
+				'params': {
+					'user': user_id,
+					'tweets': [t['full_text'] for t in tweets],
+					'policies': policies['data'],
+					'description': user['description']
+				}
+			}
+
+			self._send(queue=TASK_FOLLOW_QUEUE, routing_key=TASK_FOLLOW_ROUTING_KEY_PREFIX, message=payload)
+
+		# request_accepted = self.pep.receive_message({
+		#	"type": PoliciesTypes.REQUEST_FOLLOW_USER,
+		#	"bot_id": data['bot_id'],
+		#	"bot_id_str": data['bot_id_str'],
+		#	"user": user,
+		#	"tweets": tweets
+		# })
 
 		if request_accepted:
 			log.info(f"Bot {data['bot_id']} request accepted to follow {user_id}")
@@ -688,7 +709,7 @@ class Control_Center(Rabbitmq):
 					})
 
 			elif ("is_quote_status" in data["data"] and data["data"]["is_quote_status"]
-			      and "quoted_status" in data["data"]):
+				  and "quoted_status" in data["data"]):
 
 				log.info(f"Tweet was quoting some other tweet, must insert the quote relation too")
 				new_data["data"] = data["data"]["quoted_status"]

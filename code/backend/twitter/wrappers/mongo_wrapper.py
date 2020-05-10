@@ -28,6 +28,7 @@ class MongoAPI:
         self.users = eval(f"self.client.{credentials.MONGO_DB}.users")
         self.tweets = eval(f"self.client.{credentials.MONGO_DB}.tweets")
         self.messages = eval(f"self.client.{credentials.MONGO_DB}.messages")
+        self.models = eval(f"self.client.{credentials.MONGO_DB}.models")
 
     # TODO - IMPLEMENT ME PLEASE!
     def verify_integrity(self, collection, document):
