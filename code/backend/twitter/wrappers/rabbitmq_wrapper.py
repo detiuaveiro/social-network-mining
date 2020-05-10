@@ -1,29 +1,31 @@
 ## @package twitter.wrappers
 # coding: UTF-8
+import functools
+import time
 
 import pika
-import time
 import logging
 import json
 
-from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
+from pika.adapters.asyncio_connection import AsyncioConnection
 
-from credentials import *
+from credentials import RABBITMQ_URL, RABBITMQ_PORT, VHOST, RABBITMQ_USERNAME, RABBITMQ_PASSWORD, API_QUEUE, \
+    API_FOLLOW_QUEUE, DATA_EXCHANGE, DATA_ROUTING_KEY, LOG_ROUTING_KEY, LOG_EXCHANGE, QUERY_EXCHANGE, \
+    QUERY_ROUTING_KEY, SERVICE_QUERY_EXCHANGE, SERVICE_QUERY_ROUTING_KEY, TASKS_QUEUE_PREFIX, TASKS_EXCHANGE, \
+    TASK_FOLLOW_QUEUE, TASK_FOLLOW_EXCHANGE
 
 log = logging.getLogger('Rabbit')
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(open("rabbitmq.log", "w"))
 handler.setFormatter(logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
-
-WAIT_TIME = 1
 
 
 class Rabbitmq:
     """Class representing Rabbit MQ"""
 
     def __init__(self, host=RABBITMQ_URL, port=RABBITMQ_PORT, vhost=VHOST, username=RABBITMQ_USERNAME,
-				 password=RABBITMQ_PASSWORD):
+                 password=RABBITMQ_PASSWORD):
         """
         Create a Rabbit MQ instance which represents a connection to a Rabbit MQ server
 
@@ -43,83 +45,190 @@ class Rabbitmq:
 
         # Setting up pika credentials and parameters
         pika_credentials = pika.PlainCredentials(username, password)
+
         self.pika_parameters = pika.ConnectionParameters(
             host=host,
             port=port,
             virtual_host=vhost,
             credentials=pika_credentials,
-            heartbeat=65535,
-            blocked_connection_timeout=65535
+            heartbeat=30000,
+            blocked_connection_timeout=30000
         )
 
-        self.reconnection_attempt = 0
-        self.MAX_RECONNECTIONS = 10
-        self.connection = None
-        self.channel = None
-        self._setup()
-    
-    def _setup(self):
+        self._connection = None
+        self.channels = {}
+
+        self.exchanges_data = {API_QUEUE: [], API_FOLLOW_QUEUE: []}
+
+        # consumer exchanges data
+        self.exchanges_data[API_QUEUE].append({'exchange': DATA_EXCHANGE, 'routing_key': DATA_ROUTING_KEY,
+                                         'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
+        self.exchanges_data[API_QUEUE].append({'exchange': LOG_EXCHANGE, 'routing_key': LOG_ROUTING_KEY,
+                                         'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
+        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_EXCHANGE, 'routing_key': QUERY_ROUTING_KEY,
+                                         'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
+        self.exchanges_data[API_FOLLOW_QUEUE].append({'exchange': SERVICE_QUERY_EXCHANGE,
+                                                'routing_key': SERVICE_QUERY_ROUTING_KEY,
+                                                'publish_exchange': TASK_FOLLOW_EXCHANGE, 'publish_channel': None})
+
+        # publisher exchanges data
+        self.publish_exchange = {
+            TASKS_QUEUE_PREFIX: {'exchange': TASKS_EXCHANGE},
+            TASK_FOLLOW_QUEUE: {'exchange': TASK_FOLLOW_EXCHANGE}
+        }
+        self.publish_channels = {}
+
+    def run(self):
+        self.__connect()
+        self._connection.ioloop.run_forever()
+
+    def __connect(self):
+        self._connection = AsyncioConnection(parameters=self.pika_parameters,
+                                             on_open_callback=self.__setup,
+                                             on_open_error_callback=self.__on_connection_open_error,
+                                             on_close_callback=self.__on_connection_closed)
+        log.info("Connected")
+
+    def __setup(self, _unused_connection):
         """
         Set up function, will start the connection, create all necessary exchanges and respective bindings from the
         parameters given from the constructor
         """
-    
-        self.connection: BlockingConnection = pika.BlockingConnection(self.pika_parameters)
 
-        self.channel: BlockingChannel = self.connection.channel()
-        self.channel.basic_qos(prefetch_count=10, global_qos=True)
-        self.channel.queue_declare(queue=API_QUEUE, durable=True)
+        # consume queues
+        self._connection.channel(on_open_callback=self.__on_api_channel_open)
+        self._connection.channel(on_open_callback=self.__on_api_follow_channel_open)
 
-        # Declare Exchanges
-        log.info("Declaring exchanges")
-        self.channel.exchange_declare(
-            exchange=TASKS_EXCHANGE,
-            exchange_type='direct',
+        # publish queues
+        # self._connection.channel(on_open_callback=self.__on_bot_tasks_channel_open)
+
+    def __on_api_channel_open(self, channel):
+        self.__on_channel_open(channel=channel, queue=API_QUEUE)
+
+    def __on_api_follow_channel_open(self, channel):
+        self.__on_channel_open(channel=channel, queue=API_FOLLOW_QUEUE)
+
+    def __on_bot_tasks_channel_open(self, channel):
+        self.__on_tasks_channel_open(channel=channel, queue=TASKS_QUEUE_PREFIX)
+
+    def __on_follow_tasks_channel_open(self, channel):
+        self.__on_tasks_channel_open(channel=channel, queue=TASK_FOLLOW_QUEUE)
+
+    def __on_tasks_channel_open(self, channel, queue):
+        # self.channels[queue] = channel
+
+        exchange = self.publish_exchange[queue]['exchange']
+
+        log.info(f"Declaring exchange <{exchange}>")
+
+        channel.exchange_declare(
+            exchange=exchange,
             durable=True
         )
 
-        self.channel.exchange_declare(
-            exchange=DATA_EXCHANGE,
-            exchange_type='direct',
-            durable=True
-        )
+    def __on_channel_open(self, channel, queue):
+        self.channels[queue] = channel
 
-        self.channel.exchange_declare(
-            exchange=LOG_EXCHANGE,
-            exchange_type='direct',
-            durable=True
-        )
+        for exchange_data in self.exchanges_data[queue]:
+            exchange = exchange_data['exchange']
+            routing_key = exchange_data['routing_key']
 
-        self.channel.exchange_declare(
-            exchange=QUERY_EXCHANGE,
-            exchange_type='direct',
-            durable=True
-        )
+            log.info(f"Declaring exchange <{exchange}>")
+
+            callback = functools.partial(self.__setup_queue, queue=queue, exchange=exchange, routing_key=routing_key)
+            self.channels[queue].exchange_declare(
+                exchange=exchange,
+                durable=True,
+                callback=callback
+            )
+
+            # create the publish channel to each consumer channel
+            self.publish_channels[exchange] = self._connection.channel(
+                on_open_callback=self.__on_bot_tasks_channel_open if exchange_data['publish_exchange'] == TASKS_EXCHANGE
+                else self.__on_follow_tasks_channel_open)
+
+    def __setup_queue(self, _unused_frame, queue, exchange, routing_key):
+        callback = functools.partial(self.__on_queue_declared, queue=queue, exchange=exchange, routing_key=routing_key)
+        self.channels[queue].queue_declare(queue=queue, durable=True, callback=callback)
+
+    def __on_queue_declared(self, _unused_frame, queue, exchange, routing_key):
+
+        callback = functools.partial(self.__set_prefetch, queue=queue)
 
         # Create Bindings
         log.info("Creating bindings")
-        self.channel.queue_bind(
-            exchange=DATA_EXCHANGE,
-            queue=API_QUEUE,
-            routing_key=DATA_ROUTING_KEY
+        self.channels[queue].queue_bind(
+            queue=queue,
+            exchange=exchange,
+            routing_key=routing_key,
+            callback=callback
         )
 
-        self.channel.queue_bind(
-            exchange=LOG_EXCHANGE,
-            queue=API_QUEUE,
-            routing_key=LOG_ROUTING_KEY
-        )
-
-        self.channel.queue_bind(
-            exchange=QUERY_EXCHANGE,
-            queue=API_QUEUE,
-            routing_key=QUERY_ROUTING_KEY
-        )
-        
         log.info("Connection to Rabbit Established")
 
-    def _send(self, routing_key, message):
-        """ 
+    def __set_prefetch(self, _unused_frame, queue):
+        self.channels[queue].basic_qos(prefetch_count=30, callback=functools.partial(self._receive, queue=queue),
+                                       global_qos=True)
+
+    def __on_connection_open_error(self, _unused_connection, err):
+        """This method is called by pika if the connection to RabbitMQ
+        can't be established.
+        Adapted from the example on https://github.com/pika/pika/blob/master/examples/asynchronous_consumer_example.py
+        :param pika.SelectConnection _unused_connection: The connection
+        :param Exception err: The error
+        """
+        log.error('Connection open failed: %s', err)
+        self.__reconnect()
+
+    def __on_connection_closed(self, _unused_connection, reason):
+        """This method is invoked by pika when the connection to RabbitMQ is
+        closed unexpectedly. Since it is unexpected, we will reconnect to
+        RabbitMQ if it disconnects.
+        Adapted from the example on https://github.com/pika/pika/blob/master/examples/asynchronous_consumer_example.py
+        :param Exception reason: exception representing reason for loss of
+            connection.
+        """
+        log.warning('Connection closed, reconnect necessary: %s', reason)
+        self.__reconnect()
+
+    def __reconnect(self):
+        """Will be invoked if the connection can't be opened or is
+        closed. Indicates that a reconnect is necessary then stops the
+        ioloop.
+        Adapted from the example on https://github.com/pika/pika/blob/master/examples/asynchronous_consumer_example.py
+        """
+        self.__stop_and_restart()
+
+    def __stop_and_restart(self):
+        log.info('Stopping')
+        self.__stop_consuming()
+        log.info('Stopped')
+        time.sleep(2)
+        self.__connect()
+
+    def __stop_consuming(self):
+        """Tell RabbitMQ that you would like to stop consuming by sending the
+        Basic.Cancel RPC command.
+        Adapted from the example on https://github.com/pika/pika/blob/master/examples/asynchronous_consumer_example.py
+        """
+        log.info('Sending a Basic.Cancel RPC command to RabbitMQ')
+        for channel in self.channels.values():
+            try:
+                callback = functools.partial(self.__close_channel, channel=channel)
+                channel.basic_cancel(callback=callback)
+            except Exception as error:
+                log.exception(f"Could not cancel the channel because of error <{error}>")
+
+    @staticmethod
+    def __close_channel(_unused_frame, channel):
+        """Call to close the channel with RabbitMQ cleanly by issuing the
+        Channel.Close RPC command.
+        """
+        log.info('Closing the channel')
+        channel.close()
+
+    def _send(self, queue, routing_key, message, channel, father_exchange):
+        """
         Routes the message to corresponding channel
 
         params:
@@ -128,13 +237,18 @@ class Rabbitmq:
         message: (Dictionary) dictionary to be stringified and sent
         """
 
-        self.channel.basic_publish(
-            exchange="tasks_deliver",
+        # self.channels[queue]
+        exchange = self.publish_exchange[queue]['exchange']
+
+        log.info(f"Sending message to channel number <{self.publish_channels[father_exchange].channel_number}> "
+                 f"from exchange <{father_exchange}>")
+        self.publish_channels[father_exchange].basic_publish(
+            exchange=exchange,
             routing_key=routing_key,
             body=json.dumps(message)
         )
 
-    def _receive(self, queue_name='API'):
+    def _receive(self, _unused_frame, queue):
         """
         Receives messages and puts them in the queue given from the argument
 
@@ -143,26 +257,12 @@ class Rabbitmq:
         queue_name : (string) Name of the queue to be declared
         """
 
-        try:
-            self.channel.queue_declare(
-                queue=queue_name,
-                durable=True
-            )
-            
-            log.info(" [*] Waiting for Messages. To exit press CTRL+C")
+        log.info(" [*] Waiting for Messages. To exit press CTRL+C")
 
-            self.channel.basic_consume(queue=queue_name, on_message_callback=self.received_message_handler,
-                                       auto_ack=True)
-            self.channel.start_consuming()
-        except Exception as e:
-            log.exception(f"Exception <{e}> detected:")
-            log.warning("Attempting reconnection after waiting time...")
-            time.sleep(WAIT_TIME)
-            self._setup()
-            log.debug("Setup completed")
-            self._receive(queue_name)
+        self.channels[queue].basic_consume(queue=queue, on_message_callback=self._received_message_handler,
+                                           auto_ack=True)
 
-    def received_message_handler(self, channel, method, properties, body):
+    def _received_message_handler(self, channel, method, properties, body):
         """Function to rewrite on the class that inherits this class
         """
         pass
@@ -172,4 +272,5 @@ class Rabbitmq:
         Close the connection with the Rabbit MQ server
         """
         log.info("Closing connection")
-        self.connection.close()
+        self._connection.ioloop.stop()
+        self._connection.close()

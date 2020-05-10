@@ -20,7 +20,7 @@ import log_actions
 import neo4j_labels
 from control_center import mongo_utils
 
-from credentials import PARLAI_URL, PARLAI_PORT
+from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
@@ -54,6 +54,9 @@ class Control_Center(Rabbitmq):
 		# replier tools
 		self.replier = ParlaiReplier(PARLAI_URL, PARLAI_PORT)
 		self.translator = Translator()
+
+		self.channel = None
+		self.exchange = None
 
 	def action(self, message):
 		message_type = message['type']
@@ -218,17 +221,12 @@ class Control_Center(Rabbitmq):
 		@return Boolean value confirming it found the log recently
 		"""
 		bot_logs = self.postgres_client.search_logs(
-			params={"bot_id": bot, "action": action, "target_id": target},
+			params={"bot_id": bot, "action": action, "target_id": target,
+					"timestamp": datetime.now() - timedelta(hours=1)},
 			limit=1
 		)
-
-		if bot_logs["success"] and len(bot_logs['data']) > 0:
-			log.debug("Found the logs in the database")
-			log_ts = (timedelta(hours=1) + bot_logs['data'][0]['timestamp']).replace(tzinfo=self.__utc)
-			now = datetime.now().replace(tzinfo=self.__utc)
-			return log_ts > now
-
-		return False
+		log.debug("Found the logs in the database")
+		return bot_logs["success"] and len(bot_logs['data']) > 0
 
 	def request_tweet_like(self, data):
 		"""
@@ -859,21 +857,17 @@ class Control_Center(Rabbitmq):
 			'params': params
 		}
 		try:
-			self._send(routing_key='tasks.twitter.' + str(bot), message=payload)
+			self._send(queue=TASKS_QUEUE_PREFIX, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload,
+			           channel=self.channel, father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
-			self._setup()
-			self.send(bot, message_type, params)
 
-	def received_message_handler(self, channel, method, properties, body):
+	def _received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
+		self.channel = channel
+		self.exchange = method.exchange
 		message = json.loads(body)
 		self.action(message)
-
-	def run(self):
-		while True:
-			self._receive()
-			log.warning("Restarting again...")
 
 	def close(self):
 		self.neo4j_client.close()

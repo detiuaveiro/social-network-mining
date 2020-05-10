@@ -22,9 +22,8 @@ class TweetsExporter:
 
 		for result in results:
 			if 'full_text' in result:
-				result['text'] = result['full_text']
+				result['text'] = tweet_to_simple_text(result['full_text'])
 				del result['full_text']
-			result['text'] = tweet_to_simple_text(result['text'])
 
 		return [result for result in results if len(result['text']) > MIN_SIZE_TWEET]
 
