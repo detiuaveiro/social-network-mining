@@ -16,14 +16,14 @@ def create_report(request):
 	"""
 
 	report = Report()
-
+	print(request.data)
 	match = {
 		"start": request.data["start"],
 		"intermediates": request.data["intermediate"],
 		"end": request.data["end"]
 	}
 
-	result = report.create_report(match, params=request.data['fields'], limit=request.data['limit'])
+	result = report.create_report(match=match, params=request.data['fields'], limit=request.data['limit'])
 	result_json = json.dumps(result)
 	file_to_send = ContentFile(result_json)
 	response = HttpResponse(file_to_send, content_type='application/json')

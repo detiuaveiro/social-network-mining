@@ -21,6 +21,15 @@ logger.addHandler(handler)
 EXPORT_DIR = "../export"
 NORMAL_REL = 'Normal'
 REVERSE_REL = 'Reverse'
+TRANSLATE = {
+	"b_name": "name", "b_username": "screen_name", "b_location": "location", "b_description": "description",
+	"b_tweets": "status_count", "b_followers": "followers_count", "b_following": "friends_count",
+	"b_protected": "protected", "u_name": "name", "u_username": "screen_name", "u_location": "location",
+	"u_description": "description", "u_tweets": "status_count", "u_followers": "followers_count",
+	"u_following": "friends_count",	"u_protected": "protected", "t_creation": "created_at", "t_text": "text",
+	"t_lang": "lang", "t_noRetweets": "retweet_count", "t_noLikes": "favourite_count",
+	"t_sensitive": "possibly_sensitive"
+}
 
 
 class Report:
@@ -40,18 +49,22 @@ class Report:
 		self.neo = Neo4jAPI()
 		self.exporter = Report.__Exporter(EXPORT_DIR)
 
-	@staticmethod
-	def __node_builder(label, node):
+	def __translate_params(self, parameters):
+		parameters = {key: [TRANSLATE[param] for param in parameters[key]] for key in parameters}
+		return parameters
+
+	#@staticmethod
+	def __node_builder(self, label, node):
 		query_node = "("
 		if label:
 			query_node += f":{label}"
-		if node:
-			query_node += f"{{id: '{node}'}}"
+		if node and len(node) > 0:
+			query_node += f"{{id: '{node[0]}'}}"
 
 		return query_node+")"
 
-	@staticmethod
-	def __relation_builder(rel):
+	#@staticmethod
+	def __relation_builder(self, rel):
 		query_rel = "["
 		if len(rel) > 0:
 			if 'label' in rel:
@@ -68,7 +81,7 @@ class Report:
 			return f"<-{query_rel}-"
 		return f"-{query_rel}-"
 
-	@staticmethod
+	#@staticmethod
 	def __get_mongo_info(self, node, params):
 		node_type = node["labels"][0]
 
@@ -86,7 +99,7 @@ class Report:
 			return {param: None for param in params[node_type]}
 		return None
 
-	@staticmethod
+	#@staticmethod
 	def __get_mongo_aggregate(self, table, query, params):
 		params += ["id_str"]
 		if len(query) > 0 and len(params) > 0:
@@ -94,15 +107,15 @@ class Report:
 			return result
 		return None
 
-	@staticmethod
-	def __insert_info_list(info_dict, results_list, placement_dict):
+	#@staticmethod
+	def __insert_info_list(self, info_dict, results_list, placement_dict):
 		if results_list:
 			for result in results_list:
 				for index, key in placement_dict[result["id_str"]]:
 					info_dict[index][key] = result
 		return info_dict
 
-	@staticmethod
+	#@staticmethod
 	def __query_builder(self, query, node):
 		node_label = node["labels"][0]
 		if node_label == TWEET_LABEL:
@@ -112,7 +125,7 @@ class Report:
 		elif node_label == BOT_LABEL:
 			query["Bot"].append(node["properties"]["id"])
 
-	@staticmethod
+	#@staticmethod
 	def __get_results(self, result, query, placement, params):
 		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweet'], params['Tweet'])
 		result_users = self.__get_mongo_aggregate("users", query['User'], params['User'])
@@ -123,25 +136,27 @@ class Report:
 
 		return result
 
-	@staticmethod
+	#@staticmethod
 	def __add_to_keep_track(self, locations_dict, node, location):
 		if node not in locations_dict:
 			locations_dict[node] = []
 		locations_dict[node].append(location)
 
-	@staticmethod
+	#@staticmethod
 	def create_report(self, match: dict, params: dict, limit=None):
-		query = "MATCH "
+		params = self.__translate_params(params)
+		query = "MATCH r="
 		if "relation" in match['start']:
-			query += f"r={self.__node_builder(match['start']['type'], match['start']['node'])}" \
+			query += f"{self.__node_builder(match['start']['type'], match['start']['node'])}" \
 					f"{self.__relation_builder(match['start']['relation'])}"
 
 		if "intermediates" in match:
-			for interm in match["intermediates"]:
-				query += f"{self.__node_builder(interm['node'])}" \
-						f"{self.__relation_builder(interm['relation'])}"
+			intermediates = match["intermediates"]
+			for interm in range(len(intermediates["types"])):
+				query += f"{self.__node_builder(intermediates['types'][interm], intermediates['nodes'][interm])}" \
+						f"{self.__relation_builder(intermediates['relations'][interm])}"
 
-		query += f"{self.__node_builder(match['end']['node'])} " \
+		query += f"{self.__node_builder(match['end']['type'], match['end']['node'])} " \
 				 f"return r"
 
 		logger.info(query)
