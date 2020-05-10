@@ -16,7 +16,7 @@ def test_logs_ts():
 		log = (timedelta(hours=1) + result['data'][0]['timestamp']).replace(tzinfo=utc)  # utc.localize()
 		now = datetime.now().replace(tzinfo=utc)  # utc.localize()
 		print(now > log)
-	timestamp = timedelta(days=10) + datetime.now()ee
+	timestamp = timedelta(days=10) + datetime.now()
 	result = psql.search_logs(
 		params={"bot_id": 1234, "action": "TWEET_LIKE", "target_id": 1232123, "timestamp": timestamp},
 		limit=10
