@@ -17,11 +17,16 @@ def create_report(request):
 
 	report = Report()
 
-	result = report.create_report(request.data['match'], params=request.data['fields'], limit=request.data['limit'])
+	match = {
+		"start": request.data["start"],
+		"intermediates": request.data["intermediate"],
+		"end": request.data["end"]
+	}
+
+	result = report.create_report(match, params=request.data['fields'], limit=request.data['limit'])
 	result_json = json.dumps(result)
 	file_to_send = ContentFile(result_json)
 	response = HttpResponse(file_to_send, content_type='application/json')
-	response["Access-Control-Allow-Origin"] = "*"
 	response['Content-Length'] = file_to_send.size
 	response['Content-Disposition'] = 'attachment; filename=report.json'
 	return response

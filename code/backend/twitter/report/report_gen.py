@@ -44,9 +44,9 @@ class Report:
 	def __node_builder(node):
 		query_node = "("
 		if len(node) > 0:
-			if "label" in node:
+			if "type" in node and node["type"]:
 				query_node += ":" + node['label']
-			if 'screen_name' in node:
+			if 'node' in node and node["node"]:
 				query_node += f"{{username:'{node['screen_name']}'}}"
 
 		return query_node+")"
@@ -68,6 +68,7 @@ class Report:
 			return f"<-{query_rel}-"
 		return f"-{query_rel}-"
 
+	@staticmethod
 	def __get_mongo_info(self, node, params):
 		node_type = node["labels"][0]
 
@@ -85,6 +86,7 @@ class Report:
 			return {param: None for param in params[node_type]}
 		return None
 
+	@staticmethod
 	def __get_mongo_aggregate(self, table, query, params):
 		params += ["id_str"]
 		if len(query) > 0 and len(params) > 0:
@@ -100,6 +102,7 @@ class Report:
 					info_dict[index][key] = result
 		return info_dict
 
+	@staticmethod
 	def __query_builder(self, query, node):
 		node_label = node["labels"][0]
 		if node_label == TWEET_LABEL:
@@ -109,6 +112,7 @@ class Report:
 		elif node_label == BOT_LABEL:
 			query["Bot"].append(node["properties"]["id"])
 
+	@staticmethod
 	def __get_results(self, result, query, placement, params):
 		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweet'], params['Tweet'])
 		result_users = self.__get_mongo_aggregate("users", query['User'], params['User'])
@@ -118,13 +122,15 @@ class Report:
 			result = self.__insert_info_list(result, res, placement)
 
 		return result
-	
+
+	@staticmethod
 	def __add_to_keep_track(self, locations_dict, node, location):
 		if node not in locations_dict:
 			locations_dict[node] = []
 		locations_dict[node].append(location)
 
-	def create_report(self, match: dict, params: dict, limit=None, export='csv'):
+	@staticmethod
+	def create_report(self, match: dict, params: dict, limit=None):
 		query = f"MATCH r={self.__node_builder(match['start']['node'])}" \
 				f"{self.__relation_builder(match['start']['relation'])}"
 
