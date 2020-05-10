@@ -59,7 +59,7 @@ class Neo4jAPI:
 					name=data["name"],
 					username=data["username"])
 		except Exception as e:
-			log.error(f"Error trying to create a bot -> {e}")
+			log.exception(f"Error trying to create a bot -> {e}")
 
 	def add_user(self, data):
 		"""Method used to create a new user
@@ -91,7 +91,7 @@ class Neo4jAPI:
 					name=data["name"],
 					username=data["username"])
 		except Exception as e:
-			log.error(f"Error trying to create a User {e}")
+			log.exception(f"Error trying to create a User {e}")
 
 	def add_tweet(self, data):
 		"""
@@ -113,7 +113,7 @@ class Neo4jAPI:
 		try:
 			tx.run(f"MERGE (:{TWEET_LABEL} {{id: $id}})", id=str(data["id"]))
 		except Exception as e:
-			log.error(f"Error trying to create a Tweet {e}")
+			log.exception(f"Error trying to create a Tweet {e}")
 
 	def add_writer_relationship(self, data):
 		"""Method used to create a new WRITE relationship
@@ -253,7 +253,7 @@ class Neo4jAPI:
 
 			log.debug(f"Created relationship:{result}")
 		except Exception as e:
-			log.error(f"Error trying to create a relationship -> {e}")
+			log.exception(f"Error trying to create a relationship -> {e}")
 
 	def check_bot_exists(self, id):
 		"""Method used to check if there exists a bot with a given id
@@ -335,7 +335,7 @@ class Neo4jAPI:
 				   username=data['username'] if 'username' in data else '',
 				   name=data['name'] if 'name' in data else '')
 		except Exception as e:
-			log.error(f"Error updating user -> {e}")
+			log.exception(f"Error updating user -> {e}")
 
 	def update_bot(self, data):
 		"""Method used to update a given bot
@@ -361,7 +361,7 @@ class Neo4jAPI:
 				   username=data['username'] if 'username' in data else '',
 				   name=data['name'] if 'name' in data else '')
 		except Exception as e:
-			log.error(f"Error trying to update bot -> {e}")
+			log.exception(f"Error trying to update bot -> {e}")
 
 	def delete_user(self, id):
 		"""Method used to delete a given user
@@ -398,7 +398,7 @@ class Neo4jAPI:
 		try:
 			tx.run(f'MATCH (r:{type} {{ id: $id }}) DETACH DELETE r', id=str(id))
 		except Exception as e:
-			log.error(f"Error trying to delete node -> {e}")
+			log.exception(f"Error trying to delete node -> {e}")
 
 	def delete_writer_relationship(self, data):
 		"""Method used to delete WRITE relationship
@@ -564,7 +564,7 @@ class Neo4jAPI:
 				   f"DELETE r",
 				   from_id=str(data['id_1']), to_id=str(data['id_2']))
 		except Exception as e:
-			log.error(f"Error trying to delete relationship {e}")
+			log.exception(f"Error trying to delete relationship {e}")
 			
 	def search_tweets(self, tweet=None):
 		"""Method used to search for a given tweet
