@@ -15,6 +15,7 @@ from control_center.intelligence import classifier
 import numpy as np
 import gc
 import keras.backend as K
+from datetime import timedelta, datetime
 
 # Constants used below for the Heuristics
 THRESHOLD_LIKE = 0.4
@@ -314,16 +315,17 @@ class PDP:
 			"bot_id": data["bot_id"],
 			"action": log_actions.RETWEET,
 			"target_id": data["tweet_id"]
-		}, limit=LIMIT_LOGS)
+		}, limit=1)
 
-		if bot_logs['success']:
+		if bot_logs['success'] and len(bot_logs["data"]):
 			log.info("Bot has already retweeted the tweet")
 			heuristic_value = heuristic_value + BOT_RETWEETED_TWEET if heuristic_value < 0.8 else 1
 
 		# We now check if the last recorded like from a tweet of this user was too recent
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
-			"action": log_actions.TWEET_LIKE
+			"action": log_actions.TWEET_LIKE,
+			"timestamp": datetime.now() - timedelta(seconds=PENALTY_LIKED_RECENTLY_LARGE_INTERVAL)
 		}, limit=LIMIT_LOGS)
 		if bot_logs['success']:
 			bot_logs_dict = {}
@@ -344,12 +346,12 @@ class PDP:
 						log.info(f"Found a past like to the user with id <{data['user_id']}>: {user_of_tweet_liked}")
 						date = bot_logs_dict[id_str]['timestamp']
 						now = datetime.datetime.now()
-						if (now - date).seconds < PENALTY_LIKED_RECENTLY_LARGE_INTERVAL:
-							log.info("Bot has recently liked a tweet from the same user")
-							heuristic_value += PENALTY_LIKED_RECENTLY_LARGE
-						elif (now - date).seconds < PENALTY_LIKED_RECENTLY_SMALL_INTERVAL:
+						if (now - date).seconds < PENALTY_LIKED_RECENTLY_SMALL_INTERVAL:
 							log.info("Bot has liked a tweet from the same user, but may not be that suspicious")
 							heuristic_value += PENALTY_LIKED_RECENTLY_SMALL
+						else:
+							log.info("Bot has recently liked a tweet from the same user")
+							heuristic_value += PENALTY_LIKED_RECENTLY_LARGE
 
 		log.info(f"Request to like to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
@@ -377,15 +379,16 @@ class PDP:
 			"bot_id": data["bot_id"],
 			"action": log_actions.TWEET_LIKE,
 			"target_id": data["tweet_id"]
-		}, limit=LIMIT_LOGS)
-		if bot_logs["success"]:
+		}, limit=1)
+		if bot_logs["success"] and len(bot_logs["data"]) > 0:
 			log.info("Bot already liked the tweet")
 			heuristic_value = heuristic_value + BOT_LIKED_TWEET if heuristic_value < 0.7 else 1
 
 		# Finally check if the bot already retweeted something from the user too recently
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
-			"action": log_actions.RETWEET
+			"action": log_actions.RETWEET,
+			"timestamp": datetime.now() - timedelta(seconds=PENALTY_RETWEETED_USER_RECENTLY_INTERVAL)
 		}, limit=LIMIT_LOGS)
 		if bot_logs['success']:
 			bot_logs_dict = {}
@@ -404,11 +407,8 @@ class PDP:
 					id_str = user_of_retweet['user']['id_str']
 					if id_str == str(data["user_id"]):
 						log.info(f"Found a past retweet to the user with id <{data['user_id']}>: {user_of_retweet}")
-						date = bot_logs_dict[id_str]['timestamp']
-						now = datetime.datetime.now()
-						if (now - date).seconds < PENALTY_RETWEETED_USER_RECENTLY_INTERVAL:
-							log.debug("Bot has recently retweet the user")
-							heuristic_value += PENALTY_RETWEETED_USER_RECENTLY
+						log.debug("Bot has recently retweet the user")
+						heuristic_value += PENALTY_RETWEETED_USER_RECENTLY
 
 		log.info(f"Request to retweet to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
@@ -421,13 +421,6 @@ class PDP:
 		@param: data - dictionary containing the data of the bot and the tweet it wants to like
 		@returns: float that will then be compared to the threshold previously defined
 		"""
-		"""
-				Algorithm to analyse if a bot should retweet a Tweet
-				Takes the current statistics and turns them into a real value
-	
-				@param: data - dictionary containing the data of the bot and the tweet it wants to like
-				@returns: float that will then be compared to the threshold previously defined
-				"""
 
 		log.info(f"Analyzing possibility to reply tweet with id: <{data['tweet_id']}>")
 
@@ -460,7 +453,7 @@ class PDP:
 			"bot_id": data["bot_id"],
 			"action": log_actions.RETWEET_REQ_ACCEPT,
 			"target_id": data["tweet_id"]
-		}, limit=LIMIT_LOGS)
+		}, limit=1)
 		if bot_logs["success"]:
 			log.info(f"Bot already liked the tweet <{data['tweet_id']}>")
 			heuristic_value = heuristic_value + BOT_LIKED_TWEET if heuristic_value < 0.7 else 1
@@ -468,7 +461,8 @@ class PDP:
 		# Finally check if the bot already replied to the user recently
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
-			"action": log_actions.TWEET_REPLY
+			"action": log_actions.TWEET_REPLY,
+			"timestamp": datetime.now() - timedelta(seconds=PENALTY_REPLIED_USER_RECENTLY_INTERVAL)
 		}, limit=LIMIT_LOGS)
 
 		if bot_logs['success']:
@@ -485,15 +479,10 @@ class PDP:
 
 			if users_of_replies:
 				for user_of_reply in users_of_replies:
-					id_str = user_of_reply['user']['id_str']
-					if id_str == str(data['user_id']):
-						log.info(f"Found a past reply to the user with id <{data['user_id']}>: {user_of_reply}")
-						date = bot_logs_dict[id_str]['timestamp']
-						now = datetime.datetime.now()
-						if (now - date).seconds < PENALTY_REPLIED_USER_RECENTLY_INTERVAL:
-							log.debug("Bot recently replied to another tweet from user")
-							heuristic_value += PENALTY_REPLIED_USER_RECENTLY
-							break
+					if user_of_reply['user']['id_str'] == str(data['user_id']):
+						log.info(f"Found a recent reply to the user with id <{data['user_id']}>: {user_of_reply}")
+						heuristic_value += PENALTY_REPLIED_USER_RECENTLY
+						break
 
 		log.info(f"Request to reply to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value

@@ -221,17 +221,12 @@ class Control_Center(Rabbitmq):
 		@return Boolean value confirming it found the log recently
 		"""
 		bot_logs = self.postgres_client.search_logs(
-			params={"bot_id": bot, "action": action, "target_id": target},
+			params={"bot_id": bot, "action": action, "target_id": target,
+					"timestamp": datetime.now() - timedelta(hours=1)},
 			limit=1
 		)
-
-		if bot_logs["success"] and len(bot_logs['data']) > 0:
-			log.debug("Found the logs in the database")
-			log_ts = (timedelta(hours=1) + bot_logs['data'][0]['timestamp']).replace(tzinfo=self.__utc)
-			now = datetime.now().replace(tzinfo=self.__utc)
-			return log_ts > now
-
-		return False
+		log.debug("Found the logs in the database")
+		return bot_logs["success"] and len(bot_logs['data']) > 0
 
 	def request_tweet_like(self, data):
 		"""
