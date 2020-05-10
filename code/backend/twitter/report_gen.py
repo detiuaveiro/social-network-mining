@@ -210,10 +210,11 @@ class Report:
 			headers = [key + "_" + prop for key in result[0] for prop in result[0][key]]
 			try:
 				with open(f"{self.directory}/export.csv", 'w') as file:
-					writer = csv.writer(file)
+					writer = csv.writer(file, quotechar='"', escapechar='\\')
 					writer.writerow(headers)
 					for data in result:
-						writer.writerow([data[key][prop] for key in data for prop in data[key]])
+						writer.writerow([str(data[key][prop]).encode('unicode_escape').decode('latin-1')
+						                 for key in data for prop in data[key]])
 			except Exception as error:
 				logger.exception(f"Occurred an error <{error}>: ")
 
@@ -266,7 +267,7 @@ if __name__ == '__main__':
 		}
 	}
 
-	rep.create_report(query2, params, limit=50, export=Report.ExportType.CSV)
+	rep.create_report(query2, params, limit=5000, export=Report.ExportType.CSV)
 #
 #
 #
