@@ -336,9 +336,10 @@ class PDP:
 
 			if users_of_tweets_liked:
 				for user_of_tweet_liked in users_of_tweets_liked:
-					if user_of_tweet_liked['user']['id_str'] == str(data["user_id"]):
+					id_str = user_of_tweet_liked['user']['id_str']
+					if id_str == str(data["user_id"]):
 						log.info(f"Found a past like to the user with id <{data['user_id']}>: {user_of_tweet_liked}")
-						date = bot_logs_dict[user_of_tweet_liked['id_str']]['timestamp']
+						date = bot_logs_dict[id_str]['timestamp']
 						now = datetime.datetime.now()
 						if (now - date).seconds < PENALTY_LIKED_RECENTLY_LARGE_INTERVAL:
 							log.info("Bot has recently liked a tweet from the same user")
@@ -397,9 +398,10 @@ class PDP:
 
 			if users_of_retweets:
 				for user_of_retweet in users_of_retweets:
-					if user_of_retweet['user']['id_str'] == str(data["user_id"]):
+					id_str = user_of_retweet['user']['id_str']
+					if id_str == str(data["user_id"]):
 						log.info(f"Found a past retweet to the user with id <{data['user_id']}>: {user_of_retweet}")
-						date = bot_logs_dict[user_of_retweet['id_str']]['timestamp']
+						date = bot_logs_dict[id_str]['timestamp']
 						now = datetime.datetime.now()
 						if (now - date).seconds < PENALTY_RETWEETED_USER_RECENTLY_INTERVAL:
 							log.debug("Bot has recently retweet the user")
@@ -480,9 +482,10 @@ class PDP:
 
 			if users_of_replies:
 				for user_of_reply in users_of_replies:
-					if user_of_reply['user']['id_str'] == str(data['user_id']):
+					id_str = user_of_reply['user']['id_str']
+					if id_str == str(data['user_id']):
 						log.info(f"Found a past reply to the user with id <{data['user_id']}>: {user_of_reply}")
-						date = bot_logs_dict[user_of_reply['id_str']]['timestamp']
+						date = bot_logs_dict[id_str]['timestamp']
 						now = datetime.datetime.now()
 						if (now - date).seconds < PENALTY_REPLIED_USER_RECENTLY_INTERVAL:
 							log.debug("Bot recently replied to another tweet from user")
