@@ -58,16 +58,16 @@ class Rabbitmq:
         self._connection = None
         self.channels = {}
 
-        self.exchange = {API_QUEUE: [], API_FOLLOW_QUEUE: []}
+        self.exchanges_data = {API_QUEUE: [], API_FOLLOW_QUEUE: []}
 
         # consumer exchanges data
-        self.exchange[API_QUEUE].append({'exchange': DATA_EXCHANGE, 'routing_key': DATA_ROUTING_KEY,
+        self.exchanges_data[API_QUEUE].append({'exchange': DATA_EXCHANGE, 'routing_key': DATA_ROUTING_KEY,
                                          'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
-        self.exchange[API_QUEUE].append({'exchange': LOG_EXCHANGE, 'routing_key': LOG_ROUTING_KEY,
+        self.exchanges_data[API_QUEUE].append({'exchange': LOG_EXCHANGE, 'routing_key': LOG_ROUTING_KEY,
                                          'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
-        self.exchange[API_QUEUE].append({'exchange': QUERY_EXCHANGE, 'routing_key': QUERY_ROUTING_KEY,
+        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_EXCHANGE, 'routing_key': QUERY_ROUTING_KEY,
                                          'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
-        self.exchange[API_FOLLOW_QUEUE].append({'exchange': SERVICE_QUERY_EXCHANGE,
+        self.exchanges_data[API_FOLLOW_QUEUE].append({'exchange': SERVICE_QUERY_EXCHANGE,
                                                 'routing_key': SERVICE_QUERY_ROUTING_KEY,
                                                 'publish_exchange': TASK_FOLLOW_EXCHANGE, 'publish_channel': None})
 
@@ -129,7 +129,7 @@ class Rabbitmq:
     def __on_channel_open(self, channel, queue):
         self.channels[queue] = channel
 
-        for exchange_data in self.exchange[queue]:
+        for exchange_data in self.exchanges_data[queue]:
             exchange = exchange_data['exchange']
             routing_key = exchange_data['routing_key']
 
@@ -143,7 +143,7 @@ class Rabbitmq:
             )
 
             # create the publish channel to each consumer channel
-            self.publish_channels[channel] = self._connection.channel(
+            self.publish_channels[exchange] = self._connection.channel(
                 on_open_callback=self.__on_bot_tasks_channel_open if exchange_data['publish_exchange'] == TASKS_EXCHANGE
                 else self.__on_follow_tasks_channel_open)
 
@@ -167,7 +167,7 @@ class Rabbitmq:
         log.info("Connection to Rabbit Established")
 
     def __set_prefetch(self, _unused_frame, queue):
-        self.channels[queue].basic_qos(prefetch_count=1, callback=functools.partial(self._receive, queue=queue),
+        self.channels[queue].basic_qos(prefetch_count=30, callback=functools.partial(self._receive, queue=queue),
                                        global_qos=True)
 
     def __on_connection_open_error(self, _unused_connection, err):
@@ -227,7 +227,7 @@ class Rabbitmq:
         log.info('Closing the channel')
         channel.close()
 
-    def _send(self, queue, routing_key, message, channel):
+    def _send(self, queue, routing_key, message, channel, father_exchange):
         """
         Routes the message to corresponding channel
 
@@ -238,8 +238,12 @@ class Rabbitmq:
         """
 
         # self.channels[queue]
-        channel.basic_publish(
-            exchange=self.publish_exchange[queue]['exchange'],
+        exchange = self.publish_exchange[queue]['exchange']
+
+        log.info(f"Sending message to channel number <{self.publish_channels[father_exchange].channel_number}> "
+                 f"from exchange <{father_exchange}>")
+        self.publish_channels[father_exchange].basic_publish(
+            exchange=exchange,
             routing_key=routing_key,
             body=json.dumps(message)
         )

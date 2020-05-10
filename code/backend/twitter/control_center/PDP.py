@@ -39,7 +39,7 @@ REPLY_TWEET_MIN_SIZE = 60               # min length of tweet
 
 NUMBER_TWEETS_FOLLOW_DECISION = 5
 
-LIMIT_REPLY_LOGS_QUANTITY = 1000
+LIMIT_LOGS = 200
 
 log = logging.getLogger('PDP')
 log.setLevel(logging.INFO)
@@ -309,18 +309,17 @@ class PDP:
 			"bot_id": data["bot_id"],
 			"action": log_actions.RETWEET,
 			"target_id": data["tweet_id"]
-		})
+		}, limit=LIMIT_LOGS)
 
 		if bot_logs['success']:
 			log.info("Bot has already retweeted the tweet")
 			heuristic_value = heuristic_value + BOT_RETWEETED_TWEET if heuristic_value < 0.8 else 1
 
 		# We now check if the last recorded like from a tweet of this user was too recent
-
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
 			"action": log_actions.TWEET_LIKE
-		})
+		}, limit=LIMIT_LOGS)
 		if bot_logs['success']:
 			for bot_log in bot_logs['data']:
 				user_of_tweet_liked = self.mongo.search(
@@ -362,7 +361,7 @@ class PDP:
 			"bot_id": data["bot_id"],
 			"action": log_actions.TWEET_LIKE,
 			"target_id": data["tweet_id"]
-		})
+		}, limit=LIMIT_LOGS)
 		if bot_logs["success"]:
 			log.info("Bot already liked the tweet")
 			heuristic_value = heuristic_value + BOT_LIKED_TWEET if heuristic_value < 0.7 else 1
@@ -371,7 +370,7 @@ class PDP:
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
 			"action": log_actions.RETWEET
-		})
+		}, limit=LIMIT_LOGS)
 		if bot_logs['success']:
 			for bot_log in bot_logs['data']:
 				user_of_retweet = self.mongo.search(
@@ -417,7 +416,7 @@ class PDP:
 			"bot_id": data["bot_id"],
 			"action": log_actions.REPLY_REQ_ACCEPT,
 			"target_id": data["tweet_id"]
-		})
+		}, limit=LIMIT_LOGS)
 		if not bot_logs["success"] or bot_logs['data']:
 			log.info(f"Request to reply to tweet <{data['tweet_id']}> denied because the bot already replied to this tweet")
 			return 0
@@ -434,7 +433,7 @@ class PDP:
 			"bot_id": data["bot_id"],
 			"action": log_actions.RETWEET_REQ_ACCEPT,
 			"target_id": data["tweet_id"]
-		})
+		}, limit=LIMIT_LOGS)
 		if bot_logs["success"]:
 			log.info(f"Bot already liked the tweet <{data['tweet_id']}>")
 			heuristic_value = heuristic_value + BOT_LIKED_TWEET if heuristic_value < 0.7 else 1
@@ -443,7 +442,7 @@ class PDP:
 		bot_logs = self.postgres.search_logs({
 			"bot_id": data["bot_id"],
 			"action": log_actions.TWEET_REPLY
-		}, limit=LIMIT_REPLY_LOGS_QUANTITY)
+		}, limit=LIMIT_LOGS)
 
 		if bot_logs['success']:
 			for bot_log in bot_logs['data']:
@@ -476,7 +475,10 @@ class PDP:
 		# Check if another bot has followed the user
 		user = data['user']
 		heuristic = 0
-		bot_logs = self.postgres.search_logs({"action": log_actions.FOLLOW_REQ_ACCEPT, "target_id": user['id']})
+		bot_logs = self.postgres.search_logs({
+			"action": log_actions.FOLLOW_REQ_ACCEPT,
+			"target_id": user['id']
+		}, limit=LIMIT_LOGS)
 
 		if bot_logs["success"] and len(bot_logs['data']) > 0:
 			log.debug("Found another bot who follows this user")

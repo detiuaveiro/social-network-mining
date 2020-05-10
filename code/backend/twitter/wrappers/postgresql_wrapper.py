@@ -23,12 +23,17 @@ class PostgresAPI:
 	"""
 
 	def __init__(self):
-		log.debug("Connecting to PostgreSQL Analysis")
+		log.debug(f"Connecting to PostgreSQL Analysis with credentials: \n"
+		          f"url={credentials.POSTGRES_URL}\n"
+		          f"db={credentials.POSTGRES_DB}\n"
+		          f"user={credentials.POSTGRES_USERNAME}\n"
+		          f"port={credentials.POSTGRES_PORT}")
 		try:
 			# Connect to the PostgreSQL server
 			self.conn = psycopg2.connect(
 				host=credentials.POSTGRES_URL, database=credentials.POSTGRES_DB,
-				user=credentials.POSTGRES_USERNAME, password=credentials.POSTGRES_PASSWORD
+				user=credentials.POSTGRES_USERNAME, password=credentials.POSTGRES_PASSWORD,
+				port=credentials.POSTGRES_PORT
 			)
 
 			self.api_types = [x[0] for x in enum_policy.api_types()]

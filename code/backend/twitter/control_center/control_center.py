@@ -56,6 +56,7 @@ class Control_Center(Rabbitmq):
 		self.translator = Translator()
 
 		self.channel = None
+		self.exchange = None
 
 	def action(self, message):
 		message_type = message['type']
@@ -862,13 +863,16 @@ class Control_Center(Rabbitmq):
 		}
 		try:
 			self._send(queue=TASKS_QUEUE_PREFIX, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload,
-			           channel=self.channel)
+			           channel=self.channel, father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
 
 	def _received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
 		self.channel = channel
+		self.exchange = method.exchange
+		print(method.exchange)
+		print(self.channel.channel_number)
 		message = json.loads(body)
 		self.action(message)
 

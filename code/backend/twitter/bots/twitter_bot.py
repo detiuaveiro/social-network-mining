@@ -305,7 +305,7 @@ class TwitterBot(RabbitMessaging):
 		if not user.protected or (user.protected and user.following):
 			self.__read_timeline(user, jump_users=False, max_depth=3)
 
-	def __get_followers(self, user_id: int):
+	def __get_followers(self, user_id: str):
 		"""
 		Function to get follower of some user
 
@@ -481,7 +481,7 @@ class TwitterBot(RabbitMessaging):
 
 					logger.info("Ask control center for keywords to search new tweets")
 					self.__send_user(self._twitter_api.me(), messages_types.BotToServer.QUERY_KEYWORDS)
-					wait(2)
+					wait(5)
 			except Exception as error:
 				logger.exception(f"Error {error} on bot's loop: ")
 			# exit(1)

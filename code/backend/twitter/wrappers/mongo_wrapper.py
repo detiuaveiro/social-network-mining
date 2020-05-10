@@ -175,8 +175,8 @@ class MongoAPI:
             else:
                 projection = {"_id": True}
 
-            log.debug(query)
-            log.debug(projection)
+            # log.debug(query)
+            # log.debug(projection)
 
             result = None
             if single:
