@@ -111,8 +111,19 @@ class Report:
 
 	def __get_results(self, result, query, placement, params):
 		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweet'], params['Tweet'])
+		if result_tweets:
+			for tweet in result_tweets:
+				tweet["label"] = "Tweet"
+
 		result_users = self.__get_mongo_aggregate("users", query['User'], params['User'])
+		if result_users:
+			for user in result_users:
+				user["label"] = "User"
+
 		result_bots = self.__get_mongo_aggregate("users", query['Bot'], params['Bot'])
+		if result_bots:
+			for bot in result_bots:
+				bot["label"] = "Bot"
 
 		for res in [result_tweets, result_users, result_bots]:
 			result = self.__insert_info_list(result, res, placement)
