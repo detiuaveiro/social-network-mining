@@ -52,11 +52,14 @@ class Neo4jAPI:
 	def __create_bot(self, tx, data):
 		log.debug("CREATING BOT")
 
-		# Note we use Merge rather than Create to avoid duplicates
-		tx.run(f"MERGE (:{BOT_LABEL} {{ name: $name, id: $id, username: $username }} )",
-			   id=str(data["id"]),
-			   name=data["name"],
-			   username=data["username"])
+		try:
+			# Note we use Merge rather than Create to avoid duplicates
+			tx.run(f"MERGE (:{BOT_LABEL} {{ name: $name, id: $id, username: $username }} )",
+					id=str(data["id"]),
+					name=data["name"],
+					username=data["username"])
+		except Exception as e:
+			log.error(f"Error trying to create a bot -> {e}")
 
 	def add_user(self, data):
 		"""Method used to create a new user
@@ -82,10 +85,13 @@ class Neo4jAPI:
 	def __create_user(self, tx, data):
 		log.debug("CREATING USER")
 
-		tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username }})",
-			   id=str(data["id"]),
-			   name=data["name"],
-			   username=data["username"])
+		try:
+			tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username }})",
+					id=str(data["id"]),
+					name=data["name"],
+					username=data["username"])
+		except Exception as e:
+			log.error(f"Error trying to create a User {e}")
 
 	def add_tweet(self, data):
 		"""
@@ -104,8 +110,10 @@ class Neo4jAPI:
 
 	def __create_tweet(self, tx, data):
 		log.debug("CREATING TWEET")
-
-		tx.run(f"MERGE (:{TWEET_LABEL} {{id: $id}})", id=str(data["id"]))
+		try:
+			tx.run(f"MERGE (:{TWEET_LABEL} {{id: $id}})", id=str(data["id"]))
+		except Exception as e:
+			log.error(f"Error trying to create a Tweet {e}")
 
 	def add_writer_relationship(self, data):
 		"""Method used to create a new WRITE relationship
@@ -239,10 +247,13 @@ class Neo4jAPI:
 	def __create_relationship(self, tx, data):
 		log.debug(f"CREATING RELATIONSHIP <{data['label']}> betweet {data['id_1']} and {data['id_2']}")
 
-		result = tx.run(f"MATCH (u: {data['type_1']} {{ id: $id1 }}), (r: {data['type_2']} {{ id: $id2 }}) "
-						f"MERGE (u)-[:{data['label']}]->(r)", id1=str(data['id_1']), id2=str(data['id_2']))
+		try:
+			result = tx.run(f"MATCH (u: {data['type_1']} {{ id: $id1 }}), (r: {data['type_2']} {{ id: $id2 }}) "
+							f"MERGE (u)-[:{data['label']}]->(r)", id1=str(data['id_1']), id2=str(data['id_2']))
 
-		log.debug(f"Created relationship:{result}")
+			log.debug(f"Created relationship:{result}")
+		except Exception as e:
+			log.error(f"Error trying to create a relationship -> {e}")
 
 	def check_bot_exists(self, id):
 		"""Method used to check if there exists a bot with a given id
@@ -318,11 +329,13 @@ class Neo4jAPI:
 
 	def __update_user(self, tx, data):
 		log.debug("UPDATING USER")
-
-		tx.run(f"MATCH (r: {USER_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
-			   id=str(data['id']),
-			   username=data['username'] if 'username' in data else '',
-			   name=data['name'] if 'name' in data else '')
+		try:
+			tx.run(f"MATCH (r: {USER_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
+				   id=str(data['id']),
+				   username=data['username'] if 'username' in data else '',
+				   name=data['name'] if 'name' in data else '')
+		except Exception as e:
+			log.error(f"Error updating user -> {e}")
 
 	def update_bot(self, data):
 		"""Method used to update a given bot
@@ -342,10 +355,13 @@ class Neo4jAPI:
 	def __update_bot(self, tx, data):
 		log.debug("UPDATING BOT")
 
-		tx.run(f"MATCH (r: {BOT_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
-			   id=str(data['id']),
-			   username=data['username'] if 'username' in data else '',
-			   name=data['name'] if 'name' in data else '')
+		try:
+			tx.run(f"MATCH (r: {BOT_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
+				   id=str(data['id']),
+				   username=data['username'] if 'username' in data else '',
+				   name=data['name'] if 'name' in data else '')
+		except Exception as e:
+			log.error(f"Error trying to update bot -> {e}")
 
 	def delete_user(self, id):
 		"""Method used to delete a given user
@@ -379,8 +395,10 @@ class Neo4jAPI:
 
 	def __delete_node(self, tx, type, id):
 		log.debug("DELETING NODE")
-
-		tx.run(f'MATCH (r:{type} {{ id: $id }}) DETACH DELETE r', id=str(id))
+		try:
+			tx.run(f'MATCH (r:{type} {{ id: $id }}) DETACH DELETE r', id=str(id))
+		except Exception as e:
+			log.error(f"Error trying to delete node -> {e}")
 
 	def delete_writer_relationship(self, data):
 		"""Method used to delete WRITE relationship
@@ -541,10 +559,13 @@ class Neo4jAPI:
 	def __delete_rel(self, tx, data):
 		log.debug("DELETING RELATIONSHIP")
 
-		tx.run(f"MATCH (a:{data['type_1']}{{id: $from_id}})-[r:{data['label']}]->(b:{data['type_2']}{{id: $to_id}})"
-			   f"DELETE r",
-			   from_id=str(data['id_1']), to_id=str(data['id_2']))
-
+		try:
+			tx.run(f"MATCH (a:{data['type_1']}{{id: $from_id}})-[r:{data['label']}]->(b:{data['type_2']}{{id: $to_id}})"
+				   f"DELETE r",
+				   from_id=str(data['id_1']), to_id=str(data['id_2']))
+		except Exception as e:
+			log.error(f"Error trying to delete relationship {e}")
+			
 	def search_tweets(self, tweet=None):
 		"""Method used to search for a given tweet
 
