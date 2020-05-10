@@ -162,12 +162,13 @@ class PDP:
 			log.warning(f"Request to {msg_type.name} denied")
 			return self.send_response({"response": "DENY"})
 
-	def send_response(self, msg):
-		# json dumps da decisão
+	@staticmethod
+	def send_response(msg):
 		message = json.dumps(msg)
 		return message
 
-	def get_first_time_list(self):
+	@staticmethod
+	def get_first_time_list():
 		"""
 		When a bot connects for the first time to Twitter, he'll have to start following people This is the old way:
 		having a set list of possible users and the bot will follow a random group from those followers In future
@@ -190,14 +191,15 @@ class PDP:
 
 		return bot_list
 
-	def _bot_is_targeted(self, policy, data):
+	@staticmethod
+	def _bot_is_targeted(policy, data):
 		"""
 		Private function to check if a bot is being targeted in a policy
 		Checks first if the bot was mentioned in the tweet, or if the user who posted the tweet is himself listed
 		in the policy
 
-		@param Policy dictionary containing its information
-		@param Data dictionary containing important information
+		@param policy dictionary containing its information
+		@param data dictionary containing important information
 
 		@returns True or False depending if the bot was indeed targeted
 		"""
@@ -212,12 +214,13 @@ class PDP:
 		log.info(f"Bot <{data['bot_id']}> was not targeted in the policy")
 		return False
 
-	def _tweet_has_keywords(self, policy, data):
+	@staticmethod
+	def _tweet_has_keywords(policy, data):
 		"""
 		Private function to check if a tweet uses any important keywords, be it hashtags or commonly found words
 
-		@param Policy dictionary containing its information
-		@param Data dictionary containing important information
+		@param policy dictionary containing its information
+		@param data dictionary containing important information
 
 		@returns True or False depending if the tweet has keywords
 		"""
@@ -338,9 +341,10 @@ class PDP:
 
 			if users_of_tweets_liked:
 				for user_of_tweet_liked in users_of_tweets_liked:
-					if user_of_tweet_liked['user']['id_str'] == str(data["user_id"]):
+					id_str = user_of_tweet_liked['user']['id_str']
+					if id_str == str(data["user_id"]):
 						log.info(f"Found a past like to the user with id <{data['user_id']}>: {user_of_tweet_liked}")
-						date = bot_logs_dict[user_of_tweet_liked['id_str']]['timestamp']
+						date = bot_logs_dict[id_str]['timestamp']
 						now = datetime.datetime.now()
 						if (now - date).seconds < PENALTY_LIKED_RECENTLY_SMALL_INTERVAL:
 							log.info("Bot has liked a tweet from the same user, but may not be that suspicious")
@@ -400,7 +404,8 @@ class PDP:
 
 			if users_of_retweets:
 				for user_of_retweet in users_of_retweets:
-					if user_of_retweet['user']['id_str'] == str(data["user_id"]):
+					id_str = user_of_retweet['user']['id_str']
+					if id_str == str(data["user_id"]):
 						log.info(f"Found a past retweet to the user with id <{data['user_id']}>: {user_of_retweet}")
 						log.debug("Bot has recently retweet the user")
 						heuristic_value += PENALTY_RETWEETED_USER_RECENTLY
