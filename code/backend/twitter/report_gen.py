@@ -112,7 +112,9 @@ class Report:
 
 	def __get_results(self, result, query, placement, params):
 		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweet'], params['Tweet'])
+
 		result_users = self.__get_mongo_aggregate("users", query['User'], params['User'])
+
 		result_bots = self.__get_mongo_aggregate("users", query['Bot'], params['Bot'])
 
 		for res in [result_tweets, result_users, result_bots]:
@@ -139,7 +141,7 @@ class Report:
 				 f"return r"
 
 		logger.info(query)
-
+		
 		if limit:
 			query += f" limit {limit}"
 
@@ -168,6 +170,7 @@ class Report:
 			self.__add_to_keep_track(keep_track_places, node_start["properties"]["id"], (row_index, "start"))
 			relation["start"] = {param: None for param in params[node_start["labels"][0]]}
 			relation["start"]["id_str"] = node_start["properties"]["id"]
+			relation["start"]["label"] = node_start["labels"][0]
 
 			for index in range(len(relations) - 1):
 				rel = relations[index]
@@ -177,6 +180,7 @@ class Report:
 										 (row_index, "interm" + str(index + 1)))
 				relation["interm" + str(index+1)] = {param: None for param in params[rel["end"]["labels"][0]]}
 				relation["interm" + str(index + 1)]["id_str"] = rel["end"]["properties"]["id"]
+				relation["interm" + str(index + 1)]["label"] = rel["end"]["labels"][0]
 
 			# Add ending node
 			relation['rel' + str(len(relations))] = {"name": relations[-1]["label"]}
@@ -185,6 +189,7 @@ class Report:
 			self.__add_to_keep_track(keep_track_places, node_end["properties"]["id"], (row_index, "end"))
 			relation["end"] = {param: None for param in params[node_end["labels"][0]]}
 			relation["end"]["id_str"] = node_end["properties"]["id"]
+			relation["end"]["label"] = node_end["labels"][0]
 
 			# Append to result
 			result.append(relation)
@@ -257,28 +262,13 @@ if __name__ == '__main__':
 	# Test intermediates
 	query2 = {
 		'start': {
-			'node': {
-				'label': "User"
-			},
+			'node': {},
 			'relation': {
-				'label': ['WROTE']
+				'direction': 'Bidirectional'
 			}
 		},
-		'intermediates': [
-			{
-				'node': {
-					'label': "Tweet"
-				},
-				'relation': {
-					'label': ['RETWEETED', "QUOTED", "REPLIED"],
-					"direction": "Reverse"
-				}
-			}
-		],
 		'end': {
-			'node': {
-				'label': "User"
-			}
+			'node': {}
 		}
 	}
 	for export_type in Report.ExportType:
