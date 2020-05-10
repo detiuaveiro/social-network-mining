@@ -126,7 +126,7 @@ class Report:
 			locations_dict[node] = []
 		locations_dict[node].append(location)
 
-	def create_report(self, match: dict, params: dict, limit=None, export='csv'):
+	def create_report(self, match: dict, params: dict, limit=None, export=ExportType.CSV):
 		query = f"MATCH r={self.__node_builder(match['start']['node'])}" \
 				f"{self.__relation_builder(match['start']['relation'])}"
 
