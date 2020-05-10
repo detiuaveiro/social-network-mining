@@ -227,6 +227,8 @@ class PostgresAPI:
 					query += f"target_id={params['target_id']} AND "
 				if "action" in params:
 					query += f"action='{params['action']}' AND "
+				if "timestamp" in params:
+					query +=f"timestamp>'{params['timestamp']}' AND "
 				query = query[:-4]
 
 			query += f"ORDER BY timestamp DESC " \
