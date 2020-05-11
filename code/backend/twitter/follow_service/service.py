@@ -1,16 +1,19 @@
+import gc
 import logging
 from typing import Dict, List
+
+import keras.backend as keras_backend
+import numpy as np
+
 import messages_types
 from credentials import TASK_FOLLOW_EXCHANGE, SERVICE_QUERY_EXCHANGE
 from follow_service.utils import to_json, current_time, wait, convert_policies_to_model_input_data, get_labels, \
 	update_tweets, get_full_text, update_models
 from rabbit_messaging import RabbitMessaging
 from wrappers.mongo_wrapper import MongoAPI
-from follow_service.classifier import predict_soft_max, train_model
+from follow_service.classifier import predict_soft_max
 from follow_service.tweets_scrapper import get_data
-import numpy as np
-import gc
-import keras.backend as keras_backend
+
 
 logger = logging.getLogger("follow-service")
 logger.setLevel(logging.DEBUG)
@@ -20,7 +23,7 @@ handler.setFormatter(logging.Formatter(
 logger.addHandler(handler)
 
 WAIT_TIME_NO_TASKS = 10
-THRESHOLD_FOLLOW_USER = 0.8
+THRESHOLD_FOLLOW_USER = 0.85
 MEAN_WORDS_PER_TWEET = 80
 
 
