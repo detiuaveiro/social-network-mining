@@ -21,7 +21,7 @@ from datetime import timedelta, datetime
 THRESHOLD_LIKE = 0.4
 THRESHOLD_RETWEET = 0.6
 THRESHOLD_REPLY = 0.6
-THRESHOLD_FOLLOW_USER = 0.85
+THRESHOLD_FOLLOW_USER = 0.80
 MEAN_WORDS_PER_TWEET = 80
 POLICY_KEYWORDS_MATCHES = 0.2
 POLICY_USER_IS_TARGETED = 0.4
@@ -572,7 +572,7 @@ class PDP:
 				if picked_label in policy_labels:
 					heuristic += mean_score
 		log.debug(f"Request to follow user with id: {user['id']} and name {user['name']} "
-				  f"{'Accepted' if heuristic > THRESHOLD_FOLLOW_USER else 'Denied'}")
+				  f"and heuristic of <{heuristic}>")
 		return heuristic
 
 	def close(self):
