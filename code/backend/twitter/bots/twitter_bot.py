@@ -140,15 +140,11 @@ class TwitterBot(RabbitMessaging):
 		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
 		self.__send_user(self.user, messages_types.BotToServer.SAVE_USER)
 
-		# logger.info(f"Sending the last 200 followers of our bot")
-		# self.__get_followers(user_id=self._id_str)
-		#
-		# logger.info("Reading home timeline")
-		# self.__read_timeline(self.user)
-		while True:
-			print("FU")
-			self.__send_request_follow(self.user)
-			wait(10)
+		logger.info(f"Sending the last 200 followers of our bot")
+		self.__get_followers(user_id=self._id_str)
+		
+		logger.info("Reading home timeline")
+		self.__read_timeline(self.user)
 
 	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
 		"""Function to get the 20 (default) most recent tweets (including retweets) from some user
@@ -199,7 +195,7 @@ class TwitterBot(RabbitMessaging):
 				# get tweets in portuguese and from Portugal (center of Portugal and a radius equal form the center
 				# to the most distant point)
 				tweets = self._twitter_api.search(q=keyword, lang=language, geocode="39.557191,-8.1,300km",
-												  tweet_mode="extended")
+				                                  tweet_mode="extended")
 				total_read_time += self.__interpret_tweets(tweets)
 
 		logger.debug(f"Search completed in {total_read_time} seconds")
@@ -242,14 +238,14 @@ class TwitterBot(RabbitMessaging):
 
 				if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
 					logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
-								   f"following him, so can't read his timeline")
+					               f"following him, so can't read his timeline")
 
 				elif 'suspended' in user_attributes and tweet_user.suspended:
 					logger.warning(f"Found user with ID={tweet_user.id} but his account was suspended, "
-								   f"so can't read his timeline")
+					               f"so can't read his timeline")
 				else:
 					self.__read_timeline(tweet_user, jump_users=jump_users,
-										 max_depth=max_depth, current_depth=current_depth + 1)
+					                     max_depth=max_depth, current_depth=current_depth + 1)
 		return total_read_time
 
 	def __direct_messages(self):
@@ -283,7 +279,7 @@ class TwitterBot(RabbitMessaging):
 					self.__follow_user(user)
 			except TweepError as error:
 				logger.exception(f"Unable to find user identified by [{id_type}] with <{user_id}> because of error "
-								 f"<{error}>:")
+				                 f"<{error}>:")
 
 	def __follow_user(self, user: User):
 		"""Function to follow a specific user. It sends the user to the server and then, if the bot doesn't follow the
@@ -488,4 +484,4 @@ class TwitterBot(RabbitMessaging):
 					wait(5)
 			except Exception as error:
 				logger.exception(f"Error {error} on bot's loop: ")
-		# exit(1)
+	# exit(1)

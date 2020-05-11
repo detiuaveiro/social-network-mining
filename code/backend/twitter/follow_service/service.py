@@ -3,7 +3,7 @@ from typing import Dict, List
 import messages_types
 from credentials import TASK_FOLLOW_EXCHANGE, SERVICE_QUERY_EXCHANGE
 from follow_service.utils import to_json, current_time, wait, convert_policies_to_model_input_data, get_labels, \
-	update_tweets, get_full_text
+	update_tweets, get_full_text, update_models
 from rabbit_messaging import RabbitMessaging
 from wrappers.mongo_wrapper import MongoAPI
 from follow_service.classifier import predict_soft_max, train_model
@@ -72,7 +72,7 @@ class Service(RabbitMessaging):
 
 		trained_labels = get_labels(self.mongo_client.models, list(model_input_data.keys()))
 
-		if len(trained_labels) == model_input_data:
+		if len(trained_labels) == len(model_input_data):
 			logger.debug("All policies have been already trained")
 			return
 
@@ -90,6 +90,13 @@ class Service(RabbitMessaging):
 			policies_tweets[policy_name] = list(set(tweets))  # Ignoring repeated tweets
 
 		update_tweets(self.mongo_client.policies_tweets, policies_tweets)
+
+		new_models = train_model(self.mongo_client.policies_tweets, policies_tweets)
+
+		args_per_label = dict([(label, model_input_data[label]) for label in not_trained_policies])
+		update_models(self.mongo_client.models, new_models, args_per_label)
+
+		logger.debug(f"Training {not_trained_policies} policies process done")
 
 	def __predict_follow_user(self, user: Dict, tweets: List[str], policies, bot_id):
 		"""
@@ -138,10 +145,9 @@ class Service(RabbitMessaging):
 
 		logger.debug(
 			f"Request to follow user with id: {user_id} {'Accepted' if status else 'Denied'}")
-
-		if status:  # to follow the user
-			self.__send_message(data={'user': user, 'status': status, 'bot_id_str': bot_id},
-			                    message_type=messages_types.FollowServiceToServer.FOLLOW_USER)
+		
+		self.__send_message(data={'user': user, 'status': status, 'bot_id_str': bot_id},
+		                    message_type=messages_types.FollowServiceToServer.FOLLOW_USER)
 
 	def __verify_if_new_policies(self, policies: List[str]):
 		"""

@@ -468,25 +468,7 @@ class Control_Center(Rabbitmq):
 			}
 
 			self.send_to_follow_user_service(ServerToFollowService.REQUEST_FOLLOW_USER, params)
-		"""
-		if request_accepted:
-			log.info(f"Bot {data['bot_id']} request accepted to follow {user_id}")
 
-			self.postgres_client.insert_log({
-				"bot_id": int(data["bot_id_str"]),
-				"action": log_actions.FOLLOW_REQ_ACCEPT,
-				"target_id": user_id_str
-			})
-			self.send(data['bot_id'], ServerToBot.FOLLOW_USERS, {"type": "id", "data": [user_id_str]})
-		else:
-			log.warning(f"Bot {data['bot_id']} request denied to follow {user_id}")
-			self.postgres_client.insert_log({
-				"bot_id": data["bot_id_str"],
-				"action": log_actions.FOLLOW_REQ_DENY,
-				"target_id": user_id_str
-			})
-		
-		"""
 		for tweet in tweets:
 			data['data'] = tweet
 			self.save_tweet(data)

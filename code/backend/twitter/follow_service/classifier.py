@@ -12,7 +12,7 @@ from keras import layers
 from sklearn.model_selection import RandomizedSearchCV
 from keras.wrappers.scikit_learn import KerasClassifier
 import nltk
-from follow_service.utils import read_model, get_labels
+from follow_service.utils import read_model, get_labels, get_all_tweets_per_policy
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -34,7 +34,9 @@ def tokenize(text):
 	return ' '.join(words)
 
 
-def convert_labels_to_binary(data, size):
+def convert_labels_to_binary(tp_size, tn_size):
+	return 1
+	"""
 	vectors = []
 
 	for label in data:
@@ -50,6 +52,7 @@ def convert_labels_to_binary(data, size):
 		vectors.append(np.asarray(v))
 
 	return vectors
+	"""
 
 
 def convert_input(x_train, x_test, max_len):
@@ -71,13 +74,13 @@ def create_model(num_filters, kernel_size, vocab_size, embedding_dim, max_len):
 	model.add(layers.Dense(10, activation='relu'))
 	model.add(layers.Dense(1, activation='sigmoid'))
 	model.compile(optimizer='adam',
-				  loss='binary_crossentropy',
-				  metrics=['accuracy'])
+	              loss='binary_crossentropy',
+	              metrics=['accuracy'])
 	return model
 
 
 def pick_best_model(x, y, label, embedding_dim=50, max_len=100, epochs=20, param_grid=None, n_jobs=-1, save_logs=True,
-					logs_path=None):
+                    logs_path=None):
 	x = [tokenize(text) for text in x]
 	x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=1000, shuffle=True)
 
@@ -94,7 +97,8 @@ def pick_best_model(x, y, label, embedding_dim=50, max_len=100, epochs=20, param
 
 	model = KerasClassifier(build_fn=create_model, epochs=epochs, batch_size=10, verbose=True)
 
-	grid = RandomizedSearchCV(estimator=model, param_distributions=param_grid, cv=4, verbose=1, n_iter=5, n_jobs=n_jobs)
+	grid = RandomizedSearchCV(estimator=model, param_distributions=param_grid, cv=min(4, len(y_train)), verbose=1,
+	                          n_iter=5, n_jobs=n_jobs)
 	grid_result = grid.fit(x_train, y_train)
 
 	best_model = grid_result.best_estimator_
@@ -129,7 +133,7 @@ def predict(models, label, x):
 	config, model, tokenizer = read_model(models, label)
 
 	classifier = KerasClassifier(build_fn=create_model, epochs=config['epochs'],
-								 batch_size=config['batch_size'], verbose=True)
+	                             batch_size=config['batch_size'], verbose=True)
 
 	classifier.model = model
 
@@ -141,7 +145,7 @@ def predict(models, label, x):
 	return output
 
 
-def predict_soft_max(models, x, policy_label):
+def predict_soft_max(models, x, policy_label, confidence_limit=0.7):
 	labels = get_labels(models, policy_label)
 
 	best_labels = []
@@ -149,15 +153,39 @@ def predict_soft_max(models, x, policy_label):
 		classifiers = []
 		for label in labels:
 			confidence = predict(models, label, [text])
-			if confidence > 0.7:
+			if confidence > confidence_limit:
 				classifiers.append((confidence, label))
+			else:
+				classifiers.append((0, label))
 		if len(classifiers) > 0:
 			best_labels.append(sorted(classifiers, key=lambda m: m[0], reverse=True)[0])
-		else:
-			best_labels.append(None)
 
 	return best_labels
 
 
-def train_model():
-	pass
+def create_input_data(policies_tweets, new_tweets):
+	size = len(new_tweets)
+	tp = new_tweets
+	tn = []
+	all_tweets = [t['tweets'] for t in get_all_tweets_per_policy(policies_tweets)]
+
+	policies_number = len(all_tweets)
+	step = size // policies_number
+
+	for i in range(policies_number):
+		tn += all_tweets[i][0:step]
+
+	return tp, tn
+
+
+def train_model(policies_tweets, labels):
+	to_update = []
+
+	for label in labels:
+		tp, tn = create_input_data(policies_tweets, labels[label])
+		joint_data = tp + tn
+		vectors = [1] * len(tp) + [0] * len(tn)
+		tokenizer, model, config = pick_best_model(joint_data, vectors, label, n_jobs=2)
+		to_update.append((tokenizer, model, config, label))
+
+	return to_update
