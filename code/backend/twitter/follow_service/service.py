@@ -53,7 +53,7 @@ class Service(RabbitMessaging):
 		self._setup_messaging()
 
 		# send a request to get policies
-		self.__send_message(data={}, message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
+		self.__send_message(data={"ina":"O"}, message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
 
 	def __train_models(self, policies: Dict[str, List[str]]):
 		"""

@@ -887,6 +887,7 @@ class Control_Center(Rabbitmq):
 	def _received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
 		message = json.loads(body)
+		print(body)
 		self.action(message)
 
 	def close(self):
