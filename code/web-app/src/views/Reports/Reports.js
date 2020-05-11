@@ -517,8 +517,12 @@ class Reports extends Component {
 
       var start = {}
       var startType = this.state.start.type
-      if (!startType == null && !startType == "" && !startType.split("_").length == 2) {
-        startType = startType.value
+      if (!startType == null && !startType == "") {
+        if(startType.split("_").length == 2){
+          startType = null
+        }else{
+          startType = startType.value
+        }
       }
 
       start["type"] = startType
