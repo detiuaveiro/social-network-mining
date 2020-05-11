@@ -53,7 +53,7 @@ class Service(RabbitMessaging):
 		self._setup_messaging()
 
 		# send a request to get policies
-		self.__send_message(data={"ina":"O"}, message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
+		self.__send_message(data={}, message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
 
 	def __train_models(self, policies: Dict[str, List[str]]):
 		"""
@@ -62,11 +62,13 @@ class Service(RabbitMessaging):
 		"""
 		# TODO -> verificar aqui se já existe o modelo para uma dada policie recebida, treinar e guardar no mongo.
 		#  se o modelo já existe, não fazer nada e fazer logo return
+
+		print(policies)
 		wait(10)
 
 		if 1 == 1:  # send the tweets we have collected with this method
 			self.__send_message(data={'tweets': []},
-								message_type=messages_types.FollowServiceToServer.SAVE_TWEETS)
+			                    message_type=messages_types.FollowServiceToServer.SAVE_TWEETS)
 
 	def __predict_follow_user(self, user_id: str, tweets: List[str], policies, description: str):
 		"""
@@ -125,7 +127,7 @@ class Service(RabbitMessaging):
 
 		if 1 == 1:  # to send the message requesting the respective policies
 			self.__send_message(data={'policies': []},
-								message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
+			                    message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
 
 	def run(self):
 		"""Service's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
@@ -146,8 +148,8 @@ class Service(RabbitMessaging):
 						self.__train_models(policies=task_params)
 					elif task_type == messages_types.ServerToFollowService.REQUEST_FOLLOW_USER:
 						self.__predict_follow_user(user_id=task_params['user'], tweets=task_params['tweets'],
-												   policies=task_params['policies'],
-												   description=task_params['description'])
+						                           policies=task_params['policies'],
+						                           description=task_params['description'])
 					# self.__verify_if_new_policies(policies=task_params['policies'])
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
@@ -157,4 +159,4 @@ class Service(RabbitMessaging):
 
 					wait(WAIT_TIME_NO_TASKS)
 			except Exception as error:
-				logger.exception(f"Error {error} on bot's loop: ")
+				logger.exception(f"Error {error} on follow user service's loop: ")

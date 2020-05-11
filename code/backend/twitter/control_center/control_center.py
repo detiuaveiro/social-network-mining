@@ -21,7 +21,7 @@ import neo4j_labels
 from control_center import mongo_utils
 
 from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, TASK_FOLLOW_QUEUE, \
-	TASK_FOLLOW_ROUTING_KEY_PREFIX
+	TASK_FOLLOW_ROUTING_KEY_PREFIX, TASKS_EXCHANGE, SERVICE_QUERY_EXCHANGE
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
@@ -55,9 +55,19 @@ class Control_Center(Rabbitmq):
 		self.replier = ParlaiReplier(PARLAI_URL, PARLAI_PORT)
 		self.translator = Translator()
 
+		self.channel = None
+		self.exchange = None
+
 	def action(self, message):
+
+		if self.exchange == TASKS_EXCHANGE:
+			self.bot_action(message)
+		elif self.exchange == SERVICE_QUERY_EXCHANGE:
+			self.follow_service_action(message)
+
+	def bot_action(self, message):
 		message_type = message['type']
-		log.info(f"Received new action: {message['bot_id']} wants to do {BotToServer(message_type).name}")
+		log.info(f"Received new action from bot: {message['bot_id']} wants to do {BotToServer(message_type).name}")
 
 		# search for keyword tweets time to time
 		if random.random() < PROBABILITY_SEARCH_KEYWORD:
@@ -97,8 +107,22 @@ class Control_Center(Rabbitmq):
 		elif message_type == BotToServer.QUERY_KEYWORDS:
 			self.__send_keywords(message)
 
-		elif message_type == FollowServiceToServer.REQUEST_POLICIES:
-			print("OLA???????")
+	def follow_service_action(self, message):
+		message_type = message['type']
+		log.info(
+			f"Received new action from follow_user service: Wants to do {FollowServiceToServer(message_type).name}")
+
+		if message_type == FollowServiceToServer.REQUEST_POLICIES:
+			self.__all_policies()
+
+	def __all_policies(self):
+		log.debug("Obtaining all policies available")
+		policies = self.postgres_client.search_policies()
+		if policies['success']:
+			log.debug("Success obtaining all policies available")
+			self.send_to_follow_user_service(ServerToFollowService.POLICIES_KEYWORDS, policies['data'])
+		else:
+			log.error("Error obtaining all policies available")
 
 	# Need DB API now
 	def __follow_user(self, user1_id, user2_id):
@@ -221,17 +245,12 @@ class Control_Center(Rabbitmq):
 		@return Boolean value confirming it found the log recently
 		"""
 		bot_logs = self.postgres_client.search_logs(
-			params={"bot_id": bot, "action": action, "target_id": target},
+			params={"bot_id": bot, "action": action, "target_id": target,
+			        "timestamp": datetime.now() - timedelta(hours=1)},
 			limit=1
 		)
-
-		if bot_logs["success"] and len(bot_logs['data']) > 0:
-			log.debug("Found the logs in the database")
-			log_ts = (timedelta(hours=1) + bot_logs['data'][0]['timestamp']).replace(tzinfo=self.__utc)
-			now = datetime.now().replace(tzinfo=self.__utc)
-			return log_ts > now
-
-		return False
+		log.debug("Found the logs in the database")
+		return bot_logs["success"] and len(bot_logs['data']) > 0
 
 	def request_tweet_like(self, data):
 		"""
@@ -439,17 +458,14 @@ class Control_Center(Rabbitmq):
 			"bot_id": int(data["bot_id_str"])  # , "filter": "Keywords"
 		})
 		if policies['success']:
-			payload = {
-				'type': ServerToFollowService.REQUEST_FOLLOW_USER,
-				'params': {
-					'user': user_id,
-					'tweets': [t['full_text'] for t in tweets],
-					'policies': policies['data'],
-					'description': user['description']
-				}
+			params = {
+				'user': user_id,
+				'tweets': [t['full_text'] for t in tweets],
+				'policies': policies['data'],
+				'description': user['description']
 			}
 
-			self._send(queue=TASK_FOLLOW_QUEUE, routing_key=TASK_FOLLOW_ROUTING_KEY_PREFIX, message=payload)
+			self.send_to_follow_user_service(ServerToFollowService.REQUEST_FOLLOW_USER, params)
 
 		# request_accepted = self.pep.receive_message({
 		#	"type": PoliciesTypes.REQUEST_FOLLOW_USER,
@@ -709,7 +725,7 @@ class Control_Center(Rabbitmq):
 					})
 
 			elif ("is_quote_status" in data["data"] and data["data"]["is_quote_status"]
-				  and "quoted_status" in data["data"]):
+			      and "quoted_status" in data["data"]):
 
 				log.info(f"Tweet was quoting some other tweet, must insert the quote relation too")
 				new_data["data"] = data["data"]["quoted_status"]
@@ -876,18 +892,39 @@ class Control_Center(Rabbitmq):
 		log.info(f"Sending {message_type.name} to Bot with ID: <{bot}>")
 		log.debug(f"Content: {params}")
 		payload = {
+			'type': str(message_type),
+			'params': params
+		}
+		try:
+			self._send(queue=TASKS_QUEUE_PREFIX, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload,
+			           channel=self.channel, father_exchange=self.exchange)
+		except Exception as error:
+			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
+
+	def send_to_follow_user_service(self, message_type, params):
+		"""
+		Function the task uses to send messages through rabbit to follow user service
+
+		@param message_type: ResponseTypes object with the type of message
+		@param params: dict with arguments of the message
+		"""
+		log.info(f"Sending {message_type.name} to follow user service")
+		log.debug(f"Content: {params}")
+		payload = {
 			'type': message_type,
 			'params': params
 		}
 		try:
-			self._send(queue=TASKS_QUEUE_PREFIX, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload)
+			self._send(queue=TASK_FOLLOW_QUEUE, routing_key=TASK_FOLLOW_ROUTING_KEY_PREFIX, message=payload,
+			           channel=self.channel, father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
 
 	def _received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
+		self.channel = channel
+		self.exchange = method.exchange
 		message = json.loads(body)
-		print(body)
 		self.action(message)
 
 	def close(self):

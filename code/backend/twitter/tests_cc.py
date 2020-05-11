@@ -5,7 +5,7 @@ from wrappers.postgresql_wrapper import PostgresAPI
 
 def main():
 	#test_json()
-	test.test_neo4j()
+	#test.test_neo4j()
 	test_logs.test_logs_ts()
 	test_logs.test_logs()
 	test_psql.test_insert_user_with_protected()
