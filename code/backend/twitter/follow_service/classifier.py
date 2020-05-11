@@ -1,18 +1,21 @@
+import string
+import re
+
+import numpy as np
+import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk import WordNetLemmatizer
-import string
 from keras import Sequential
-import numpy as np
-from sklearn.model_selection import train_test_split
-from matplotlib import *
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-from keras import layers
-from sklearn.model_selection import RandomizedSearchCV
 from keras.wrappers.scikit_learn import KerasClassifier
-import nltk
+from keras import layers
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import RandomizedSearchCV
+
 from follow_service.utils import read_model, get_labels
+
 
 nltk.download('punkt')
 nltk.download('stopwords')

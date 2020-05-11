@@ -1,0 +1,17 @@
+version: '3.2'
+
+services:
+  database:
+    image: mongo:3.6.18
+    container_name: mongo_follow_service
+    restart: always
+    volumes:
+      - mongo_follow_data:/data/db
+  sensors_rest:
+    image: follow_service:latest
+    depends_on: 
+      - mongo_follow_service
+    container_name: follow_service
+
+volumes:
+  mongo_follow_data:
