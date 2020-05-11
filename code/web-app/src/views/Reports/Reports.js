@@ -518,7 +518,7 @@ class Reports extends Component {
       var start = {}
       var startType = this.state.start.type
       if (!startType == null && !startType == "") {
-        if(startType.split("_").length == 2){
+        if(startType.value.split("_").length == 2){
           startType = null
         }else{
           startType = startType.value
@@ -540,7 +540,7 @@ class Reports extends Component {
       var end = {}
       var endType = this.state.end.type
       if (!endType == null && !endType == "") {
-        if(endType.split("_").length == 2){
+        if(endType.value.split("_").length == 2){
           endType = null
         }else{
           endType = endType.value
