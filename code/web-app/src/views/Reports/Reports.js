@@ -539,8 +539,12 @@ class Reports extends Component {
 
       var end = {}
       var endType = this.state.end.type
-      if (!endType == null && !endType == "" && !endType.split("_").length == 2) {
-        endType = endType.value
+      if (!endType == null && !endType == "") {
+        if(endType.split("_").length == 2){
+          endType = null
+        }else{
+          endType = endType.value
+        }
       }
       end["type"] = endType
 
