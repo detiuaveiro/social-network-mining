@@ -11,11 +11,8 @@ from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
 from control_center.policies_types import PoliciesTypes
 import log_actions
-from control_center.intelligence import classifier
-import numpy as np
-import gc
-import keras.backend as K
 from datetime import timedelta, datetime
+
 
 # Constants used below for the Heuristics
 THRESHOLD_LIKE = 0.4
