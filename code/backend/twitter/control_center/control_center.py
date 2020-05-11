@@ -113,7 +113,7 @@ class Control_Center(Rabbitmq):
 		if message_type == FollowServiceToServer.REQUEST_POLICIES:
 			self.__all_policies()
 		elif message_type == FollowServiceToServer.FOLLOW_USER:
-			self.follow_user(message)
+			self.__follow_user(message)
 
 	def __all_policies(self):
 		log.debug("Obtaining all policies available")
@@ -442,6 +442,8 @@ class Control_Center(Rabbitmq):
 		user_id_str = user['id_str']
 
 		log.info(f"Bot {data['bot_id']} requests a follow from {user_id}")
+
+		# verify if the user already requested to follow the user
 		if self.__found_in_logs(data["bot_id_str"], log_actions.FOLLOW_REQ, user_id_str):
 			log.info("Action was already requested recently")
 			return
@@ -452,6 +454,7 @@ class Control_Center(Rabbitmq):
 			"target_id": user_id_str
 		})
 
+		# get the policies to this bot
 		policies = self.postgres_client.search_policies({
 			"bot_id": int(data["bot_id_str"])
 		})
@@ -488,7 +491,7 @@ class Control_Center(Rabbitmq):
 			data['data'] = tweet
 			self.save_tweet(data)
 
-	def follow_user(self, data):
+	def __follow_user(self, data):
 		"""
 		Function that sends a follow user  action status (Accepted, denied) to bot
 		@param data: dict containing the necessary info
