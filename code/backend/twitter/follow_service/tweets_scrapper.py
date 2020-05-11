@@ -40,7 +40,7 @@ def get_data(query, lang='pt'):
 	data = []
 
 	today = datetime.now()
-	for day in range(0, 8):
+	for day in range(0, 1):
 		current_date = today - timedelta(days=day)
 		current_date_minus_one_day = current_date - timedelta(days=1)
 		data += api.search(

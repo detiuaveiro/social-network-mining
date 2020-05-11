@@ -2,10 +2,12 @@ import logging
 from typing import Dict, List
 import messages_types
 from credentials import TASK_FOLLOW_EXCHANGE, SERVICE_QUERY_EXCHANGE
-from follow_service.utils import to_json, current_time, wait, convert_policies_to_model_input_data
+from follow_service.utils import to_json, current_time, wait, convert_policies_to_model_input_data, get_labels, \
+	update_tweets, get_full_text
 from rabbit_messaging import RabbitMessaging
 from wrappers.mongo_wrapper import MongoAPI
-from follow_service.classifier import predict_soft_max
+from follow_service.classifier import predict_soft_max, train_model
+from follow_service.tweets_scrapper import get_data
 import numpy as np
 import gc
 import keras.backend as keras_backend
@@ -59,15 +61,30 @@ class Service(RabbitMessaging):
 		:param policies: dictionary in which each key is the name of the policy and the values are lists with the
 			keywords of that policy
 		"""
-		# TODO -> verificar aqui se já existe o modelo para uma dada policie recebida, treinar e guardar no mongo.
-		#  se o modelo já existe, não fazer nada e fazer logo return
+
 		# Distinçao entre keywords e target???
-
+		logger.debug("Starting train process")
 		model_input_data = convert_policies_to_model_input_data(policies)
+		trained_labels = get_labels(self.mongo_client.models, list(model_input_data.keys()))
 
-	# if 1 == 1:  # send the tweets we have collected with this method
-	#	self.__send_message(data={'tweets': []},
-	#	                    message_type=messages_types.FollowServiceToServer.SAVE_TWEETS)
+		if len(trained_labels) == model_input_data:
+			logger.debug("All policies have been already trained")
+			return
+
+		not_trained_policies = list(set(model_input_data.keys()) - set(trained_labels))
+		policies_tweets = {}
+
+		logger.debug(f"Training {not_trained_policies} policies")
+
+		for policy_name in not_trained_policies:
+			params = model_input_data[policy_name]
+			tweets = []
+			for q in params:
+				tweets += get_full_text(get_data(q))
+
+			policies_tweets[policy_name] = list(set(tweets))  # Ignoring repeated tweets
+
+		update_tweets(self.mongo_client.policies_tweets, policies_tweets)
 
 	def __predict_follow_user(self, user: Dict, tweets: List[str], policies, bot_id):
 		"""

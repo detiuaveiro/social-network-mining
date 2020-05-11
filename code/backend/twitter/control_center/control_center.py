@@ -493,7 +493,7 @@ class Control_Center(Rabbitmq):
 		Function that sends a follow user  action status (Accepted, denied) to bot
 		@param data: dict containing the necessary info
 		"""
-		log.info(data)
+
 		status = data['data']['status']
 		user = data['data']['user']
 		bot_id = int(data['data']['bot_id_str'])

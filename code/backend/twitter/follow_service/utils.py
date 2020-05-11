@@ -52,7 +52,6 @@ def get_labels(models, policy_label):
 
 
 def convert_policies_to_model_input_data(policies):
-
 	training_data = {}
 	for policy in policies:
 		params = policy['params']
@@ -60,3 +59,22 @@ def convert_policies_to_model_input_data(policies):
 		training_data[label] = params
 
 	return training_data
+
+
+def update_models(models, data, labels):
+	for tokenizer, model, config, label in data:
+		models.update_one({'label': label}, {'$set': {
+			'label': label,
+			'args': labels[label],
+			'tokenizer': pickle.dumps(tokenizer, protocol=pickle.HIGHEST_PROTOCOL),
+			'model': pickle.dumps(model.model, protocol=pickle.HIGHEST_PROTOCOL),
+			'config': config
+		}}, upsert=True)
+
+
+def update_tweets(policies_tweets_model, policies_tweets):
+	for policy_name, tweets in policies_tweets.items():
+		policies_tweets_model.update_one({'name': policy_name}, {'$set': {
+			'name': policy_name,
+			'tweets': tweets
+		}}, upsert=True)

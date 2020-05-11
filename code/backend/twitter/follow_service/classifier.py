@@ -157,3 +157,7 @@ def predict_soft_max(models, x, policy_label):
 			best_labels.append(None)
 
 	return best_labels
+
+
+def train_model():
+	pass
