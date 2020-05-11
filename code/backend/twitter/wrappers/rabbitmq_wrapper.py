@@ -228,7 +228,7 @@ class Rabbitmq:
         log.info('Closing the channel')
         channel.close()
 
-    def _send(self, queue, routing_key, message, channel, father_exchange):
+    def _send(self, queue, routing_key, message, father_exchange):
         """
         Routes the message to corresponding channel
 
