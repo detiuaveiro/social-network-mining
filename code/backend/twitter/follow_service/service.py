@@ -11,9 +11,8 @@ from follow_service.utils import to_json, current_time, wait, convert_policies_t
 	update_tweets, get_full_text, update_models
 from rabbit_messaging import RabbitMessaging
 from wrappers.mongo_wrapper import MongoAPI
-from follow_service.classifier import predict_soft_max
+from follow_service.classifier import predict_soft_max, train_model
 from follow_service.tweets_scrapper import get_data
-
 
 logger = logging.getLogger("follow-service")
 logger.setLevel(logging.DEBUG)
@@ -148,7 +147,7 @@ class Service(RabbitMessaging):
 
 		logger.debug(
 			f"Request to follow user with id: {user_id} {'Accepted' if status else 'Denied'}")
-		
+
 		self.__send_message(data={'user': user, 'status': status, 'bot_id_str': bot_id},
 		                    message_type=messages_types.FollowServiceToServer.FOLLOW_USER)
 
