@@ -84,10 +84,18 @@ class ParlaiReplier:
 
 		try:
 			socket = zmq.Context().socket(zmq.REQ)
-			socket.setsockopt(zmq.LINGER, 1)
+			socket.setsockopt(zmq.LINGER, 0)
 			socket.connect(self.host)
 			socket.send_unicode(json.dumps(message))
-			reply = json.loads(socket.recv_unicode())
+
+			poller = zmq.Poller()
+			poller.register(socket, zmq.POLLIN)
+			if poller.poll(10 * 1000):  # 10s timeout in milliseconds
+				reply = json.loads(socket.recv_unicode())
+			else:
+				logger.warning("Timeout processing auth request")
+				return None
+
 			socket.close()
 
 			logger.info(f"Got response <{reply}> form ParlAI for the text <{text}>")
