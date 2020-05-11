@@ -86,7 +86,6 @@ class Report:
 		node_type = node["labels"][0]
 
 		if node_type in params and len(params[node_type]) > 0:
-
 			if node_type == TWEET_LABEL:
 				mongo_info = self.mongo.search('tweets', query={"id_str": node['properties']['id']},
 										 fields=params[node_type], single=True)
@@ -108,10 +107,12 @@ class Report:
 		return None
 
 	#@staticmethod
-	def __insert_info_list(self, info_dict, results_list, placement_dict):
+	def __insert_info_list(self, info_dict, results_list, placement_dict, label=None):
 		if results_list:
 			for result in results_list:
 				for index, key in placement_dict[result["id_str"]]:
+					if label:
+						result["label"] = label
 					info_dict[index][key] = result
 		return info_dict
 
@@ -127,31 +128,26 @@ class Report:
 
 	#@staticmethod
 	def __get_results(self, result, query, placement, params):
-		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweets'], params['Tweets'])
+		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweet'], params['Tweet'])
+		result = self.__insert_info_list(result, result_tweets, placement, label='Tweet')
 
-		result_users = self.__get_mongo_aggregate("users", query['Users'], params['Users'])
+		result_users = self.__get_mongo_aggregate("users", query['User'], params['User'])
+		result = self.__insert_info_list(result, result_users, placement, label='User')
 
-		result_bots = self.__get_mongo_aggregate("users", query['Bots'], params['Bots'])
-
-		for res in [result_tweets, result_users, result_bots]:
-			result = self.__insert_info_list(result, res, placement)
+		result_bots = self.__get_mongo_aggregate("users", query['Bot'], params['Bot'])
+		result = self.__insert_info_list(result, result_bots, placement, label='Bot')
 
 		return result
-
-	#@staticmethod
-	def __add_to_keep_track(self, locations_dict, node, location):
+	
+	@staticmethod
+	def __add_to_keep_track(locations_dict, node, location):
 		if node not in locations_dict:
 			locations_dict[node] = []
 		locations_dict[node].append(location)
 
-	#@staticmethod
-	def create_report(self, match: dict, params: dict, limit=None):
-		params = self.__translate_params(params)
-		logger.debug(params)
-		query = "MATCH r="
-		if "relation" in match['start']:
-			query += f"{self.__node_builder(match['start']['type'], match['start']['node'])}" \
-					f"{self.__relation_builder(match['start']['relation'])}"
+	def create_report(self, match: dict, params: dict, limit=None, export=ExportType.CSV):
+		query = f"MATCH r={self.__node_builder(match['start']['node'])}" \
+				f"{self.__relation_builder(match['start']['relation'])}"
 
 		if "intermediates" in match:
 			intermediates = match["intermediates"]
@@ -242,10 +238,11 @@ class Report:
 			headers = [key + "_" + prop for key in result[0] for prop in result[0][key]]
 			try:
 				with open(f"{self.directory}/export.csv", 'w') as file:
-					writer = csv.writer(file)
+					writer = csv.writer(file, quotechar='"', escapechar='\\')
 					writer.writerow(headers)
 					for data in result:
-						writer.writerow([data[key][prop] for key in data for prop in data[key]])
+						writer.writerow([str(data[key][prop]).encode('unicode_escape').decode('latin-1')
+						                 for key in data for prop in data[key]])
 			except Exception as error:
 				logger.exception(f"Occurred an error <{error}>: ")
 
@@ -281,9 +278,9 @@ if __name__ == '__main__':
 		'Bot': ['name', 'screen_name', 'friends_count', "id_str"]
 	}
 
-	for export_type in Report.ExportType:
-		print(export_type)
-		rep.create_report(query, params, export=export_type)
+	#for export_type in Report.ExportType:
+	#	print(export_type)
+	#	rep.create_report(query, params, export=export_type)
 
 	# Test intermediates
 	query = {
@@ -321,9 +318,7 @@ if __name__ == '__main__':
 		"limit": None
 	}
 
-	for export_type in Report.ExportType:
-		print(export_type)
-		rep.create_report(query2, params, export=export_type)
+	rep.create_report(query2, params, limit=5000, export=Report.ExportType.CSV)
 #
 #
 #
