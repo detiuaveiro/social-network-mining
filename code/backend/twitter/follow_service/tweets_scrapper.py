@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 class MYAPI(tweepy.API):
 
-	def __init__(self, auth_handler, wait_on_rate_limit, proxy):
+	def __init__(self, auth_handler, wait_on_rate_limit, proxy=''):
 		super().__init__(auth_handler=auth_handler, wait_on_rate_limit=wait_on_rate_limit, proxy=proxy)
 
 	@property
@@ -29,8 +29,8 @@ def auth():
 	twitter_auth = tweepy.OAuthHandler(consumer_key=consumer_key, consumer_secret=consumer_secret)
 	twitter_auth.set_access_token(key=access_token_key, secret=access_token_secret)
 
-	proxy = os.environ.get('PROXY', 'socks5h://localhost:9050')
-	api = MYAPI(auth_handler=twitter_auth, wait_on_rate_limit=True, proxy=proxy)
+	# proxy = os.environ.get('PROXY', 'socks5h://localhost:9050')
+	api = MYAPI(auth_handler=twitter_auth, wait_on_rate_limit=True)
 
 	return api
 

@@ -65,6 +65,11 @@ class Service(RabbitMessaging):
 		# Distinçao entre keywords e target???
 		logger.debug("Starting train process")
 		model_input_data = convert_policies_to_model_input_data(policies)
+		if len(model_input_data) < 2:
+			logger.debug("Cant start training process. At least 2 policies need to be defined")
+			# Mandar uma mensagem para o Control Center ???
+			return
+
 		trained_labels = get_labels(self.mongo_client.models, list(model_input_data.keys()))
 
 		if len(trained_labels) == model_input_data:
