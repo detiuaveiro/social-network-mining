@@ -66,8 +66,8 @@ class Reports extends Component {
 
     fileType: "csv",
 
-    intermediateRelOptions: [{ value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }, { value: "a_0", label: "Non Specified" }],
-    intermediateTypeOptions: [{ value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }, { value: "a_0", label: "Non Specified" }]
+    intermediateRelOptions: [{ value: "a_0", label: "All Types" }, { value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }],
+    intermediateTypeOptions: [{ value: "a_0", label: "All Relations" }, { value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }]
   };
 
   async componentDidMount() {
@@ -83,7 +83,7 @@ class Reports extends Component {
   loadOptions = inputValue =>
     new Promise(resolve => {
       if (inputValue == "" || inputValue == null) {
-        var requestValues = [{ "value": null, "label": "Non Specified" }]
+        var requestValues = [{ "value": null, "label": "All Nodes" }]
         resolve(requestValues)
       } else {
         if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
@@ -92,7 +92,7 @@ class Reports extends Component {
           var type = this.state.start.type
           if (type == null || type.value == "" || type.value.split("_").length == 2) {
             type = null
-          }else{
+          } else {
             type = type.value
           }
           var requestValues = this.search(inputValue, type)
@@ -104,7 +104,7 @@ class Reports extends Component {
   loadOptions2 = inputValue =>
     new Promise(resolve => {
       if (inputValue == "" || inputValue == null) {
-        var requestValues = [{ "value": null, "label": "Non Specified" }]
+        var requestValues = [{ "value": null, "label": "All Nodes" }]
         resolve(requestValues)
       } else {
         if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
@@ -113,7 +113,7 @@ class Reports extends Component {
           var type = this.state.end.type
           if (type == null || type.value == "" || type.value.split("_").length == 2) {
             type = null
-          }else{
+          } else {
             type = type.value
           }
           var requestValues = this.search(inputValue, type)
@@ -126,7 +126,7 @@ class Reports extends Component {
   loadOptions3 = inputValue =>
     new Promise(resolve => {
       if (inputValue == "" || inputValue == null) {
-        var requestValues = [{ "value": null, "label": "Non Specified" }]
+        var requestValues = [{ "value": null, "label": "All Nodes" }]
         resolve(requestValues)
       } else {
         if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
@@ -154,7 +154,7 @@ class Reports extends Component {
           throw new Error(response.status);
         }
       }).then(data => {
-        tempData.push({ "value": "aaaaaaaaaaaaaaa_" + Date.now(), "label": "Non Specified" })
+        tempData.push({ "value": "aaaaaaaaaaaaaaa_" + Date.now(), "label": "All Nodes" })
 
         if (data != null && data != {}) {
           data = data.data
@@ -194,7 +194,7 @@ class Reports extends Component {
         }).then(data => {
           if (data != null && data != {}) {
             data = data.data
-            tempData.push({ "value": null, "label": "Non Specified" })
+            tempData.push({ "value": null, "label": "All Nodes" })
             data.forEach(user => {
               tempData.push({ "value": user.id, "label": "(" + type + ") " + user.name + " - @" + user.screen_name })
             })
@@ -222,7 +222,7 @@ class Reports extends Component {
           }).then(data => {
             if (data != null && data != {}) {
               data = data.data
-              tempData.push({ "value": null, "label": "Non Specified" })
+              tempData.push({ "value": null, "label": "All Nodes" })
               data.forEach(user => {
                 tempData.push({ "value": user.user_id, "label": "(" + type + ") " + user.name + " - @" + user.screen_name })
               })
@@ -247,7 +247,7 @@ class Reports extends Component {
           }).then(data => {
             if (data != null && data != {}) {
               data = data.data
-              tempData.push({ "value": null, "label": "Non Specified" })
+              tempData.push({ "value": null, "label": "All Nodes" })
               data.entries.forEach(user => {
                 tempData.push({ "value": user.user_id, "label": "(" + type + ") " + user.name + " - @" + user.screen_name })
               })
@@ -276,7 +276,7 @@ class Reports extends Component {
         }).then(data => {
           if (data != null && data != {}) {
             data = data.data
-            tempData.push({ "value": null, "label": "Non Specified" })
+            tempData.push({ "value": null, "label": "All Nodes" })
             data.entries.forEach(tweet => {
               tempData.push({ "value": tweet.tweet_id, "label": "(Tweet) #" + tweet.tweet_id })
             })
@@ -302,7 +302,7 @@ class Reports extends Component {
         }).then(data => {
           if (data != null && data != {}) {
             data = data.data
-            tempData.push({ "value": null, "label": "Non Specified" })
+            tempData.push({ "value": null, "label": "All Nodes" })
             data.forEach(tweet => {
               tempData.push({ "value": tweet.id, "label": "(Tweet) #" + tweet })
             })
@@ -325,7 +325,7 @@ class Reports extends Component {
     if (selectedOption != null) {
       this.setState({ start: { type: selectedOption, nodes: [], relation: this.state.start.relation } });
     } else {
-      this.setState({ start: { type: { value: "a_0", label: "Non Specified" }, nodes: [], relation: this.state.start.relation } });
+      this.setState({ start: { type: { value: "a_0", label: "All Types" }, nodes: [], relation: this.state.start.relation } });
     }
   }
 
@@ -350,7 +350,7 @@ class Reports extends Component {
     if (selectedOption != null) {
       this.setState({ end: { type: selectedOption, nodes: this.state.end.nodes } });
     } else {
-      this.setState({ end: { type: { value: "a_0", label: "Non Specified" }, nodes: [] } });
+      this.setState({ end: { type: { value: "a_0", label: "All Types" }, nodes: [] } });
     }
   }
 
@@ -374,14 +374,14 @@ class Reports extends Component {
 
         var newTypes = this.state.intermediateTypeOptions
         newTypes.push(newElement)
-        this.setState({ intermediate: { type: selectedOption, nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation }, intermediateTypeOptions: newTypes.sort((a, b) => a.value > b.value) });
+        this.setState({ intermediate: { type: selectedOption, nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation }, intermediateTypeOptions: newTypes.sort((a, b) => a.label > b.label) });
 
       } else {
         this.setState({ intermediate: { type: selectedOption, nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation } });
       }
 
     } else {
-      this.setState({ intermediate: { type: [], nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation }, intermediateTypeOptions: [{ value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }] });
+      this.setState({ intermediate: { type: [], nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation }, intermediateTypeOptions: [{ value: "a_0", label: "All Relations" }, { value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }]});
     }
   }
 
@@ -398,14 +398,14 @@ class Reports extends Component {
 
         var newTypes = this.state.intermediateRelOptions
         newTypes.push(newElement)
-        this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: selectedOption }, intermediateRelOptions: newTypes.sort((a, b) => a.value > b.value) });
+        this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: selectedOption }, intermediateRelOptions: newTypes.sort((a, b) => a.label > b.label) });
 
       } else {
         this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: selectedOption } });
       }
 
     } else {
-      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: [] }, intermediateRelOptions: [{ value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }] });
+      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: [] }, intermediateRelOptions: [{ value: "a_0", label: "All Types" }, { value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }] });
     }
   }
 
@@ -420,6 +420,26 @@ class Reports extends Component {
   changeType = async (event, value) => {
     await this.setState({
       fileType: value
+    })
+  };
+
+  clearStart = async () => {
+    await this.setState({
+      start: {
+        type: null,
+        nodes: null,
+        relation: null
+      },
+    })
+  };
+
+  clearEnd = async () => {
+    await this.setState({
+      end: {
+        type: null,
+        nodes: null,
+        relation: null
+      },
     })
   };
 
@@ -517,23 +537,32 @@ class Reports extends Component {
 
       var start = {}
       var startType = this.state.start.type
-      console.log(startType)
       if (startType != null && startType != "") {
-        if(startType.value.split("_").length == 2){
+        if (startType.value.split("_").length == 2) {
           startType = null
-        }else{
+        } else {
           startType = startType.value
         }
       }
-
-
       start["type"] = startType
 
       var startNode = this.state.start.nodes
       if (startNode != null) {
         startNode = startNode.value
+
+        start["node"] = startNode
       }
-      start["node"] = startNode
+
+      var startRel = this.state.start.relation
+      if (startRel != null && startRel != "") {
+        if (startRel.value.split("_").length == 2) {
+          startRel = null
+        } else {
+          startRel = startRel.value
+        }
+      }
+
+      start["relation"] = startRel
 
       search["start"] = start
 
@@ -542,9 +571,9 @@ class Reports extends Component {
       var end = {}
       var endType = this.state.end.type
       if (endType != null && endType != "") {
-        if(endType.value.split("_").length == 2){
+        if (endType.value.split("_").length == 2) {
           endType = null
-        }else{
+        } else {
           endType = endType.value
         }
       }
@@ -786,7 +815,7 @@ class Reports extends Component {
                             defaultValue={[]}
                             id="startType" onChange={this.changeSelectedStartType}
                             value={this.state.start.type}
-                            options={[{ value: "Bot", label: "Bot" }, { value: "User", label: "User" }, { value: "Tweet", label: "Tweet" }, { value: "a_0", label: "Non Specified" }]}
+                            options={[{ value: "a_0", label: "All Types" }, { value: "Bot", label: "Bot" }, { value: "User", label: "User" }, { value: "Tweet", label: "Tweet" }]}
                             className="basic-single"
                             classNamePrefix="select"
                             placeholder="Node Type"
@@ -801,10 +830,12 @@ class Reports extends Component {
                             placeholder="User/Bot Username or Tweet ID"
                             components={makeAnimated()}
                             defaultOptions
+                            value={this.state.start.nodes || ''}
                             loadOptions={this.loadOptions}
                             onChange={this.changeSelectedStartNodes}
                             cacheOptions
                           />
+                          <i data-tip="Specify the starting node. Leave empty if you don't want a starting node or pick All Nodes if you don't wanna specify what node it is." style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
 
                         </FormGroup>
                       </Col>
@@ -817,13 +848,18 @@ class Reports extends Component {
                             defaultValue={[]}
                             id="startRelType" onChange={this.changeSelectedStartRelationType}
                             value={this.state.start.relation}
-                            options={[{ value: "FOLLOWS", label: "Follows" }, { value: "QUOTED", label: "Quoted" }, { value: "REPLIED", label: "Replied" }, { value: "RETWEETED", label: "Retweeted" }, { value: "WROTE", label: "Wrote" }, { value: "a_0", label: "Non Specified" }]}
+                            options={[{ value: "a_0", label: "All Relations" }, { value: "FOLLOWS", label: "Follows" }, { value: "QUOTED", label: "Quoted" }, { value: "REPLIED", label: "Replied" }, { value: "RETWEETED", label: "Retweeted" }, { value: "WROTE", label: "Wrote" }]}
                             className="basic-single"
                             classNamePrefix="select"
                             placeholder="Relation Type"
                           />
                           <i data-tip="Specify the relation type" style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
                         </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <Button outline color="danger" onClick={() => this.clearStart()} style={{
+
+                        }}><i class="fas fa-times"></i> Reset</Button>
                       </Col>
                     </Row>
 
@@ -901,7 +937,7 @@ class Reports extends Component {
                             defaultValue={[]}
                             id="endType" onChange={this.changeSelectedEndType}
                             value={this.state.end.type}
-                            options={[{ value: "Bot", label: "Bot" }, { value: "User", label: "User" }, { value: "Tweet", label: "Tweet" }, { value: "a_0", label: "Non Specified" }]}
+                            options={[{ value: "a_0", label: "All Types" }, { value: "Bot", label: "Bot" }, { value: "User", label: "User" }, { value: "Tweet", label: "Tweet" }]}
                             className="basic-single"
                             classNamePrefix="select"
                             placeholder="Node Type"
@@ -919,9 +955,17 @@ class Reports extends Component {
                             loadOptions={this.loadOptions2}
                             onChange={this.changeSelectedEndNodes}
                             defaultOptions
+                            value={this.state.end.nodes || ''}
                           />
 
                         </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row style={{ marginTop: "25px" }}>
+                      <Col md="2">
+                        <Button outline color="danger" onClick={() => this.clearEnd()} style={{
+
+                        }}><i class="fas fa-times"></i> Reset</Button>
                       </Col>
                     </Row>
 
