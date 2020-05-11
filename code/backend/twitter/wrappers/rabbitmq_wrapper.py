@@ -100,7 +100,8 @@ class Rabbitmq:
         self._connection.channel(on_open_callback=self.__on_api_follow_channel_open)
 
         # publish queues
-        # self._connection.channel(on_open_callback=self.__on_bot_tasks_channel_open)
+        self._connection.channel(on_open_callback=self.__on_bot_tasks_channel_open)
+        self._connection.channel(on_open_callback=self.__on_follow_tasks_channel_open)
 
     def __on_api_channel_open(self, channel):
         self.__on_channel_open(channel=channel, queue=API_QUEUE)
