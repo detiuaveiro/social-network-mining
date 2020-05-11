@@ -78,3 +78,7 @@ def update_tweets(policies_tweets_model, policies_tweets):
 			'name': policy_name,
 			'tweets': tweets
 		}}, upsert=True)
+
+
+def get_all_tweets_per_policy(policies_tweets):
+	return list(policies_tweets.find({}, {'_id': 0}))
