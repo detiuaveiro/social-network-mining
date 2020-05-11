@@ -58,11 +58,10 @@ class Control_Center(Rabbitmq):
 		self.exchange = None
 
 	def action(self, message):
-
-		if self.exchange == TASKS_EXCHANGE:
-			self.bot_action(message)
-		elif self.exchange == SERVICE_QUERY_EXCHANGE:
+		if self.exchange == SERVICE_QUERY_EXCHANGE:
 			self.follow_service_action(message)
+		else:
+			self.bot_action(message)
 
 	def bot_action(self, message):
 		message_type = message['type']
@@ -113,6 +112,8 @@ class Control_Center(Rabbitmq):
 
 		if message_type == FollowServiceToServer.REQUEST_POLICIES:
 			self.__all_policies()
+		elif message_type == FollowServiceToServer.FOLLOW_USER:
+			self.follow_user(message)
 
 	def __all_policies(self):
 		log.debug("Obtaining all policies available")
@@ -124,7 +125,7 @@ class Control_Center(Rabbitmq):
 			log.error("Error obtaining all policies available")
 
 	# Need DB API now
-	def __follow_user(self, user1_id, user2_id):
+	def __find_followers(self, user1_id, user2_id):
 		"""
 		Action to follow user:
 				Calls neo4j to add new relation between user (bot or normal user) and user
@@ -451,29 +452,20 @@ class Control_Center(Rabbitmq):
 			"target_id": user_id_str
 		})
 
-		request_accepted = False
-
 		policies = self.postgres_client.search_policies({
-			"bot_id": int(data["bot_id_str"])  # , "filter": "Keywords"
+			"bot_id": int(data["bot_id_str"])
 		})
+
 		if policies['success']:
 			params = {
-				'user': user_id,
+				'user': user,
+				'bot_id_str': data["bot_id_str"],
 				'tweets': [t['full_text'] for t in tweets],
-				'policies': policies['data'],
-				'description': user['description']
+				'policies': policies['data']
 			}
 
 			self.send_to_follow_user_service(ServerToFollowService.REQUEST_FOLLOW_USER, params)
-
-		# request_accepted = self.pep.receive_message({
-		#	"type": PoliciesTypes.REQUEST_FOLLOW_USER,
-		#	"bot_id": data['bot_id'],
-		#	"bot_id_str": data['bot_id_str'],
-		#	"user": user,
-		#	"tweets": tweets
-		# })
-
+		"""
 		if request_accepted:
 			log.info(f"Bot {data['bot_id']} request accepted to follow {user_id}")
 
@@ -490,11 +482,41 @@ class Control_Center(Rabbitmq):
 				"action": log_actions.FOLLOW_REQ_DENY,
 				"target_id": user_id_str
 			})
-
-		# save the tweets we received on the databases
+		
+		"""
 		for tweet in tweets:
 			data['data'] = tweet
 			self.save_tweet(data)
+
+	def follow_user(self, data):
+		"""
+		Function that sends a follow user  action status (Accepted, denied) to bot
+		@param data: dict containing the necessary info
+		"""
+		log.info(data)
+		status = data['data']['status']
+		user = data['data']['user']
+		bot_id = int(data['data']['bot_id_str'])
+		user_id = user['id']
+		user_id_str = user['id_str']
+
+		if status:
+			log.info(f"Bot {bot_id} request accepted to follow {user_id}")
+
+			self.postgres_client.insert_log({
+				"bot_id": bot_id,
+				"action": log_actions.FOLLOW_REQ_ACCEPT,
+				"target_id": user_id_str
+			})
+
+			self.send(bot_id, ServerToBot.FOLLOW_USERS, {"type": "id", "data": [user_id_str]})
+		else:
+			log.warning(f"Bot {bot_id} request denied to follow {user_id}")
+			self.postgres_client.insert_log({
+				"bot_id": bot_id,
+				"action": log_actions.FOLLOW_REQ_DENY,
+				"target_id": user_id_str
+			})
 
 	def save_user(self, data):
 		"""
@@ -589,7 +611,7 @@ class Control_Center(Rabbitmq):
 			})
 
 			if 'following' in user and user['following']:
-				self.__follow_user(bot_id_str, user['id_str'])
+				self.__find_followers(bot_id_str, user['id_str'])
 
 	def __save_user_or_blank_user(self, data):
 		user = data['data']
@@ -840,7 +862,7 @@ class Control_Center(Rabbitmq):
 				'data': follower
 			})
 
-			self.__follow_user(follower['id_str'], user_id_str)
+			self.__find_followers(follower['id_str'], user_id_str)
 
 	# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
 
@@ -891,7 +913,7 @@ class Control_Center(Rabbitmq):
 		log.info(f"Sending {message_type.name} to Bot with ID: <{bot}>")
 		log.debug(f"Content: {params}")
 		payload = {
-			'type': str(message_type),
+			'type': message_type,
 			'params': params
 		}
 		try:
@@ -915,7 +937,7 @@ class Control_Center(Rabbitmq):
 		}
 		try:
 			self._send(queue=TASK_FOLLOW_QUEUE, routing_key=TASK_FOLLOW_ROUTING_KEY_PREFIX, message=payload,
-			           channel=self.channel, father_exchange=self.exchange)
+			           father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
 

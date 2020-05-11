@@ -148,7 +148,7 @@ class TwitterBot(RabbitMessaging):
 		while True:
 			print("FU")
 			self.__send_request_follow(self.user)
-			wait(5)
+			wait(10)
 
 	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
 		"""Function to get the 20 (default) most recent tweets (including retweets) from some user

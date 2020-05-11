@@ -1,9 +1,8 @@
 import logging
 from typing import Dict, List
-
 import messages_types
-from credentials import TASK_FOLLOW_EXCHANGE, SERVICE_QUERY_EXCHANGE, MONGO_FULL_URL
-from follow_service.utils import to_json, current_time, wait
+from credentials import TASK_FOLLOW_EXCHANGE, SERVICE_QUERY_EXCHANGE
+from follow_service.utils import to_json, current_time, wait, convert_policies_to_model_input_data
 from rabbit_messaging import RabbitMessaging
 from wrappers.mongo_wrapper import MongoAPI
 from follow_service.classifier import predict_soft_max
@@ -18,7 +17,7 @@ handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 logger.addHandler(handler)
 
-WAIT_TIME_NO_TASKS = 2
+WAIT_TIME_NO_TASKS = 10
 THRESHOLD_FOLLOW_USER = 0.8
 MEAN_WORDS_PER_TWEET = 80
 
@@ -55,32 +54,34 @@ class Service(RabbitMessaging):
 		# send a request to get policies
 		self.__send_message(data={}, message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
 
-	def __train_models(self, policies: Dict[str, List[str]]):
+	def __train_models(self, policies: List[Dict]):
 		"""
 		:param policies: dictionary in which each key is the name of the policy and the values are lists with the
 			keywords of that policy
 		"""
 		# TODO -> verificar aqui se já existe o modelo para uma dada policie recebida, treinar e guardar no mongo.
 		#  se o modelo já existe, não fazer nada e fazer logo return
+		# Distinçao entre keywords e target???
 
-		print(policies)
-		wait(10)
+		model_input_data = convert_policies_to_model_input_data(policies)
 
-		if 1 == 1:  # send the tweets we have collected with this method
-			self.__send_message(data={'tweets': []},
-			                    message_type=messages_types.FollowServiceToServer.SAVE_TWEETS)
+	# if 1 == 1:  # send the tweets we have collected with this method
+	#	self.__send_message(data={'tweets': []},
+	#	                    message_type=messages_types.FollowServiceToServer.SAVE_TWEETS)
 
-	def __predict_follow_user(self, user_id: str, tweets: List[str], policies, description: str):
+	def __predict_follow_user(self, user: Dict, tweets: List[str], policies, bot_id):
 		"""
-		:param user_id: user_id to predict if we want to follow or not
+		:param user: user to predict if we want to follow or not
 		:param tweets: list of tweets to give the ml model to predict
 		"""
 
+		user_id = int(user['id_str'])
 		heuristic = 0
 		tweets_len_mean = np.mean([len(i) for i in tweets])
 
 		if tweets_len_mean >= MEAN_WORDS_PER_TWEET or len(tweets) == 0:
 			policies_labels = [p['name'] for p in policies]
+			description = user['description']
 
 			predictions = predict_soft_max(self.mongo_client.models, tweets + [description], policies_labels)
 
@@ -111,11 +112,14 @@ class Service(RabbitMessaging):
 			picked_label, mean_score = best_choice[0], best_choice[-1]['mean']
 			heuristic += mean_score
 
-		logger.debug(
-			f"Request to follow user with id: {user_id} {'Accepted' if heuristic >= THRESHOLD_FOLLOW_USER else 'Denied'}")
+		status = bool(heuristic >= THRESHOLD_FOLLOW_USER)
 
-		if heuristic >= THRESHOLD_FOLLOW_USER:  # to follow the user
-			self.__send_message(data={'user': user_id}, message_type=messages_types.FollowServiceToServer.FOLLOW_USER)
+		logger.debug(
+			f"Request to follow user with id: {user_id} {'Accepted' if status else 'Denied'}")
+
+		if status:  # to follow the user
+			self.__send_message(data={'user': user, 'status': status, 'bot_id_str': bot_id},
+			                    message_type=messages_types.FollowServiceToServer.FOLLOW_USER)
 
 	def __verify_if_new_policies(self, policies: List[str]):
 		"""
@@ -147,9 +151,8 @@ class Service(RabbitMessaging):
 					if task_type == messages_types.ServerToFollowService.POLICIES_KEYWORDS:
 						self.__train_models(policies=task_params)
 					elif task_type == messages_types.ServerToFollowService.REQUEST_FOLLOW_USER:
-						self.__predict_follow_user(user_id=task_params['user'], tweets=task_params['tweets'],
-						                           policies=task_params['policies'],
-						                           description=task_params['description'])
+						self.__predict_follow_user(user=task_params['user'], tweets=task_params['tweets'],
+						                           policies=task_params['policies'], bot_id=task_params['bot_id_str'])
 					# self.__verify_if_new_policies(policies=task_params['policies'])
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
