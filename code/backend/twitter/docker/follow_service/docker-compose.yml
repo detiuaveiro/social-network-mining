@@ -5,12 +5,16 @@ services:
     image: mongo:3.6.18
     container_name: mongo_follow_service
     restart: always
+    ports:
+      - "27017:27017"
     volumes:
       - mongo_follow_data:/data/db
   sensors_rest:
-    image: follow_service:latest
+    build:
+      context: ../../
+      dockerfile: docker/follow_service/Dockerfile
     depends_on: 
-      - mongo_follow_service
+      - database
     container_name: follow_service
 
 volumes:

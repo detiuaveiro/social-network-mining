@@ -10,9 +10,10 @@ from credentials import TASK_FOLLOW_EXCHANGE, SERVICE_QUERY_EXCHANGE
 from follow_service.utils import to_json, current_time, wait, convert_policies_to_model_input_data, get_labels, \
 	update_tweets, get_full_text, update_models
 from rabbit_messaging import RabbitMessaging
-from wrappers.mongo_wrapper import MongoAPI
+import os
 from follow_service.classifier import predict_soft_max, train_model
 from follow_service.tweets_scrapper import get_data
+from pymongo import MongoClient
 
 logger = logging.getLogger("follow-service")
 logger.setLevel(logging.DEBUG)
@@ -25,11 +26,17 @@ WAIT_TIME_NO_TASKS = 10
 THRESHOLD_FOLLOW_USER = 0.85
 MEAN_WORDS_PER_TWEET = 80
 
+MONGO_URL = os.environ.get('MONGO_URL_SCRAPPER', 'localhost')
+MONGO_PORT = 27016
+MONGO_DB = os.environ.get('MONGO_DB_SCRAPPER', 'twitter_fu_service')
+
 
 class Service(RabbitMessaging):
 	def __init__(self, url, username, password, vhost, messaging_settings):
 		super().__init__(url, username, password, vhost, messaging_settings)
-		self.mongo_client = MongoAPI()
+		self.client = MongoClient(f"mongodb://{MONGO_URL}:{MONGO_PORT}/{MONGO_DB}")
+		self.mongo_models = eval(f"self.client.{MONGO_DB}.models")
+		self.mongo_policies_tweets = eval(f"self.client.{MONGO_DB}.policies_tweets")
 
 	def __send_message(self, data, message_type: messages_types.FollowServiceToServer):
 		"""Function to send a new message to the server through rabbitMQ
@@ -72,7 +79,7 @@ class Service(RabbitMessaging):
 			# Mandar uma mensagem para o Control Center ???
 			return
 
-		trained_labels = get_labels(self.mongo_client.models, list(model_input_data.keys()))
+		trained_labels = get_labels(self.mongo_models, list(model_input_data.keys()))
 
 		if len(trained_labels) == len(model_input_data):
 			logger.debug("All policies have been already trained")
@@ -91,12 +98,12 @@ class Service(RabbitMessaging):
 
 			policies_tweets[policy_name] = list(set(tweets))  # Ignoring repeated tweets
 
-		update_tweets(self.mongo_client.policies_tweets, policies_tweets)
+		update_tweets(self.mongo_policies_tweets, policies_tweets)
 
-		new_models = train_model(self.mongo_client.policies_tweets, policies_tweets)
+		new_models = train_model(self.mongo_policies_tweets, policies_tweets)
 
 		args_per_label = dict([(label, model_input_data[label]) for label in not_trained_policies])
-		update_models(self.mongo_client.models, new_models, args_per_label)
+		update_models(self.mongo_models, new_models, args_per_label)
 
 		logger.debug(f"Training {not_trained_policies} policies process done")
 
@@ -114,7 +121,7 @@ class Service(RabbitMessaging):
 			policies_labels = [p['name'] for p in policies]
 			description = user['description']
 
-			predictions = predict_soft_max(self.mongo_client.models, tweets + [description], policies_labels)
+			predictions = predict_soft_max(self.mongo_models, tweets + [description], policies_labels)
 
 			keras_backend.clear_session()
 			gc.collect()
