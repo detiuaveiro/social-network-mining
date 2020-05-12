@@ -621,7 +621,7 @@ class Reports extends Component {
       if (this.state.intermediate.nodes != null && this.state.intermediate.nodes.length > 0) {
         this.state.intermediate.nodes.forEach(type => {
           var value = type["value"]
-          if (value.length > 15 && value[0] == "a") {
+          if (value != null && value.length > 15 && value[0] == "a") {
             value = null
           }
           intermediateNodes.push(value)
