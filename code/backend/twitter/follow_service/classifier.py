@@ -17,7 +17,6 @@ from keras.wrappers.scikit_learn import KerasClassifier
 import nltk
 from follow_service.utils import read_model, get_labels, get_all_tweets_per_policy
 
-
 nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('wordnet')
@@ -149,34 +148,34 @@ def predict(models, label, x):
 	return output
 
 
-def predict_soft_max(models, x, policy_label, confidence_limit=0.7):
+def predict_soft_max(models, x, policy_label):
 	labels = get_labels(models, policy_label)
 
-	best_labels = []
-	for text in x:
+	best_labels = {}
+	for label in labels:
 		classifiers = []
-		for label in labels:
+		for text in x:
 			confidence = predict(models, label, [text])
-			if confidence > confidence_limit:
-				classifiers.append((confidence, label))
-			else:
-				classifiers.append((0, label))
-		if len(classifiers) > 0:
-			best_labels.append(sorted(classifiers, key=lambda m: m[0], reverse=True)[0])
+			classifiers.append(confidence)
+
+		best_labels[label] = classifiers
 
 	return best_labels
 
 
-def create_input_data(policies_tweets, new_tweets):
+def create_input_data(policies_tweets, new_tweets, label):
 	size = len(new_tweets)
 	tp = new_tweets
 	tn = []
-	all_tweets = [t['tweets'] for t in get_all_tweets_per_policy(policies_tweets)]
+
+	all_tweets = dict([(t['name'], t['tweets']) for t in get_all_tweets_per_policy(policies_tweets)])
+
+	all_tweets.pop(label, None)
 
 	policies_number = len(all_tweets)
-	step = size // policies_number
+	step = size // policies_number if policies_number > 0 else size
 
-	for i in range(policies_number):
+	for i in all_tweets:
 		tn += all_tweets[i][0:step]
 
 	return tp, tn
@@ -186,10 +185,10 @@ def train_model(policies_tweets, labels):
 	to_update = []
 
 	for label in labels:
-		tp, tn = create_input_data(policies_tweets, labels[label])
+		tp, tn = create_input_data(policies_tweets, labels[label], label)
 		joint_data = tp + tn
 		vectors = [1] * len(tp) + [0] * len(tn)
-		tokenizer, model, config = pick_best_model(joint_data, vectors, label, n_jobs=-1)
+		tokenizer, model, config = pick_best_model(joint_data, vectors, label, n_jobs=3)
 		to_update.append((tokenizer, model, config, label))
 
 	return to_update

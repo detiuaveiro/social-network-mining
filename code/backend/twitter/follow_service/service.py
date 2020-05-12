@@ -24,11 +24,11 @@ logger.addHandler(handler)
 
 WAIT_TIME_NO_TASKS = 10
 THRESHOLD_FOLLOW_USER = 0.85
-MEAN_WORDS_PER_TWEET = 80
+MEAN_WORDS_PER_TWEET = 120
 
-MONGO_URL = os.environ.get('MONGO_URL', 'localhost')
+MONGO_URL = os.environ.get('MONGO_URL_SCRAPPER', 'localhost')
 MONGO_PORT = 27017
-MONGO_DB = os.environ.get('MONGO_DB', 'twitter_fu_service')
+MONGO_DB = os.environ.get('MONGO_DB_SCRAPPER', 'twitter_fu_service')
 
 
 class Service(RabbitMessaging):
@@ -44,7 +44,7 @@ class Service(RabbitMessaging):
 		:param data: data to send
 		:param message_type: type of message to send to server
 		"""
-
+		logger.debug(f"Sending message with type {messages_types.FollowServiceToServer(message_type).name}")
 		self._send_message(to_json({
 			'type': message_type,
 			'timestamp': current_time(),
@@ -119,31 +119,22 @@ class Service(RabbitMessaging):
 
 		if tweets_len_mean >= MEAN_WORDS_PER_TWEET or len(tweets) == 0:
 			policies_labels = [p['name'] for p in policies]
+
 			description = user['description']
 
-			predictions = predict_soft_max(self.mongo_models, tweets + [description], policies_labels,  THRESHOLD_FOLLOW_USER)
+			predictions = predict_soft_max(self.mongo_models, tweets + [description], policies_labels)
 
 			keras_backend.clear_session()
 			gc.collect()
 
-			policies_confidence = {}
-
-			for label in predictions:
-				confidence, policy_name = label
-				if policy_name not in policies_confidence:
-					policies_confidence[policy_name] = []
-				policies_confidence[policy_name].append(confidence)
-
 			final_choices = {}
 
-			for key in policies_confidence:
-				mean = np.mean(
-					policies_confidence[key] + [0 for _ in range(len(predictions) - len(policies_confidence[key]))])
+			for key in predictions:
+				mean = np.mean(predictions[key])
 				final_choices[key] = {
 					'mean': mean,
-					'length': len(policies_confidence[key]),
-					'final_score': mean * len(policies_confidence[key]) if mean > 0 else
-					len(policies_confidence[key])
+					'length': len(predictions[key]),
+					'final_score': mean * len(predictions[key])
 				}
 
 			best_choice = sorted(list(final_choices.items()), reverse=True, key=lambda c: c[-1]['final_score'])[0]
@@ -163,7 +154,6 @@ class Service(RabbitMessaging):
 		:param policies: list of policies names to verify if we have models for them all
 		"""
 		self.__train_models(policies)
-
 
 	def run(self):
 		"""Service's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the

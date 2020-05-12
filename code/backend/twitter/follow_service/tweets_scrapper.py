@@ -21,10 +21,10 @@ class MYAPI(tweepy.API):
 
 
 def auth():
-	consumer_key = os.environ.get('CONSUMER_KEY', '')
-	consumer_secret = os.environ.get('CONSUMER_SECRET', '')
-	access_token_key = os.environ.get('TOKEN', '')
-	access_token_secret = os.environ.get('TOKEN_SECRET', '')
+	consumer_key = os.environ.get('CONSUMER_KEY_SCRAPPER', '')
+	consumer_secret = os.environ.get('CONSUMER_SECRET_SCRAPPER', '')
+	access_token_key = os.environ.get('TOKEN_SCRAPPER', '')
+	access_token_secret = os.environ.get('TOKEN_SECRET_SCRAPPER', '')
 
 	twitter_auth = tweepy.OAuthHandler(consumer_key=consumer_key, consumer_secret=consumer_secret)
 	twitter_auth.set_access_token(key=access_token_key, secret=access_token_secret)
@@ -40,7 +40,7 @@ def get_data(query, lang='pt'):
 	data = []
 
 	today = datetime.now()
-	for day in range(0, 1):
+	for day in range(0, 8):
 		current_date = today - timedelta(days=day)
 		current_date_minus_one_day = current_date - timedelta(days=1)
 		data += api.search(
