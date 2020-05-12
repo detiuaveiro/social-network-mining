@@ -10,12 +10,18 @@ services:
     volumes:
       - mongo_follow_data:/data/db
   sensors_rest:
+    network_mode: host
     build:
       context: ../../
       dockerfile: docker/follow_service/Dockerfile
     depends_on: 
       - database
     container_name: follow_service
+
+    environment:
+      RABBITMQ_URL: ${{ secrets.RABBITMQ_URL }}
+      RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+      RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
 
 volumes:
   mongo_follow_data:

@@ -142,7 +142,7 @@ class TwitterBot(RabbitMessaging):
 
 		logger.info(f"Sending the last 200 followers of our bot")
 		self.__get_followers(user_id=self._id_str)
-		
+
 		logger.info("Reading home timeline")
 		self.__read_timeline(self.user)
 
@@ -484,4 +484,4 @@ class TwitterBot(RabbitMessaging):
 					wait(5)
 			except Exception as error:
 				logger.exception(f"Error {error} on bot's loop: ")
-	# exit(1)
+# exit(1)

@@ -189,7 +189,7 @@ def train_model(policies_tweets, labels):
 		tp, tn = create_input_data(policies_tweets, labels[label])
 		joint_data = tp + tn
 		vectors = [1] * len(tp) + [0] * len(tn)
-		tokenizer, model, config = pick_best_model(joint_data, vectors, label, n_jobs=2)
+		tokenizer, model, config = pick_best_model(joint_data, vectors, label, n_jobs=-1)
 		to_update.append((tokenizer, model, config, label))
 
 	return to_update

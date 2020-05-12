@@ -459,12 +459,15 @@ class Control_Center(Rabbitmq):
 			"bot_id": int(data["bot_id_str"])
 		})
 
-		if policies['success']:
+		all_policies = self.postgres_client.search_policies()
+
+		if policies['success'] and all_policies['success']:
 			params = {
 				'user': user,
 				'bot_id_str': data["bot_id_str"],
 				'tweets': [t['full_text'] for t in tweets],
-				'policies': policies['data']
+				'policies': policies['data'],
+				'all_policies': all_policies['data']
 			}
 
 			self.send_to_follow_user_service(ServerToFollowService.REQUEST_FOLLOW_USER, params)

@@ -26,9 +26,9 @@ WAIT_TIME_NO_TASKS = 10
 THRESHOLD_FOLLOW_USER = 0.85
 MEAN_WORDS_PER_TWEET = 80
 
-MONGO_URL = os.environ.get('MONGO_URL_SCRAPPER', 'localhost')
-MONGO_PORT = 27016
-MONGO_DB = os.environ.get('MONGO_DB_SCRAPPER', 'twitter_fu_service')
+MONGO_URL = os.environ.get('MONGO_URL', 'localhost')
+MONGO_PORT = 27017
+MONGO_DB = os.environ.get('MONGO_DB', 'twitter_fu_service')
 
 
 class Service(RabbitMessaging):
@@ -121,7 +121,7 @@ class Service(RabbitMessaging):
 			policies_labels = [p['name'] for p in policies]
 			description = user['description']
 
-			predictions = predict_soft_max(self.mongo_models, tweets + [description], policies_labels)
+			predictions = predict_soft_max(self.mongo_models, tweets + [description], policies_labels,  THRESHOLD_FOLLOW_USER)
 
 			keras_backend.clear_session()
 			gc.collect()
@@ -158,17 +158,12 @@ class Service(RabbitMessaging):
 		self.__send_message(data={'user': user, 'status': status, 'bot_id_str': bot_id},
 		                    message_type=messages_types.FollowServiceToServer.FOLLOW_USER)
 
-	def __verify_if_new_policies(self, policies: List[str]):
+	def __verify_if_new_policies(self, policies: List[Dict]):
 		"""
 		:param policies: list of policies names to verify if we have models for them all
 		"""
-		# TODO -> verificar se temos modelos para todas as policies. se há alguma que não tenhamos, mandamos msg para o
-		#  control center a pedir as keywords para as respetivas
-		wait(10)
+		self.__train_models(policies)
 
-		if 1 == 1:  # to send the message requesting the respective policies
-			self.__send_message(data={'policies': []},
-			                    message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
 
 	def run(self):
 		"""Service's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
@@ -190,7 +185,7 @@ class Service(RabbitMessaging):
 					elif task_type == messages_types.ServerToFollowService.REQUEST_FOLLOW_USER:
 						self.__predict_follow_user(user=task_params['user'], tweets=task_params['tweets'],
 						                           policies=task_params['policies'], bot_id=task_params['bot_id_str'])
-					# self.__verify_if_new_policies(policies=task_params['policies'])
+						self.__verify_if_new_policies(policies=task_params['all_policies'])
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
 				else:
