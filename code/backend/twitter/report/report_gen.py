@@ -128,13 +128,13 @@ class Report:
 
 	#@staticmethod
 	def __get_results(self, result, query, placement, params):
-		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweet'], params['Tweet'])
+		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweets'], params['Tweets'])
 		result = self.__insert_info_list(result, result_tweets, placement, label='Tweet')
 
-		result_users = self.__get_mongo_aggregate("users", query['User'], params['User'])
+		result_users = self.__get_mongo_aggregate("users", query['Users'], params['Users'])
 		result = self.__insert_info_list(result, result_users, placement, label='User')
 
-		result_bots = self.__get_mongo_aggregate("users", query['Bot'], params['Bot'])
+		result_bots = self.__get_mongo_aggregate("users", query['Bots'], params['Bots'])
 		result = self.__insert_info_list(result, result_bots, placement, label='Bot')
 
 		return result
@@ -146,8 +146,14 @@ class Report:
 		locations_dict[node].append(location)
 
 	def create_report(self, match: dict, params: dict, limit=None, export=ExportType.CSV):
-		query = f"MATCH r={self.__node_builder(match['start']['node'])}" \
-				f"{self.__relation_builder(match['start']['relation'])}"
+		params = self.__translate_params(params)
+		query = "MATCH r="
+		if ("relation" in match['start'] and match['start']['relation']) \
+			or ('type' in match['start'] and match['start']['type']):
+			if 'node' not in match['start']:
+				match['start']['node'] = None
+			query += f"{self.__node_builder(match['start']['type'], match['start']['node'])}" \
+					 f"{self.__relation_builder(match['start']['relation'])}"
 
 		if "intermediates" in match:
 			intermediates = match["intermediates"]
@@ -188,7 +194,7 @@ class Report:
 				node_start = relations[0]["start"]
 				self.__query_builder(query_for_mongo, node_start)
 				self.__add_to_keep_track(keep_track_places, node_start["properties"]["id"], (row_index, "start"))
-				relation["start"] = {param: None for param in params[node_start["labels"][0]]}
+				relation["start"] = {param: None for param in params[node_start["labels"][0] + "s"]}
 				relation["start"]["id_str"] = node_start["properties"]["id"]
 				relation["start"]["label"] = node_start["labels"][0]
 
@@ -198,7 +204,7 @@ class Report:
 				self.__query_builder(query_for_mongo, rel["end"])
 				self.__add_to_keep_track(keep_track_places, rel["end"]["properties"]["id"],
 										 (row_index, "interm" + str(index + 1)))
-				relation["interm" + str(index+1)] = {param: None for param in params[rel["end"]["labels"][0]]}
+				relation["interm" + str(index+1)] = {param: None for param in params[rel["end"]["labels"][0] + "s"]}
 				relation["interm" + str(index + 1)]["id_str"] = rel["end"]["properties"]["id"]
 				relation["interm" + str(index + 1)]["label"] = rel["end"]["labels"][0]
 
@@ -221,11 +227,10 @@ class Report:
 
 		logger.debug(f"It took <{time() - start} s>")
 
-		#if export == self.ExportType.CSV:
-		#	self.exporter.export_csv(result)
-		#elif export == self.ExportType.JSON:
-		#	self.exporter.export_json(result)
-		return result
+		if export == "csv":
+			return self.exporter.export_csv(result)
+		elif export == "json":
+			return self.exporter.export_json(result)
 
 	class __Exporter:
 		def __init__(self, directory):
@@ -236,22 +241,28 @@ class Report:
 
 		def export_csv(self, result):
 			headers = [key + "_" + prop for key in result[0] for prop in result[0][key]]
+			file_dir = f"{self.directory}/export.csv"
 			try:
-				with open(f"{self.directory}/export.csv", 'w') as file:
+				with open(file_dir, 'w') as file:
 					writer = csv.writer(file, quotechar='"', escapechar='\\')
 					writer.writerow(headers)
 					for data in result:
 						writer.writerow([str(data[key][prop]).encode('unicode_escape').decode('latin-1')
 						                 for key in data for prop in data[key]])
+				return file_dir
 			except Exception as error:
 				logger.exception(f"Occurred an error <{error}>: ")
+				return None
 
 		def export_json(self, result):
+			file_dir = f"{self.directory}/export.json"
 			try:
-				with open(f"{self.directory}/export.json", "w") as file:
+				with open(file_dir, "w") as file:
 					json.dump(result, file, indent=3)
+				return file_dir
 			except Exception as error:
 				logger.exception(f"Occurred an error <{error}>: ")
+				return None
 
 
 if __name__ == '__main__':
@@ -283,7 +294,7 @@ if __name__ == '__main__':
 	#	rep.create_report(query, params, export=export_type)
 
 	# Test intermediates
-	query = {
+	query2 = {
 		"match": {
 			"start": {
 				"node": {
