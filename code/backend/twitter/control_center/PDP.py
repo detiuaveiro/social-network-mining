@@ -11,11 +11,8 @@ from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
 from control_center.policies_types import PoliciesTypes
 import log_actions
-from control_center.intelligence import classifier
-import numpy as np
-import gc
-import keras.backend as K
 from datetime import timedelta, datetime
+
 
 # Constants used below for the Heuristics
 THRESHOLD_LIKE = 0.4
@@ -36,7 +33,7 @@ PENALTY_REPLIED_USER_RECENTLY = -0.5
 BOT_FOLLOWS_USER = 0.3
 BOT_RETWEETED_TWEET = 0.2
 BOT_LIKED_TWEET = 0.3
-REPLY_TWEET_MIN_SIZE = 60               # min length of tweet
+REPLY_TWEET_MIN_SIZE = 60  # min length of tweet
 
 NUMBER_TWEETS_FOLLOW_DECISION = 5
 
@@ -178,7 +175,7 @@ class PDP:
 		@return: List of users the bot will start following
 		"""
 		log.info(f"Creating users for the bot to start following")
-		num_users = 6   # random.randint(2, 10)
+		num_users = 6  # random.randint(2, 10)
 		with open("control_center/first_time_users.json", "r") as f:
 			users = json.load(f)
 
@@ -428,7 +425,7 @@ class PDP:
 		len_tweet = len(tweet_to_simple_text(data["tweet_text"]))
 		if len_tweet < REPLY_TWEET_MIN_SIZE:
 			log.info(f"Request to reply to tweet <{data['tweet_id']}> denied because the tweet text has lentgh of "
-			         f"{len_tweet}")
+					 f"{len_tweet}")
 			return 0
 
 		# second, we verify if the bot already replied to the tweet
@@ -438,7 +435,8 @@ class PDP:
 			"target_id": data["tweet_id"]
 		}, limit=LIMIT_LOGS)
 		if not bot_logs["success"] or bot_logs['data']:
-			log.info(f"Request to reply to tweet <{data['tweet_id']}> denied because the bot already replied to this tweet")
+			log.info(
+				f"Request to reply to tweet <{data['tweet_id']}> denied because the bot already replied to this tweet")
 			return 0
 
 		heuristic_value = 0
@@ -492,88 +490,13 @@ class PDP:
 		log.info(f"Request to reply to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
 
-	def analyze_follow_user(self, data):
+	@staticmethod
+	def analyze_follow_user(data):
+		"""DEPRECATED -> USE THE FOLLOW SERVICE
+		:param data:
+		:return:
 		"""
-		Algorithm to analyse if a bot should follow
-		Takes the current statistics and turns them into a real value
-
-		@param: data - dictionary containing the data of the bot and the tweet it wants to like
-		@returns: float that will then be compared to the threshold previously defined
-		"""
-
-		# Check if another bot has followed the user
-		user = data['user']
-		heuristic = 0
-		bot_logs = self.postgres.search_logs({
-			"action": log_actions.FOLLOW_REQ_ACCEPT,
-			"target_id": user['id']
-		}, limit=LIMIT_LOGS)
-
-		if bot_logs["success"] and len(bot_logs['data']) > 0:
-			log.debug("Found another bot who follows this user")
-			self.postgres.insert_log({
-				"bot_id": data["bot_id"],
-				"action": log_actions.ANOTHER_BOT_FOLLOWS_USER,
-				"target_id": user['id']
-			})
-			return heuristic
-
-		MODEL_PATH = "control_center/intelligence/models"
-
-		bot_id = data['bot_id']
-
-		policies = self.postgres.search_policies({
-			"bot_id": bot_id, "filter": "Keywords"
-		})
-
-		tweets = data['tweets']
-		tweets = sorted(tweets, key=lambda x: -len(x))[:min(len(tweets), NUMBER_TWEETS_FOLLOW_DECISION)]
-
-		user_description = user['description']
-		tweets_text = [t['full_text'] for t in tweets]
-		tweets_len_mean = np.mean([len(i) for i in tweets_text])
-
-		if policies['success'] and tweets_len_mean >= MEAN_WORDS_PER_TWEET:
-			policy_list = policies['data']
-			log.debug(f"Obtained policies: {policy_list}")
-
-			if len(policy_list) > 0:
-				policy_labels = {}
-				for policy in policy_list:
-					policy_labels[policy['name']] = policy['params']
-
-				labels = classifier.predict_soft_max(model_path=MODEL_PATH, x=tweets_text + [user_description],
-													 confidence_limit=THRESHOLD_FOLLOW_USER)
-				K.clear_session()
-				gc.collect()
-
-				policies_confidence = {}
-
-				for label in labels:
-					confidence, policy_name = label
-					if policy_name not in policies_confidence:
-						policies_confidence[policy_name] = []
-					policies_confidence[policy_name].append(confidence)
-
-				final_choices = {}
-
-				for key in policies_confidence:
-					mean = np.mean(policies_confidence[key] + [0 for _ in range(len(labels) - len(policies_confidence[key]))])
-					final_choices[key] = {
-						'mean': mean,
-						'length': len(policies_confidence[key]),
-						'final_score': mean * len(policies_confidence[key]) if mean > 0 else
-						len(policies_confidence[key])
-					}
-
-				best_choice = sorted(list(final_choices.items()), reverse=True, key=lambda c: c[-1]['final_score'])[0]
-				picked_label, mean_score = best_choice[0], best_choice[-1]['mean']
-
-				if picked_label in policy_labels:
-					heuristic += mean_score
-		log.debug(f"Request to follow user with id: {user['id']} and name {user['name']} "
-				  f"and heuristic of <{heuristic}>")
-		return heuristic
+		return 0
 
 	def close(self):
 		self.neo4j.close()

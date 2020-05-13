@@ -29,6 +29,7 @@ class MongoAPI:
         self.tweets = eval(f"self.client.{credentials.MONGO_DB}.tweets")
         self.messages = eval(f"self.client.{credentials.MONGO_DB}.messages")
 
+
     # TODO - IMPLEMENT ME PLEASE!
     def verify_integrity(self, collection, document):
         """Verifies if the document to be inserted has the same structure as the other documents in the collection
