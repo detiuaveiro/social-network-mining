@@ -520,14 +520,14 @@ class Reports extends Component {
     if (!error) {
       //////////////////////////////////////////////////
       var checkboxes = document.querySelectorAll('input[name=option-check]:checked')
-      var fields = { "Bots": [], "Tweets": [], "Users": [] }
+      var fields = { "Bot": [], "Tweet": [], "User": [] }
       checkboxes.forEach(checked => {
         if (checked.id.split("_")[0] == "b") {
-          fields["Bots"].push(checked.id)
+          fields["Bot"].push(checked.id)
         } else if (checked.id.split("_")[0] == "t") {
-          fields["Tweets"].push(checked.id)
+          fields["Tweet"].push(checked.id)
         } else {
-          fields["Users"].push(checked.id)
+          fields["User"].push(checked.id)
         }
       })
 
