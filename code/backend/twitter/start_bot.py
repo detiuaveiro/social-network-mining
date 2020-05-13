@@ -21,11 +21,13 @@ if __name__ == "__main__":
 		DATA_EXCHANGE: MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY)
 	}
 
-	proxy = os.environ.get('PROXY', 'socks5h://localhost:9050')
+	proxy_port = os.environ.get('PROXY_PORT', '9050')
 	consumer_key = os.environ.get('CONSUMER_KEY', '')
 	consumer_secret = os.environ.get('CONSUMER_SECRET', '')
 	token = os.environ.get('TOKEN', '')
 	token_secret = os.environ.get('TOKEN_SECRET', '')
+
+	proxy = f"socks5h://localhost:{proxy_port}"
 
 
 	class MYAPI(tweepy.API):

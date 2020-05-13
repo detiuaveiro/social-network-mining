@@ -15,6 +15,7 @@ from follow_service.classifier import predict_soft_max, train_model
 from follow_service.tweets_scrapper import get_data
 from pymongo import MongoClient
 
+
 logger = logging.getLogger("follow-service")
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(open("follow_service.log", "w"))

@@ -9,7 +9,7 @@ services:
       - "27017:27017"
     volumes:
       - mongo_follow_data:/data/db
-  sensors_rest:
+  service:
     network_mode: host
     build:
       context: ../../
@@ -17,11 +17,6 @@ services:
     depends_on: 
       - database
     container_name: follow_service
-
-    environment:
-      RABBITMQ_URL: ${{ secrets.RABBITMQ_URL }}
-      RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
-      RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
 
 volumes:
   mongo_follow_data:

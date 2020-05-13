@@ -1,21 +1,19 @@
 import string
 import re
 
-import numpy as np
-import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk import WordNetLemmatizer
 from keras import Sequential
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-from keras.wrappers.scikit_learn import KerasClassifier
 from keras import layers
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import RandomizedSearchCV
 from keras.wrappers.scikit_learn import KerasClassifier
 import nltk
 from follow_service.utils import read_model, get_labels, get_all_tweets_per_policy
+
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -35,27 +33,6 @@ def tokenize(text):
 	words = [lemmatizer.lemmatize(w, pos="v") for w in words if not w in stop_words and len(w) > 2]
 
 	return ' '.join(words)
-
-
-def convert_labels_to_binary(tp_size, tn_size):
-	return 1
-	"""
-	vectors = []
-
-	for label in data:
-		start = data[label]['start']
-		end = data[label]['end']
-		v = []
-		for i in range(size):
-			if start <= i < end:
-				v.append(1)
-			else:
-				v.append(0)
-
-		vectors.append(np.asarray(v))
-
-	return vectors
-	"""
 
 
 def convert_input(x_train, x_test, max_len):

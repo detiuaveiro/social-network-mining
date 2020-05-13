@@ -25,12 +25,13 @@ def auth():
 	consumer_secret = os.environ.get('CONSUMER_SECRET_SCRAPPER', '')
 	access_token_key = os.environ.get('TOKEN_SCRAPPER', '')
 	access_token_secret = os.environ.get('TOKEN_SECRET_SCRAPPER', '')
+	proxy_port = os.environ.get('PROXY_PORT', '9050')
 
 	twitter_auth = tweepy.OAuthHandler(consumer_key=consumer_key, consumer_secret=consumer_secret)
 	twitter_auth.set_access_token(key=access_token_key, secret=access_token_secret)
 
-	# proxy = os.environ.get('PROXY', 'socks5h://localhost:9050')
-	api = MYAPI(auth_handler=twitter_auth, wait_on_rate_limit=True)
+	proxy = f"socks5h://localhost:{proxy_port}"
+	api = MYAPI(auth_handler=twitter_auth, wait_on_rate_limit=True, proxy=proxy)
 
 	return api
 
