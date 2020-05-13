@@ -32,29 +32,51 @@ TRANSLATE = {
 }
 
 
+class Exporter:
+	def __init__(self, directory):
+		self.directory = directory
+
+		if not os.path.exists(self.directory):
+			os.makedirs(self.directory)
+
+	def export_csv(self, result):
+		try:
+			headers = [key + "_" + prop for key in result[0] for prop in result[0][key]]
+			file_dir = f"{self.directory}/export.csv"
+			with open(file_dir, 'w') as file:
+				writer = csv.writer(file, quotechar='"', escapechar='\\')
+				writer.writerow(headers)
+				for data in result:
+					writer.writerow([str(data[key][prop]).encode('unicode_escape').decode('latin-1')
+									 for key in data for prop in data[key]])
+			return file_dir
+		except Exception as error:
+			logger.exception(f"Occurred an error <{error}>: ")
+			return None
+
+	def export_json(self, result):
+		file_dir = f"{self.directory}/export.json"
+		try:
+			with open(file_dir, "w") as file:
+				json.dump(result, file, indent=3)
+			return file_dir
+		except Exception as error:
+			logger.exception(f"Occurred an error <{error}>: ")
+			return None
+
+
 class Report:
-	class ExportType(IntEnum):
-		"""
-		Enum for the Messages sent by the bot to the server.
-		"""
+	mongo = MongoAPI()
+	neo = Neo4jAPI()
+	exporter = Exporter(EXPORT_DIR)
 
-		CSV = 0
-		JSON = 1
-
-		def __str__(self):
-			return self.name
-
-	def __init__(self):
-		self.mongo = MongoAPI()
-		self.neo = Neo4jAPI()
-		self.exporter = Report.__Exporter(EXPORT_DIR)
-
-	def __translate_params(self, parameters):
+	@staticmethod
+	def translate_params(parameters):
 		parameters = {key: [TRANSLATE[param] for param in parameters[key]] for key in parameters}
 		return parameters
 
-	#@staticmethod
-	def __node_builder(self, label, node):
+	@staticmethod
+	def node_builder(label, node):
 		query_node = "("
 		if label:
 			query_node += f":{label}"
@@ -63,8 +85,8 @@ class Report:
 
 		return query_node+")"
 
-	#@staticmethod
-	def __relation_builder(self, rel):
+	@staticmethod
+	def relation_builder(rel):
 		query_rel = "["
 		if len(rel) > 0:
 			if 'label' in rel:
@@ -81,33 +103,33 @@ class Report:
 			return f"<-{query_rel}-"
 		return f"-{query_rel}-"
 
-	#@staticmethod
-	def __get_mongo_info(self, node, params):
+	@staticmethod
+	def get_mongo_info(node, params):
 		node_type = node["labels"][0]
 
 		if node_type in params and len(params[node_type]) > 0:
 			if node_type == TWEET_LABEL:
-				mongo_info = self.mongo.search('tweets', query={"id_str": node['properties']['id']},
+				mongo_info = Report.mongo.search('tweets', query={"id_str": node['properties']['id']},
 										 fields=params[node_type], single=True)
 			# It's a user or a bot
 			else:
-				mongo_info = self.mongo.search('users', query={"id_str": node['properties']['id']},
+				mongo_info = Report.mongo.search('users', query={"id_str": node['properties']['id']},
 											 fields=params[node_type], single=True)
 			if mongo_info:
 				return mongo_info
 			return {param: None for param in params[node_type]}
 		return None
 
-	#@staticmethod
-	def __get_mongo_aggregate(self, table, query, params):
+	@staticmethod
+	def get_mongo_aggregate(table, query, params):
 		params += ["id_str"]
 		if len(query) > 0 and len(params) > 0:
-			result = self.mongo.search(table, query={"$or": [{"id_str": obj_id} for obj_id in query]}, fields=params)
+			result = Report.mongo.search(table, query={"$or": [{"id_str": obj_id} for obj_id in query]}, fields=params)
 			return result
 		return None
 
-	#@staticmethod
-	def __insert_info_list(self, info_dict, results_list, placement_dict, label=None):
+	@staticmethod
+	def insert_info_list(info_dict, results_list, placement_dict, label=None):
 		if results_list:
 			for result in results_list:
 				for index, key in placement_dict[result["id_str"]]:
@@ -116,52 +138,53 @@ class Report:
 					info_dict[index][key] = result
 		return info_dict
 
-	#@staticmethod
-	def __query_builder(self, query, node):
+	@staticmethod
+	def query_builder(query, node):
 		node_label = node["labels"][0]
 		if node_label == TWEET_LABEL:
-			query["Tweets"].append(node["properties"]["id"])
+			query["Tweet"].append(node["properties"]["id"])
 		elif node_label == USER_LABEL:
-			query["Users"].append(node["properties"]["id"])
+			query["User"].append(node["properties"]["id"])
 		elif node_label == BOT_LABEL:
-			query["Bots"].append(node["properties"]["id"])
+			query["Bot"].append(node["properties"]["id"])
 
-	#@staticmethod
-	def __get_results(self, result, query, placement, params):
-		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweets'], params['Tweets'])
-		result = self.__insert_info_list(result, result_tweets, placement, label='Tweet')
+	@staticmethod
+	def get_results(result, query, placement, params):
+		result_tweets = Report.get_mongo_aggregate("tweets", query['Tweet'], params['Tweet'])
+		result = Report.insert_info_list(result, result_tweets, placement, label='Tweet')
 
-		result_users = self.__get_mongo_aggregate("users", query['Users'], params['Users'])
-		result = self.__insert_info_list(result, result_users, placement, label='User')
+		result_users = Report.get_mongo_aggregate("users", query['User'], params['User'])
+		result = Report.insert_info_list(result, result_users, placement, label='User')
 
-		result_bots = self.__get_mongo_aggregate("users", query['Bots'], params['Bots'])
-		result = self.__insert_info_list(result, result_bots, placement, label='Bot')
+		result_bots = Report.get_mongo_aggregate("users", query['Bot'], params['Bot'])
+		result = Report.insert_info_list(result, result_bots, placement, label='Bot')
 
 		return result
 	
 	@staticmethod
-	def __add_to_keep_track(locations_dict, node, location):
+	def add_to_keep_track(locations_dict, node, location):
 		if node not in locations_dict:
 			locations_dict[node] = []
 		locations_dict[node].append(location)
 
-	def create_report(self, match: dict, params: dict, limit=None, export=ExportType.CSV):
-		params = self.__translate_params(params)
+	@staticmethod
+	def create_report(match: dict, params: dict, limit=None, export="csv"):
+		params = Report.translate_params(params)
 		query = "MATCH r="
 		if ("relation" in match['start'] and match['start']['relation']) \
 			or ('type' in match['start'] and match['start']['type']):
 			if 'node' not in match['start']:
 				match['start']['node'] = None
-			query += f"{self.__node_builder(match['start']['type'], match['start']['node'])}" \
-					 f"{self.__relation_builder(match['start']['relation'])}"
+			query += f"{Report.node_builder(match['start']['type'], match['start']['node'])}" \
+					 f"{Report.relation_builder(match['start']['relation'])}"
 
 		if "intermediates" in match:
 			intermediates = match["intermediates"]
 			for interm in range(len(intermediates["types"])):
-				query += f"{self.__node_builder(intermediates['types'][interm], intermediates['nodes'][interm])}" \
-						f"{self.__relation_builder(intermediates['relations'][interm])}"
+				query += f"{Report.node_builder(intermediates['types'][interm], intermediates['nodes'][interm])}" \
+						f"{Report.relation_builder(intermediates['relations'][interm])}"
 
-		query += f"{self.__node_builder(match['end']['type'], match['end']['node'])} " \
+		query += f"{Report.node_builder(match['end']['type'], match['end']['node'])} " \
 				 f"return r"
 
 		logger.info(query)
@@ -173,11 +196,9 @@ class Report:
 
 		start = time()
 
-		query_result = self.neo.export_query(query, rel_node_properties=True)
+		query_result = Report.neo.export_query(query, rel_node_properties=True)
 
 		logger.info(f"It took <{time() - start}>s to get the network")
-		self.exporter.export_json(query_result)
-		logger.info(query_result)
 
 		query_for_mongo = {key: [] for key in params}
 
@@ -192,19 +213,19 @@ class Report:
 			# Add the detailed start node
 			if len(relations) > 0:
 				node_start = relations[0]["start"]
-				self.__query_builder(query_for_mongo, node_start)
-				self.__add_to_keep_track(keep_track_places, node_start["properties"]["id"], (row_index, "start"))
-				relation["start"] = {param: None for param in params[node_start["labels"][0] + "s"]}
+				Report.query_builder(query_for_mongo, node_start)
+				Report.add_to_keep_track(keep_track_places, node_start["properties"]["id"], (row_index, "start"))
+				relation["start"] = {param: None for param in params[node_start["labels"][0]]}
 				relation["start"]["id_str"] = node_start["properties"]["id"]
 				relation["start"]["label"] = node_start["labels"][0]
 
 			for index in range(len(relations) - 1):
 				rel = relations[index]
 				relation['rel' + str(index+1)] = {"name": rel["label"]}
-				self.__query_builder(query_for_mongo, rel["end"])
-				self.__add_to_keep_track(keep_track_places, rel["end"]["properties"]["id"],
-										 (row_index, "interm" + str(index + 1)))
-				relation["interm" + str(index+1)] = {param: None for param in params[rel["end"]["labels"][0] + "s"]}
+				Report.query_builder(query_for_mongo, rel["end"])
+				Report.add_to_keep_track(keep_track_places, rel["end"]["properties"]["id"],
+									(row_index, "interm" + str(index + 1)))
+				relation["interm" + str(index+1)] = {param: None for param in params[rel["end"]["labels"][0]]}
 				relation["interm" + str(index + 1)]["id_str"] = rel["end"]["properties"]["id"]
 				relation["interm" + str(index + 1)]["label"] = rel["end"]["labels"][0]
 
@@ -212,9 +233,9 @@ class Report:
 			if len(relations) > 0:
 				relation['rel' + str(len(relations))] = {"name": relations[-1]["label"]}
 			node_end = row['r']['nodes'][-1]
-			self.__query_builder(query_for_mongo, node_end)
-			self.__add_to_keep_track(keep_track_places, node_end["properties"]["id"], (row_index, "end"))
-			relation["end"] = {param: None for param in params[node_end["labels"][0] + "s"]}
+			Report.query_builder(query_for_mongo, node_end)
+			Report.add_to_keep_track(keep_track_places, node_end["properties"]["id"], (row_index, "end"))
+			relation["end"] = {param: None for param in params[node_end["labels"][0]]}
 			relation["end"]["id_str"] = node_end["properties"]["id"]
 			relation["end"]["label"] = node_end["labels"][0]
 
@@ -223,46 +244,14 @@ class Report:
 
 		logger.debug(f"It took <{time() - start} s> to finish analysing network")
 
-		result = self.__get_results(result, query_for_mongo, keep_track_places, params)
+		result = Report.get_results(result, query_for_mongo, keep_track_places, params)
 
 		logger.debug(f"It took <{time() - start} s>")
 
 		if export == "csv":
-			return self.exporter.export_csv(result)
+			return Report.exporter.export_csv(result)
 		elif export == "json":
-			return self.exporter.export_json(result)
-
-	class __Exporter:
-		def __init__(self, directory):
-			self.directory = directory
-
-			if not os.path.exists(self.directory):
-				os.makedirs(self.directory)
-
-		def export_csv(self, result):
-			headers = [key + "_" + prop for key in result[0] for prop in result[0][key]]
-			file_dir = f"{self.directory}/export.csv"
-			try:
-				with open(file_dir, 'w') as file:
-					writer = csv.writer(file, quotechar='"', escapechar='\\')
-					writer.writerow(headers)
-					for data in result:
-						writer.writerow([str(data[key][prop]).encode('unicode_escape').decode('latin-1')
-						                 for key in data for prop in data[key]])
-				return file_dir
-			except Exception as error:
-				logger.exception(f"Occurred an error <{error}>: ")
-				return None
-
-		def export_json(self, result):
-			file_dir = f"{self.directory}/export.json"
-			try:
-				with open(file_dir, "w") as file:
-					json.dump(result, file, indent=3)
-				return file_dir
-			except Exception as error:
-				logger.exception(f"Occurred an error <{error}>: ")
-				return None
+			return Report.exporter.export_json(result)
 
 
 if __name__ == '__main__':
@@ -329,7 +318,7 @@ if __name__ == '__main__':
 		"limit": None
 	}
 
-	rep.create_report(query2, params, limit=5000, export=Report.ExportType.CSV)
+	Report.create_report(query2, params, limit=5000, export=Report.ExportType.CSV)
 #
 #
 #
