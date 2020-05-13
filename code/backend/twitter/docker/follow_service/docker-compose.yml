@@ -11,9 +11,7 @@ services:
       - mongo_follow_data:/data/db
   service:
     network_mode: host
-    build:
-      context: ../../
-      dockerfile: docker/follow_service/Dockerfile
+    image: follow_service
     depends_on: 
       - database
     container_name: follow_service
