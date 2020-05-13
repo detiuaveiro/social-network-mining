@@ -10,7 +10,7 @@ services:
   service:
     network_mode: host
     image: follow_service
-    depends_on: 
+    depends_on:
       - database
     container_name: follow_service
     limits:

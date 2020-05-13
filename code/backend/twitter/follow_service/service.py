@@ -24,7 +24,7 @@ handler.setFormatter(logging.Formatter(
 logger.addHandler(handler)
 
 WAIT_TIME_NO_TASKS = 10
-THRESHOLD_FOLLOW_USER = 0.85
+THRESHOLD_FOLLOW_USER = 0.75
 MEAN_WORDS_PER_TWEET = 120
 
 MONGO_URL = os.environ.get('MONGO_URL_SCRAPPER', 'localhost')
@@ -169,7 +169,7 @@ class Service(RabbitMessaging):
 				if task:
 					task_type, task_params = task['type'], task['params']
 					logger.debug(
-						f"Received task of type {messages_types.ServerToFollowService(task_type).name}: {task_params}")
+						f"Received task of type {messages_types.ServerToFollowService(task_type).name}")
 
 					if task_type == messages_types.ServerToFollowService.POLICIES_KEYWORDS:
 						self.__train_models(policies=task_params)
