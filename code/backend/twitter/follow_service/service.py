@@ -1,10 +1,20 @@
+import gc
 import logging
 from typing import Dict, List
 
+import keras.backend as keras_backend
+import numpy as np
+
 import messages_types
 from credentials import TASK_FOLLOW_EXCHANGE, SERVICE_QUERY_EXCHANGE
-from follow_service.utils import to_json, current_time, wait
+from follow_service.utils import to_json, current_time, wait, convert_policies_to_model_input_data, get_labels, \
+	update_tweets, get_full_text, update_models
 from rabbit_messaging import RabbitMessaging
+import os
+from follow_service.classifier import predict_soft_max, train_model
+from follow_service.tweets_scrapper import get_data
+from pymongo import MongoClient
+
 
 logger = logging.getLogger("follow-service")
 logger.setLevel(logging.DEBUG)
@@ -13,13 +23,21 @@ handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 logger.addHandler(handler)
 
+WAIT_TIME_NO_TASKS = 10
+THRESHOLD_FOLLOW_USER = 0.85
+MEAN_WORDS_PER_TWEET = 120
 
-WAIT_TIME_NO_TASKS = 2
+MONGO_URL = os.environ.get('MONGO_URL_SCRAPPER', 'localhost')
+MONGO_PORT = 27017
+MONGO_DB = os.environ.get('MONGO_DB_SCRAPPER', 'twitter_fu_service')
 
 
 class Service(RabbitMessaging):
 	def __init__(self, url, username, password, vhost, messaging_settings):
 		super().__init__(url, username, password, vhost, messaging_settings)
+		self.client = MongoClient(f"mongodb://{MONGO_URL}:{MONGO_PORT}/{MONGO_DB}")
+		self.mongo_models = eval(f"self.client.{MONGO_DB}.models")
+		self.mongo_policies_tweets = eval(f"self.client.{MONGO_DB}.policies_tweets")
 
 	def __send_message(self, data, message_type: messages_types.FollowServiceToServer):
 		"""Function to send a new message to the server through rabbitMQ
@@ -27,7 +45,7 @@ class Service(RabbitMessaging):
 		:param data: data to send
 		:param message_type: type of message to send to server
 		"""
-
+		logger.debug(f"Sending message with type {messages_types.FollowServiceToServer(message_type).name}")
 		self._send_message(to_json({
 			'type': message_type,
 			'timestamp': current_time(),
@@ -42,75 +60,129 @@ class Service(RabbitMessaging):
 	def __setup(self):
 		"""Function to setting up messaging queues and check if twitter credentials are ok
 		"""
-
 		logger.debug("Setting up messaging")
 		self._setup_messaging()
 
 		# send a request to get policies
 		self.__send_message(data={}, message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
 
-	def __train_models(self, policies: Dict[str, List[str]]):
+	def __train_models(self, policies: List[Dict]):
 		"""
 		:param policies: dictionary in which each key is the name of the policy and the values are lists with the
 			keywords of that policy
 		"""
-		# TODO -> verificar aqui se já existe o modelo para uma dada policie recebida, treinar e guardar no mongo.
-		#  se o modelo já existe, não fazer nada e fazer logo return
-		wait(10)
 
-		if 1 == 1:          # send the tweets we have collected with this method
-			self.__send_message(data={'tweets': []},
-			                    message_type=messages_types.FollowServiceToServer.SAVE_TWEETS)
+		# Distinçao entre keywords e target???
+		logger.debug("Starting train process")
+		model_input_data = convert_policies_to_model_input_data(policies)
+		if len(model_input_data) < 2:
+			logger.debug("Cant start training process. At least 2 policies need to be defined")
+			# Mandar uma mensagem para o Control Center ???
+			return
 
-	def __predict_follow_user(self, user_id: str, tweets: List[str]):
+		trained_labels = get_labels(self.mongo_models, list(model_input_data.keys()))
+
+		if len(trained_labels) == len(model_input_data):
+			logger.debug("All policies have been already trained")
+			return
+
+		not_trained_policies = list(set(model_input_data.keys()) - set(trained_labels))
+		policies_tweets = {}
+
+		logger.debug(f"Training {not_trained_policies} policies")
+
+		for policy_name in not_trained_policies:
+			params = model_input_data[policy_name]
+			tweets = []
+			for q in params:
+				tweets += get_full_text(get_data(q))
+
+			policies_tweets[policy_name] = list(set(tweets))  # Ignoring repeated tweets
+
+		update_tweets(self.mongo_policies_tweets, policies_tweets)
+
+		new_models = train_model(self.mongo_policies_tweets, policies_tweets)
+
+		args_per_label = dict([(label, model_input_data[label]) for label in not_trained_policies])
+		update_models(self.mongo_models, new_models, args_per_label)
+
+		logger.debug(f"Training {not_trained_policies} policies process done")
+
+	def __predict_follow_user(self, user: Dict, tweets: List[str], policies, bot_id):
 		"""
-		:param user_id: user_id to predict if we want to follow or not
+		:param user: user to predict if we want to follow or not
 		:param tweets: list of tweets to give the ml model to predict
 		"""
-		# TODO -> verificar se um dos modelos dá mais que um dado treshold para os tweets recebidos e, caso isso ocorra,
-		#  enviar um pedido para o control center seguir esse user
-		wait(10)
 
-		if 1 == 1:              # to follow the user
-			self.__send_message(data={'user': user_id},
-			                    message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
+		user_id = int(user['id_str'])
+		heuristic = 0
+		tweets_len_mean = np.mean([len(i) for i in tweets])
 
-	def __verify_if_new_policies(self, policies: List[str]):
+		if tweets_len_mean >= MEAN_WORDS_PER_TWEET or len(tweets) == 0:
+			policies_labels = [p['name'] for p in policies]
+
+			description = user['description']
+
+			predictions = predict_soft_max(self.mongo_models, tweets + [description], policies_labels)
+
+			keras_backend.clear_session()
+			gc.collect()
+
+			final_choices = {}
+
+			for key in predictions:
+				mean = np.mean(predictions[key])
+				final_choices[key] = {
+					'mean': mean,
+					'length': len(predictions[key]),
+					'final_score': mean * len(predictions[key])
+				}
+
+			best_choice = sorted(list(final_choices.items()), reverse=True, key=lambda c: c[-1]['final_score'])[0]
+			picked_label, mean_score = best_choice[0], best_choice[-1]['mean']
+			heuristic += mean_score
+
+		status = bool(heuristic >= THRESHOLD_FOLLOW_USER)
+
+		logger.debug(
+			f"Request to follow user with id: {user_id} {'Accepted' if status else 'Denied'}")
+
+		self.__send_message(data={'user': user, 'status': status, 'bot_id_str': bot_id},
+		                    message_type=messages_types.FollowServiceToServer.FOLLOW_USER)
+
+	def __verify_if_new_policies(self, policies: List[Dict]):
 		"""
 		:param policies: list of policies names to verify if we have models for them all
 		"""
-		# TODO -> verificar se temos modelos para todas as policies. se há alguma que não tenhamos, mandamos msg para o
-		#  control center a pedir as keywords para as respetivas
-		wait(10)
-
-		if 1 == 1:          # to send the message requesting the respective policies
-			self.__send_message(data={'policies': []},
-			                    message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
+		self.__train_models(policies)
 
 	def run(self):
 		"""Service's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
 			task, does a different action
 		"""
 		self.__setup()
+		while True:
+			try:
+				logger.info(f"Getting next task from {TASK_FOLLOW_EXCHANGE}")
+				task = self.__receive_message()
 
-		try:
-			logger.info(f"Getting next task from {TASK_FOLLOW_EXCHANGE}")
-			task = self.__receive_message()
+				if task:
+					task_type, task_params = task['type'], task['params']
+					logger.debug(
+						f"Received task of type {messages_types.ServerToFollowService(task_type).name}: {task_params}")
 
-			if task:
-				task_type, task_params = task['type'], task['params']
-				logger.debug(f"Received task of type {messages_types.ServerToFollowService(task_type).name}: {task_params}")
-
-				if task_type == messages_types.ServerToFollowService.POLICIES_KEYWORDS:
-					self.__train_models(policies=task_params)
-				elif task_type == messages_types.ServerToFollowService.REQUEST_FOLLOW_USER:
-					self.__predict_follow_user(user_id=task_params['user'], tweets=task_params['tweets'])
-					self.__verify_if_new_policies(policies=task_params['policies'])
+					if task_type == messages_types.ServerToFollowService.POLICIES_KEYWORDS:
+						self.__train_models(policies=task_params)
+					elif task_type == messages_types.ServerToFollowService.REQUEST_FOLLOW_USER:
+						self.__predict_follow_user(user=task_params['user'], tweets=task_params['tweets'],
+						                           policies=task_params['policies'], bot_id=task_params['bot_id_str'])
+						self.__verify_if_new_policies(policies=task_params['all_policies'])
+					else:
+						logger.warning(f"Received unknown task type: {task_type}")
 				else:
-					logger.warning(f"Received unknown task type: {task_type}")
-			else:
-				logger.warning(f"There are not new messages on the tasks's queue. Waiting for <{WAIT_TIME_NO_TASKS} s>")
+					logger.warning(
+						f"There are not new messages on the tasks's queue. Waiting for <{WAIT_TIME_NO_TASKS} s>")
 
-				wait(WAIT_TIME_NO_TASKS)
-		except Exception as error:
-			logger.exception(f"Error {error} on bot's loop: ")
+					wait(WAIT_TIME_NO_TASKS)
+			except Exception as error:
+				logger.exception(f"Error {error} on follow user service's loop: ")
