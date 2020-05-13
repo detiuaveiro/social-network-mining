@@ -10,9 +10,9 @@ import json
 from pika.adapters.asyncio_connection import AsyncioConnection
 
 from credentials import RABBITMQ_URL, RABBITMQ_PORT, VHOST, RABBITMQ_USERNAME, RABBITMQ_PASSWORD, API_QUEUE, \
-    API_FOLLOW_QUEUE, DATA_EXCHANGE, DATA_ROUTING_KEY, LOG_ROUTING_KEY, LOG_EXCHANGE, QUERY_EXCHANGE, \
-    QUERY_ROUTING_KEY, SERVICE_QUERY_EXCHANGE, SERVICE_QUERY_ROUTING_KEY, TASKS_QUEUE_PREFIX, TASKS_EXCHANGE, \
-    TASK_FOLLOW_QUEUE, TASK_FOLLOW_EXCHANGE
+	API_FOLLOW_QUEUE, DATA_EXCHANGE, DATA_ROUTING_KEY, LOG_ROUTING_KEY, LOG_EXCHANGE, QUERY_EXCHANGE, \
+	QUERY_ROUTING_KEY, SERVICE_QUERY_EXCHANGE, SERVICE_QUERY_ROUTING_KEY, TASKS_QUEUE_PREFIX, TASKS_EXCHANGE, \
+	TASK_FOLLOW_QUEUE, TASK_FOLLOW_EXCHANGE
 
 log = logging.getLogger('Rabbit')
 log.setLevel(logging.DEBUG)
@@ -100,7 +100,8 @@ class Rabbitmq:
         self._connection.channel(on_open_callback=self.__on_api_follow_channel_open)
 
         # publish queues
-        # self._connection.channel(on_open_callback=self.__on_bot_tasks_channel_open)
+        self._connection.channel(on_open_callback=self.__on_bot_tasks_channel_open)
+        self._connection.channel(on_open_callback=self.__on_follow_tasks_channel_open)
 
     def __on_api_channel_open(self, channel):
         self.__on_channel_open(channel=channel, queue=API_QUEUE)

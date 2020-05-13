@@ -1,0 +1,20 @@
+version: '3.2'
+
+services:
+  database:
+    image: mongo:3.6.18
+    container_name: mongo_follow_service
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_follow_data:/data/db
+  service:
+    network_mode: host
+    image: follow_service
+    depends_on: 
+      - database
+    container_name: follow_service
+
+volumes:
+  mongo_follow_data:

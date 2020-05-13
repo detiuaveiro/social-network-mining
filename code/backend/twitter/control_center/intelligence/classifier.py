@@ -172,7 +172,7 @@ def predict(model_path, label, x):
 
     return model.predict(x)
 
-
+"""
 def predict_soft_max(model_path, x, confidence_limit=0.7):
     with open(f'{model_path}/labels.json', 'r') as f:
         labels = json.load(f)
@@ -190,3 +190,4 @@ def predict_soft_max(model_path, x, confidence_limit=0.7):
             best_labels.append(sorted(models, key=lambda m: m[0], reverse=True)[0])
 
     return best_labels
+"""
