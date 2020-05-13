@@ -24,7 +24,7 @@ handler.setFormatter(logging.Formatter(
 logger.addHandler(handler)
 
 WAIT_TIME_NO_TASKS = 10
-THRESHOLD_FOLLOW_USER = 0.75
+THRESHOLD_FOLLOW_USER = 0.7
 MEAN_WORDS_PER_TWEET = 120
 
 MONGO_URL = os.environ.get('MONGO_URL_SCRAPPER', 'localhost')
