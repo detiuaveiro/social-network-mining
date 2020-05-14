@@ -144,8 +144,8 @@ class Service(RabbitMessaging):
 
 		status = bool(heuristic >= THRESHOLD_FOLLOW_USER)
 
-		logger.debug(f"Request to follow user with id: <{user_id}> <{'Accepted' if status else 'Denied'}> "
-		             f"and heuristic of <{heuristic}>")
+		logger.debug(f"Request from bot with id <{bot_id}> to follow user with id: <{user_id}> "
+		             f"<{'Accepted' if status else 'Denied'}> and heuristic of <{heuristic}>")
 
 		self.__send_message(data={'user': user, 'status': status, 'bot_id_str': bot_id},
 		                    message_type=messages_types.FollowServiceToServer.FOLLOW_USER)
