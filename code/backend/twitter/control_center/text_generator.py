@@ -72,8 +72,8 @@ class ParlaiReplier:
 	def __init__(self, host, port):
 		self.host = f"tcp://{host}:{port}"
 
-	def generate_response(self, text: str) -> str:
-		logger.info(f"Starting to get a response from ParlAI server for the text: {text}")
+	def generate_response(self, text: str, keywords: list = None) -> str:
+		logger.info(f"Starting to get a response from ParlAI server for the text <{text}> and keywords <{keywords}>")
 
 		message = {
 			'id': 'bot',
@@ -81,6 +81,9 @@ class ParlaiReplier:
 			# 'label_candidates': ['quarantine', 'government',  'diseases'],
 			'episode_done': False,
 		}
+
+		if keywords:
+			message['label_candidates'] = keywords
 
 		try:
 			socket = zmq.Context().socket(zmq.REQ)
