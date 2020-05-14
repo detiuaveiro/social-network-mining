@@ -532,11 +532,26 @@ class Control_Center(Rabbitmq):
 			})
 
 			# we send the list of initial users to follow
-			follow_list = self.pep.first_time_policy()
+			# follow_list = self.pep.first_time_policy()
+
+			bot_policies = self.postgres_client.search_policies({
+				"bot_id": int(data["bot_id_str"])
+			})
+
+			bot_policies_args = []
+			for policy in bot_policies:
+				bot_policies_args += policy['params']
+
+			self.send(bot_id, ServerToBot.FOLLOW_FIRST_TIME_USERS, {
+				'queries': bot_policies_args
+			})
+
+			"""
 			self.send(bot_id, ServerToBot.FOLLOW_USERS, {
 				"type": "screen_name",
 				"data": follow_list,
 			})
+			"""
 
 		is_bot = self.neo4j_client.check_bot_exists(user["id_str"])
 		if is_bot:

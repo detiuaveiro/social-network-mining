@@ -14,6 +14,7 @@ class ServerToBot(IntEnum):
 	KEYWORDS = 7
 	GET_TWEET_BY_ID = 8
 	GET_USER_BY_ID = 9
+	FOLLOW_FIRST_TIME_USERS = 10
 
 	def __str__(self):
 		return self.name

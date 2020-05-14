@@ -154,7 +154,7 @@ class TwitterBot(RabbitMessaging):
 			- since_id: Returns only statuses with an ID greater than (that is, more recent than) the specified ID
 			- max_id: Returns only statuses with an ID less than (that is, older than) or equal to the specified ID
 			- count: Specifies the number of statuses to retrieve
-			- page: Specifies the page of results to retrieve. Note: there are pagination limits 
+			- page: Specifies the page of results to retrieve. Note: there are pagination limits
 		"""
 		logger.debug(f"Getting timeline tweets for User with id={user.id}")
 		if user.id == self.user.id:
@@ -436,6 +436,13 @@ class TwitterBot(RabbitMessaging):
 		except TweepError as error:
 			logger.exception(f"Error {error} posting a new tweet: ")
 
+	def __follow_first_time_users(self, queries):
+		number_per_tag = 2
+
+		for q in queries:
+			for user in self._twitter_api.search_users(q=q, count=number_per_tag):
+				self.__follow_user(user)
+
 	def run(self):
 		"""Bot's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
 			task, does a different action
@@ -471,6 +478,8 @@ class TwitterBot(RabbitMessaging):
 						self.__get_tweet_by_id(tweet_id=task_params)
 					elif task_type == messages_types.ServerToBot.GET_USER_BY_ID:
 						self.__get_user_dict(user_id=task_params)
+					elif task_type == messages_types.ServerToBot.FOLLOW_FIRST_TIME_USERS:
+						self.__follow_first_time_users(queries=task_params['queries'])
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
 				else:
