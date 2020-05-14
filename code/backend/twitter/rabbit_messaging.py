@@ -101,7 +101,7 @@ class RabbitMessaging:
 
 		send_to = self.settings[send_to]
 		logger.debug(
-			f"Sending message <{data}> to exchange <{send_to.exchange}> with routing_key <{send_to.routing_key}>")
+			f"Sending message to exchange <{send_to.exchange}> with routing_key <{send_to.routing_key}>")
 		self.__messaging.publish(vhost=self.vhost, xname=send_to.exchange, rt_key=send_to.routing_key, payload=data)
 
 	def _receive_message(self, receive_from: str) -> Dict:
