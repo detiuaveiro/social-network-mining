@@ -329,26 +329,27 @@ class PDP:
 			for bot_log in bot_logs['data']:
 				bot_logs_dict[str(bot_log['target_id'])] = {'timestamp': bot_log["timestamp"]}
 
-			users_of_tweets_liked = self.mongo.search(
-				collection="tweets",
-				query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
-				fields=["user"],
-				single=False
-			)
+			if len(bot_logs_dict) > 0:
+				users_of_tweets_liked = self.mongo.search(
+					collection="tweets",
+					query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
+					fields=["user"],
+					single=False
+				)
 
-			if users_of_tweets_liked:
-				for user_of_tweet_liked in users_of_tweets_liked:
-					id_str = user_of_tweet_liked['user']['id_str']
-					if id_str == str(data["user_id"]) and id_str in bot_logs_dict:
-						log.info(f"Found a past like to the user with id <{data['user_id']}>: {user_of_tweet_liked}")
-						date = bot_logs_dict[id_str]['timestamp']
-						now = datetime.datetime.now()
-						if (now - date).seconds < PENALTY_LIKED_RECENTLY_SMALL_INTERVAL:
-							log.info("Bot has liked a tweet from the same user, but may not be that suspicious")
-							heuristic_value += PENALTY_LIKED_RECENTLY_SMALL
-						else:
-							log.info("Bot has recently liked a tweet from the same user")
-							heuristic_value += PENALTY_LIKED_RECENTLY_LARGE
+				if users_of_tweets_liked:
+					for user_of_tweet_liked in users_of_tweets_liked:
+						id_str = user_of_tweet_liked['user']['id_str']
+						if id_str == str(data["user_id"]) and id_str in bot_logs_dict:
+							log.info(f"Found a past like to the user with id <{data['user_id']}>: {user_of_tweet_liked}")
+							date = bot_logs_dict[id_str]['timestamp']
+							now = datetime.datetime.now()
+							if (now - date).seconds < PENALTY_LIKED_RECENTLY_SMALL_INTERVAL:
+								log.info("Bot has liked a tweet from the same user, but may not be that suspicious")
+								heuristic_value += PENALTY_LIKED_RECENTLY_SMALL
+							else:
+								log.info("Bot has recently liked a tweet from the same user")
+								heuristic_value += PENALTY_LIKED_RECENTLY_LARGE
 
 		log.info(f"Request to like to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
@@ -392,20 +393,21 @@ class PDP:
 			for bot_log in bot_logs['data']:
 				bot_logs_dict[str(bot_log['target_id'])] = {'timestamp': bot_log["timestamp"]}
 
-			users_of_retweets = self.mongo.search(
-				collection="tweets",
-				query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
-				fields=["user"],
-				single=False
-			)
+			if len(bot_logs_dict) > 0:
+				users_of_retweets = self.mongo.search(
+					collection="tweets",
+					query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
+					fields=["user"],
+					single=False
+				)
 
-			if users_of_retweets:
-				for user_of_retweet in users_of_retweets:
-					id_str = user_of_retweet['user']['id_str']
-					if id_str == str(data["user_id"]) and id_str in bot_logs_dict:
-						log.info(f"Found a past retweet to the user with id <{data['user_id']}>: {user_of_retweet}")
-						log.debug("Bot has recently retweet the user")
-						heuristic_value += PENALTY_RETWEETED_USER_RECENTLY
+				if users_of_retweets:
+					for user_of_retweet in users_of_retweets:
+						id_str = user_of_retweet['user']['id_str']
+						if id_str == str(data["user_id"]) and id_str in bot_logs_dict:
+							log.info(f"Found a past retweet to the user with id <{data['user_id']}>: {user_of_retweet}")
+							log.debug("Bot has recently retweet the user")
+							heuristic_value += PENALTY_RETWEETED_USER_RECENTLY
 
 		log.info(f"Request to retweet to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
@@ -468,24 +470,25 @@ class PDP:
 			for bot_log in bot_logs['data']:
 				bot_logs_dict[str(bot_log['target_id'])] = {'timestamp': bot_log["timestamp"]}
 
-			users_of_replies = self.mongo.search(
-				collection="tweets",
-				query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
-				fields=["user"],
-				single=False
-			)
+			if len(bot_logs_dict) > 0:
+				users_of_replies = self.mongo.search(
+					collection="tweets",
+					query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
+					fields=["user"],
+					single=False
+				)
 
-			if users_of_replies:
-				for user_of_reply in users_of_replies:
-					id_str = user_of_reply['user']['id_str']
-					if id_str == str(data['user_id']) and id_str in bot_logs_dict:
-						log.info(f"Found a past reply to the user with id <{data['user_id']}>: {user_of_reply}")
-						date = bot_logs_dict[id_str]['timestamp']
-						now = datetime.datetime.now()
-						if (now - date).seconds < PENALTY_REPLIED_USER_RECENTLY_INTERVAL:
-							log.debug("Bot recently replied to another tweet from user")
-							heuristic_value += PENALTY_REPLIED_USER_RECENTLY
-							break
+				if users_of_replies:
+					for user_of_reply in users_of_replies:
+						id_str = user_of_reply['user']['id_str']
+						if id_str == str(data['user_id']) and id_str in bot_logs_dict:
+							log.info(f"Found a past reply to the user with id <{data['user_id']}>: {user_of_reply}")
+							date = bot_logs_dict[id_str]['timestamp']
+							now = datetime.datetime.now()
+							if (now - date).seconds < PENALTY_REPLIED_USER_RECENTLY_INTERVAL:
+								log.debug("Bot recently replied to another tweet from user")
+								heuristic_value += PENALTY_REPLIED_USER_RECENTLY
+								break
 
 		log.info(f"Request to reply to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
