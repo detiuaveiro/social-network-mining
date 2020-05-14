@@ -40,18 +40,11 @@ class TwitterBot(RabbitMessaging):
 		logger.exception(f"TweepyError <{error}> with code=<{error.api_code}> and reason=<{error.reason}>: ")
 
 		if error.api_code in ACCOUNT_SUSPENDED_ERROR_CODES:
-			data = {
-				"type": messages_types.BotToServer.EVENT_ERROR,
-				"bot_id": self._id,
-				"timestamp": current_time(),
-				"data": {
+			self.__send_event(data={
 					"code": error.api_code,
 					"msg": error.reason,
 					"target_id": target_id
-				},
-			}
-
-			self._messaging.publish(vhost=VHOST, xname=LOG_EXCHANGE, rt_key=LOG_ROUTING_KEY, payload=to_json(data))
+				}, message_type=messages_types.BotToServer.EVENT_ERROR)
 
 	@staticmethod
 	def __get_tweet_dict(tweet: Status):
@@ -87,7 +80,7 @@ class TwitterBot(RabbitMessaging):
 		if not user._json['protected']:
 			tweets = [tweet._json for tweet in self.__user_timeline_tweets(user, tweet_mode="extended")]
 
-		self.__send_data({
+		self.__send_query({
 			'user': user._json,
 			'tweets': tweets
 		}, messages_types.BotToServer.QUERY_FOLLOW_USER)
@@ -214,13 +207,13 @@ class TwitterBot(RabbitMessaging):
 
 			# Processing the tweet regarding liking/retweeting
 			if not tweet.favorited:
-				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_LIKE)
+				self.__send_query(self.__get_tweet_dict(tweet), messages_types.BotToServer.QUERY_TWEET_LIKE)
 
 			if not tweet.retweeted:
-				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_RETWEET)
+				self.__send_query(self.__get_tweet_dict(tweet), messages_types.BotToServer.QUERY_TWEET_RETWEET)
 
 			# ask to reply to tweet
-			self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_REPLY)
+			self.__send_query(self.__get_tweet_dict(tweet), messages_types.BotToServer.QUERY_TWEET_REPLY)
 
 			if not jump_users:
 				logger.info("Starting to read tweet's author")
@@ -489,7 +482,7 @@ class TwitterBot(RabbitMessaging):
 					self.__get_followers(user_id=self._id_str)
 
 					logger.info("Ask control center for keywords to search new tweets")
-					self.__send_user(self._twitter_api.me(), messages_types.BotToServer.QUERY_KEYWORDS)
+					self.__send_query(self._twitter_api.me()._json, messages_types.BotToServer.QUERY_KEYWORDS)
 					wait(5)
 			except Exception as error:
 				logger.exception(f"Error {error} on bot's loop: ")

@@ -947,6 +947,8 @@ class Control_Center(Rabbitmq):
 	def _received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
 		self.exchange = method.exchange
+
+		log.debug(f"Starting to process a new message from exchange <{self.exchange}>")
 		message = json.loads(body)
 		self.action(message)
 
