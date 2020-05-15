@@ -85,7 +85,7 @@ class Control_Center(Rabbitmq):
 			self.request_tweet_reply(message)
 
 		elif message_type == BotToServer.QUERY_FOLLOW_USER:
-			self.request_follow_user(message)
+			self.__request_follow_user(message)
 
 		elif message_type == BotToServer.SAVE_USER:
 			self.save_user(message)
@@ -235,7 +235,7 @@ class Control_Center(Rabbitmq):
 			log.debug(f"Bot {data['bot_id']} could not reply with {data['target_id']}")
 			log.error(f"Bot like caused error {result['error']}")
 
-	def __found_in_logs(self, bot, action, target):
+	def __found_in_logs(self, bot=None, action=None, target=None, max_number_hours=1):
 		"""
 		Function to check if an action is already found in logs recently, therefore not being necessary to be done
 
@@ -244,11 +244,19 @@ class Control_Center(Rabbitmq):
 		@param target: id of target that bot wants to take action to
 		@return Boolean value confirming it found the log recently
 		"""
-		bot_logs = self.postgres_client.search_logs(
-			params={"bot_id": bot, "action": action, "target_id": target,
-			        "timestamp": datetime.now() - timedelta(hours=1)},
-			limit=1
-		)
+		params = {}
+
+		if bot:
+			params['bot_id'] = bot
+		if action:
+			params['action'] = action
+		if target:
+			params['target_id'] = target
+		if max_number_hours:
+			params['timestamp'] = datetime.now() - timedelta(hours=max_number_hours)
+
+		bot_logs = self.postgres_client.search_logs(params=params, limit=1)
+
 		log.debug("Found the logs in the database")
 		return bot_logs["success"] and len(bot_logs['data']) > 0
 
@@ -426,7 +434,7 @@ class Control_Center(Rabbitmq):
 				"target_id": tweet['id_str']
 			})
 
-	def request_follow_user(self, data):
+	def __request_follow_user(self, data):
 		"""
 		Action to request a follow:
 				Calls the control center to request the follow
@@ -443,9 +451,10 @@ class Control_Center(Rabbitmq):
 
 		log.info(f"Bot {data['bot_id']} requests a follow from {user_id}")
 
-		# verify if the user already requested to follow the user
-		if self.__found_in_logs(data["bot_id_str"], log_actions.FOLLOW_REQ, user_id_str):
-			log.info("Action was already requested recently")
+		# verify if some bot already requested to follow the user
+		found_log = self.__found_in_logs(action=log_actions.FOLLOW_REQ, target=user_id_str, max_number_hours=0)
+		if found_log:
+			log.info(f"Action was already requested recently: <{found_log}>")
 			return
 
 		self.postgres_client.insert_log({
