@@ -21,7 +21,8 @@ import neo4j_labels
 from control_center import mongo_utils
 
 from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, TASK_FOLLOW_QUEUE, \
-	TASK_FOLLOW_ROUTING_KEY_PREFIX, TASKS_EXCHANGE, SERVICE_QUERY_EXCHANGE
+	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE
+
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
@@ -82,7 +83,7 @@ class Control_Center(Rabbitmq):
 			self.request_retweet(message)
 
 		elif message_type == BotToServer.QUERY_TWEET_REPLY:
-			self.request_tweet_reply(message)
+			self.__request_tweet_reply(message)
 
 		elif message_type == BotToServer.QUERY_FOLLOW_USER:
 			self.request_follow_user(message)
@@ -353,7 +354,7 @@ class Control_Center(Rabbitmq):
 				"target_id": int(data['data']['id_str'])
 			})
 
-	def request_tweet_reply(self, data: dict):
+	def __request_tweet_reply(self, data: dict):
 		"""
 		Action to request a reply:
 				Calls the control center to request the reply
@@ -399,10 +400,20 @@ class Control_Center(Rabbitmq):
 				"target_id": int(tweet['id_str'])
 			})
 
+			# get bot policies
+			policy_list = self.postgres_client.search_policies({
+				"bot_id": int(data["bot_id_str"]),
+				"filter": "Keywords"
+			})
+
+			keywords = []
+			if policy_list['success']:
+				keywords = random.choice(policy_list["data"])["params"]
+
 			# remove urls, tags from text and emojis
 			prepared_text = tweet_to_simple_text(tweet['text'] if 'full_text' not in tweet else tweet['full_text'])
 
-			reply_text = self.replier.generate_response(prepared_text)
+			reply_text = self.replier.generate_response(prepared_text, keywords=keywords)
 			if reply_text:
 				log.info(f"Sending reply text <{reply_text}>")
 
@@ -532,11 +543,26 @@ class Control_Center(Rabbitmq):
 			})
 
 			# we send the list of initial users to follow
-			follow_list = self.pep.first_time_policy()
+			# follow_list = self.pep.first_time_policy()
+
+			bot_policies = self.postgres_client.search_policies({
+				"bot_id": int(data["bot_id_str"])
+			})
+
+			bot_policies_args = []
+			for policy in bot_policies:
+				bot_policies_args += policy['params']
+
+			self.send(bot_id, ServerToBot.FOLLOW_FIRST_TIME_USERS, {
+				'queries': bot_policies_args
+			})
+
+			"""
 			self.send(bot_id, ServerToBot.FOLLOW_USERS, {
 				"type": "screen_name",
 				"data": follow_list,
 			})
+			"""
 
 		is_bot = self.neo4j_client.check_bot_exists(user["id_str"])
 		if is_bot:
