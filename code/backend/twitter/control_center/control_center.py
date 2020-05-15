@@ -452,9 +452,8 @@ class Control_Center(Rabbitmq):
 		log.info(f"Bot {data['bot_id']} requests a follow from {user_id}")
 
 		# verify if some bot already requested to follow the user
-		found_log = self.__found_in_logs(action=log_actions.FOLLOW_REQ, target=user_id_str, max_number_hours=0)
-		if found_log:
-			log.info(f"Action was already requested recently: <{found_log}>")
+		if self.__found_in_logs(action=log_actions.FOLLOW_REQ, target=user_id_str, max_number_hours=0):
+			log.info(f"Action was already requested recently for some bot.")
 			return
 
 		self.postgres_client.insert_log({
