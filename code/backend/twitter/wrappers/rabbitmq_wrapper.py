@@ -10,9 +10,13 @@ import json
 from pika.adapters.asyncio_connection import AsyncioConnection
 
 from credentials import RABBITMQ_URL, RABBITMQ_PORT, VHOST, RABBITMQ_USERNAME, RABBITMQ_PASSWORD, API_QUEUE, \
-	API_FOLLOW_QUEUE, DATA_EXCHANGE, DATA_ROUTING_KEY, LOG_ROUTING_KEY, LOG_EXCHANGE, QUERY_EXCHANGE, \
-	QUERY_ROUTING_KEY, SERVICE_QUERY_EXCHANGE, SERVICE_QUERY_ROUTING_KEY, TASKS_QUEUE_PREFIX, TASKS_EXCHANGE, \
-	TASK_FOLLOW_QUEUE, TASK_FOLLOW_EXCHANGE
+    API_FOLLOW_QUEUE, DATA_EXCHANGE, DATA_ROUTING_KEY, LOG_ROUTING_KEY, LOG_EXCHANGE, QUERY_EXCHANGE, \
+    QUERY_ROUTING_KEY, SERVICE_QUERY_EXCHANGE, SERVICE_QUERY_ROUTING_KEY, TASKS_QUEUE_PREFIX, TASKS_EXCHANGE, \
+    TASK_FOLLOW_QUEUE, TASK_FOLLOW_EXCHANGE, TWEET_EXCHANGE, TWEET_ROUTING_KEY, USER_ROUTING_KEY, USER_EXCHANGE, \
+    TWEET_LIKE_ROUTING_KEY, TWEET_LIKE_EXCHANGE, QUERY_FOLLOW_USER_EXCHANGE, QUERY_FOLLOW_USER_ROUTING_KEY, \
+    QUERY_TWEET_LIKE_EXCHANGE, QUERY_TWEET_LIKE_ROUTING_KEY, QUERY_TWEET_RETWEET_EXCHANGE, \
+    QUERY_TWEET_RETWEET_ROUTING_KEY, QUERY_TWEET_REPLY_EXCHANGE, QUERY_TWEET_REPLY_ROUTING_KEY, QUERY_KEYWORDS_EXCHANGE, \
+    QUERY_KEYWORDS_ROUTING_KEY
 
 log = logging.getLogger('Rabbit')
 log.setLevel(logging.DEBUG)
@@ -67,6 +71,29 @@ class Rabbitmq:
                                          'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
         self.exchanges_data[API_QUEUE].append({'exchange': QUERY_EXCHANGE, 'routing_key': QUERY_ROUTING_KEY,
                                          'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
+
+        self.exchanges_data[API_QUEUE].append({'exchange': TWEET_EXCHANGE, 'routing_key': TWEET_ROUTING_KEY,
+                                               'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
+        self.exchanges_data[API_QUEUE].append({'exchange': USER_EXCHANGE, 'routing_key': USER_ROUTING_KEY,
+                                               'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
+        self.exchanges_data[API_QUEUE].append({'exchange': TWEET_LIKE_EXCHANGE, 'routing_key': TWEET_LIKE_ROUTING_KEY,
+                                               'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
+        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_FOLLOW_USER_EXCHANGE,
+                                               'routing_key': QUERY_FOLLOW_USER_ROUTING_KEY,
+                                               'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
+        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_TWEET_LIKE_EXCHANGE,
+                                               'routing_key': QUERY_TWEET_LIKE_ROUTING_KEY,
+                                               'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
+        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_TWEET_RETWEET_EXCHANGE,
+                                               'routing_key': QUERY_TWEET_RETWEET_ROUTING_KEY,
+                                               'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
+        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_TWEET_REPLY_EXCHANGE,
+                                               'routing_key': QUERY_TWEET_REPLY_ROUTING_KEY,
+                                               'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
+        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_KEYWORDS_EXCHANGE,
+                                               'routing_key': QUERY_KEYWORDS_ROUTING_KEY,
+                                               'publish_exchange': TASKS_EXCHANGE, 'publish_channel': None})
+
         self.exchanges_data[API_FOLLOW_QUEUE].append({'exchange': SERVICE_QUERY_EXCHANGE,
                                                 'routing_key': SERVICE_QUERY_ROUTING_KEY,
                                                 'publish_exchange': TASK_FOLLOW_EXCHANGE, 'publish_channel': None})

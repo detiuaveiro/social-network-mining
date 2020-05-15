@@ -23,6 +23,7 @@ if __name__ == "__main__":
 		LOG_EXCHANGE: MessagingSettings(exchange=LOG_EXCHANGE, routing_key=LOG_ROUTING_KEY),
 		QUERY_EXCHANGE: MessagingSettings(exchange=QUERY_EXCHANGE, routing_key=QUERY_ROUTING_KEY),
 		DATA_EXCHANGE: MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY),
+
 		TWEET_EXCHANGE: MessagingSettings(exchange=TWEET_EXCHANGE, routing_key=TWEET_ROUTING_KEY),
 		USER_EXCHANGE: MessagingSettings(exchange=USER_EXCHANGE, routing_key=USER_ROUTING_KEY),
 		TWEET_LIKE_EXCHANGE: MessagingSettings(exchange=TWEET_LIKE_EXCHANGE, routing_key=TWEET_LIKE_ROUTING_KEY),
