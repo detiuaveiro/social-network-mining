@@ -12,8 +12,9 @@ import messages_types as messages_types
 from rabbit_messaging import RabbitMessaging
 from bots.settings import *
 from bots.utils import *
-from credentials import VHOST, LOG_EXCHANGE, LOG_ROUTING_KEY, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, \
-	TASKS_QUEUE_PREFIX
+from credentials import LOG_EXCHANGE, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, TASKS_QUEUE_PREFIX, TWEET_EXCHANGE, \
+	USER_EXCHANGE, TWEET_LIKE_EXCHANGE, QUERY_FOLLOW_USER_EXCHANGE, QUERY_KEYWORDS_EXCHANGE, QUERY_TWEET_REPLY_EXCHANGE, \
+	QUERY_TWEET_RETWEET_EXCHANGE, QUERY_TWEET_LIKE_EXCHANGE
 
 logger = logging.getLogger("bot-agents")
 logger.setLevel(logging.DEBUG)
@@ -32,6 +33,14 @@ class TwitterBot(RabbitMessaging):
 		self._id = bot_id
 		self._twitter_api: tweepy.API = api
 		self.user: User
+
+		self.query_msg_type_to_exchange = {
+			messages_types.BotToServer.QUERY_FOLLOW_USER: QUERY_FOLLOW_USER_EXCHANGE,
+			messages_types.BotToServer.QUERY_TWEET_LIKE: QUERY_TWEET_LIKE_EXCHANGE,
+			messages_types.BotToServer.QUERY_TWEET_RETWEET: QUERY_TWEET_RETWEET_EXCHANGE,
+			messages_types.BotToServer.QUERY_TWEET_REPLY: QUERY_TWEET_REPLY_EXCHANGE,
+			messages_types.BotToServer.QUERY_KEYWORDS: QUERY_KEYWORDS_EXCHANGE,
+		}
 
 	def __repr__(self):
 		return f"<TwitterBot id={self._id}, api={self._twitter_api}>"
@@ -91,20 +100,26 @@ class TwitterBot(RabbitMessaging):
 		:param user: user to send
 		"""
 		logger.debug(f"Sending {user.id} with message type {message_type}")
-		self.__send_data(user._json, message_type)
+		self.__send_message(user._json, message_type, USER_EXCHANGE)
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
 		logger.debug(f"Sending {tweet.id} with message_type <{message_type.name}>")
-		self.__send_data(self.__get_tweet_dict(tweet), message_type)
+		self.__send_message(self.__get_tweet_dict(tweet), message_type, TWEET_EXCHANGE)
 
 	def __send_data(self, data, message_type: messages_types.BotToServer):
 		self.__send_message(data, message_type, DATA_EXCHANGE)
 
 	def __send_query(self, data, message_type: messages_types.BotToServer):
-		self.__send_message(data, message_type, QUERY_EXCHANGE)
+		if message_type in self.query_msg_type_to_exchange.keys():
+			self.__send_message(data, message_type, self.query_msg_type_to_exchange[message_type])
+		else:
+			self.__send_message(data, message_type, QUERY_EXCHANGE)
 
 	def __send_event(self, data, message_type: messages_types.BotToServer):
-		self.__send_message(data, message_type, LOG_EXCHANGE)
+		if message_type == messages_types.BotToServer.EVENT_TWEET_LIKED:
+			self.__send_message(data, message_type, TWEET_LIKE_EXCHANGE)
+		else:
+			self.__send_message(data, message_type, LOG_EXCHANGE)
 
 	def __receive_message(self):
 		"""Function to consume a new message from the tasks's queue
