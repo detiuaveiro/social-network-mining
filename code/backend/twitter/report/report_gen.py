@@ -89,7 +89,7 @@ class Report:
 		return query_node+")"
 
 	@staticmethod
-	def relation_builder(rel):
+	def relation_builder(rel, dir):
 		if not rel:
 			return "-[]->"
 		query_rel = "["
@@ -102,9 +102,9 @@ class Report:
 				query_rel += ".."+str(rel['depth_end'])
 		query_rel += "]"
 
-		if "direction" not in rel or rel["direction"] == NORMAL_REL:
+		if not dir or dir == NORMAL_REL:
 			return f"-{query_rel}->"
-		elif rel["direction"] == REVERSE_REL:
+		elif dir == REVERSE_REL:
 			return f"<-{query_rel}-"
 		return f"-{query_rel}-"
 
@@ -181,8 +181,10 @@ class Report:
 			or ('node' in match['start'] and match['start']['node'])  :
 			if 'node' not in match['start']:
 				match['start']['node'] = None
+			if 'direction' not in match['start']:
+				match['start']['direction'] = None
 			query += f"{Report.node_builder(match['start']['type'], match['start']['node'])}" \
-					 f"{Report.relation_builder(match['start']['relation'])}"
+					 f"{Report.relation_builder(match['start']['relation'], match['start']['direction'])}"
 
 		if "intermediates" in match:
 			intermediates = match["intermediates"]
