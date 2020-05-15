@@ -15,7 +15,9 @@ def create_report(request):
 	"""
 
 	report = Report()
+	
 	print(request.data)
+	
 	match = {
 		"start": request.data["start"],
 		"intermediates": request.data["intermediate"],
@@ -24,10 +26,13 @@ def create_report(request):
 
 	export = request.data['fileType']
 
-	file = report.create_report(match=match, params=request.data['fields'], limit=request.data['limit'], export=export)
-	with open(file, "r") as file_reader:
-		result = file_reader.read()
-	os.remove(file)
+	file_dir = report.create_report(match=match, params=request.data['fields'], limit=request.data['limit'], export=export)
+	result = ""
+	if file_dir:
+		with open(file_dir, "r") as file_reader:
+			result = file_reader.read()
+		os.remove(file_dir)
+
 	file_to_send = ContentFile(result)
 	response = HttpResponse(file_to_send, content_type='application/' + export)
 	response['Content-Length'] = file_to_send.size

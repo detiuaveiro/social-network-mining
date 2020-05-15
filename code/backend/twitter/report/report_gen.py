@@ -41,6 +41,9 @@ class Exporter:
 
 	def export_csv(self, result):
 		try:
+			if len(result) == 0:
+				return None
+
 			headers = [key + "_" + prop for key in result[0] for prop in result[0][key]]
 			file_dir = f"{self.directory}/export.csv"
 			with open(file_dir, 'w') as file:
@@ -81,14 +84,16 @@ class Report:
 		if label:
 			query_node += f":{label}"
 		if node and len(node) > 0:
-			query_node += f"{{id: '{node[0]}'}}"
+			query_node += f"{{id: '{node}'}}"
 
 		return query_node+")"
 
 	@staticmethod
 	def relation_builder(rel):
+		if not rel:
+			return "-[]->"
 		query_rel = "["
-		if len(rel) > 0:
+		if len(rel) > 0:	#Its been hell dude
 			if 'label' in rel:
 				query_rel += ":" + '|'.join(rel['label'])
 			if 'depth_start' in rel:
@@ -172,7 +177,8 @@ class Report:
 		params = Report.translate_params(params)
 		query = "MATCH r="
 		if ("relation" in match['start'] and match['start']['relation']) \
-			or ('type' in match['start'] and match['start']['type']):
+			or ('type' in match['start'] and match['start']['type']) \
+			or ('node' in match['start'] and match['start']['node'])  :
 			if 'node' not in match['start']:
 				match['start']['node'] = None
 			query += f"{Report.node_builder(match['start']['type'], match['start']['node'])}" \

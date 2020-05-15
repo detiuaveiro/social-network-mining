@@ -31,6 +31,12 @@ import { ToastContainer, toast, Flip } from 'react-toastify';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
+
 class Reports extends Component {
   constructor() {
     super();
@@ -50,13 +56,15 @@ class Reports extends Component {
     start: {
       type: null,
       nodes: null,
-      relation: null
+      relation: null,
+      direction: null
     },
 
     intermediate: {
       type: [],
       nodes: [],
-      relation: []
+      relation: [],
+      direction: []
     },
 
     end: {
@@ -64,10 +72,13 @@ class Reports extends Component {
       nodes: null
     },
 
+    modal: false,
+
     fileType: "csv",
 
-    intermediateRelOptions: [{ value: "a_0", label: "All Types" }, { value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }],
-    intermediateTypeOptions: [{ value: "a_0", label: "All Relations" }, { value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }]
+    intermediateRelOptions: [{ value: "a_0", label: "All Relations" }, { value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }],
+    intermediateTypeOptions: [{ value: "a_0", label: "All Types" }, { value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }],
+    intermediateDirectionOptions: [{ value: "Outgoing_1", label: "Outgoing" }, { value: "Ingoing_1", label: "Ingoing" }, { value: "Bisexual_1", label: "Bidirectional" }]
   };
 
   async componentDidMount() {
@@ -83,7 +94,7 @@ class Reports extends Component {
   loadOptions = inputValue =>
     new Promise(resolve => {
       if (inputValue == "" || inputValue == null) {
-        var requestValues = [{ "value": null, "label": "All Nodes" }]
+        var requestValues = [{ "value": "aaaaaaaaaaaaaaa_" + Date.now(), "label": "All Nodes" }]
         resolve(requestValues)
       } else {
         if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
@@ -104,7 +115,7 @@ class Reports extends Component {
   loadOptions2 = inputValue =>
     new Promise(resolve => {
       if (inputValue == "" || inputValue == null) {
-        var requestValues = [{ "value": null, "label": "All Nodes" }]
+        var requestValues = [{ "value": "aaaaaaaaaaaaaaa_" + Date.now(), "label": "All Nodes" }]
         resolve(requestValues)
       } else {
         if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
@@ -126,7 +137,8 @@ class Reports extends Component {
   loadOptions3 = inputValue =>
     new Promise(resolve => {
       if (inputValue == "" || inputValue == null) {
-        var requestValues = [{ "value": null, "label": "All Nodes" }]
+        var requestValues = [{ "value": "aaaaaaaaaaaaaaa_" + Date.now(), "label": "All Nodes" }]
+        console.log(requestValues)
         resolve(requestValues)
       } else {
         if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
@@ -222,7 +234,8 @@ class Reports extends Component {
           }).then(data => {
             if (data != null && data != {}) {
               data = data.data
-              tempData.push({ "value": null, "label": "All Nodes" })
+              tempData.push({ "value": "aaaaaaaaaaaaaaa_" + Date.now(), "label": "All Nodes" })
+
               data.forEach(user => {
                 tempData.push({ "value": user.user_id, "label": "(" + type + ") " + user.name + " - @" + user.screen_name })
               })
@@ -247,7 +260,8 @@ class Reports extends Component {
           }).then(data => {
             if (data != null && data != {}) {
               data = data.data
-              tempData.push({ "value": null, "label": "All Nodes" })
+              tempData.push({ "value": "aaaaaaaaaaaaaaa_" + Date.now(), "label": "All Nodes" })
+
               data.entries.forEach(user => {
                 tempData.push({ "value": user.user_id, "label": "(" + type + ") " + user.name + " - @" + user.screen_name })
               })
@@ -276,7 +290,7 @@ class Reports extends Component {
         }).then(data => {
           if (data != null && data != {}) {
             data = data.data
-            tempData.push({ "value": null, "label": "All Nodes" })
+            tempData.push({ "value": "aaaaaaaaaaaaaaa_" + Date.now(), "label": "All Nodes" })
             data.entries.forEach(tweet => {
               tempData.push({ "value": tweet.tweet_id, "label": "(Tweet) #" + tweet.tweet_id })
             })
@@ -302,7 +316,7 @@ class Reports extends Component {
         }).then(data => {
           if (data != null && data != {}) {
             data = data.data
-            tempData.push({ "value": null, "label": "All Nodes" })
+            tempData.push({ "value": "aaaaaaaaaaaaaaa_" + Date.now(), "label": "All Nodes" })
             data.forEach(tweet => {
               tempData.push({ "value": tweet.id, "label": "(Tweet) #" + tweet })
             })
@@ -332,17 +346,33 @@ class Reports extends Component {
 
   changeSelectedStartNodes = (selectedOption) => {
     if (selectedOption != null) {
-      this.setState({ start: { type: this.state.start.type, nodes: selectedOption, relation: this.state.start.relation } });
+      this.setState({ start: { type: this.state.start.type, nodes: selectedOption, relation: this.state.start.relation, direction: this.state.start.direction } });
     } else {
-      this.setState({ start: { type: this.state.start.type, nodes: [], relation: this.state.start.relation } });
+      this.setState({ start: { type: this.state.start.type, nodes: [], relation: this.state.start.relation, direction: this.state.start.direction } });
     }
   }
 
   changeSelectedStartRelationType = (selectedOption) => {
     if (selectedOption != null) {
-      this.setState({ start: { type: this.state.start.type, nodes: this.state.start.nodes, relation: selectedOption } });
+      this.setState({ start: { type: this.state.start.type, nodes: this.state.start.nodes, relation: selectedOption, direction: this.state.start.direction } });
     } else {
-      this.setState({ start: { type: this.state.start.type, nodes: this.state.start.nodes, relation: { value: "FOLLOWS", label: "Follows" } } });
+      this.setState({ start: { type: this.state.start.type, nodes: this.state.start.nodes, relation: { value: "FOLLOWS", label: "Follows" }, direction: this.state.start.direction } });
+    }
+  }
+
+  changeSelectedStartDirectionType = (selectedOption) => {
+    if (selectedOption != null) {
+      this.setState({ start: { type: this.state.start.type, nodes: this.state.start.nodes, relation: this.state.start.relation, direction: selectedOption } });
+    } else {
+      this.setState({ start: { type: this.state.start.type, nodes: this.state.start.nodes, relation: this.state.start.relation, direction: [{ value: "Outgoing", label: "Outgoing" }, { value: "Ingoing", label: "Ingoing" }, { value: "Bisexual", label: "Any Direction" }] } });
+    }
+  }
+
+  changeSelectedEndType = (selectedOption) => {
+    if (selectedOption != null) {
+      this.setState({ end: { type: selectedOption, nodes: this.state.end.nodes } });
+    } else {
+      this.setState({ end: { type: { value: "a_0", label: "All Types" }, nodes: [] } });
     }
   }
 
@@ -381,7 +411,7 @@ class Reports extends Component {
       }
 
     } else {
-      this.setState({ intermediate: { type: [], nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation }, intermediateTypeOptions: [{ value: "a_0", label: "All Relations" }, { value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }]});
+      this.setState({ intermediate: { type: [], nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation }, intermediateTypeOptions: [{ value: "a_0", label: "All Relations" }, { value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }] });
     }
   }
 
@@ -398,14 +428,38 @@ class Reports extends Component {
 
         var newTypes = this.state.intermediateRelOptions
         newTypes.push(newElement)
-        this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: selectedOption }, intermediateRelOptions: newTypes.sort((a, b) => a.label > b.label) });
+        this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, direction: this.state.intermediate.direction, relation: selectedOption }, intermediateRelOptions: newTypes.sort((a, b) => a.label > b.label) });
 
       } else {
-        this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: selectedOption } });
+        this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, direction: this.state.intermediate.direction, relation: selectedOption } });
       }
 
     } else {
-      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: [] }, intermediateRelOptions: [{ value: "a_0", label: "All Types" }, { value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }] });
+      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, direction: this.state.intermediate.direction, relation: [] }, intermediateRelOptions: [{ value: "a_0", label: "All Relations" }, { value: "FOLLOWS_1", label: "Follows" }, { value: "QUOTED_1", label: "Quoted" }, { value: "REPLIED_1", label: "Replied" }, { value: "RETWEETED_1", label: "Retweeted" }, { value: "WROTE_1", label: "Wrote" }] });
+    }
+  }
+
+  changeSelectedIntermediateDirection = (selectedOption) => {
+    if (selectedOption != null) {
+
+      if (selectedOption.length + 3 > this.state.intermediateDirectionOptions.length) {
+        var newPush = selectedOption[selectedOption.length - 1]
+        var newValue = newPush.value
+        var newNumber = parseInt(newValue.split("_")[1]) + 1
+        newValue = newValue.split("_")[0] + "_" + newNumber
+
+        var newElement = { value: newValue, label: newPush.label }
+
+        var newTypes = this.state.intermediateDirectionOptions
+        newTypes.push(newElement)
+        this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation, direction: selectedOption }, intermediateDirectionOptions: newTypes.sort((a, b) => a.label > b.label) });
+
+      } else {
+        this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation, direction: selectedOption } });
+      }
+
+    } else {
+      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation, direction: [] }, intermediateDirectionOptions: [{ value: "Outgoing_1", label: "Outgoing" }, { value: "Ingoing_1", label: "Ingoing" }, { value: "Bisexual_1", label: "Bidirectional" }] });
     }
   }
 
@@ -484,11 +538,11 @@ class Reports extends Component {
       document.getElementById("errorNumber").style.display = "none"
     }
 
-    if (this.state.intermediate.type != null || this.state.intermediate.nodes != null || this.state.intermediate.relation != null) {
+    if (this.state.intermediate.type.length != 0 || this.state.intermediate.nodes.length != 0 || this.state.intermediate.relation.length != 0 || this.state.intermediate.direction.length != 0) {
       try {
-        if (this.state.intermediate.type.length != this.state.intermediate.nodes.length || this.state.intermediate.type.length != this.state.intermediate.relation.length || this.state.intermediate.nodes.length != this.state.intermediate.relation.length) {
+        if (this.state.intermediate.type.length != this.state.intermediate.nodes.length || this.state.intermediate.type.length != this.state.intermediate.relation.length || this.state.intermediate.nodes.length != this.state.intermediate.relation.length || this.state.intermediate.type.relation != this.state.intermediate.direction.length) {
           error = true
-          toast.error('You need to specify the same amount of intermediate nodes, node types and relation types!', {
+          toast.error('You need to specify the same amount of intermediate nodes, node types, relation types and relation directions!', {
             position: "top-center",
             autoClose: 7500,
             hideProgressBar: false,
@@ -502,7 +556,7 @@ class Reports extends Component {
         }
       } catch (erro) {
         error = true
-        toast.error('You need to specify the same amount of intermediate nodes, node types and relation types!', {
+        toast.error('You need to specify the same amount of intermediate nodes, node types, relation types and relation directions!', {
           position: "top-center",
           autoClose: 7500,
           hideProgressBar: false,
@@ -549,6 +603,9 @@ class Reports extends Component {
       var startNode = this.state.start.nodes
       if (startNode != null) {
         startNode = startNode.value
+        if (startNode != null && startNode.length > 15 && startNode[0] == "a") {
+          startNode = null
+        }
 
         start["node"] = startNode
       }
@@ -563,6 +620,17 @@ class Reports extends Component {
       }
 
       start["relation"] = startRel
+
+      var startDir = this.state.start.direction
+      if (startDir != null && startDir != "") {
+        if (startDir.value.split("_").length == 2) {
+          startDir = null
+        } else {
+          startDir = startDir.value
+        }
+      }
+
+      start["direction"] = startDir
 
       search["start"] = start
 
@@ -582,6 +650,9 @@ class Reports extends Component {
       var endNode = this.state.end.nodes
       if (endNode != null) {
         endNode = endNode.value
+        if (endNode != null && endNode.length > 15 && endNode[0] == "a") {
+          endNode = null
+        }
       }
       end["node"] = endNode
 
@@ -616,6 +687,19 @@ class Reports extends Component {
         })
       }
       intermediate["relations"] = intermediateRels
+
+      var intermediateDir = []
+      if (this.state.intermediate.direction != null && this.state.intermediate.direction.length > 0) {
+        this.state.intermediate.direction.forEach(type => {
+          var value = type["value"].split("_")[0]
+          if (value == "a") {
+            value = null
+          }
+
+          intermediateDir.push(value)
+        })
+      }
+      intermediate["directions"] = intermediateDir
 
       var intermediateNodes = []
       if (this.state.intermediate.nodes != null && this.state.intermediate.nodes.length > 0) {
@@ -702,6 +786,18 @@ class Reports extends Component {
     });
   }
 
+  handleClose() {
+    this.setState({
+      modal: false,
+    });
+  }
+
+  handleOpen() {
+    this.setState({
+      modal: true,
+    })
+  }
+
   /////////////////////////////////////////////////////////////////////
 
   render() {
@@ -756,6 +852,110 @@ class Reports extends Component {
             </div>
           </div>
       }
+
+      var modal
+      if (this.state.modal) {
+
+        modal = <Dialog class="fade-in"
+          open={this.state.modal}
+          onClose={() => this.handleClose()}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Tutorial"}
+            <hr />
+          </DialogTitle>
+          <DialogContent
+          >
+            <Container fluid>
+              <Col xs="12" md="12">
+                <div style={{ textAlign: "left", width: "100%" }}>
+                  <h5 style={{ color: "#1da1f2" }}>
+                    <i><b>1. Define a Starting Node (Optional)</b></i>
+                  </h5>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>You can start by defining the starting node, its type, what type of relation connects it to other nodes and the direction of said relation.</span>
+                  </h6>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>You can choose to not specify any of these fields: Not specifying the type implies you want any type of node, not specifying the node means you want any node, not specifying the relation means you want any type of relation and not specifying the direction means you want outgoing relations.</span>
+                  </h6>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>If you don't specify any of the fields, or specify only the direction, however, we'll assume you don't want a starting node</span>
+                  </h6>
+                </div>
+              </Col>
+              <Col xs="12" md="12">
+                <div style={{ textAlign: "left", width: "100%", marginTop: "30px" }}>
+                  <h5 style={{ color: "#1da1f2" }}>
+                    <i><b>2. Define the Intermediate Nodes (Optional)</b></i>
+                  </h5>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>You can then define intermediate nodes, their types, types of relationships and their respective directions.</span>
+                  </h6>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>Note that for each intermediate node you need to explicitly specify all of its fields (type, node, relationship and direction). Note also that the order of specifications is important, i.e, the first type you specify will correspond to the first node, relation and direction, the second type to the second node, and so on.</span>
+                  </h6>
+                </div>
+              </Col>
+
+              <Col xs="12" md="12">
+                <div style={{ textAlign: "left", width: "100%", marginTop: "30px" }}>
+                  <h5 style={{ color: "#1da1f2" }}>
+                    <i><b>3. Define the End Node (OBLIGATORY)</b></i>
+                  </h5>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>To finish off, you have to specify the node you want to end on.</span>
+                  </h6>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>In case nothing else is specified (in terms of start and intermediate nodes), the system will simply return the nodes that match what you input on this end node section.</span>
+                  </h6>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>In case you don't specify any property of the last node we return all nodes in our databases</span>
+                  </h6>
+                </div>
+              </Col>
+
+              <Col xs="12" md="12">
+                <div style={{ textAlign: "left", width: "100%", marginTop: "30px" }}>
+                  <h5 style={{ color: "#1da1f2" }}>
+                    <i><b>Please note that...</b></i>
+                  </h5>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>Due to the high number of data our system processes, some report generations might take longer than others. We ask that you be patient and reasonable <i class="far fa-heart" style={{ color: "#fd1d1d" }}></i></span>
+                  </h6>
+                </div>
+              </Col>
+
+              <Col xs="12" md="12">
+                <div style={{ textAlign: "left", width: "100%", marginTop: "30px" }}>
+                  <h5 style={{ color: "#1da1f2" }}>
+                    <i><b>Example of usage</b></i>
+                  </h5>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>Imagining you want to get <i>every user who has interacted with user X's tweets</i></span>
+                  </h6>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>1. Set the <b>Start Node Type</b> as "User" (You can leave the other Start Node fields as empty since we assume this means you want any Nodes and Relations starting on a User Node)</span>
+                  </h6>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>2. Set the <b>Intermediate Node Type</b> as "Tweet", <b>Intermediate Node</b> as "Any Node", <b>Intermediate Relation</b> as "Wrote" and <b>Intermediate Relation Direction</b> as "Ingoing"</span>
+                  </h6>
+                  <h6 style={{ marginLeft: "15px" }}>
+                    <span>3. Set the <b>End Node</b> as user X's name (You can leave the End Node Type empty in this case)</span>
+                  </h6>
+                </div>
+              </Col>
+            </Container>
+
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => this.handleClose()} color="info">
+              Cancel
+            </Button>
+          </DialogActions>
+        </Dialog>
+      }
       return (
         <div className="animated fadeIn">
           {processing}
@@ -786,6 +986,10 @@ class Reports extends Component {
                     <h5 style={{ color: "white" }}>
                       Generate a new report for analysis
                     </h5>
+                    <Button block outline color="light" style={{
+                      width: "150px", marginTop: "15px"
+                    }} onClick={() => this.handleOpen()}
+                    ><i class="far fa-question-circle"></i> Help</Button>
                   </CardHeader>
                   <CardBody>
                   </CardBody>
@@ -857,6 +1061,21 @@ class Reports extends Component {
                         </FormGroup>
                       </Col>
                       <Col md="2">
+                        <FormGroup>
+                          <Select
+                            defaultValue={[]}
+                            id="startRelType" onChange={this.changeSelectedStartDirectionType}
+                            value={this.state.start.direction}
+                            options={[{ value: "Outgoing", label: "Outgoing" }, { value: "Ingoing", label: "Ingoing" }, { value: "Bisexual", label: "Any Direction" }]
+                            }
+                            className="basic-single"
+                            classNamePrefix="select"
+                            placeholder="Relation Direction"
+                          />
+                          <i data-tip="Specify the relation's direction. Outgoing means that the relation starts on this node, Ingoing means that the relation ends on this node and Any Direction shows all relations, either leaving or entering this node" style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
                         <Button outline color="danger" onClick={() => this.clearStart()} style={{
 
                         }}><i class="fas fa-times"></i> Reset</Button>
@@ -919,6 +1138,24 @@ class Reports extends Component {
                             isMulti
                           />
                           <i data-tip="Specify the nodes' relation type. Please mind the order" style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "25px" }}>
+                      <Col md="12">
+                        <FormGroup>
+                          <Select
+                            defaultValue={[]}
+                            id="startDirType" onChange={this.changeSelectedIntermediateDirection}
+                            value={this.state.intermediate.direction || ''}
+                            options={this.state.intermediateDirectionOptions}
+                            className="basic-single"
+                            classNamePrefix="select"
+                            placeholder="Relation Direction"
+                            isMulti
+                          />
+                          <i data-tip="Specify the relation's direction. Outgoing means that the relation starts on this node, Ingoing means that the relation ends on this node and Any Direction shows all relations, either leaving or entering this node" style={{ color: "#1da1f2", float: "left", marginTop: "10px", marginRight: "5px" }} class="fas fa-info-circle"></i>
                         </FormGroup>
                       </Col>
                     </Row>
@@ -1203,8 +1440,7 @@ class Reports extends Component {
               </Col>
             </Row>
 
-
-
+            {modal}
           </Container>
         </div>
       )
