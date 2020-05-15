@@ -483,7 +483,7 @@ class TwitterBot(RabbitMessaging):
 
 					logger.info("Ask control center for keywords to search new tweets")
 					self.__send_query(self._twitter_api.me()._json, messages_types.BotToServer.QUERY_KEYWORDS)
-					wait(5)
+					wait(60)
 			except Exception as error:
 				logger.exception(f"Error {error} on bot's loop: ")
 # exit(1)
