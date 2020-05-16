@@ -23,9 +23,10 @@ from control_center import mongo_utils
 from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, TASK_FOLLOW_QUEUE, \
 	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE
 
+
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(open("dbwritter.log", "a"))
+handler = logging.StreamHandler(open("control_center.log", "a"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
@@ -88,7 +89,7 @@ class Control_Center:
 			self.request_retweet(message)
 
 		elif message_type == BotToServer.QUERY_TWEET_REPLY:
-			self.request_tweet_reply(message)
+			self.__request_tweet_reply(message)
 
 		elif message_type == BotToServer.QUERY_FOLLOW_USER:
 			self.__request_follow_user(message)
@@ -367,7 +368,7 @@ class Control_Center:
 				"target_id": int(data['data']['id_str'])
 			})
 
-	def request_tweet_reply(self, data: dict):
+	def __request_tweet_reply(self, data: dict):
 		"""
 		Action to request a reply:
 				Calls the control center to request the reply
@@ -413,10 +414,20 @@ class Control_Center:
 				"target_id": int(tweet['id_str'])
 			})
 
+			# get bot policies
+			policy_list = self.postgres_client.search_policies({
+				"bot_id": int(data["bot_id_str"]),
+				"filter": "Keywords"
+			})
+
+			keywords = []
+			if policy_list['success']:
+				keywords = random.choice(policy_list["data"])["params"]
+
 			# remove urls, tags from text and emojis
 			prepared_text = tweet_to_simple_text(tweet['text'] if 'full_text' not in tweet else tweet['full_text'])
 
-			reply_text = self.replier.generate_response(prepared_text)
+			reply_text = self.replier.generate_response(prepared_text, keywords=keywords)
 			if reply_text:
 				log.info(f"Sending reply text <{reply_text}>")
 
