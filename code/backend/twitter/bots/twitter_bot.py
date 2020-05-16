@@ -141,18 +141,18 @@ class TwitterBot(RabbitMessaging):
 			self._name = self._twitter_api.me().name
 			self._screen_name = self._twitter_api.me().screen_name
 			self._id_str = self._twitter_api.me().id_str
+
+			logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
+			self.__send_user(self.user, messages_types.BotToServer.SAVE_USER)
+
+			logger.info(f"Sending the last 200 followers of our bot")
+			self.__get_followers(user_id=self._id_str)
+
+			logger.info("Reading home timeline")
+			self.__read_timeline(self.user)
 		except TweepError as error:
 			logger.exception(f"Error {error} verifying credentials:")
 			exit(1)
-
-		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
-		self.__send_user(self.user, messages_types.BotToServer.SAVE_USER)
-
-		logger.info(f"Sending the last 200 followers of our bot")
-		self.__get_followers(user_id=self._id_str)
-
-		logger.info("Reading home timeline")
-		self.__read_timeline(self.user)
 
 	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
 		"""Function to get the 20 (default) most recent tweets (including retweets) from some user
@@ -501,4 +501,3 @@ class TwitterBot(RabbitMessaging):
 					wait(60)
 			except Exception as error:
 				logger.exception(f"Error {error} on bot's loop: ")
-# exit(1)
