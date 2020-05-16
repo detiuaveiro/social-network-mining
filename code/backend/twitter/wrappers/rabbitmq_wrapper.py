@@ -76,73 +76,73 @@ class Rabbitmq:
                                                'publish_exchange': TASKS_EXCHANGE,
                                                'control_center': Control_Center(
                                                    self.postgres_client, self.mongo_client,
-                                                   self.neo4j_client, self._send)})
+                                                   self.neo4j_client, self)})
         self.exchanges_data[API_QUEUE].append({'exchange': LOG_EXCHANGE, 'routing_key': LOG_ROUTING_KEY,
                                                'publish_exchange': TASKS_EXCHANGE,
                                                'control_center': Control_Center(
                                                    self.postgres_client, self.mongo_client,
-                                                   self.neo4j_client, self._send)})
+                                                   self.neo4j_client, self)})
         self.exchanges_data[API_QUEUE].append({'exchange': QUERY_EXCHANGE, 'routing_key': QUERY_ROUTING_KEY,
                                                'publish_exchange': TASKS_EXCHANGE,
                                                'control_center': Control_Center(
                                                    self.postgres_client, self.mongo_client,
-                                                   self.neo4j_client, self._send)})
+                                                   self.neo4j_client, self)})
 
         self.exchanges_data[API_QUEUE].append({'exchange': TWEET_EXCHANGE,
                                                'routing_key': TWEET_ROUTING_KEY,
                                                'publish_exchange': TASKS_EXCHANGE,
                                                'control_center': Control_Center(
                                                    self.postgres_client, self.mongo_client,
-                                                   self.neo4j_client, self._send)})
+                                                   self.neo4j_client, self)})
         self.exchanges_data[API_QUEUE].append({'exchange': USER_EXCHANGE,
                                                'routing_key': USER_ROUTING_KEY,
                                                'publish_exchange': TASKS_EXCHANGE,
                                                'control_center': Control_Center(
                                                    self.postgres_client, self.mongo_client,
-                                                   self.neo4j_client, self._send)})
+                                                   self.neo4j_client, self)})
         self.exchanges_data[API_QUEUE].append({'exchange': TWEET_LIKE_EXCHANGE,
                                                'routing_key': TWEET_LIKE_ROUTING_KEY,
                                                'publish_exchange': TASKS_EXCHANGE,
                                                'control_center': Control_Center(
                                                    self.postgres_client, self.mongo_client,
-                                                   self.neo4j_client, self._send)})
+                                                   self.neo4j_client, self)})
         self.exchanges_data[API_QUEUE].append({'exchange': QUERY_FOLLOW_USER_EXCHANGE,
                                                'routing_key': QUERY_FOLLOW_USER_ROUTING_KEY,
                                                'publish_exchange': TASKS_EXCHANGE,
                                                'control_center': Control_Center(
                                                    self.postgres_client, self.mongo_client,
-                                                   self.neo4j_client, self._send)})
+                                                   self.neo4j_client, self)})
         self.exchanges_data[API_QUEUE].append({'exchange': QUERY_TWEET_LIKE_EXCHANGE,
                                                'routing_key': QUERY_TWEET_LIKE_ROUTING_KEY,
                                                'publish_exchange': TASKS_EXCHANGE,
                                                'control_center': Control_Center(
                                                    self.postgres_client, self.mongo_client,
-                                                   self.neo4j_client, self._send)})
+                                                   self.neo4j_client, self)})
         self.exchanges_data[API_QUEUE].append({'exchange': QUERY_TWEET_RETWEET_EXCHANGE,
                                                'routing_key': QUERY_TWEET_RETWEET_ROUTING_KEY,
                                                'publish_exchange': TASKS_EXCHANGE,
                                                'control_center': Control_Center(
                                                    self.postgres_client, self.mongo_client,
-                                                   self.neo4j_client, self._send)})
+                                                   self.neo4j_client, self)})
         self.exchanges_data[API_QUEUE].append({'exchange': QUERY_TWEET_REPLY_EXCHANGE,
                                                'routing_key': QUERY_TWEET_REPLY_ROUTING_KEY,
                                                'publish_exchange': TASKS_EXCHANGE,
                                                'control_center': Control_Center(
                                                    self.postgres_client, self.mongo_client,
-                                                   self.neo4j_client, self._send)})
+                                                   self.neo4j_client, self)})
         self.exchanges_data[API_QUEUE].append({'exchange': QUERY_KEYWORDS_EXCHANGE,
                                                'routing_key': QUERY_KEYWORDS_ROUTING_KEY,
                                                'publish_exchange': TASKS_EXCHANGE,
                                                'control_center': Control_Center(
                                                    self.postgres_client, self.mongo_client,
-                                                   self.neo4j_client, self._send)})
+                                                   self.neo4j_client, self)})
 
         self.exchanges_data[API_FOLLOW_QUEUE].append({'exchange': SERVICE_QUERY_EXCHANGE,
                                                       'routing_key': SERVICE_QUERY_ROUTING_KEY,
                                                       'publish_exchange': TASK_FOLLOW_EXCHANGE,
                                                       'control_center': Control_Center(
                                                           self.postgres_client, self.mongo_client,
-                                                          self.neo4j_client, self._send)})
+                                                          self.neo4j_client, self)})
 
         # publisher exchanges data
         self.publish_exchange = {
@@ -244,7 +244,7 @@ class Rabbitmq:
 
     def __set_prefetch(self, _unused_frame, queue, control_center):
         self.channels[queue].basic_qos(
-            prefetch_count=1, callback=functools.partial(self._receive, queue=queue, control_center=control_center))
+            prefetch_count=100, callback=functools.partial(self._receive, queue=queue, control_center=control_center))
 
     def __on_connection_open_error(self, _unused_connection, err):
         """This method is called by pika if the connection to RabbitMQ
@@ -303,7 +303,7 @@ class Rabbitmq:
         log.info('Closing the channel')
         channel.close()
 
-    def _send(self, queue, routing_key, message, father_exchange, channel, deliver_tag):
+    def send(self, queue, routing_key, message, father_exchange):
         """
         Routes the message to corresponding channel
 
@@ -323,9 +323,6 @@ class Rabbitmq:
             routing_key=routing_key,
             body=json.dumps(message)
         )
-
-        # acknowledge message
-        channel.basic_ack(deliver_tag)
 
     def _receive(self, _unused_frame, queue, control_center):
         """

@@ -8,9 +8,6 @@ from datetime import timedelta, datetime
 from control_center.text_generator import ParlaiReplier
 from control_center.translator_utils import Translator
 from control_center.utils import tweet_to_simple_text
-from wrappers.mongo_wrapper import MongoAPI
-from wrappers.neo4j_wrapper import Neo4jAPI
-from wrappers.postgresql_wrapper import PostgresAPI
 
 from control_center.policies_types import PoliciesTypes
 from control_center.PEP import PEP
@@ -40,7 +37,7 @@ class Control_Center:
 	On receiving a message from a message broker, this class will act accordingly
 	"""
 
-	def __init__(self, postgres_client, mongo_client, neo4j_client,  send_function: classmethod):
+	def __init__(self, postgres_client, mongo_client, neo4j_client,  rabbit_wrapper):
 		"""
 		This will start instaces for all the DB's API
 		"""
@@ -57,7 +54,7 @@ class Control_Center:
 		self.translator = Translator()
 
 		# rabbit vars
-		self._send = send_function
+		self.rabbit_wrapper = rabbit_wrapper
 		self.exchange = None
 		self.deliver_tag = None
 		self.channel = None
@@ -65,10 +62,18 @@ class Control_Center:
 		log.info(f"Control center configured: <{self.__dict__}>")
 
 	def action(self, message):
-		if self.exchange == SERVICE_QUERY_EXCHANGE:
-			self.follow_service_action(message)
-		else:
-			self.bot_action(message)
+		try:
+			if self.exchange == SERVICE_QUERY_EXCHANGE:
+				self.follow_service_action(message)
+			else:
+				self.bot_action(message)
+		except Exception as error:
+			log.exception(f"Error <{error}> on consuming new message: ")
+
+		# acknowledge message
+		log.info("Acknowledging the consumed message")
+		self.channel.basic_ack(self.deliver_tag)
+		log.info("Acknowledged the consumed message")
 
 	def bot_action(self, message):
 		message_type = message['type']
@@ -945,8 +950,9 @@ class Control_Center:
 			'params': params
 		}
 		try:
-			self._send(queue=TASKS_QUEUE_PREFIX, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload,
-			           father_exchange=self.exchange, channel=self.channel)
+			self.rabbit_wrapper.send(queue=TASKS_QUEUE_PREFIX,
+			                         routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload,
+			                         father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
 
@@ -964,8 +970,8 @@ class Control_Center:
 			'params': params
 		}
 		try:
-			self._send(queue=TASK_FOLLOW_QUEUE, routing_key=TASK_FOLLOW_ROUTING_KEY_PREFIX, message=payload,
-			           father_exchange=self.exchange, channel=self.channel, deliver_tag=self.deliver_tag)
+			self.rabbit_wrapper.send(queue=TASK_FOLLOW_QUEUE, routing_key=TASK_FOLLOW_ROUTING_KEY_PREFIX,
+			                         message=payload, father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
 
