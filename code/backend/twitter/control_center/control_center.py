@@ -40,15 +40,15 @@ class Control_Center:
 	On receiving a message from a message broker, this class will act accordingly
 	"""
 
-	def __init__(self, send_function: classmethod):
+	def __init__(self, postgres_client, mongo_client, neo4j_client,  send_function: classmethod):
 		"""
 		This will start instaces for all the DB's API
 		"""
 		log.info("Control center initiated")
 
-		self.postgres_client = PostgresAPI()
-		self.mongo_client = MongoAPI()
-		self.neo4j_client = Neo4jAPI()
+		self.postgres_client = postgres_client
+		self.mongo_client = mongo_client
+		self.neo4j_client = neo4j_client
 		self.pep = PEP()
 		self.__utc = pytz.UTC
 
@@ -980,5 +980,4 @@ class Control_Center:
 		self.action(message)
 
 	def close(self):
-		self.neo4j_client.close()
 		self.pep.pdp.close()
