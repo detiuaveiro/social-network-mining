@@ -1,13 +1,13 @@
 ## @package twitter
 import argparse
 
-from control_center.control_center import Control_Center
 from control_center.text_generator import test_smarter_replier
 from control_center.tweets_text_to_file import TweetsExporter
+from wrappers.rabbitmq_wrapper import Rabbitmq
 
 
 def main():
-	control_center = Control_Center()
+	control_center = Rabbitmq()
 	control_center.run()
 	control_center.close()
 

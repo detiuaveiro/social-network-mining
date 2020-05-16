@@ -1,6 +1,7 @@
 import json
 import logging
 import random
+
 import pytz
 from datetime import timedelta, datetime
 
@@ -10,7 +11,6 @@ from control_center.utils import tweet_to_simple_text
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
-from wrappers.rabbitmq_wrapper import Rabbitmq
 
 from control_center.policies_types import PoliciesTypes
 from control_center.PEP import PEP
@@ -21,11 +21,11 @@ import neo4j_labels
 from control_center import mongo_utils
 
 from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, TASK_FOLLOW_QUEUE, \
-	TASK_FOLLOW_ROUTING_KEY_PREFIX, TASKS_EXCHANGE, SERVICE_QUERY_EXCHANGE
+	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(open("dbwritter.log", "w"))
+handler = logging.StreamHandler(open("dbwritter.log", "a"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
@@ -33,18 +33,18 @@ log.addHandler(handler)
 PROBABILITY_SEARCH_KEYWORD = 0.0001
 
 
-class Control_Center(Rabbitmq):
+class Control_Center:
 	"""
 	Class to simulate the behaviour of a bot:
 	On receiving a message from a message broker, this class will act accordingly
 	"""
 
-	def __init__(self):
+	def __init__(self, send_function: classmethod):
 		"""
 		This will start instaces for all the DB's API
 		"""
+		log.info("Control center initiated")
 
-		super().__init__()
 		self.postgres_client = PostgresAPI()
 		self.mongo_client = MongoAPI()
 		self.neo4j_client = Neo4jAPI()
@@ -55,7 +55,13 @@ class Control_Center(Rabbitmq):
 		self.replier = ParlaiReplier(PARLAI_URL, PARLAI_PORT)
 		self.translator = Translator()
 
+		# rabbit vars
+		self._send = send_function
 		self.exchange = None
+		self.deliver_tag = None
+		self.channel = None
+
+		log.info(f"Control center configured: <{self.__dict__}>")
 
 	def action(self, message):
 		if self.exchange == SERVICE_QUERY_EXCHANGE:
@@ -929,7 +935,7 @@ class Control_Center(Rabbitmq):
 		}
 		try:
 			self._send(queue=TASKS_QUEUE_PREFIX, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload,
-			           father_exchange=self.exchange)
+			           father_exchange=self.exchange, channel=self.channel)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
 
@@ -948,13 +954,15 @@ class Control_Center(Rabbitmq):
 		}
 		try:
 			self._send(queue=TASK_FOLLOW_QUEUE, routing_key=TASK_FOLLOW_ROUTING_KEY_PREFIX, message=payload,
-			           father_exchange=self.exchange)
+			           father_exchange=self.exchange, channel=self.channel, deliver_tag=self.deliver_tag)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
 
-	def _received_message_handler(self, channel, method, properties, body):
+	def received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
 		self.exchange = method.exchange
+		self.deliver_tag = method.delivery_tag
+		self.channel = channel
 
 		log.debug(f"Starting to process a new message from exchange <{self.exchange}>")
 		message = json.loads(body)
@@ -963,4 +971,3 @@ class Control_Center(Rabbitmq):
 	def close(self):
 		self.neo4j_client.close()
 		self.pep.pdp.close()
-		self._close()
