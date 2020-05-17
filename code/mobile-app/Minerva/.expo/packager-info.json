@@ -1,0 +1,10 @@
+{
+  "devToolsPort": 19002,
+  "expoServerPort": 19000,
+  "packagerPort": 19001,
+  "packagerPid": 18629,
+  "expoServerNgrokUrl": "https://fc-pkx.anonymous.minerva.exp.direct",
+  "packagerNgrokUrl": "https://packager.fc-pkx.anonymous.minerva.exp.direct",
+  "ngrokPid": 18655,
+  "webpackServerPort": null
+}
