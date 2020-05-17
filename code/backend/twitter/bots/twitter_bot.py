@@ -187,6 +187,7 @@ class TwitterBot(RabbitMessaging):
 
 		logger.debug(f"Reading user's <{user.id}> timeline")
 		tweets = self.__user_timeline_tweets(user, count=MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE, tweet_mode="extended")
+		wait(1)
 
 		total_read_time = self.__interpret_tweets(tweets, jump_users, max_depth, current_depth)
 		logger.debug(f"Read {user.id}'s timeline in {total_read_time} seconds")
@@ -311,7 +312,7 @@ class TwitterBot(RabbitMessaging):
 					logger.exception(f"Error <{error}> with api_code={error.api_code}: ")
 
 		if not user.protected or (user.protected and user.following):
-			self.__read_timeline(user, jump_users=False, max_depth=3)
+			self.__read_timeline(user, jump_users=False)
 
 	def __get_followers(self, user_id: str):
 		"""
