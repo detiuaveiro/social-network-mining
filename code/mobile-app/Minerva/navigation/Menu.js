@@ -18,13 +18,12 @@ function CustomDrawerContent({
   const insets = useSafeArea();
   const screens = [
     "Home",
-    "Woman",
-    "Man",
-    "Kids",
-    "New Collection",
-    "Profile",
-    "Settings",
-    "Components"
+    "Bots",
+    "Users",
+    "Policies",
+    "Network",
+    "Statistics",
+    "Reports",
   ];
   return (
     <Block

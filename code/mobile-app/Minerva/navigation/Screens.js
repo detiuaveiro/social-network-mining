@@ -29,18 +29,18 @@ const profile = {
   rating: 4.8
 };
 
-function ProfileStack(props) {
+function BotsStack(props) {
   return (
-    <Stack.Navigator initialRouteName="Profile" mode="card" headerMode="screen">
+    <Stack.Navigator initialRouteName="Bots" mode="card" headerMode="screen">
       <Stack.Screen
-        name="Profile"
+        name="Bots"
         component={ProfileScreen}
         options={{
           header: ({ navigation, scene }) => (
             <Header
               white
               transparent
-              title="Profile"
+              title="Bots"
               scene={scene}
               navigation={navigation}
             />
@@ -52,19 +52,19 @@ function ProfileStack(props) {
   );
 }
 
-function SettingsStack(props) {
+function UsersStack(props) {
   return (
     <Stack.Navigator
-      initialRouteName="Settings"
+      initialRouteName="Users"
       mode="card"
       headerMode="screen"
     >
       <Stack.Screen
-        name="Settings"
+        name="Users"
         component={SettingsScreen}
         options={{
           header: ({ navigation, scene }) => (
-            <Header title="Settings" scene={scene} navigation={navigation} />
+            <Header title="Users" scene={scene} navigation={navigation} />
           )
         }}
       />
@@ -72,15 +72,75 @@ function SettingsStack(props) {
   );
 }
 
-function ComponentsStack(props) {
+function PoliciesStack(props) {
   return (
     <Stack.Navigator mode="card" headerMode="screen">
       <Stack.Screen
-        name="Components"
+        name="Policies"
         component={ComponentsScreen}
         options={{
           header: ({ navigation, scene }) => (
-            <Header title="Components" scene={scene} navigation={navigation} />
+            <Header title="Policies" scene={scene} navigation={navigation} />
+          )
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function NetworkStack(props) {
+  return (
+    <Stack.Navigator
+      initialRouteName="Network"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Network"
+        component={SettingsScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header title="Network" scene={scene} navigation={navigation} />
+          )
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function StatisticsStack(props) {
+  return (
+    <Stack.Navigator
+      initialRouteName="Statistics"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Statistics"
+        component={SettingsScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header title="Statistics" scene={scene} navigation={navigation} />
+          )
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function ReportsStack(props) {
+  return (
+    <Stack.Navigator
+      initialRouteName="Reports"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Reports"
+        component={SettingsScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header title="Reports" scene={scene} navigation={navigation} />
           )
         }}
       />
@@ -91,12 +151,12 @@ function ComponentsStack(props) {
 function HomeStack(props) {
   return (
     <Stack.Navigator mode="card" headerMode="screen">
-      <Stack.Screen 
+      <Stack.Screen
         name="Home"
         component={HomeScreen}
         options={{
           header: ({ navigation, scene }) => (
-            <Header 
+            <Header
               search
               tabs
               title="Home"
@@ -106,7 +166,7 @@ function HomeStack(props) {
           )
         }}
       />
-      <Stack.Screen 
+      <Stack.Screen
         name="Pro"
         component={ProScreen}
         options={{
@@ -166,66 +226,57 @@ function AppStack(props) {
           )
         }}
       />
+
       <Drawer.Screen
-        name="Woman"
-        component={ProScreen}
+        name="Network"
+        component={NetworkStack}
         options={{
           drawerIcon: ({ focused }) => (
             <Icon
               size={16}
-              name="md-woman"
-              family="ionicon"
-              color={focused ? "white" : materialTheme.COLORS.MUTED}
-              style={{ marginLeft: 4, marginRight: 4 }}
-            />
-          )
-        }}
-      />
-      <Drawer.Screen
-        name="Man"
-        component={ProScreen}
-        options={{
-          drawerIcon: ({ focused }) => (
-            <Icon
-              size={16}
-              name="man"
-              family="entypo"
-              color={focused ? "white" : materialTheme.COLORS.MUTED}
-            />
-          )
-        }}
-      />
-      <Drawer.Screen
-        name="Kids"
-        component={ProScreen}
-        options={{
-          drawerIcon: ({ focused }) => (
-            <Icon
-              size={16}
-              name="baby"
+              name="circle-10"
               family="GalioExtra"
               color={focused ? "white" : materialTheme.COLORS.MUTED}
             />
           )
         }}
       />
+
       <Drawer.Screen
-        name="New Collection"
-        component={ProScreen}
+        name="Statistics"
+        component={StatisticsStack}
         options={{
           drawerIcon: ({ focused }) => (
             <Icon
               size={16}
-              name="grid-on"
-              family="material"
+              name="gears"
+              family="font-awesome"
               color={focused ? "white" : materialTheme.COLORS.MUTED}
+              style={{ marginRight: -3 }}
             />
           )
         }}
       />
+
       <Drawer.Screen
-        name="Profile"
-        component={ProfileStack}
+        name="Reports"
+        component={ReportsStack}
+        options={{
+          drawerIcon: ({ focused }) => (
+            <Icon
+              size={16}
+              name="md-switch"
+              family="ionicon"
+              color={focused ? "white" : materialTheme.COLORS.MUTED}
+              style={{ marginRight: 2, marginLeft: 2 }}
+            />
+          )
+        }}
+      />
+
+      <Drawer.Screen
+        name="Bots"
+        component={BotsStack}
         options={{
           drawerIcon: ({ focused }) => (
             <Icon
@@ -238,8 +289,8 @@ function AppStack(props) {
         }}
       />
       <Drawer.Screen
-        name="Settings"
-        component={SettingsStack}
+        name="Users"
+        component={UsersStack}
         options={{
           drawerIcon: ({ focused }) => (
             <Icon
@@ -253,8 +304,8 @@ function AppStack(props) {
         }}
       />
       <Drawer.Screen
-        name="Components"
-        component={ComponentsStack}
+        name="Policies"
+        component={PoliciesStack}
         options={{
           drawerIcon: ({ focused }) => (
             <Icon
@@ -263,34 +314,6 @@ function AppStack(props) {
               family="ionicon"
               color={focused ? "white" : materialTheme.COLORS.MUTED}
               style={{ marginRight: 2, marginLeft: 2 }}
-            />
-          )
-        }}
-      />
-      <Drawer.Screen
-        name="Sign In"
-        component={ProScreen}
-        options={{
-          drawerIcon: ({ focused }) => (
-            <Icon
-              size={16}
-              name="ios-log-in"
-              family="ionicon"
-              color={focused ? "white" : materialTheme.COLORS.MUTED}
-            />
-          )
-        }}
-      />
-      <Drawer.Screen
-        name="Sign Up"
-        component={ProScreen}
-        options={{
-          drawerIcon: ({ focused }) => (
-            <Icon
-              size={16}
-              name="md-person-add"
-              family="ionicon"
-              color={focused ? "white" : materialTheme.COLORS.MUTED}
             />
           )
         }}
@@ -369,7 +392,7 @@ const HomeStack = createStackNavigator({
   },
 },
 {
-  cardStyle: { 
+  cardStyle: {
     backgroundColor: '#EEEEEE', //this is the backgroundColor for the app
   },
   transitionConfig,
