@@ -19,7 +19,9 @@ from control_center import mongo_utils
 
 from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, TASK_FOLLOW_QUEUE, \
 	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE
-
+from wrappers.mongo_wrapper import MongoAPI
+from wrappers.neo4j_wrapper import Neo4jAPI
+from wrappers.postgresql_wrapper import PostgresAPI
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
@@ -37,15 +39,15 @@ class Control_Center:
 	On receiving a message from a message broker, this class will act accordingly
 	"""
 
-	def __init__(self, postgres_client, mongo_client, neo4j_client,  rabbit_wrapper):
+	def __init__(self, rabbit_wrapper):
 		"""
 		This will start instaces for all the DB's API
 		"""
 		log.info("Control center initiated")
 
-		self.postgres_client = postgres_client
-		self.mongo_client = mongo_client
-		self.neo4j_client = neo4j_client
+		self.postgres_client = PostgresAPI()
+		self.mongo_client = MongoAPI()
+		self.neo4j_client = Neo4jAPI()
 		self.pep = PEP()
 		self.__utc = pytz.UTC
 
@@ -987,3 +989,4 @@ class Control_Center:
 
 	def close(self):
 		self.pep.pdp.close()
+		self.neo4j_client.close()
