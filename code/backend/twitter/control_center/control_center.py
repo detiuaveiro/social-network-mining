@@ -467,19 +467,43 @@ class Control_Center:
 		tweets = data['data']['tweets']
 		user_id = user['id']
 		user_id_str = user['id_str']
+		user_protected = user['protected'] if 'protected' in user else False
 
 		log.info(f"Bot {data['bot_id']} requests a follow from {user_id}")
-
-		# verify if some bot already requested to follow the user
-		if self.__found_in_logs(action=log_actions.FOLLOW_REQ, target=user_id_str, max_number_hours=0):
-			log.info(f"Action was already requested recently for some bot.")
-			return
 
 		self.postgres_client.insert_log({
 			"bot_id": int(data["bot_id_str"]),
 			"action": log_actions.FOLLOW_REQ,
 			"target_id": user_id_str
 		})
+
+		# verify if some bot already requested to follow the user
+		if self.__found_in_logs(action=log_actions.FOLLOW_REQ, target=user_id_str, max_number_hours=0):
+			log.info(f"Action was already requested recently for some bot.")
+			return
+
+		request_accepted = self.pep.receive_message({
+			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
+			"bot_id": data['bot_id'],
+			"bot_id_str": data['bot_id_str'],
+			"user_id": user_id,
+			"user_id_str": user_id_str,
+			'user_protected': user_protected
+		})
+
+		if request_accepted:
+			log.info(f"Following protected user with id str <{user_id_str}>")
+			self.__follow_user({
+				'data': {
+					'status': True,
+					'bot_id_str': data['bot_id_str'],
+					'user': {
+						'id': user_id,
+						'id_str': user_id_str
+					}
+				}
+			})
+			return
 
 		# get the policies to this bot
 		policies = self.postgres_client.search_policies({

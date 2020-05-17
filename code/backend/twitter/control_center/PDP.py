@@ -38,6 +38,7 @@ REPLY_TWEET_MIN_SIZE = 60  # min length of tweet
 NUMBER_TWEETS_FOLLOW_DECISION = 5
 
 LIMIT_LOGS = 200
+LIMIT_LOGS_FOLLOW_USERS_PROTECTED = 50
 
 log = logging.getLogger('PDP')
 log.setLevel(logging.INFO)
@@ -129,28 +130,6 @@ class PDP:
 			'''
 			evaluate_answer = self.analyze_tweet_reply(msg) > THRESHOLD_REPLY
 		elif msg_type == PoliciesTypes.REQUEST_FOLLOW_USER:
-			'''
-			bot_id
-			user_id
-
-			workflow of this request:
-
-			1- Check bot and its policies
-				1.1- if filter=target and target=tweet_user_id:
-						return PERMIT
-				1.2- if other_bots.filter=target and other_bots.target=tweet_user_id:
-						return DENY
-				1.3- No one has this target
-						GOTO Rule 2
-
-			2- Check neo4j
-				2.1- Bot already follows tweet_user_id (this case should never happen, just here for precaution)
-						return DENY
-				2.2- Other bot is following tweet_user_id: (questionable, should be discussed)
-						return DENY
-				2.3- No one follows tweet_user_id:
-						return PERMIT
-			'''
 			evaluate_answer = self.analyze_follow_user(msg) > THRESHOLD_FOLLOW_USER
 		if evaluate_answer:
 			log.info(f"Request to {msg_type.name} accepted")
@@ -493,12 +472,29 @@ class PDP:
 		log.info(f"Request to reply to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
 
-	@staticmethod
-	def analyze_follow_user(data):
-		"""DEPRECATED -> USE THE FOLLOW SERVICE
+	def analyze_follow_user(self, data):
+		"""Used to follow if the bot already follow some predefined number of people and the requested follow is a
+			protected user
 		:param data:
 		:return:
 		"""
+
+		# first, we verify if the user is protected
+		if 'user_protected' not in data or not data['user_protected']:
+			return 0
+
+		# second, we verify if the bot already follows a large number of users
+		bot_logs = self.postgres.search_logs({
+			"bot_id": data["bot_id"],
+			"action": log_actions.FOLLOW,
+			"target_id": data["user_id_str"]
+		}, limit=LIMIT_LOGS_FOLLOW_USERS_PROTECTED)
+
+		if bot_logs['success']:
+			number_follows = len(bot_logs['data'])
+			log.debug(f"The bot follows {number_follows}")
+
+			return 1 if number_follows >= LIMIT_LOGS_FOLLOW_USERS_PROTECTED - 1 else 0
 		return 0
 
 	def close(self):
