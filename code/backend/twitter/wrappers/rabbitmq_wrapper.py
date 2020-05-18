@@ -56,8 +56,8 @@ class Rabbitmq:
             port=port,
             virtual_host=vhost,
             credentials=pika_credentials,
-            heartbeat=30000,
-            blocked_connection_timeout=30000
+            heartbeat=0,
+            blocked_connection_timeout=0
         )
 
         self._connection = None
