@@ -34,6 +34,8 @@ class TwitterBot(RabbitMessaging):
 		self._twitter_api: tweepy.API = api
 		self.user: User
 
+		self.work_init_time = time.time()
+
 		self.query_msg_type_to_exchange = {
 			messages_types.BotToServer.QUERY_FOLLOW_USER: QUERY_FOLLOW_USER_EXCHANGE,
 			messages_types.BotToServer.QUERY_TWEET_LIKE: QUERY_TWEET_LIKE_EXCHANGE,
@@ -187,7 +189,6 @@ class TwitterBot(RabbitMessaging):
 
 		logger.debug(f"Reading user's <{user.id}> timeline")
 		tweets = self.__user_timeline_tweets(user, count=MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE, tweet_mode="extended")
-		wait(1)
 
 		total_read_time = self.__interpret_tweets(tweets, jump_users, max_depth, current_depth)
 		logger.debug(f"Read {user.id}'s timeline in {total_read_time} seconds")
@@ -459,6 +460,9 @@ class TwitterBot(RabbitMessaging):
 		self.__setup()
 
 		while True:
+			if time.time() - self.work_init_time > WAIT_TIME_BETWEEN_WORK:
+				wait(WAIT_TIME_RANDOM_STOP)
+
 			try:
 				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")
 				task = self.__receive_message()
