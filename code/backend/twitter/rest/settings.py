@@ -96,15 +96,15 @@ DATABASES = {
 	}
 }
 
-CACHE_TTL = 60 * 60 * 24             # 1 day
+CACHE_TTL = 60 * 60 * 24  # 1 day
 CACHES = {
 	"default": {
 		"BACKEND": "django_redis.cache.RedisCache",
-		"LOCATION": "redis://172.26.0.2:6379/1",
+		"LOCATION": REDIS_FULL_URL,
 		"OPTIONS": {
 			"CLIENT_CLASS": "django_redis.client.DefaultClient"
 		},
-		"KEY_PREFIX": "pi_rest"
+		"KEY_PREFIX": REDIS_KEY_PREFIX
 	}
 }
 
