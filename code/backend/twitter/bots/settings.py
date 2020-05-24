@@ -19,4 +19,4 @@ MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE = 2
 
 WAIT_TIME_BETWEEN_WORK = 60*60*2            # two hours
 WAIT_TIME_RANDOM_STOP = 60*30               # half an hour
-BOT_TTL = 60								# One minute
+BOT_TTL = 60*60*24							# One day

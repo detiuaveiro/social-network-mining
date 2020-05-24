@@ -79,7 +79,7 @@ class TwitterBot(RabbitMessaging):
 			logger.info(f"Found <{message_type}> in redis")
 			return
 
-		logger.info(f"Adding <{message_type}> to redis for {BOT_TTL}s")
+		logger.info(f"Adding <{message_type}> to redis for {BOT_TTL} seconds")
 
 		self._redis_cache.set(cache_key, 10)
 		self._redis_cache.expire(cache_key, BOT_TTL)
