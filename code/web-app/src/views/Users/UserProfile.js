@@ -21,6 +21,8 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import Users from './Users';
 import BotProfile from '../Bots/BotProfile';
 import Statistics from '../Statistics/Statistics';
+import Dashboard from '../Dashboard/Dashboard';
+
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -596,6 +598,8 @@ class UserProfile extends Component {
                 return (<Users page={this.state.redirectionList[0].info["page"]} searchQuery={this.state.redirectionList[0].info["query"]} />)
             } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "STATS") {
                 return (<Statistics />)
+            } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "HOME") {
+                return (<Dashboard />)
             } else {
                 var lastUser = this.state.redirectionList.pop()
                 if (lastUser.type == "PROFILE") {

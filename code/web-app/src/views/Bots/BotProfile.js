@@ -42,6 +42,7 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Brush } from 'recharts';
 
 import * as loadingAnim from "../../assets/animations/squares_1.json";
+import Dashboard from '../Dashboard/Dashboard';
 
 
 class BotProfile extends Component {
@@ -112,6 +113,7 @@ class BotProfile extends Component {
     };
 
     async getTweets(page, first) {
+        console.log(this.state.userInfo.user_id)
         await fetch(baseURL + "twitter/users/" + this.state.userInfo.user_id + "/tweets/7/" + page + "/", {
             method: "GET",
             headers: {
@@ -131,6 +133,10 @@ class BotProfile extends Component {
                 data.entries.forEach(tweet => {
                     var tempInfo = []
                     tempInfo.push("#" + tweet.tweet_id);
+
+                    if(tweet.full_text == null){
+                        tweet.full_text = tweet.text
+                    }
 
                     if (tweet.is_quote_status) {
                         tempInfo.push(<Badge pill color="warning" style={{ fontSize: "11px" }}>Quote</Badge>);
@@ -546,7 +552,6 @@ class BotProfile extends Component {
 
     async componentDidMount() {
         await this.setState({ redirectionList: this.props.redirection })
-
         if (this.props.user == null) {
             await this.getUserInfo()
         } else {
@@ -921,6 +926,8 @@ class BotProfile extends Component {
                 return (<Bots />)
             } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "STATS") {
                 return (<Statistics />)
+            } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "HOME") {
+                return (<Dashboard />)
             } else {
                 var lastUser = this.state.redirectionList.pop()
                 if (lastUser.type == "PROFILE") {
@@ -1118,7 +1125,7 @@ class BotProfile extends Component {
                                         <Col xs="12" md="12">
                                             {extraInfo}
                                             <h5>
-                                                <i>{this.state.tweets.tweet.text}</i>
+                                                <i>{this.state.tweets.tweet.full_text}</i>
                                             </h5>
 
                                             {media}
@@ -1333,7 +1340,7 @@ class BotProfile extends Component {
                         <div style={{ marginTop: "25px" }}>
                             {extraInfo}
                             <h5>
-                                <i>{this.state.tweets.latestTweet.text}</i>
+                                <i>{this.state.tweets.latestTweet.full_text}</i>
                             </h5>
 
                             {media}

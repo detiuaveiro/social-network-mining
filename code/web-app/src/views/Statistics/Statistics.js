@@ -154,8 +154,12 @@ class Statistics extends Component {
 
         data.entries.forEach(tweet => {
           var tempInfo = []
+          if (tweet.full_text == null) {
+            tweet.full_text = tweet.text
+          }
+
           tempInfo.push("#" + tweet.tweet_id);
-          tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(tweet.in_reply_to_user_id)}>@jonas</span>);
+          tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(tweet.user.id_str)}>@{tweet.user.screen_name}</span>);
 
           if (tweet.is_quote_status) {
             tempInfo.push(<Badge pill color="warning" style={{ fontSize: "11px" }}>Quote</Badge>);
@@ -240,12 +244,12 @@ class Statistics extends Component {
 
         var tempActivities = []
 
-        console.log(data)
-
         data.entries.forEach(activity => {
+          console.log(activity)
+
           var tempInfo = []
           tempInfo.push(activity.action)
-          tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile("foof")}>@jonas</span>);
+          tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(activity.id_bot)}>@{activity.bot_screen_name}</span>);
 
           if (activity.target_screen_name == null || activity.target_screen_name == "") {
             tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenTweet(activity.target_id)}>#{activity.target_id}</span>);
@@ -455,7 +459,6 @@ class Statistics extends Component {
     }).then(data => {
       if (data != null && data != {}) {
         data = data.data
-
         this.setState({
           redirect: {
             user: user,
@@ -505,7 +508,6 @@ class Statistics extends Component {
       }).then(data => {
         if (data != null && data != {}) {
           data = data.data
-          console.log(data)
 
           this.setState({
             modal: true,
@@ -714,11 +716,11 @@ class Statistics extends Component {
     if (this.state.redirect.user != null) {
       if (this.state.redirect.type == "Bot") {
         return (
-          <BotProfile user={this.state.redirect.user} redirection={[{ "type": "STATS", "info": "" }]}></BotProfile>
+          <BotProfile nextUser={this.state.redirect.user} redirection={[{ "type": "STATS", "info": "" }]}></BotProfile>
         )
       } else {
         return (
-          <UserProfile user={this.state.redirect.user} redirection={[{ "type": "STATS", "info": "" }]}></UserProfile>
+          <UserProfile nextUser={this.state.redirect.user} redirection={[{ "type": "STATS", "info": "" }]}></UserProfile>
         )
       }
 
@@ -852,7 +854,7 @@ class Statistics extends Component {
             aria-describedby="alert-dialog-description"
           >
             <DialogTitle id="alert-dialog-title">
-              {"🐦 Tweet by "} <span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile('foof')}>@jonas</span> <span style={{ color: "#999", fontSize: "15px" }}>({"#" + this.state.tweets.tweet.tweet_id})</span>
+              {"🐦 Tweet by "} <span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(this.state.tweets.tweet.user.id_str)}>{this.state.tweets.tweet.user.screen_name}</span> <span style={{ color: "#999", fontSize: "15px" }}>({"#" + this.state.tweets.tweet.tweet_id})</span>
               <hr />
             </DialogTitle>
             <DialogContent>
@@ -1006,7 +1008,7 @@ class Statistics extends Component {
               }}>
               <Table
                 tableHeaderColor="primary"
-                tableHead={["Type", "User", "Target", "Date"]}
+                tableHead={["Type", "Bot", "Target", "Date"]}
                 tableData={this.state.activities.data}
               />
 
