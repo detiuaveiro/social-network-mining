@@ -31,7 +31,7 @@ def twitter_network(_):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 def twitter_sub_network(request):
 	"""
 
