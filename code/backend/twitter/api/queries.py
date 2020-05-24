@@ -37,7 +37,7 @@ def twitter_users_count():
 		return False, None, "Error obtaining the number of users"
 
 
-def twitter_users(entries_per_page, page):
+def twitter_users(entries_per_page, page, protected):
 	"""
 	Args:
 		entries_per_page: Number of entries per page or None
@@ -46,7 +46,10 @@ def twitter_users(entries_per_page, page):
 	if entries_per_page and page are both None then all users will be returned
 	"""
 	try:
-		all_users = User.objects.all()
+		if protected:
+			all_users = User.objects.filter(protected=True)
+		else:
+			all_users = User.objects.all()
 
 		data = paginator_factory(all_users, entries_per_page, page)
 		data['entries'] = [serializers.User(user).data for user in data['entries']]
@@ -83,7 +86,7 @@ def twitter_user(user_id):
 		return False, None, f"Error obtaining user (id:{user_id})"
 
 
-def twitter_users_stats(entries_per_page, page):
+def twitter_users_stats(entries_per_page, page, protected):
 	"""
 
 	Args:
@@ -94,7 +97,10 @@ def twitter_users_stats(entries_per_page, page):
 	if entries_per_page and page are both None then all stats will be returned
 	"""
 	try:
-		stats = UserStats.objects.all()
+		if protected:
+			stats = UserStats.objects.filter(protected=True)
+		else:
+			stats = UserStats.objects.all()
 
 		data = paginator_factory(stats, entries_per_page, page)
 		data['entries'] = [serializers.UserStats(us).data for us in data['entries']]
@@ -256,7 +262,7 @@ def twitter_user_following(user_id, entries_per_page, page):
 		return False, None, f"Error obtaining users's (id:{user_id}) following"
 
 
-def twitter_search_users(keywords, entries_per_page, page):
+def twitter_search_users(keywords, protected, entries_per_page, page):
 	"""
 
 	Args:
@@ -274,6 +280,8 @@ def twitter_search_users(keywords, entries_per_page, page):
 			query_filters |= Q(name__icontains=word) | Q(screen_name__icontains=word)
 
 		users = User.objects.filter(query_filters)
+		if protected:
+			users = users.filter(protected=True)
 
 		data = paginator_factory(users, entries_per_page, page)
 		data['entries'] = [serializers.User(user).data for user in data['entries']]
@@ -283,6 +291,43 @@ def twitter_search_users(keywords, entries_per_page, page):
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_search_users.__name__} -> {e}")
 		return False, None, f"Error searching users by {keywords}"
+
+
+def twitter_search_users_strict(keyword, user_type):
+	"""
+
+	Args:
+		keyword: Words to be searched
+		user_type: Types of users
+
+	Returns: User's  that matches keywords on name and screen_name wrapped on response's object divided by pages
+	if entries_per_page and page are both None then all users will be returned
+
+	"""
+	try:
+		query_params = Q()
+		if user_type == "Bot":
+			for bot in neo4j.search_bots():
+				if bot["username"].lower().startswith(keyword.lower()):
+					query_params |= Q(user_id=bot["id"])
+			if len(query_params) == 0:
+				return True, [], f"Success searching users by {keyword}"
+		else:
+			query_params = Q(screen_name__istartswith=keyword)
+		users = User.objects.filter(query_params)
+
+		user_serializer = [serializers.User(user).data for user in users]
+
+		data = [{
+			"id": user["user_id"], "screen_name": user["screen_name"], "name": user["name"]
+		} for user in user_serializer if neo4j.node_type({"id": user["user_id"]}) == user_type]
+
+		return True, data, f"Success searching users by {keyword}"
+
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: "
+					 f"Function {twitter_search_users_strict.__name__} -> {e}")
+		return False, None, f"Error searching {user_type}s by {keyword}"
 
 
 def twitter_users_type(user_id):
@@ -432,6 +477,65 @@ def twitter_tweet_replies(tweet_id):
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: "
 					 f"Function {twitter_tweet_replies.__name__} -> {e}")
 		return False, None, f"Error obtaining all tweet's (id:{tweet_id}) replies"
+
+
+def twitter_search_tweets(tweet):
+	"""
+	Args:
+		tweet_id: Tweet's ID
+
+	Return: Search tweet that starts with the id
+	"""
+	try:
+		tweets = Tweet.objects.filter(Q(tweet_id__startswith=tweet))
+
+		data = [serializers.Tweet(tweet).data["tweet_id"] for tweet in tweets]
+
+		return True, data, f"Success searching users by {tweet}"
+
+	except Exception as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_search_tweets.__name__} -> {e}")
+		return False, None, f"Error searching users by {tweet}"
+
+
+def twitter_strict_search(keyword):
+	"""
+	Args:
+		keyword: The keyword with which we want to look up the user
+
+	Return: Data with entities that have that keyword
+	"""
+	try:
+		data = {"User": [], "Bot": [], "Tweet": []}
+		if keyword.isdigit():
+			tweets = Tweet.objects.filter(Q(tweet_id__startswith=keyword))
+			data["Tweet"] = [serializers.Tweet(tweet).data["tweet_id"] for tweet in tweets]
+
+		bot_query = Q()
+		print(len(bot_query))
+		for bot in neo4j.search_bots():
+			if bot["username"].lower().startswith(keyword.lower()):
+				bot_query |= Q(user_id=bot["id"])
+
+		if len(bot_query) > 0:
+			bots = User.objects.filter(bot_query)
+			bots_serializer = [serializers.User(bot).data for bot in bots]
+			data["Bot"] = [{
+				"id": bot["user_id"], "screen_name": bot["screen_name"], "name": bot["name"]
+			} for bot in bots_serializer]
+
+		users = User.objects.filter(Q(screen_name__istartswith=keyword)).exclude(bot_query)
+		users_serializer = [serializers.User(user).data for user in users]
+		data["User"] = [{
+			"id": user["user_id"], "screen_name": user["screen_name"], "name": user["name"]
+		} for user in users_serializer]
+
+		return True, data, f"Success searching entities by {keyword}"
+
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_strict_search.__name__} -> {e}")
+		return False, None, f"Error searching users by {keyword}"
 
 
 # -----------------------------------------------------------
@@ -878,7 +982,6 @@ def __get_count_stats(types, accum, action=None):
 			 f".annotate(activity=Count('*'))" \
 			 f".order_by({','.join(order_by_list)})"
 
-	print(query)
 	stats = {}
 	query_res = list(eval(query))
 	for index in range(len(query_res)):
