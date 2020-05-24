@@ -44,7 +44,7 @@ class TwitterBot(RabbitMessaging):
 			messages_types.BotToServer.QUERY_TWEET_REPLY: QUERY_TWEET_REPLY_EXCHANGE,
 			messages_types.BotToServer.QUERY_KEYWORDS: QUERY_KEYWORDS_EXCHANGE,
 		}
-		self._redis_cache = redis.Redis()
+		self._redis_cache = redis.Redis(host=REDIS_HOST)
 
 	def __repr__(self):
 		return f"<TwitterBot id={self._id}, api={self._twitter_api}>"
