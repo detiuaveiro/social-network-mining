@@ -3,6 +3,7 @@
 import random
 import logging
 from typing import List, Union
+import redis
 
 import tweepy
 from tweepy.error import TweepError
@@ -43,6 +44,7 @@ class TwitterBot(RabbitMessaging):
 			messages_types.BotToServer.QUERY_TWEET_REPLY: QUERY_TWEET_REPLY_EXCHANGE,
 			messages_types.BotToServer.QUERY_KEYWORDS: QUERY_KEYWORDS_EXCHANGE,
 		}
+		self._redis_cache = redis.Redis()
 
 	def __repr__(self):
 		return f"<TwitterBot id={self._id}, api={self._twitter_api}>"
@@ -69,6 +71,15 @@ class TwitterBot(RabbitMessaging):
 		:param message_type: type of message to send to server
 		:param exchange: rabbit's exchange where to send the new message
 		"""
+		cache_key = to_json({
+			'type': message_type,
+			'data': data
+		})
+		if self._redis_cache.get(cache_key):
+			return
+
+		self._redis_cache.set(cache_key, '')
+		self._redis_cache.expire(BOT_TTL)
 
 		self._send_message(to_json({
 			'type': message_type,

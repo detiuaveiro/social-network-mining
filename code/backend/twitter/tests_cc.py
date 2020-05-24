@@ -6,9 +6,9 @@ from report.report_gen import Report
 def main():
 	#test_json()
 	#test.test_neo4j()
-	test_logs.test_logs_ts()
-	test_logs.test_logs()
-	test_psql.test_insert_user_with_protected()
+	#test_logs.test_logs_ts()
+	#test_logs.test_logs()
+	#test_psql.test_insert_user_with_protected()
 
 
 if __name__ == "__main__":
