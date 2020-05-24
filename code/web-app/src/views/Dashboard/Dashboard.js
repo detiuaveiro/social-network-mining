@@ -241,6 +241,10 @@ class Dashboard extends Component {
 
         data.entries.forEach(tweet => {
           var tempInfo = []
+          if (tweet.full_text == null) {
+            tweet.full_text = tweet.text
+          }
+
           tempInfo.push("#" + tweet.tweet_id);
           tempInfo.push(<span style={{ color: "#1b95e0", cursor: "pointer" }} onClick={() => this.handleOpenProfile(tweet.user.id_str)}>@{tweet.user.screen_name}</span>);
 
@@ -950,7 +954,7 @@ class Dashboard extends Component {
                   <Col xs="12" md="12">
                     {extraInfo}
                     <h5>
-                      <i>{this.state.tweets.tweet.text}</i>
+                      <i>{this.state.tweets.tweet.full_text}</i>
                     </h5>
 
                     {media}

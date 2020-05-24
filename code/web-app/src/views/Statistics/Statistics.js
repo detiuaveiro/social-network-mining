@@ -863,7 +863,7 @@ class Statistics extends Component {
                   <Col xs="12" md="12">
                     {extraInfo}
                     <h5>
-                      <i>{this.state.tweets.tweet.text}</i>
+                      <i>{this.state.tweets.tweet.full_text}</i>
                     </h5>
 
                     {media}
