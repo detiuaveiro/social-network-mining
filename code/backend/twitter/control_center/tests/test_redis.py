@@ -18,7 +18,7 @@ def test_redis_ttl():
 	r.expire(to_json(data), 1)
 
 	time.sleep(1)
-	if r.get(to_json):
+	if r.get(to_json(data)):
 		return "Something went wrong"
 
 	return "Everything's good"

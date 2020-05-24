@@ -76,10 +76,13 @@ class TwitterBot(RabbitMessaging):
 			'data': data
 		})
 		if self._redis_cache.get(cache_key):
+			logger.info(f"Found <{message_type}> in redis")
 			return
 
-		self._redis_cache.set(cache_key, '')
-		self._redis_cache.expire(BOT_TTL)
+		logger.info(f"Adding <{message_type}> to redis for {BOT_TTL}s")
+
+		self._redis_cache.set(cache_key, 10)
+		self._redis_cache.expire(cache_key, BOT_TTL)
 
 		self._send_message(to_json({
 			'type': message_type,
