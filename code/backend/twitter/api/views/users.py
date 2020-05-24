@@ -28,7 +28,7 @@ def twitter_users_count(_):
 
 
 @api_view(["GET"])
-def twitter_users(_, entries_per_page=None, page=None):
+def twitter_users(_, protected, entries_per_page=None, page=None):
 	"""
 	Args:
 		_:  Http Request (ignored in this function)
@@ -40,7 +40,7 @@ def twitter_users(_, entries_per_page=None, page=None):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_users(entries_per_page, page)
+	success, data, message = queries.twitter_users(entries_per_page, page, protected == 'T')
 	if success:
 		success_messages.append(message)
 	else:
@@ -209,7 +209,7 @@ def twitter_user_stats(_, user_id, entries_per_page=None, page=None):
 
 
 @api_view(["GET"])
-def twitter_search_users(_, keywords, entries_per_page=None, page=None):
+def twitter_search_users(_, keywords, protected, entries_per_page=None, page=None):
 	"""
 
 	Args:
@@ -225,7 +225,33 @@ def twitter_search_users(_, keywords, entries_per_page=None, page=None):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_search_users(keywords, entries_per_page, page)
+	success, data, message = queries.twitter_search_users(keywords, protected == 'T', entries_per_page, page)
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
+
+
+@api_view(["GET"])
+def twitter_search_users_strict(_, keyword, type):
+	"""
+
+	Args:
+		_:  Http Request (ignored in this function)
+		keyword: Word to be searched
+		type: Type of User to be searched (Bot or User)
+
+	Returns: Users that match keyword wrapped on response's object
+
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.twitter_search_users_strict(keyword, type)
 	if success:
 		success_messages.append(message)
 	else:
@@ -284,6 +310,28 @@ def twitter_users_type(_, user_id):
 	status = HTTP_200_OK
 
 	success, data, message = queries.twitter_users_type(user_id)
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
+
+@api_view(["GET"])
+def twitter_strict_search(_, keyword):
+	"""
+	Args:
+		_: Http Request (ignored in this function)
+		keyword: Keyword to get from twitter
+
+	Returns: Matches for the keyword
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, data, message = queries.twitter_strict_search(keyword)
 	if success:
 		success_messages.append(message)
 	else:

@@ -57,12 +57,13 @@ class Users extends Component {
     noUsers: 0,
     empty: false,
 
-    searchQuery: ""
+    searchQuery: "",
+    protec: false
   };
 
-  async getUserList(currentPage) {
+  async getUserList(currentPage, protec) {
     var tempUsers = []
-    await fetch(baseURL + "twitter/users/15/" + currentPage + "/", {
+    await fetch(baseURL + "twitter/users/" + protec + "/15/" + currentPage + "/", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -88,6 +89,12 @@ class Users extends Component {
           tempInfo.push("" + user.name);
           tempInfo.push("" + user.followers_count);
           tempInfo.push("" + user.friends_count);
+
+          if (user.protected) {
+            tempInfo.push(<i class="fas fa-lock" style={{ color: "#1da1f2" }}></i>)
+          } else {
+            tempInfo.push(<i class="fas fa-lock-open" style={{ color: "#1da1f2" }}></i>)
+          }
 
           tempInfo.push(
             <Button block outline color="primary"
@@ -127,9 +134,9 @@ class Users extends Component {
     });
   }
 
-  async searchUsers(currentPage) {
+  async searchUsers(currentPage, protec) {
     var tempUsers = []
-    await fetch(baseURL + "twitter/users/search/" + this.state.searchQuery + "/15/" + currentPage + "/", {
+    await fetch(baseURL + "twitter/users/search/" + this.state.searchQuery + "/" + protec + "/15/" + currentPage + "/", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -155,6 +162,12 @@ class Users extends Component {
           tempInfo.push("" + user.name);
           tempInfo.push("" + user.friends_count);
           tempInfo.push("" + user.followers_count);
+
+          if (user.protected) {
+            tempInfo.push(<i class="fas fa-lock" style={{ color: "#1da1f2" }}></i>)
+          } else {
+            tempInfo.push(<i class="fas fa-lock-open" style={{ color: "#1da1f2" }}></i>)
+          }
 
           tempInfo.push(
             <Button block outline color="primary"
@@ -227,21 +240,32 @@ class Users extends Component {
     if (this.props.page != null) {
       page = this.props.page
     }
+
+    var protec = "F"
+    if (this.props.protec != null && this.props.protec) {
+      protec = "T"
+      await this.setState({
+        protec: true,
+      })
+    }
+
     if (this.props.searchQuery != null && this.props.searchQuery != "") {
       await this.setState({ searchQuery: this.props.searchQuery })
-      await this.searchUsers(page)
+      await this.searchUsers(page, protec)
 
     } else {
-      await this.getUserList(page)
+      await this.getUserList(page, protec)
     }
     await this.getUserCount()
 
     await this.setState({
-      doneLoading: true
+      doneLoading: true,
     })
 
-    if (document.getElementById("searchUser") != null) {
-      document.getElementById("searchUser").value = this.state.searchQuery
+    if (this.state.error == null || !this.state.error) {
+      if (document.getElementById("searchUser") != null) {
+        document.getElementById("searchUser").value = this.state.searchQuery
+      }
     }
   }
 
@@ -262,18 +286,27 @@ class Users extends Component {
       curPage: value
     })
 
-    if (this.state.searchQuery.length == 0) {
-      await this.getUserList(value)
-    } else {
-      await this.searchUsers(value)
+    var protec = "F"
+    if (document.getElementById('protected') != null) {
+      if (document.getElementById("protected").checked) {
+        protec = "T"
+      }
     }
 
-    document.getElementById("loadedTable").style.visibility = "visible"
-    document.getElementById("loadingTable").style.display = "none"
+    if (this.state.searchQuery.length == 0) {
+      await this.getUserList(value, protec)
+    } else {
+      await this.searchUsers(value, protec)
+    }
+
+    if (this.state.error == null || !this.state.error) {
+      document.getElementById("loadedTable").style.visibility = "visible"
+      document.getElementById("loadingTable").style.display = "none"
+    }
   };
 
   async search() {
-    if (document.getElementById("searchUser").value != null &&  document.getElementById("searchUser").value!="" && !document.getElementById("searchUser").value.match("^[A-Za-z0-9 ]+$")) {
+    if (document.getElementById("searchUser").value != null && document.getElementById("searchUser").value != "" && !document.getElementById("searchUser").value.match("^[A-Za-z0-9 ]+$")) {
       toast.error('Sorry, the search parameter can\'t include characters like @ or #. Please use only letters and numbers', {
         position: "top-center",
         autoClose: 7500,
@@ -291,10 +324,17 @@ class Users extends Component {
         searchQuery: document.getElementById("searchUser").value
       })
 
+      var protec = "F"
+      if (document.getElementById('protected') != null) {
+        if (document.getElementById("protected").checked) {
+          protec = "T"
+        }
+      }
+
       if (this.state.searchQuery.length == 0) {
-        await this.getUserList(1)
+        await this.getUserList(1, protec)
       } else {
-        await this.searchUsers(1)
+        await this.searchUsers(1, protec)
       }
 
       if (document.getElementById("loadedTable") != null) {
@@ -307,6 +347,31 @@ class Users extends Component {
   keydown(e) {
     if (e.keyCode == 13) {
       document.getElementById("searchButton").click()
+    }
+  }
+
+  changeProtected = async () => {
+    document.getElementById("loadedTable").style.visibility = "hidden"
+    document.getElementById("loadingTable").style.display = ""
+
+
+    await this.setState({ protec: !this.state.protec })
+
+    var protec = "F"
+    if (document.getElementById('protected') != null) {
+      if (document.getElementById("protected").checked) {
+        protec = "T"
+      }
+    }
+    if (this.state.searchQuery.length == 0) {
+      await this.getUserList(1, protec)
+    } else {
+      await this.searchUsers(1, protec)
+    }
+
+    if (document.getElementById("loadedTable") != null) {
+      document.getElementById("loadedTable").style.visibility = "visible"
+      document.getElementById("loadingTable").style.display = "none"
     }
   }
   /////////////////////////////////////////////////////////////////////
@@ -393,11 +458,25 @@ class Users extends Component {
             }}>
             <Table
               tableHeaderColor="primary"
-              tableHead={["Username", "Name", "Followers", "Following", ""]}
+              tableHead={["Username", "Name", "Followers", "Following", "Type", ""]}
               tableData={this.state.users}
             />
 
           </div>
+        }
+
+        var checkbox = null
+
+        if (this.state.protec) {
+          checkbox = <FormGroup check>
+            <Input className="form-check-input" type="checkbox" id="protected" name="option-check" defaultChecked value={this.state.protec} onChange={this.changeProtected} />
+            <Label className="form-check-label" check htmlFor="inline-checkbox2">Private Accounts Only</Label>
+          </FormGroup>
+        } else {
+          checkbox = <FormGroup check>
+            <Input className="form-check-input" type="checkbox" id="protected" name="option-check" value={this.state.protec} onChange={this.changeProtected} />
+            <Label className="form-check-label" check htmlFor="inline-checkbox2">Private Accounts Only</Label>
+          </FormGroup>
         }
 
         users =
@@ -407,6 +486,7 @@ class Users extends Component {
                 <div class="col-md-4 col-sm-12 form-group">
                   <input type="text" placeholder="Search by name or username" class="form-control" id="searchUser" onKeyDown={this.keydown} />
                 </div>
+
                 <div class="col-md-2 col-sm-12">
                   <Button outline color="primary" id="searchButton"
                     onClick={() => this.search()}
@@ -417,6 +497,12 @@ class Users extends Component {
                   </Button>
                 </div>
               </div>
+              <div class="row">
+                <div class="col-md-2 col-sm-12 form-group">
+                  {checkbox}
+                </div>
+              </div>
+
               {table}
               <div
                 id="loadingTable"
@@ -535,7 +621,7 @@ class Users extends Component {
       }
     } else {
       return (
-        <UserProfile user={this.state.user} redirection={[{ "type": "USERS", "info": { "page": this.state.curPage, "query": this.state.searchQuery } }]}></UserProfile>
+        <UserProfile user={this.state.user} redirection={[{ "type": "USERS", "info": { "page": this.state.curPage, "query": this.state.searchQuery, "protec": this.state.protec } }]}></UserProfile>
       )
     }
 

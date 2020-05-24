@@ -11,6 +11,7 @@ class User(serializers.Serializer):
 	followers_count = serializers.IntegerField()
 	friends_count = serializers.IntegerField()
 	profile_image_url_https = serializers.CharField()
+	protected = serializers.BooleanField()
 
 
 class UserStats(serializers.Serializer):
@@ -18,6 +19,7 @@ class UserStats(serializers.Serializer):
 	timestamp = serializers.DateTimeField()
 	followers = serializers.IntegerField()
 	following = serializers.IntegerField()
+	protected = serializers.BooleanField()
 
 
 class Variant(serializers.Serializer):

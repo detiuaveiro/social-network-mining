@@ -2,6 +2,8 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 
 
+NETWORK_QUERY = "MATCH r=() - [] -> ()  RETURN r LIMIT 1500"
+
 def create_response(data=None, success_messages=None, error_messages=None, status=HTTP_200_OK):
 	return Response({
 		"data": data,
