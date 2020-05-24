@@ -48,7 +48,7 @@ def factory():
 
 @pytest.fixture
 def users_list(db):
-	return mixer.cycle(20).blend(User, name="user1", screen_name="user2")
+	return mixer.cycle(20).blend(User, name="user1", screen_name="user2", protected=True)
 
 
 @pytest.fixture
@@ -79,33 +79,33 @@ def test_empty_twitter_users_count_request(error_catcher, factory, db):
 
 @catch_exception
 def test_successful_twitter_users_request(error_catcher, factory, users_list):
-	path = reverse('twitter_users')
+	path = reverse('twitter_users', kwargs={"protected": 'T'})
 	request = factory.get(path)
-	response = users.twitter_users(request)
+	response = users.twitter_users(request, protected='T')
 	assert is_response_successful_with_pagination(response, len(users_list))
 
 
 @catch_exception
 def test_successful_twitter_users_request_with_pagination(error_catcher, factory, users_list):
-	path = reverse('twitter_users', kwargs={'entries_per_page': 10, 'page': 1})
+	path = reverse('twitter_users', kwargs={"protected": 'T', 'entries_per_page': 10, 'page': 1})
 	request = factory.get(path)
-	response = users.twitter_users(request, entries_per_page='10', page='1')
+	response = users.twitter_users(request, entries_per_page='10', page='1', protected='T')
 	assert is_response_successful_with_pagination(response, 10)
 
 
 @catch_exception
 def test_empty_twitter_users_request(error_catcher, factory, db):
-	path = reverse('twitter_users')
+	path = reverse('twitter_users', kwargs={"protected": 'T'})
 	request = factory.get(path)
-	response = users.twitter_users(request)
+	response = users.twitter_users(request, protected='T')
 	assert is_response_empty_with_pagination(response)
 
 
 @catch_exception
 def test_unsuccessfully_twitter_users_request_with_pagination(error_catcher, factory, users_list):
-	path = reverse('twitter_users', kwargs={'entries_per_page': 0, 'page': 1})
+	path = reverse('twitter_users', kwargs={"protected": 'T', 'entries_per_page': 0, 'page': 1})
 	request = factory.get(path)
-	response = users.twitter_users(request, entries_per_page='0', page='1')
+	response = users.twitter_users(request, entries_per_page='0', page='1', protected='T')
 	assert is_response_unsuccessful(response)
 
 
@@ -162,31 +162,33 @@ def test_unsuccessfully_twitter_user_tweets_request_with_pagination(error_catche
 
 @catch_exception
 def test_successful_twitter_search_users_request(error_catcher, factory, users_list):
-	path = reverse('twitter_search_users', kwargs={'keywords': "user"})
+	path = reverse('twitter_search_users', kwargs={'keywords': "user", "protected": "T"})
 	request = factory.get(path)
-	response = users.twitter_search_users(request, keywords="user")
+	response = users.twitter_search_users(request, keywords="user", protected='T')
 	assert is_response_successful_with_pagination(response, len(users_list))
 
 
 @catch_exception
 def test_successful_twitter_search_users_request_with_pagination(error_catcher, factory, users_list):
-	path = reverse('twitter_search_users', kwargs={'keywords': "user", 'entries_per_page': 10, 'page': 1})
+	path = reverse('twitter_search_users',
+	               kwargs={'keywords': "user", 'entries_per_page': 10, 'page': 1, "protected": "T"})
 	request = factory.get(path)
-	response = users.twitter_search_users(request, keywords="user", entries_per_page='10', page='1')
+	response = users.twitter_search_users(request, keywords="user", entries_per_page='10', page='1', protected='T')
 	assert is_response_successful_with_pagination(response, 10)
 
 
 @catch_exception
 def test_empty_twitter_search_users_tweets_request(error_catcher, factory, db):
-	path = reverse('twitter_search_users', kwargs={'keywords': "user"})
+	path = reverse('twitter_search_users', kwargs={'keywords': "user", "protected": "T"})
 	request = factory.get(path)
-	response = users.twitter_search_users(request, keywords="user")
+	response = users.twitter_search_users(request, keywords="user", protected='T')
 	assert is_response_empty_with_pagination(response)
 
 
 @catch_exception
 def test_unsuccessfully_twitter_search_users_request_with_pagination(error_catcher, factory, users_list):
-	path = reverse('twitter_search_users', kwargs={'keywords': "user", 'entries_per_page': 0, 'page': 1})
+	path = reverse('twitter_search_users', kwargs={'keywords': "user", 'entries_per_page': 0,
+	                                               'page': 1, "protected": "T"})
 	request = factory.get(path)
-	response = users.twitter_search_users(request, keywords="user", entries_per_page='0', page='1')
+	response = users.twitter_search_users(request, keywords="user", entries_per_page='0', page='1', protected='T')
 	assert is_response_unsuccessful(response)

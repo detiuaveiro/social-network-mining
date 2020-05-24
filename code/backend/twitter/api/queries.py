@@ -47,10 +47,8 @@ def twitter_users(entries_per_page, page, protected):
 	if entries_per_page and page are both None then all users will be returned
 	"""
 	try:
-		if protected:
-			all_users = User.objects.filter(protected=True)
-		else:
-			all_users = User.objects.all()
+
+		all_users = User.objects.filter(protected=protected)
 
 		data = paginator_factory(all_users, entries_per_page, page)
 		data['entries'] = [serializers.User(user).data for user in data['entries']]
