@@ -44,6 +44,7 @@ import FadeIn from "react-fade-in";
 import Lottie from "react-lottie";
 
 import * as loadingAnim from "../../assets/animations/squares_1.json";
+import NetworkReport from './NetworkReport';
 
 
 class Network extends Component {
@@ -119,7 +120,9 @@ class Network extends Component {
     modalType: null,
     modalInfo: null,
 
-    foundNode: null
+    foundNode: null,
+
+    redirect: false
   }
 
   async getBaseNetwork() {
@@ -138,14 +141,17 @@ class Network extends Component {
 
         data = data.data
 
+        console.log(data)
+
 
         var tempNodes = []
         var tempLinks = []
 
 
-        data.forEach(item => {
+        data.r.forEach(item => {
+          console.log(item)
+
           if (item.type == "node") {
-            console.log(item)
             var tempItem = {}
             tempItem['id'] = item.id
             tempItem['name'] = item.properties.name
@@ -231,12 +237,26 @@ class Network extends Component {
       loading: true
     })
 
-    // Get Network
-    //this.getBaseNetwork()
+    if (this.props.returnValues == null) {
+      // Get Network
+      this.getBaseNetwork()
 
-    await this.setState({
-      loading: false
-    })
+      await this.setState({
+        loading: false
+      })
+    } else {
+
+      await this.setState({
+        loading: false
+      })
+      toast.success('Successfully processed query!', {
+        position: "top-center",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+    }
 
     document.getElementById("loadedGraph").style.visibility = "visible"
     document.getElementById("loadingGraph").style.display = "none"
@@ -505,6 +525,12 @@ class Network extends Component {
       })
     });
   }
+
+  handleOpenQuery() {
+    this.setState({
+      redirect: true
+    })
+  }
   /////////////////////////////////////////////////////////////////////
 
 
@@ -609,9 +635,25 @@ class Network extends Component {
 
     }
 
+    if (this.state.redirect) {
+      return (<NetworkReport></NetworkReport>)
+    }
+
 
     return (
       <div className="animated fadeIn">
+        <ToastContainer
+          position="top-center"
+          autoClose={2500}
+          hideProgressBar={false}
+          transition={Flip}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnVisibilityChange
+          draggable
+          pauseOnHover
+        />
         <Container fluid>
           <Row>
             <Col xs="12" sm="12" md="12">
@@ -732,7 +774,7 @@ class Network extends Component {
                   <Row style={{ marginTop: "25px" }}>
                     <Col md="6">
                       <Button block outline color="success"
-                        onClick={() => this.searchNetwork()}
+                        onClick={() => this.handleOpenQuery()}
                       > Query <i class="fas fa-search" style={{ marginLeft: "8px" }}></i></Button>
                     </Col>
                     <Col md="6" style={{ alignItems: "center" }}>
