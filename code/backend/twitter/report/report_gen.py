@@ -70,7 +70,15 @@ class Exporter:
 
 class Report:
 	mongo = MongoAPI()
-	neo = Neo4jAPI()
+	NEO4J_PORT = os.environ.get('NEO4J_PORT', None)
+
+	if NEO4J_PORT:
+		FULL_URL = f'neo4j:{NEO4J_PORT}'
+		print(FULL_URL)
+		neo4j = Neo4jAPI(FULL_URL)
+	else:
+		neo4j = Neo4jAPI()
+
 	exporter = Exporter(EXPORT_DIR)
 
 	@staticmethod
