@@ -846,7 +846,7 @@ def twitter_sub_network(request):
 			"end": request["end"]
 		}
 
-		return True, neo4j.export_query(Report.query_builder(match, request["limit"])), \
+		return True, neo4j.export_query(Report.neo_query_builder(match, request["limit"])), \
 			   "Success obtaining a network defined by a query"
 
 	except AttributeError as e:

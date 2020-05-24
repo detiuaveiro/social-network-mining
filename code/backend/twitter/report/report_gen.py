@@ -173,7 +173,7 @@ class Report:
 		locations_dict[node].append(location)
 
 	@staticmethod
-	def query_builder(match: dict, limit=None):
+	def neo_query_builder(match: dict, limit=None):
 		query = "MATCH r="
 		if ("relation" in match['start'] and match['start']['relation']) \
 				or ('type' in match['start'] and match['start']['type']) \
@@ -205,7 +205,7 @@ class Report:
 	def create_report(match: dict, params: dict, limit=None, export="csv"):
 		params = Report.translate_params(params)
 
-		query = Report.query_builder(match, limit)
+		query = Report.neo_query_builder(match, limit)
 
 		result = []
 
