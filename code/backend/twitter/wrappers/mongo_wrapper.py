@@ -29,13 +29,14 @@ class MongoAPI:
         self.tweets = eval(f"self.client.{credentials.MONGO_DB}.tweets")
         self.messages = eval(f"self.client.{credentials.MONGO_DB}.messages")
 
+
     # TODO - IMPLEMENT ME PLEASE!
     def verify_integrity(self, collection, document):
         """Verifies if the document to be inserted has the same structure as the other documents in the collection
 
         @param collection: The collection we want to insert the document into
         @param document: The document we want to insert
-        @return: True or false wether the integrity is verified or not
+        @return: True or false whether the integrity is verified or not
         """
         pass
 
@@ -175,8 +176,8 @@ class MongoAPI:
             else:
                 projection = {"_id": True}
 
-            log.debug(query)
-            log.debug(projection)
+            # log.debug(query)
+            # log.debug(projection)
 
             result = None
             if single:

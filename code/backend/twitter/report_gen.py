@@ -72,7 +72,6 @@ class Report:
 		node_type = node["labels"][0]
 
 		if node_type in params and len(params[node_type]) > 0:
-
 			if node_type == TWEET_LABEL:
 				mongo_info = self.mongo.search('tweets', query={"id_str": node['properties']['id']},
 										 fields=params[node_type], single=True)
@@ -93,14 +92,17 @@ class Report:
 		return None
 
 	@staticmethod
-	def __insert_info_list(info_dict, results_list, placement_dict):
+	def __insert_info_list(info_dict, results_list, placement_dict, label=None):
 		if results_list:
 			for result in results_list:
 				for index, key in placement_dict[result["id_str"]]:
+					if label:
+						result["label"] = label
 					info_dict[index][key] = result
 		return info_dict
 
-	def __query_builder(self, query, node):
+	@staticmethod
+	def __query_builder(query, node):
 		node_label = node["labels"][0]
 		if node_label == TWEET_LABEL:
 			query["Tweet"].append(node["properties"]["id"])
@@ -111,20 +113,23 @@ class Report:
 
 	def __get_results(self, result, query, placement, params):
 		result_tweets = self.__get_mongo_aggregate("tweets", query['Tweet'], params['Tweet'])
-		result_users = self.__get_mongo_aggregate("users", query['User'], params['User'])
-		result_bots = self.__get_mongo_aggregate("users", query['Bot'], params['Bot'])
+		result = self.__insert_info_list(result, result_tweets, placement, label='Tweet')
 
-		for res in [result_tweets, result_users, result_bots]:
-			result = self.__insert_info_list(result, res, placement)
+		result_users = self.__get_mongo_aggregate("users", query['User'], params['User'])
+		result = self.__insert_info_list(result, result_users, placement, label='User')
+
+		result_bots = self.__get_mongo_aggregate("users", query['Bot'], params['Bot'])
+		result = self.__insert_info_list(result, result_bots, placement, label='Bot')
 
 		return result
 	
-	def __add_to_keep_track(self, locations_dict, node, location):
+	@staticmethod
+	def __add_to_keep_track(locations_dict, node, location):
 		if node not in locations_dict:
 			locations_dict[node] = []
 		locations_dict[node].append(location)
 
-	def create_report(self, match: dict, params: dict, limit=None, export='csv'):
+	def create_report(self, match: dict, params: dict, limit=None, export=ExportType.CSV):
 		query = f"MATCH r={self.__node_builder(match['start']['node'])}" \
 				f"{self.__relation_builder(match['start']['relation'])}"
 
@@ -137,7 +142,7 @@ class Report:
 				 f"return r"
 
 		logger.info(query)
-
+		
 		if limit:
 			query += f" limit {limit}"
 
@@ -166,6 +171,7 @@ class Report:
 			self.__add_to_keep_track(keep_track_places, node_start["properties"]["id"], (row_index, "start"))
 			relation["start"] = {param: None for param in params[node_start["labels"][0]]}
 			relation["start"]["id_str"] = node_start["properties"]["id"]
+			relation["start"]["label"] = node_start["labels"][0]
 
 			for index in range(len(relations) - 1):
 				rel = relations[index]
@@ -175,6 +181,7 @@ class Report:
 										 (row_index, "interm" + str(index + 1)))
 				relation["interm" + str(index+1)] = {param: None for param in params[rel["end"]["labels"][0]]}
 				relation["interm" + str(index + 1)]["id_str"] = rel["end"]["properties"]["id"]
+				relation["interm" + str(index + 1)]["label"] = rel["end"]["labels"][0]
 
 			# Add ending node
 			relation['rel' + str(len(relations))] = {"name": relations[-1]["label"]}
@@ -183,6 +190,7 @@ class Report:
 			self.__add_to_keep_track(keep_track_places, node_end["properties"]["id"], (row_index, "end"))
 			relation["end"] = {param: None for param in params[node_end["labels"][0]]}
 			relation["end"]["id_str"] = node_end["properties"]["id"]
+			relation["end"]["label"] = node_end["labels"][0]
 
 			# Append to result
 			result.append(relation)
@@ -209,10 +217,11 @@ class Report:
 			headers = [key + "_" + prop for key in result[0] for prop in result[0][key]]
 			try:
 				with open(f"{self.directory}/export.csv", 'w') as file:
-					writer = csv.writer(file)
+					writer = csv.writer(file, quotechar='"', escapechar='\\')
 					writer.writerow(headers)
 					for data in result:
-						writer.writerow([data[key][prop] for key in data for prop in data[key]])
+						writer.writerow([str(data[key][prop]).encode('unicode_escape').decode('latin-1')
+						                 for key in data for prop in data[key]])
 			except Exception as error:
 				logger.exception(f"Occurred an error <{error}>: ")
 
@@ -248,40 +257,24 @@ if __name__ == '__main__':
 		'Bot': ['name', 'screen_name', 'friends_count', "id_str"]
 	}
 
-	for export_type in Report.ExportType:
-		print(export_type)
-		rep.create_report(query, params, export=export_type)
+	#for export_type in Report.ExportType:
+	#	print(export_type)
+	#	rep.create_report(query, params, export=export_type)
 
 	# Test intermediates
 	query2 = {
 		'start': {
-			'node': {
-				'label': "User"
-			},
+			'node': {},
 			'relation': {
-				'label': ['WROTE']
+				'direction': 'Bidirectional'
 			}
 		},
-		'intermediates': [
-			{
-				'node': {
-					'label': "Tweet"
-				},
-				'relation': {
-					'label': ['RETWEETED', "QUOTED", "REPLIED"],
-					"direction": "Reverse"
-				}
-			}
-		],
 		'end': {
-			'node': {
-				'label': "User"
-			}
+			'node': {}
 		}
 	}
-	for export_type in Report.ExportType:
-		print(export_type)
-		rep.create_report(query2, params, export=export_type)
+
+	rep.create_report(query2, params, limit=5000, export=Report.ExportType.CSV)
 #
 #
 #

@@ -14,6 +14,7 @@ class ServerToBot(IntEnum):
 	KEYWORDS = 7
 	GET_TWEET_BY_ID = 8
 	GET_USER_BY_ID = 9
+	FOLLOW_FIRST_TIME_USERS = 10
 
 	def __str__(self):
 		return self.name
@@ -44,8 +45,7 @@ class BotToServer(IntEnum):
 
 class FollowServiceToServer(IntEnum):
 	REQUEST_POLICIES = 0
-	SAVE_TWEETS = 1
-	FOLLOW_USER = 2
+	FOLLOW_USER = 1
 
 	def __str__(self):
 		return self.name
@@ -57,4 +57,3 @@ class ServerToFollowService(IntEnum):
 
 	def __str__(self):
 		return self.name
-

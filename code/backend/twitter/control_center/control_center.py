@@ -14,13 +14,15 @@ from wrappers.rabbitmq_wrapper import Rabbitmq
 
 from control_center.policies_types import PoliciesTypes
 from control_center.PEP import PEP
-from messages_types import ServerToBot, BotToServer
+from messages_types import ServerToBot, BotToServer, ServerToFollowService, FollowServiceToServer
 
 import log_actions
 import neo4j_labels
 from control_center import mongo_utils
 
-from credentials import PARLAI_URL, PARLAI_PORT
+from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, TASK_FOLLOW_QUEUE, \
+	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE
+
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
@@ -28,7 +30,6 @@ handler = logging.StreamHandler(open("dbwritter.log", "w"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
-
 
 PROBABILITY_SEARCH_KEYWORD = 0.0001
 
@@ -55,9 +56,17 @@ class Control_Center(Rabbitmq):
 		self.replier = ParlaiReplier(PARLAI_URL, PARLAI_PORT)
 		self.translator = Translator()
 
+		self.exchange = None
+
 	def action(self, message):
+		if self.exchange == SERVICE_QUERY_EXCHANGE:
+			self.follow_service_action(message)
+		else:
+			self.bot_action(message)
+
+	def bot_action(self, message):
 		message_type = message['type']
-		log.info(f"Received new action: {message['bot_id']} wants to do {BotToServer(message_type).name}")
+		log.info(f"Received new action from bot: {message['bot_id']} wants to do {BotToServer(message_type).name}")
 
 		# search for keyword tweets time to time
 		if random.random() < PROBABILITY_SEARCH_KEYWORD:
@@ -74,7 +83,7 @@ class Control_Center(Rabbitmq):
 			self.request_retweet(message)
 
 		elif message_type == BotToServer.QUERY_TWEET_REPLY:
-			self.request_tweet_reply(message)
+			self.__request_tweet_reply(message)
 
 		elif message_type == BotToServer.QUERY_FOLLOW_USER:
 			self.request_follow_user(message)
@@ -97,8 +106,27 @@ class Control_Center(Rabbitmq):
 		elif message_type == BotToServer.QUERY_KEYWORDS:
 			self.__send_keywords(message)
 
+	def follow_service_action(self, message):
+		message_type = message['type']
+		log.info(
+			f"Received new action from follow_user service: Wants to do {FollowServiceToServer(message_type).name}")
+
+		if message_type == FollowServiceToServer.REQUEST_POLICIES:
+			self.__all_policies()
+		elif message_type == FollowServiceToServer.FOLLOW_USER:
+			self.__follow_user(message)
+
+	def __all_policies(self):
+		log.debug("Obtaining all policies available")
+		policies = self.postgres_client.search_policies()
+		if policies['success']:
+			log.debug("Success obtaining all policies available")
+			self.send_to_follow_user_service(ServerToFollowService.POLICIES_KEYWORDS, policies['data'])
+		else:
+			log.error("Error obtaining all policies available")
+
 	# Need DB API now
-	def __follow_user(self, user1_id, user2_id):
+	def __find_followers(self, user1_id, user2_id):
 		"""
 		Action to follow user:
 				Calls neo4j to add new relation between user (bot or normal user) and user
@@ -218,17 +246,12 @@ class Control_Center(Rabbitmq):
 		@return Boolean value confirming it found the log recently
 		"""
 		bot_logs = self.postgres_client.search_logs(
-			params={"bot_id": bot, "action": action, "target_id": target},
+			params={"bot_id": bot, "action": action, "target_id": target,
+			        "timestamp": datetime.now() - timedelta(hours=1)},
 			limit=1
 		)
-
-		if bot_logs["success"] and len(bot_logs['data']) > 0:
-			log.debug("Found the logs in the database")
-			log_ts = (timedelta(hours=1) + bot_logs['data'][0]['timestamp']).replace(tzinfo=self.__utc)
-			now = datetime.now().replace(tzinfo=self.__utc)
-			return log_ts > now
-
-		return False
+		log.debug("Found the logs in the database")
+		return bot_logs["success"] and len(bot_logs['data']) > 0
 
 	def request_tweet_like(self, data):
 		"""
@@ -331,7 +354,7 @@ class Control_Center(Rabbitmq):
 				"target_id": int(data['data']['id_str'])
 			})
 
-	def request_tweet_reply(self, data: dict):
+	def __request_tweet_reply(self, data: dict):
 		"""
 		Action to request a reply:
 				Calls the control center to request the reply
@@ -377,10 +400,20 @@ class Control_Center(Rabbitmq):
 				"target_id": int(tweet['id_str'])
 			})
 
+			# get bot policies
+			policy_list = self.postgres_client.search_policies({
+				"bot_id": int(data["bot_id_str"]),
+				"filter": "Keywords"
+			})
+
+			keywords = []
+			if policy_list['success']:
+				keywords = random.choice(policy_list["data"])["params"]
+
 			# remove urls, tags from text and emojis
 			prepared_text = tweet_to_simple_text(tweet['text'] if 'full_text' not in tweet else tweet['full_text'])
 
-			reply_text = self.replier.generate_response(prepared_text)
+			reply_text = self.replier.generate_response(prepared_text, keywords=keywords)
 			if reply_text:
 				log.info(f"Sending reply text <{reply_text}>")
 
@@ -420,6 +453,8 @@ class Control_Center(Rabbitmq):
 		user_id_str = user['id_str']
 
 		log.info(f"Bot {data['bot_id']} requests a follow from {user_id}")
+
+		# verify if the user already requested to follow the user
 		if self.__found_in_logs(data["bot_id_str"], log_actions.FOLLOW_REQ, user_id_str):
 			log.info("Action was already requested recently")
 			return
@@ -430,35 +465,57 @@ class Control_Center(Rabbitmq):
 			"target_id": user_id_str
 		})
 
-		request_accepted = self.pep.receive_message({
-			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
-			"bot_id": data['bot_id'],
-			"bot_id_str": data['bot_id_str'],
-			"user": user,
-			"tweets": tweets
+		# get the policies to this bot
+		policies = self.postgres_client.search_policies({
+			"bot_id": int(data["bot_id_str"])
 		})
 
-		if request_accepted:
-			log.info(f"Bot {data['bot_id']} request accepted to follow {user_id}")
+		all_policies = self.postgres_client.search_policies()
 
-			self.postgres_client.insert_log({
-				"bot_id": int(data["bot_id_str"]),
-				"action": log_actions.FOLLOW_REQ_ACCEPT,
-				"target_id": user_id_str
-			})
-			self.send(data['bot_id'], ServerToBot.FOLLOW_USERS, {"type": "id", "data": [user_id_str]})
-		else:
-			log.warning(f"Bot {data['bot_id']} request denied to follow {user_id}")
-			self.postgres_client.insert_log({
-				"bot_id": data["bot_id_str"],
-				"action": log_actions.FOLLOW_REQ_DENY,
-				"target_id": user_id_str
-			})
+		if policies['success'] and all_policies['success']:
+			params = {
+				'user': user,
+				'bot_id_str': data["bot_id_str"],
+				'tweets': [t['full_text'] for t in tweets],
+				'policies': policies['data'],
+				'all_policies': all_policies['data']
+			}
 
-		# save the tweets we received on the databases
+			self.send_to_follow_user_service(ServerToFollowService.REQUEST_FOLLOW_USER, params)
+
 		for tweet in tweets:
 			data['data'] = tweet
 			self.save_tweet(data)
+
+	def __follow_user(self, data):
+		"""
+		Function that sends a follow user  action status (Accepted, denied) to bot
+		@param data: dict containing the necessary info
+		"""
+
+		status = data['data']['status']
+		user = data['data']['user']
+		bot_id = int(data['data']['bot_id_str'])
+		user_id = user['id']
+		user_id_str = user['id_str']
+
+		if status:
+			log.info(f"Bot {bot_id} request accepted to follow {user_id}")
+
+			self.postgres_client.insert_log({
+				"bot_id": bot_id,
+				"action": log_actions.FOLLOW_REQ_ACCEPT,
+				"target_id": user_id_str
+			})
+
+			self.send(bot_id, ServerToBot.FOLLOW_USERS, {"type": "id", "data": [user_id_str]})
+		else:
+			log.warning(f"Bot {bot_id} request denied to follow {user_id}")
+			self.postgres_client.insert_log({
+				"bot_id": bot_id,
+				"action": log_actions.FOLLOW_REQ_DENY,
+				"target_id": user_id_str
+			})
 
 	def save_user(self, data):
 		"""
@@ -486,11 +543,26 @@ class Control_Center(Rabbitmq):
 			})
 
 			# we send the list of initial users to follow
-			follow_list = self.pep.first_time_policy()
+			# follow_list = self.pep.first_time_policy()
+
+			bot_policies = self.postgres_client.search_policies({
+				"bot_id": int(data["bot_id_str"])
+			})
+
+			bot_policies_args = []
+			for policy in bot_policies:
+				bot_policies_args += policy['params']
+
+			self.send(bot_id, ServerToBot.FOLLOW_FIRST_TIME_USERS, {
+				'queries': bot_policies_args
+			})
+
+			"""
 			self.send(bot_id, ServerToBot.FOLLOW_USERS, {
 				"type": "screen_name",
 				"data": follow_list,
 			})
+			"""
 
 		is_bot = self.neo4j_client.check_bot_exists(user["id_str"])
 		if is_bot:
@@ -553,7 +625,7 @@ class Control_Center(Rabbitmq):
 			})
 
 			if 'following' in user and user['following']:
-				self.__follow_user(bot_id_str, user['id_str'])
+				self.__find_followers(bot_id_str, user['id_str'])
 
 	def __save_user_or_blank_user(self, data):
 		user = data['data']
@@ -804,7 +876,7 @@ class Control_Center(Rabbitmq):
 				'data': follower
 			})
 
-			self.__follow_user(follower['id_str'], user_id_str)
+			self.__find_followers(follower['id_str'], user_id_str)
 
 	# TODO -> in the future we can ask the bot to follow this users (when the heuristic to follow someone is done)
 
@@ -859,21 +931,35 @@ class Control_Center(Rabbitmq):
 			'params': params
 		}
 		try:
-			self._send(routing_key='tasks.twitter.' + str(bot), message=payload)
+			self._send(queue=TASKS_QUEUE_PREFIX, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload,
+			           father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
-			self._setup()
-			self.send(bot, message_type, params)
 
-	def received_message_handler(self, channel, method, properties, body):
+	def send_to_follow_user_service(self, message_type, params):
+		"""
+		Function the task uses to send messages through rabbit to follow user service
+
+		@param message_type: ResponseTypes object with the type of message
+		@param params: dict with arguments of the message
+		"""
+		log.info(f"Sending {message_type.name} to follow user service")
+		log.debug(f"Content: {params}")
+		payload = {
+			'type': message_type,
+			'params': params
+		}
+		try:
+			self._send(queue=TASK_FOLLOW_QUEUE, routing_key=TASK_FOLLOW_ROUTING_KEY_PREFIX, message=payload,
+			           father_exchange=self.exchange)
+		except Exception as error:
+			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
+
+	def _received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
+		self.exchange = method.exchange
 		message = json.loads(body)
 		self.action(message)
-
-	def run(self):
-		while True:
-			self._receive()
-			log.warning("Restarting again...")
 
 	def close(self):
 		self.neo4j_client.close()

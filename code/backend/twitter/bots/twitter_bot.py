@@ -154,7 +154,7 @@ class TwitterBot(RabbitMessaging):
 			- since_id: Returns only statuses with an ID greater than (that is, more recent than) the specified ID
 			- max_id: Returns only statuses with an ID less than (that is, older than) or equal to the specified ID
 			- count: Specifies the number of statuses to retrieve
-			- page: Specifies the page of results to retrieve. Note: there are pagination limits 
+			- page: Specifies the page of results to retrieve. Note: there are pagination limits
 		"""
 		logger.debug(f"Getting timeline tweets for User with id={user.id}")
 		if user.id == self.user.id:
@@ -238,14 +238,14 @@ class TwitterBot(RabbitMessaging):
 
 				if 'following' in user_attributes and tweet_user.protected and not tweet_user.following:
 					logger.warning(f"Found user with ID={tweet_user.id} but he's protected and we're not "
-								   f"following him, so can't read his timeline")
+					               f"following him, so can't read his timeline")
 
 				elif 'suspended' in user_attributes and tweet_user.suspended:
 					logger.warning(f"Found user with ID={tweet_user.id} but his account was suspended, "
-								   f"so can't read his timeline")
+					               f"so can't read his timeline")
 				else:
 					self.__read_timeline(tweet_user, jump_users=jump_users,
-										 max_depth=max_depth, current_depth=current_depth + 1)
+					                     max_depth=max_depth, current_depth=current_depth + 1)
 		return total_read_time
 
 	def __direct_messages(self):
@@ -279,7 +279,7 @@ class TwitterBot(RabbitMessaging):
 					self.__follow_user(user)
 			except TweepError as error:
 				logger.exception(f"Unable to find user identified by [{id_type}] with <{user_id}> because of error "
-								 f"<{error}>:")
+				                 f"<{error}>:")
 
 	def __follow_user(self, user: User):
 		"""Function to follow a specific user. It sends the user to the server and then, if the bot doesn't follow the
@@ -305,7 +305,7 @@ class TwitterBot(RabbitMessaging):
 		if not user.protected or (user.protected and user.following):
 			self.__read_timeline(user, jump_users=False, max_depth=3)
 
-	def __get_followers(self, user_id: int):
+	def __get_followers(self, user_id: str):
 		"""
 		Function to get follower of some user
 
@@ -436,6 +436,13 @@ class TwitterBot(RabbitMessaging):
 		except TweepError as error:
 			logger.exception(f"Error {error} posting a new tweet: ")
 
+	def __follow_first_time_users(self, queries):
+		number_per_tag = 2
+
+		for q in queries:
+			for user in self._twitter_api.search_users(q=q, count=number_per_tag):
+				self.__follow_user(user)
+
 	def run(self):
 		"""Bot's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
 			task, does a different action
@@ -471,6 +478,8 @@ class TwitterBot(RabbitMessaging):
 						self.__get_tweet_by_id(tweet_id=task_params)
 					elif task_type == messages_types.ServerToBot.GET_USER_BY_ID:
 						self.__get_user_dict(user_id=task_params)
+					elif task_type == messages_types.ServerToBot.FOLLOW_FIRST_TIME_USERS:
+						self.__follow_first_time_users(queries=task_params['queries'])
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
 				else:
@@ -481,7 +490,7 @@ class TwitterBot(RabbitMessaging):
 
 					logger.info("Ask control center for keywords to search new tweets")
 					self.__send_user(self._twitter_api.me(), messages_types.BotToServer.QUERY_KEYWORDS)
-					wait(2)
+					wait(5)
 			except Exception as error:
 				logger.exception(f"Error {error} on bot's loop: ")
-			# exit(1)
+# exit(1)
