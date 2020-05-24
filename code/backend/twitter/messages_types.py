@@ -38,6 +38,7 @@ class BotToServer(IntEnum):
 	SAVE_FOLLOWERS = 12
 	SAVE_DIRECT_MESSAGES = 13
 	QUERY_KEYWORDS = 14
+	IM_ALIVE = 15
 
 	def __str__(self):
 		return self.name

@@ -114,6 +114,9 @@ class Control_Center:
 		elif message_type == BotToServer.QUERY_KEYWORDS:
 			self.__send_keywords(message)
 
+		elif message_type == BotToServer.IM_ALIVE:
+			self.__start_connection_to_bot(message)
+
 	def follow_service_action(self, message):
 		message_type = message['type']
 		log.info(
@@ -946,6 +949,71 @@ class Control_Center:
 			ServerToBot.KEYWORDS,
 			response
 		)
+
+	def __start_connection_to_bot(self, data):
+		bot_id = data["bot_id"]
+
+		if bot_id in self.rabbit_wrapper.bots:
+			self.rabbit_wrapper.bots.append(bot_id)
+
+			self.rabbit_wrapper.exchanges_data[self.rabbit_wrapper.API_QUEUE].append({
+				'exchange': f"{self.rabbit_wrapper.DATA_EXCHANGE}.{bot_id}",
+				'routing_key': self.rabbit_wrapper.DATA_ROUTING_KEY,
+				'publish_exchange': self.rabbit_wrapper.TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[self.rabbit_wrapper.API_QUEUE].append({
+				'exchange': f"{self.rabbit_wrapper.LOG_EXCHANGE}.{bot_id}",
+				'routing_key': self.rabbit_wrapper.LOG_ROUTING_KEY,
+				'publish_exchange': self.rabbit_wrapper.TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[self.rabbit_wrapper.API_QUEUE].append({
+				'exchange': f"{self.rabbit_wrapper.QUERY_EXCHANGE}.{bot_id}",
+				'routing_key': self.rabbit_wrapper.QUERY_ROUTING,
+				'publish_exchange': self.rabbit_wrapper.TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[self.rabbit_wrapper.API_QUEUE].append({
+				'exchange': f"{self.rabbit_wrapper.TWEET_EXCHANGE}.{bot_id}",
+				'routing_key': self.rabbit_wrapper.TWEET_ROUTING_KEY,
+				'publish_exchange': self.rabbit_wrapper.TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[self.rabbit_wrapper.API_QUEUE].append({
+				'exchange': f"{self.rabbit_wrapper.USER_EXCHANGE}.{bot_id}",
+				'routing_key': self.rabbit_wrapper.USER_ROUTING_KEY,
+				'publish_exchange': self.rabbit_wrapper.TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[self.rabbit_wrapper.API_QUEUE].append({
+				'exchange': f"{self.rabbit_wrapper.TWEET_LIKE_EXCHANGE}.{bot_id}",
+				'routing_key': self.rabbit_wrapper.TWEET_LIKE_ROUTING_KEY,
+				'publish_exchange': self.rabbit_wrapper.TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[self.rabbit_wrapper.API_QUEUE].append({
+				'exchange': f"{self.rabbit_wrapper.QUERY_FOLLOW_USER_EXCHANGE}.{bot_id}",
+				'routing_key': self.rabbit_wrapper.QUERY_FOLLOW_USER_ROUTING_KEY,
+				'publish_exchange': self.rabbit_wrapper.TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[self.rabbit_wrapper.API_QUEUE].append({
+				'exchange': f"{self.rabbit_wrapper.QUERY_TWEET_LIKE_EXCHANGE}.{bot_id}",
+				'routing_key': self.rabbit_wrapper.QUERY_TWEET_LIKE_ROUTING_KEY,
+				'publish_exchange': self.rabbit_wrapper.TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[self.rabbit_wrapper.API_QUEUE].append({
+				'exchange': f"{self.rabbit_wrapper.QUERY_TWEET_RETWEET_EXCHANGE}.{bot_id}",
+				'routing_key': self.rabbit_wrapper.QUERY_TWEET_RETWEET_ROUTING_KEY,
+				'publish_exchange': self.rabbit_wrapper.TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[self.rabbit_wrapper.API_QUEUE].append({
+				'exchange': f"{self.rabbit_wrapper.QUERY_TWEET_REPLY_EXCHANGE}.{bot_id}",
+				'routing_key': self.rabbit_wrapper.QUERY_TWEET_REPLY_ROUTING_KEY,
+				'publish_exchange': self.rabbit_wrapper.TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[self.rabbit_wrapper.API_QUEUE].append({
+				'exchange': f"{self.rabbit_wrapper.QUERY_KEYWORDS_EXCHANGE}.{bot_id}",
+				'routing_key': self.rabbit_wrapper.QUERY_KEYWORDS_ROUTING_KEY,
+				'publish_exchange': self.rabbit_wrapper.TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+
+			log.debug("Restarting connection to rabbimq to add the new bot exchanges")
+			self.rabbit_wrapper.__stop_and_restart()
 
 	def __user_type(self, user_id: str) -> str:
 		if self.neo4j_client.check_bot_exists(user_id):
