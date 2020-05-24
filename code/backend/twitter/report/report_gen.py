@@ -173,12 +173,11 @@ class Report:
 		locations_dict[node].append(location)
 
 	@staticmethod
-	def create_report(match: dict, params: dict, limit=None, export="csv"):
-		params = Report.translate_params(params)
+	def query_builder(match: dict, limit=None):
 		query = "MATCH r="
 		if ("relation" in match['start'] and match['start']['relation']) \
-			or ('type' in match['start'] and match['start']['type']) \
-			or ('node' in match['start'] and match['start']['node'])  :
+				or ('type' in match['start'] and match['start']['type']) \
+				or ('node' in match['start'] and match['start']['node']):
 			if 'node' not in match['start']:
 				match['start']['node'] = None
 			if 'direction' not in match['start']:
@@ -190,15 +189,23 @@ class Report:
 			intermediates = match["intermediates"]
 			for interm in range(len(intermediates["types"])):
 				query += f"{Report.node_builder(intermediates['types'][interm], intermediates['nodes'][interm])}" \
-						f"{Report.relation_builder(intermediates['relations'][interm])}"
+						 f"{Report.relation_builder(intermediates['relations'][interm])}"
 
 		query += f"{Report.node_builder(match['end']['type'], match['end']['node'])} " \
 				 f"return r"
 
-		logger.info(query)
-		
 		if limit:
 			query += f" limit {limit}"
+
+		logger.debug(query)
+
+		return query
+
+	@staticmethod
+	def create_report(match: dict, params: dict, limit=None, export="csv"):
+		params = Report.translate_params(params)
+
+		query = Report.query_builder(match, limit)
 
 		result = []
 

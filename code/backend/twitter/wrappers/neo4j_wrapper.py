@@ -937,7 +937,7 @@ class Neo4jAPI:
 
 	def __export_query(self, tx, export_type, query, rel_node_properties):
 		log.debug("EXPORTING QUERY NETWORK")
-
+		log.debug(query)
 		return tx.run(f"CALL apoc.export.{export_type}.query(\"{query}\",null,"
 					  f"{{useTypes:true, stream:true, writeNodeProperties:{rel_node_properties}}})")
 

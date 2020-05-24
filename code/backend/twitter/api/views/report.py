@@ -16,8 +16,6 @@ def create_report(request):
 
 	report = Report()
 	
-	print(request.data)
-	
 	match = {
 		"start": request.data["start"],
 		"intermediates": request.data["intermediate"],

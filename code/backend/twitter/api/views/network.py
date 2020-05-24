@@ -42,10 +42,9 @@ def twitter_sub_network(request):
 	error_messages = []
 	success_messages = []
 	status = HTTP_200_OK
-	data = []
 
 	try:
-		success, data, message = queries.twitter_sub_network(cypher_query_generator(request.GET))
+		success, data, message = queries.twitter_sub_network(request.data)
 		if success:
 			success_messages.append(message)
 		else:

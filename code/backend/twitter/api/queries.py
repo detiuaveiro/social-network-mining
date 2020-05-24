@@ -8,6 +8,7 @@ import json
 from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
 from api.queries_utils import paginator_factory, paginator_factory_non_queryset
 from api.views.utils import NETWORK_QUERY
+from report.report_gen import Report
 
 logger = logging.getLogger('queries')
 
@@ -829,7 +830,7 @@ def twitter_bot_messages(bot_id):
 
 
 # Network
-def twitter_sub_network(queries):
+def twitter_sub_network(request):
 	"""
 
 	Args:
@@ -839,11 +840,14 @@ def twitter_sub_network(queries):
 
 	"""
 	try:
-		data = []
-		for query in queries:
-			data += [entry['result'] for entry in neo4j.export_query(query)]
+		match = {
+			"start": request["start"],
+			"intermediates": request["intermediate"],
+			"end": request["end"]
+		}
 
-		return True, data, "Success obtaining a network defined by a query"
+		return True, neo4j.export_query(Report.query_builder(match, request["limit"])), \
+			   "Success obtaining a network defined by a query"
 
 	except AttributeError as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
