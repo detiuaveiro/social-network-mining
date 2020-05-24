@@ -40,6 +40,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import ReactLoading from "react-loading";
 import ReactPaginate from 'react-paginate';
 
+import FadeIn from "react-fade-in";
+import Lottie from "react-lottie";
+
+import * as loadingAnim from "../../assets/animations/squares_1.json";
 
 
 class Network extends Component {
@@ -53,11 +57,6 @@ class Network extends Component {
       nodes: [],
       edges: []
     },
-
-    nodesForSelect: [],
-    botsForSelect: [],
-    usersForSelect: [],
-
 
     options: {
       autoResize: true,
@@ -100,30 +99,31 @@ class Network extends Component {
       height: "850px",
     },
 
+    animationOptions: {
+      loop: true, autoplay: true, animationData: loadingAnim.default, rendererSettings: {
+        preserveAspectRatio: "xMidYMid slice"
+      }
+    },
+
     graphRef: null,
     hideBots: false,
+    hideTweets: false,
     hideUsers: false,
     hideLinks: false,
 
-    allNodes: null,
-    allLinks: null,
-    bots: null,
-    users: null,
+    allNodes: [],
+    allLinks: [],
 
-    bots: null,
-    users: null,
 
     modal: false,
     modalType: null,
     modalInfo: null,
 
-    botRoot: [],
-    userRoot: [],
     foundNode: null
   }
 
-  getBaseNetwork() {
-    fetch(baseURL + "twitter/network", {
+  async getBaseNetwork() {
+    await fetch(baseURL + "twitter/network", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -141,12 +141,6 @@ class Network extends Component {
 
         var tempNodes = []
         var tempLinks = []
-        var tempBots = []
-        var tempUsers = []
-
-        var tempNodesForSelect = []
-        var tempNodesForSelectBots = []
-        var tempNodesForSelectUsers = []
 
 
         data.forEach(item => {
@@ -174,9 +168,7 @@ class Network extends Component {
                   background: '#20c997'
                 }
               }
-              tempUsers.push(tempItem)
 
-              tempNodesForSelectUsers.push({ value: tempItem['id'], label: "(" + tempItem['type'] + " #" + tempItem['real_id'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
             } else if (tempItem['type'] == "Bot") {
               tempItem['color'] = {
                 border: '#63218f',
@@ -186,9 +178,7 @@ class Network extends Component {
                   background: '#20c997'
                 }
               }
-              tempBots.push(tempItem)
 
-              tempNodesForSelectBots.push({ value: tempItem['id'], label: "(" + tempItem['type'] + " #" + tempItem['real_id'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
             } else if (tempItem['type'] == "Tweet") {
               tempItem['color'] = {
                 border: '#ce2c2c',
@@ -203,11 +193,7 @@ class Network extends Component {
 
             tempNodes.push(tempItem)
 
-            if (tempItem['type'] == "Tweet") {
-              tempNodesForSelect.push({ value: tempItem['id'], label: "(" + tempItem['type'] + ") #" + tempItem['real_id'] })
-            } else {
-              tempNodesForSelect.push({ value: tempItem['id'], label: "(" + tempItem['type'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
-            }
+
           } else {
             var tempItem = {}
             tempItem['id'] = item.id
@@ -224,108 +210,6 @@ class Network extends Component {
             nodes: tempNodes,
             edges: tempLinks,
           },
-          nodesForSelect: tempNodesForSelect,
-          botsForSelect: tempNodesForSelectBots,
-          usersForSelect: tempNodesForSelectUsers,
-
-          allNodes: tempNodes,
-          allLinks: tempLinks,
-          bots: tempBots,
-          users: tempUsers
-        })
-
-      }
-    }).catch(error => {
-      console.log("error: " + error);
-      this.setState({
-        error: true,
-        loading: false
-      })
-    });
-  }
-
-  getSubNetwork(url) {
-    fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      }
-    }).then(response => {
-      if (response.ok) return response.json();
-      else {
-        throw new Error(response.status);
-      }
-    }).then(data => {
-      if (data != null && data != {}) {
-        data = data.data
-
-        var tempNodes = []
-        var tempLinks = []
-
-        var tempNodesForSelect = []
-
-        data.forEach(item => {
-          item.nodes.forEach(node => {
-            var element = tempNodes.find((element) => {
-              return element.id == node.id;
-            })
-            if (element == null) {
-              var tempItem = {}
-              tempItem['id'] = node.id
-              tempItem['name'] = node.properties.name
-              tempItem['real_id'] = node.properties.id
-              tempItem['username'] = "@" + node.properties.username
-              tempItem['label'] = node.properties.name
-              tempItem['type'] = node.labels[0]
-
-              if (tempItem['type'] == "User") {
-                tempItem['color'] = {
-                  border: '#405de6',
-                  background: "#1da1f2",
-                  highlight: {
-                    border: '#4dbd74',
-                    background: '#20c997'
-                  }
-                }
-
-              } else {
-                tempItem['color'] = {
-                  border: '#63218f',
-                  background: "#833ab4",
-                  highlight: {
-                    border: '#4dbd74',
-                    background: '#20c997'
-                  }
-                }
-
-              }
-              tempNodes.push(tempItem)
-              tempNodesForSelect.push({ value: tempItem['id'], label: "(" + tempItem['type'] + " #" + tempItem['real_id'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
-            }
-          })
-
-          item.rels.forEach(item => {
-            var element = tempLinks.find((element) => {
-              return element.id == item.id;
-            })
-            if (element == null) {
-              var tempItem = {}
-              tempItem['id'] = item.id
-              tempItem['from'] = item.start.id
-              tempItem['to'] = item.end.id
-              tempItem['label'] = item.label
-
-              tempLinks.push(tempItem)
-            }
-          })
-
-        })
-        this.setState({
-          graph: {
-            nodes: tempNodes,
-            edges: tempLinks,
-          },
-          nodesForSelect: tempNodesForSelect,
 
           allNodes: tempNodes,
           allLinks: tempLinks
@@ -341,23 +225,21 @@ class Network extends Component {
     });
   }
 
-  componentDidMount() {
-    this.setState({
+
+  async componentDidMount() {
+    await this.setState({
       loading: true
     })
-    document.getElementById("loadedGraph").style.visibility = "hidden"
-    document.getElementById("loadingGraph").style.display = ""
 
     // Get Network
-    this.getBaseNetwork()
+    //this.getBaseNetwork()
 
-    this.setState({
+    await this.setState({
       loading: false
     })
 
     document.getElementById("loadedGraph").style.visibility = "visible"
     document.getElementById("loadingGraph").style.display = "none"
-
   }
 
 
@@ -365,16 +247,15 @@ class Network extends Component {
 
 
   // Graph methods //////////////////////////////////////////////////////////
-  resetNetwork() {
+  async resetNetwork() {
     document.getElementById("loadedGraph").style.visibility = "hidden"
     document.getElementById("loadingGraph").style.display = ""
 
-    this.setState({ hideBots: false, hideLinks: false, hideUsers: false, botRoot: [], userRoot: [] })
+    await this.setState({ hideBots: false, hideLinks: false, hideUsers: false, botRoot: [], userRoot: [] })
     document.getElementById("hideBots").checked = false
+    document.getElementById("hideTweets").checked = false
     document.getElementById("hideUsers").checked = false
     document.getElementById("hideLinks").checked = false
-    document.getElementById("botDepth").value = ""
-    document.getElementById("userDepth").value = ""
 
     if (this.state.graphRef != null) {
       this.state.graphRef.selectNodes([])
@@ -388,93 +269,20 @@ class Network extends Component {
       });
     }
 
-    this.setState({
+    await this.setState({
       loading: true
     })
 
     // Get Network
-    this.getBaseNetwork()
+    await this.getBaseNetwork()
 
-    this.setState({
+    await this.setState({
       loading: false
     })
 
     document.getElementById("loadedGraph").style.visibility = "visible"
     document.getElementById("loadingGraph").style.display = "none"
   }
-
-  searchNetwork() {
-    if (this.state.botRoot.length == 0 && this.state.userRoot.length == 0 && document.getElementById("botDepth").value == "" && document.getElementById("userDepth").value == "") {
-      this.resetNetwork()
-    } else {
-      document.getElementById("loadedGraph").style.visibility = "hidden"
-      document.getElementById("loadingGraph").style.display = ""
-
-      this.setState({ hideBots: false, hideLinks: false, hideUsers: false, nodesForSelect: [], foundNode: '' })
-      document.getElementById("hideBots").checked = false
-      document.getElementById("hideUsers").checked = false
-      document.getElementById("hideLinks").checked = false
-
-
-      if (this.state.graphRef != null) {
-        this.state.graphRef.selectNodes([])
-        this.state.graphRef.moveTo({
-          position: { x: 0, y: 0 },
-          scale: 0.9,
-          animation: {
-            duration: 100,
-            easingFunction: 'linear'
-          }
-        });
-      }
-
-      this.setState({
-        loading: true
-      })
-
-      // Get Network
-      var url = baseURL + "twitter/sub_network?"
-
-      for (const [index, value] of this.state.botRoot.entries()) {
-
-        var element = this.state.bots.find((element) => {
-          return element.id == value.value;
-        })
-        url += "bots_id=" + element.real_id + "&"
-
-      }
-
-      if (document.getElementById("botDepth").value != "") {
-        url += "bots_depth=" + document.getElementById("botDepth").value + "&"
-      }
-
-
-      for (const [index, value] of this.state.userRoot.entries()) {
-
-        var element = this.state.users.find((element) => {
-          return element.id == value.value;
-        })
-
-        url += "users_id=" + element.real_id + "&"
-
-      }
-
-      if (document.getElementById("userDepth").value != "") {
-        url += "users_depth=" + document.getElementById("userDepth").value + "&"
-      }
-
-      url = url.replace(/.$/, "")
-      
-      this.getSubNetwork(url)
-
-      this.setState({
-        loading: false
-      })
-      document.getElementById("loadedGraph").style.visibility = "visible"
-      document.getElementById("loadingGraph").style.display = "none"
-    }
-  }
-
   /////////////////////////////////////////////////////////////////////
 
 
@@ -500,21 +308,6 @@ class Network extends Component {
     }
   };
 
-  changeRootBot = (selectedOption) => {
-    if (selectedOption != null) {
-      this.setState({ botRoot: selectedOption });
-    } else {
-      this.setState({ botRoot: [] });
-    }
-  }
-  changeRootUser = (selectedOption) => {
-    if (selectedOption != null) {
-      this.setState({ userRoot: selectedOption });
-    } else {
-      this.setState({ userRoot: [] });
-    }
-  }
-
   removeFocus = () => {
     this.setState({ foundNode: '' });
 
@@ -536,52 +329,35 @@ class Network extends Component {
   hideBots = () => {
     this.setState({ hideBots: !this.state.hideBots }, () => {
       if (this.state.hideBots) {
-        if (this.state.hideUsers) {
-          this.setState({
-            graph: {
-              nodes: [],
-              edges: this.state.allLinks
-            }
-          })
-        } else {
+        var tempArray = []
 
-          var tempArray = []
-          this.state.allNodes.forEach(item => {
-            if (item.type == "User") {
-              tempArray.push(item)
-            }
-          })
+        this.state.graph.nodes.forEach(node => {
+          if (node.type != "Bot") {
+            tempArray.push(node)
+          }
+        })
 
-          this.setState({
-            graph: {
-              nodes: tempArray,
-              edges: this.state.allLinks
-            }
-          })
-        }
+        this.setState({
+          graph: {
+            nodes: tempArray,
+            edges: this.state.allLinks
+          }
+        })
       } else {
-        if (this.state.hideUsers) {
-          var tempArray = []
-          this.state.allNodes.forEach(item => {
-            if (item.type == "Bot") {
-              tempArray.push(item)
-            }
-          })
+        var tempArray = this.state.graph.nodes
 
-          this.setState({
-            graph: {
-              nodes: tempArray,
-              edges: this.state.allLinks
-            }
-          })
-        } else {
-          this.setState({
-            graph: {
-              nodes: this.state.allNodes,
-              edges: this.state.allLinks
-            }
-          })
-        }
+        this.state.allNodes.forEach(node => {
+          if (node.type == "Bot") {
+            tempArray.push(node)
+          }
+        })
+
+        this.setState({
+          graph: {
+            nodes: tempArray,
+            edges: this.state.allLinks
+          }
+        })
       }
 
       this.state.graphRef.body.emitter.emit('_dataChanged')
@@ -592,51 +368,74 @@ class Network extends Component {
   hideUsers = () => {
     this.setState({ hideUsers: !this.state.hideUsers }, () => {
       if (this.state.hideUsers) {
-        if (this.state.hideBots) {
-          this.setState({
-            graph: {
-              nodes: [],
-              edges: this.state.allLinks
-            }
-          })
-        } else {
-          var tempArray = []
-          this.state.allNodes.forEach(item => {
-            if (item.type == "Bot") {
-              tempArray.push(item)
-            }
-          })
+        var tempArray = []
 
-          this.setState({
-            graph: {
-              nodes: tempArray,
-              edges: this.state.allLinks
-            }
-          })
-        }
+        this.state.graph.nodes.forEach(node => {
+          if (node.type != "User") {
+            tempArray.push(node)
+          }
+        })
+
+        this.setState({
+          graph: {
+            nodes: tempArray,
+            edges: this.state.allLinks
+          }
+        })
       } else {
-        if (this.state.hideBots) {
-          var tempArray = []
-          this.state.allNodes.forEach(item => {
-            if (item.type == "User") {
-              tempArray.push(item)
-            }
-          })
+        var tempArray = this.state.graph.nodes
 
-          this.setState({
-            graph: {
-              nodes: tempArray,
-              edges: this.state.allLinks
-            }
-          })
-        } else {
-          this.setState({
-            graph: {
-              nodes: this.state.allNodes,
-              edges: this.state.allLinks
-            }
-          })
-        }
+        this.state.allNodes.forEach(node => {
+          if (node.type == "User") {
+            tempArray.push(node)
+          }
+        })
+
+        this.setState({
+          graph: {
+            nodes: tempArray,
+            edges: this.state.allLinks
+          }
+        })
+      }
+
+      this.state.graphRef.body.emitter.emit('_dataChanged')
+      this.state.graphRef.redraw()
+    })
+  }
+
+  hideTweets = () => {
+    this.setState({ hideTweets: !this.state.hideTweets }, () => {
+      if (this.state.hideTweets) {
+        var tempArray = []
+
+        this.state.graph.nodes.forEach(node => {
+          if (node.type != "Tweet") {
+            tempArray.push(node)
+          }
+        })
+
+        this.setState({
+          graph: {
+            nodes: tempArray,
+            edges: this.state.allLinks
+          }
+        })
+      } else {
+        var tempArray = this.state.graph.nodes
+
+        this.state.allNodes.forEach(node => {
+          if (node.type == "Tweet") {
+            tempArray.push(node)
+          }
+        })
+
+        this.setState({
+          graph: {
+            nodes: tempArray,
+            edges: this.state.allLinks
+          }
+        })
       }
 
       this.state.graphRef.body.emitter.emit('_dataChanged')
@@ -710,6 +509,16 @@ class Network extends Component {
 
 
   render() {
+    if (this.state.loading) {
+      return (
+        <div className="animated fadeOut animated" style={{ width: "100%", marginTop: "10%" }}>
+          <FadeIn>
+            <Lottie options={this.state.animationOptions} height={"30%"} width={"30%"} />
+          </FadeIn>
+        </div>
+      )
+    }
+
     const events = {
       doubleClick: function (event) {
         var { nodes, edges } = event;
@@ -760,22 +569,6 @@ class Network extends Component {
         this.state.graphRef.moveTo({ position: this.state.graphRef.getPositions([nodes[0]])[nodes[0]] })
       }.bind(this)
     }
-
-    var infoCard
-    if (this.state.info) {
-      infoCard =
-        <Card>
-          <CardHeader color="primary">
-            <h3 style={{ color: "white" }}>
-              <strong>Info</strong>
-            </h3>
-          </CardHeader>
-          <CardBody>
-            <p>No info has been selected</p>
-          </CardBody>
-        </Card>
-    }
-
 
     var graph
     graph = <Graph graph={this.state.graph} options={this.state.options} events={events} getNetwork={network => {
@@ -874,7 +667,7 @@ class Network extends Component {
               <Card>
                 <CardHeader color="primary">
                   <h3 style={{ color: "white" }}>
-                    <strong>Filters</strong>
+                    <strong>Filters and Queries</strong>
                   </h3>
                 </CardHeader>
                 <CardBody>
@@ -906,19 +699,27 @@ class Network extends Component {
                   <hr />
 
                   <Row style={{ marginTop: "20px" }}>
-                    <Col md="4">
+                    <Col md="6">
                       <FormGroup check>
                         <Input className="form-check-input" type="checkbox" id="hideBots" name="inline-checkbox1" onChange={this.hideBots} />
                         <Label className="form-check-label" check htmlFor="inline-checkbox1">Hide bots</Label>
                       </FormGroup>
                     </Col>
-                    <Col md="4">
+                    <Col md="6">
                       <FormGroup check>
                         <Input className="form-check-input" type="checkbox" id="hideUsers" name="inline-checkbox2" onChange={this.hideUsers} value="option2" />
                         <Label className="form-check-label" check htmlFor="inline-checkbox2">Hide users</Label>
                       </FormGroup>
                     </Col>
-                    <Col md="4">
+                  </Row>
+                  <Row style={{ marginTop: "10px" }}>
+                    <Col md="6">
+                      <FormGroup check>
+                        <Input className="form-check-input" type="checkbox" id="hideTweets" name="inline-checkbox2" onChange={this.hideTweets} value="option2" />
+                        <Label className="form-check-label" check htmlFor="inline-checkbox2">Hide tweets</Label>
+                      </FormGroup>
+                    </Col>
+                    <Col md="6">
                       <FormGroup check>
                         <Input className="form-check-input" type="checkbox" id="hideLinks" name="inline-checkbox2" onChange={this.hideLinks} value="option2" />
                         <Label className="form-check-label" check htmlFor="inline-checkbox2">Hide links</Label>
@@ -926,80 +727,18 @@ class Network extends Component {
                     </Col>
                   </Row>
 
-                </CardBody>
-              </Card>
-
-              <Card>
-                <CardHeader color="primary">
-                  <h3 style={{ color: "white" }}>
-                    <strong>Options</strong>
-                  </h3>
-                </CardHeader>
-                <CardBody>
-                  <Row style={{ marginBottom: "20px" }}>
-                    <Col md="12">
-                      <h5 style={{ color: "#1fa8dd" }}><strong>Bot root nodes</strong></h5>
-                      <Select
-                        defaultValue={[]}
-                        isMulti
-                        name="colors"
-                        id="botRoot"
-                        value={this.state.botRoot || ''}
-                        options={this.state.botsForSelect}
-                        className="basic-multi-select"
-                        classNamePrefix="select"
-                        onChange={this.changeRootBot}
-                      />
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md="12">
-                      <FormGroup>
-                        <Label htmlFor="name">Bot node depth</Label>
-                        <Input type="text" id="botDepth" placeholder="0" />
-                      </FormGroup>
-                    </Col>
-                  </Row>
-
-                  <hr />
-
-                  <Row style={{ marginBottom: "20px" }}>
-                    <Col md="12">
-                      <h5 style={{ color: "#1fa8dd" }}><strong>User root nodes</strong></h5>
-                      <Select
-                        defaultValue={[]}
-                        isMulti
-                        name="colors"
-                        id="userRoot"
-                        value={this.state.userRoot || ''}
-                        options={this.state.usersForSelect}
-                        className="basic-multi-select"
-                        classNamePrefix="select"
-                        onChange={this.changeRootUser}
-                      />
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md="12">
-                      <FormGroup>
-                        <Label htmlFor="name">User node depth</Label>
-                        <Input type="text" id="userDepth" placeholder="0" />
-                      </FormGroup>
-                    </Col>
-                  </Row>
-
-                  <hr />
-
+                  <hr></hr>
+                  <h5 style={{ color: "#1fa8dd" }}><strong>Advanced Filters</strong></h5>
                   <Row style={{ marginTop: "25px" }}>
+                    <Col md="6">
+                      <Button block outline color="success"
+                        onClick={() => this.searchNetwork()}
+                      > Query <i class="fas fa-search" style={{ marginLeft: "8px" }}></i></Button>
+                    </Col>
                     <Col md="6" style={{ alignItems: "center" }}>
                       <Button block outline color="danger"
                         onClick={() => this.resetNetwork()}
                       > Reset <i class="fas fa-times" style={{ marginLeft: "8px" }}></i></Button>
-                    </Col>
-                    <Col md="6">
-                      <Button block outline color="success"
-                        onClick={() => this.searchNetwork()}
-                      > Search <i class="fas fa-search" style={{ marginLeft: "8px" }}></i></Button>
                     </Col>
                   </Row>
 
