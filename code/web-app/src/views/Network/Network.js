@@ -45,7 +45,8 @@ import Lottie from "react-lottie";
 
 import * as loadingAnim from "../../assets/animations/squares_1.json";
 import NetworkReport from './NetworkReport';
-
+import UserProfile from '../Users/UserProfile';
+import BotProfile from '../Bots/BotProfile';
 
 class Network extends Component {
   constructor(props) {
@@ -58,6 +59,8 @@ class Network extends Component {
       nodes: [],
       edges: []
     },
+
+    nodesForSelect: [],
 
     options: {
       autoResize: true,
@@ -88,7 +91,7 @@ class Network extends Component {
         enabled: true,
         barnesHut: {
           gravitationalConstant: -10000,
-          centralGravity: 0.4,
+          centralGravity: 0.1,
         }
       },
 
@@ -122,7 +125,11 @@ class Network extends Component {
 
     foundNode: null,
 
-    redirect: false
+    redirectNetwork: false,
+    redirect: {
+      user: null,
+      type: null
+    },
   }
 
   async getBaseNetwork() {
@@ -146,76 +153,86 @@ class Network extends Component {
 
         var tempNodes = []
         var tempLinks = []
+        var tempNodesForSelect = []
 
+        data[0].nodes.forEach(item => {
+          var tempItem = {}
+          tempItem['id'] = item.id
+          tempItem['name'] = item.properties.name
+          tempItem['real_id'] = item.properties.id
+          tempItem['username'] = "@" + item.properties.username
+          tempItem['type'] = item.labels[0]
 
-        data.r.forEach(item => {
-          console.log(item)
-
-          if (item.type == "node") {
-            var tempItem = {}
-            tempItem['id'] = item.id
-            tempItem['name'] = item.properties.name
-            tempItem['real_id'] = item.properties.id
-            tempItem['username'] = "@" + item.properties.username
-            tempItem['type'] = item.labels[0]
-
-            if (tempItem['type'] == "Tweet") {
-              tempItem['label'] = "#" + tempItem['real_id']
-            } else {
-              tempItem['label'] = item.properties.name
-            }
-
-            if (tempItem['type'] == "User") {
-              tempItem['color'] = {
-                border: '#405de6',
-                background: "#1da1f2",
-                highlight: {
-                  border: '#4dbd74',
-                  background: '#20c997'
-                }
-              }
-
-            } else if (tempItem['type'] == "Bot") {
-              tempItem['color'] = {
-                border: '#63218f',
-                background: "#833ab4",
-                highlight: {
-                  border: '#4dbd74',
-                  background: '#20c997'
-                }
-              }
-
-            } else if (tempItem['type'] == "Tweet") {
-              tempItem['color'] = {
-                border: '#ce2c2c',
-                background: "#f86c6b",
-                highlight: {
-                  border: '#4dbd74',
-                  background: '#20c997'
-                }
-              }
-
-            }
-
-            tempNodes.push(tempItem)
-
-
+          if (tempItem['type'] == "Tweet") {
+            tempItem['label'] = "#" + tempItem['real_id']
           } else {
-            var tempItem = {}
-            tempItem['id'] = item.id
-            tempItem['from'] = item.start.id
-            tempItem['to'] = item.end.id
-            tempItem['label'] = item.label
+            tempItem['label'] = item.properties.name
+          }
 
-            tempLinks.push(tempItem)
+          if (tempItem['type'] == "User") {
+            tempItem['color'] = {
+              border: '#405de6',
+              background: "#1da1f2",
+              highlight: {
+                border: '#4dbd74',
+                background: '#20c997'
+              }
+            }
+
+          } else if (tempItem['type'] == "Bot") {
+            tempItem['color'] = {
+              border: '#63218f',
+              background: "#833ab4",
+              highlight: {
+                border: '#4dbd74',
+                background: '#20c997'
+              }
+            }
+
+          } else if (tempItem['type'] == "Tweet") {
+            tempItem['color'] = {
+              border: '#ce2c2c',
+              background: "#f86c6b",
+              highlight: {
+                border: '#4dbd74',
+                background: '#20c997'
+              }
+            }
+
+          }
+          tempNodes.push(tempItem)
+          if (tempItem['type'] == "Tweet") {
+            tempNodesForSelect.push({ value: tempItem['id'], label: "(" + tempItem['type'] + ") #" + tempItem['real_id'] })
+          } else {
+            tempNodesForSelect.push({ value: tempItem['id'], label: "(" + tempItem['type'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
+          }
+
+        })
+
+        data[0].rels.forEach(item => {
+          if (item != [] && item != null && item != undefined) {
+            item = item[0]
+
+            if (item != [] && item != null && item != undefined) {
+              var tempItem = {}
+              tempItem['id'] = item.id
+              tempItem['from'] = item.start.id
+              tempItem['to'] = item.end.id
+              tempItem['label'] = item.label
+
+              tempLinks.push(tempItem)
+            }
           }
         })
+
 
         this.setState({
           graph: {
             nodes: tempNodes,
             edges: tempLinks,
           },
+
+          nodesForSelect: tempNodesForSelect,
 
           allNodes: tempNodes,
           allLinks: tempLinks
@@ -231,6 +248,132 @@ class Network extends Component {
     });
   }
 
+  async processGraph() {
+    var tempNodes = []
+    var tempLinks = []
+    var tempNodesForSelect = []
+
+
+    console.log(this.props.returnValues)
+
+    this.props.returnValues.nodes.forEach(item => {
+      var tempItem = {}
+      tempItem['id'] = item.id
+      tempItem['name'] = item.properties.name
+      tempItem['real_id'] = item.properties.id
+      tempItem['username'] = "@" + item.properties.username
+      tempItem['type'] = item.labels[0]
+
+      if (tempItem['type'] == "Tweet") {
+        tempItem['label'] = "#" + tempItem['real_id']
+      } else {
+        tempItem['label'] = item.properties.name
+      }
+
+      if (tempItem['type'] == "User") {
+        tempItem['color'] = {
+          border: '#405de6',
+          background: "#1da1f2",
+          highlight: {
+            border: '#4dbd74',
+            background: '#20c997'
+          }
+        }
+
+      } else if (tempItem['type'] == "Bot") {
+        tempItem['color'] = {
+          border: '#63218f',
+          background: "#833ab4",
+          highlight: {
+            border: '#4dbd74',
+            background: '#20c997'
+          }
+        }
+
+      } else if (tempItem['type'] == "Tweet") {
+        tempItem['color'] = {
+          border: '#ce2c2c',
+          background: "#f86c6b",
+          highlight: {
+            border: '#4dbd74',
+            background: '#20c997'
+          }
+        }
+
+      }
+      tempNodes.push(tempItem)
+      if (tempItem['type'] == "Tweet") {
+        tempNodesForSelect.push({ value: tempItem['id'], label: "(" + tempItem['type'] + ") #" + tempItem['real_id'] })
+      } else {
+        tempNodesForSelect.push({ value: tempItem['id'], label: "(" + tempItem['type'] + ") " + tempItem['name'] + " - " + tempItem['username'] })
+      }
+    })
+
+    this.props.returnValues.rels.forEach(item => {
+      if (item != [] && item != null && item != undefined) {
+        item = item[0]
+
+        if (item != [] && item != null && item != undefined) {
+          var tempItem = {}
+          tempItem['id'] = item.id
+          tempItem['from'] = item.start.id
+          tempItem['to'] = item.end.id
+          tempItem['label'] = item.label
+
+          tempLinks.push(tempItem)
+        }
+      }
+    })
+
+
+    this.setState({
+      graph: {
+        nodes: tempNodes,
+        edges: tempLinks,
+      },
+
+      nodesForSelect: tempNodesForSelect,
+
+      allNodes: tempNodes,
+      allLinks: tempLinks
+    })
+  }
+
+  handleOpenProfile(user) {
+    fetch(baseURL + "twitter/users/" + user + "/type/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+        data = data.data
+        var list = this.state.redirectionList
+        list.push({ type: "PROFILE", info: this.state.userInfo })
+        this.setState({
+          redirectUser: { "user": user, "type": data.type },
+          redirectionList: list
+        })
+
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      toast.error('Sorry, we couldn\'t redirect you to that user/bot\'s profile page. It\'s likely that they\'re still not in our databases, please try again later', {
+        position: "top-center",
+        autoClose: 7500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+    });
+  }
+
 
   async componentDidMount() {
     await this.setState({
@@ -239,12 +382,13 @@ class Network extends Component {
 
     if (this.props.returnValues == null) {
       // Get Network
-      this.getBaseNetwork()
+      await this.getBaseNetwork()
 
       await this.setState({
         loading: false
       })
     } else {
+      await this.processGraph()
 
       await this.setState({
         loading: false
@@ -528,13 +672,29 @@ class Network extends Component {
 
   handleOpenQuery() {
     this.setState({
-      redirect: true
+      redirectNetwork: true
     })
   }
   /////////////////////////////////////////////////////////////////////
 
 
   render() {
+    if (this.state.redirectNetwork) {
+      return (<NetworkReport></NetworkReport>)
+    }
+
+    if (this.state.redirect.user != null) {
+      if (this.state.redirect.type == "Bot") {
+        return (
+          <BotProfile nextUser={this.state.redirect.user} redirection={[{ "type": "NET", "info": { "redirectionList": this.props.returnValues } }]}></BotProfile>
+        )
+      } else {
+        return (
+          <UserProfile nextUser={this.state.redirect.user} redirection={[{ "type": "NET", "info": "" }]}></UserProfile>
+        )
+      }
+    }
+
     if (this.state.loading) {
       return (
         <div className="animated fadeOut animated" style={{ width: "100%", marginTop: "10%" }}>
@@ -557,18 +717,7 @@ class Network extends Component {
             return element.id == nodes[0];
           })
 
-          var type
-          var info = null
-
-          if (element.type == "Bot") {
-            type = "BOT"
-          } else if (element.type == "User") {
-            this.openUserModal(element)
-
-          } else {
-            type = "TWEET"
-          }
-
+          this.handleOpenProfile(element.real_id)
         } catch (e) {
 
         }
@@ -633,10 +782,6 @@ class Network extends Component {
           </Dialog>
       }
 
-    }
-
-    if (this.state.redirect) {
-      return (<NetworkReport></NetworkReport>)
     }
 
 

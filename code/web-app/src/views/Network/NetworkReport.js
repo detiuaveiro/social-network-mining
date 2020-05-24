@@ -743,7 +743,7 @@ class NetworkReport extends Component {
       processing: true
     })
 
-    await fetch(baseURL + "report/", {
+    await fetch(baseURL + "twitter/sub_network", {
       method: "POST",
       headers: {
         'Accept': 'application/json',

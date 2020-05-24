@@ -24,6 +24,7 @@ import Bots from './Bots';
 import PolicyForm from './PolicyForm';
 import UserProfile from '../Users/UserProfile';
 import Statistics from '../Statistics/Statistics';
+import Network from '../Network/Network';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -134,7 +135,7 @@ class BotProfile extends Component {
                     var tempInfo = []
                     tempInfo.push("#" + tweet.tweet_id);
 
-                    if(tweet.full_text == null){
+                    if (tweet.full_text == null) {
                         tweet.full_text = tweet.text
                     }
 
@@ -928,6 +929,8 @@ class BotProfile extends Component {
                 return (<Statistics />)
             } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "HOME") {
                 return (<Dashboard />)
+            } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "NET") {
+                return (<Network returnValue={this.state.redirectionList[0].info["redirectionList"]} />)
             } else {
                 var lastUser = this.state.redirectionList.pop()
                 if (lastUser.type == "PROFILE") {
