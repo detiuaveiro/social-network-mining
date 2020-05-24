@@ -65,6 +65,7 @@ class Tweet(djongo_models.Model):
 	in_reply_to_status_id_str = djongo_models.TextField(null=True, blank=True)
 	extended_entities = djongo_models.EmbeddedField(ExtendedEntities, blank=True, null=True)
 	text = djongo_models.TextField()
+	full_text = djongo_models.TextField()
 	retweet_count = djongo_models.BigIntegerField()
 	favorite_count = djongo_models.BigIntegerField()
 
