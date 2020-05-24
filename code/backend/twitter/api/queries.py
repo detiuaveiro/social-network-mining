@@ -7,6 +7,7 @@ from api import neo4j
 import json
 from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
 from api.queries_utils import paginator_factory, paginator_factory_non_queryset
+from api.views.utils import NETWORK_QUERY
 
 logger = logging.getLogger('queries')
 
@@ -757,7 +758,7 @@ def twitter_network():
 	"""
 
 	try:
-		data = neo4j.export_network("json")
+		data = neo4j.export_query(NETWORK_QUERY)
 		return True, data, f"Success obtaining full network"
 
 	except Exception as e:

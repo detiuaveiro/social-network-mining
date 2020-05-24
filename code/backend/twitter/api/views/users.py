@@ -291,3 +291,4 @@ def twitter_users_type(_, user_id):
 		status = HTTP_403_FORBIDDEN
 
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
+
