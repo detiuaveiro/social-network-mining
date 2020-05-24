@@ -34,8 +34,8 @@ urlpatterns = [
 	url(r"^twitter/users/(?P<protected>(?:T)|(?:F))/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
 		users.twitter_users, name="twitter_users"),
 
-	url(r"^twitter/users/stats/$", users.twitter_users_stats, name="twitter_users_stats"),
-	url(r"^twitter/users/stats/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", users.twitter_users_stats,
+	url(r"^twitter/users/stats/(?P<protected>(?:T)|(?:F))/$", users.twitter_users_stats, name="twitter_users_stats"),
+	url(r"^twitter/users/stats/(?P<protected>(?:T)|(?:F))/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", users.twitter_users_stats,
 		name="twitter_users_stats"),
 
 	url(r"^twitter/users/(?P<user_id>[0-9]+)/$", users.twitter_user, name="twitter_user"),

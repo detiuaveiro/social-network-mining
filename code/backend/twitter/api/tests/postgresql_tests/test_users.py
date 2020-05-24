@@ -4,6 +4,7 @@ from api.models import UserStats
 from api.views import users
 from mixer.backend.django import mixer
 from api.tests.utils import *
+from datetime import datetime, timedelta
 
 
 @pytest.fixture(scope='module')
@@ -18,38 +19,38 @@ def users_stats(db):
 
 @pytest.fixture
 def user_stats(db):
-	return mixer.cycle(20).blend(UserStats, user_id=1)
+	return mixer.cycle(20).blend(UserStats, user_id=1, protected=True, timestamp=datetime(2020, 2, 2))
 
 
 @catch_exception
 def test_successful_twitter_users_stats_request(error_catcher, factory, users_stats):
-	path = reverse('twitter_users_stats')
+	path = reverse('twitter_users_stats', kwargs={"protected": "T"})
 	request = factory.get(path)
-	response = users.twitter_users_stats(request)
-	assert is_response_successful_with_pagination(response, len(users_stats))
+	response = users.twitter_users_stats(request, protected="T")
+	assert is_response_successful_with_pagination(response)
 
 
 @catch_exception
 def test_successful_twitter_users_stats_request_with_pagination(error_catcher, factory, users_stats):
-	path = reverse('twitter_users_stats', kwargs={"entries_per_page": 10, "page": 1})
+	path = reverse('twitter_users_stats', kwargs={"entries_per_page": 10, "page": 1, "protected": "T"})
 	request = factory.get(path)
-	response = users.twitter_users_stats(request, entries_per_page=10, page=1)
-	assert is_response_successful_with_pagination(response, 10)
+	response = users.twitter_users_stats(request, entries_per_page=10, page=1, protected="T")
+	assert is_response_successful_with_pagination(response)
 
 
 @catch_exception
 def test_empty_twitter_users_stats_request(error_catcher, factory, db):
-	path = reverse('twitter_users_stats')
+	path = reverse('twitter_users_stats', kwargs={"protected": "T"})
 	request = factory.get(path)
-	response = users.twitter_users_stats(request)
+	response = users.twitter_users_stats(request, protected="T")
 	assert is_response_empty_with_pagination(response)
 
 
 @catch_exception
 def test_unsuccessfully_twitter_users_stats_request_with_pagination(error_catcher, factory, users_stats):
-	path = reverse('twitter_users_stats', kwargs={"entries_per_page": 0, "page": 1})
+	path = reverse('twitter_users_stats', kwargs={"entries_per_page": 0, "page": 1, "protected": "T"})
 	request = factory.get(path)
-	response = users.twitter_users_stats(request, entries_per_page=0, page=1)
+	response = users.twitter_users_stats(request, entries_per_page=0, page=1, protected="T")
 	assert is_response_unsuccessful(response)
 
 
@@ -58,7 +59,7 @@ def test_successful_twitter_user_stats_request(error_catcher, factory, user_stat
 	path = reverse('twitter_user_stats', kwargs={'user_id': 1})
 	request = factory.get(path)
 	response = users.twitter_user_stats(request, user_id=1)
-	assert is_response_successful_with_pagination(response, len(user_stats))
+	assert is_response_successful_with_pagination(response)
 
 
 @catch_exception
@@ -66,7 +67,7 @@ def test_successful_twitter_user_stats_request_with_pagination(error_catcher, fa
 	path = reverse('twitter_user_stats', kwargs={'user_id': 1, 'entries_per_page': 10, 'page': 1})
 	request = factory.get(path)
 	response = users.twitter_user_stats(request, user_id=1, entries_per_page=10, page=1)
-	assert is_response_successful_with_pagination(response, 10)
+	assert is_response_successful_with_pagination(response)
 
 
 @catch_exception
