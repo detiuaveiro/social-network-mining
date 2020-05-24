@@ -117,7 +117,7 @@ Then use the command to start the web app on port 3000:
  ```bash
  $ sudo apt-get install tor         # instalation on Debian systems
  $ sudo pacman -S tor               # instalation on Arch systems
- $ sudo systemctl start tor         # on the deployment server is recomended to enable the service instead of starting it each time the machine boots
+ $ sudo systemctl enable tor         # on the deployment server is recomended to enable the service instead of starting it each time the machine boots
  ```
 
  - On the server side, it's necessary to run a new `tor` service for each new bot we have:
@@ -137,8 +137,8 @@ Then use the command to start the web app on port 3000:
  - The first time, it's necessary to have all containers pre-created on the server. So, on the server terminal, run:
  ```bash
  $ docker container run --env-file ~/PI_2020/env_vars/rest.env --publish 7000:7000 --detach --name rest docker.pkg.github.com/detiuaveiro/social-network-mining/rest                # run the rest container
- $ docker container run --env-file ~/PI_2020/env_vars/bot.env --network host --detach --name bot docker.pkg.github.com/detiuaveiro/social-network-mining/bot                # run the bot container
- $ docker container run --env-file ~/PI_2020/env_vars/control_center.env --cpus=".8" --memory="14g" --detach --name control_center docker.pkg.github.com/detiuaveiro/social-network-mining/control_center               # run the control center container 
+ $ docker container run --env-file ~/PI_2020/env_vars/bot.env --network host --detach --name bot docker.pkg.github.com/detiuaveiro/social-network-mining/bot              pode  # run the bot container
+ $ docker container run --env-file ~/PI_2020/env_vars/control_center.env --detach --name control_center docker.pkg.github.com/detiuaveiro/social-network-mining/control_center               # run the control center container 
  ```
  - Also, it's necessary to have a `watchtower` container running on the server, that will deploy automaticly all the images created with the `deploy github workflow`:
  ```bash

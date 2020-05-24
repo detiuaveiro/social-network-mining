@@ -18,7 +18,7 @@ from datetime import timedelta, datetime
 THRESHOLD_LIKE = 0.4
 THRESHOLD_RETWEET = 0.6
 THRESHOLD_REPLY = 0.6
-THRESHOLD_FOLLOW_USER = 0.8
+THRESHOLD_FOLLOW_USER = 0.80
 MEAN_WORDS_PER_TWEET = 80
 POLICY_KEYWORDS_MATCHES = 0.2
 POLICY_USER_IS_TARGETED = 0.4
@@ -38,6 +38,7 @@ REPLY_TWEET_MIN_SIZE = 60  # min length of tweet
 NUMBER_TWEETS_FOLLOW_DECISION = 5
 
 LIMIT_LOGS = 200
+LIMIT_LOGS_FOLLOW_USERS_PROTECTED = 50
 
 log = logging.getLogger('PDP')
 log.setLevel(logging.INFO)
@@ -129,28 +130,6 @@ class PDP:
 			'''
 			evaluate_answer = self.analyze_tweet_reply(msg) > THRESHOLD_REPLY
 		elif msg_type == PoliciesTypes.REQUEST_FOLLOW_USER:
-			'''
-			bot_id
-			user_id
-
-			workflow of this request:
-
-			1- Check bot and its policies
-				1.1- if filter=target and target=tweet_user_id:
-						return PERMIT
-				1.2- if other_bots.filter=target and other_bots.target=tweet_user_id:
-						return DENY
-				1.3- No one has this target
-						GOTO Rule 2
-
-			2- Check neo4j
-				2.1- Bot already follows tweet_user_id (this case should never happen, just here for precaution)
-						return DENY
-				2.2- Other bot is following tweet_user_id: (questionable, should be discussed)
-						return DENY
-				2.3- No one follows tweet_user_id:
-						return PERMIT
-			'''
 			evaluate_answer = self.analyze_follow_user(msg) > THRESHOLD_FOLLOW_USER
 		if evaluate_answer:
 			log.info(f"Request to {msg_type.name} accepted")
@@ -329,26 +308,27 @@ class PDP:
 			for bot_log in bot_logs['data']:
 				bot_logs_dict[str(bot_log['target_id'])] = {'timestamp': bot_log["timestamp"]}
 
-			users_of_tweets_liked = self.mongo.search(
-				collection="tweets",
-				query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
-				fields=["user"],
-				single=False
-			)
+			if len(bot_logs_dict) > 0:
+				users_of_tweets_liked = self.mongo.search(
+					collection="tweets",
+					query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
+					fields=["user"],
+					single=False
+				)
 
-			if users_of_tweets_liked:
-				for user_of_tweet_liked in users_of_tweets_liked:
-					id_str = user_of_tweet_liked['user']['id_str']
-					if id_str == str(data["user_id"]) and id_str in bot_logs_dict:
-						log.info(f"Found a past like to the user with id <{data['user_id']}>: {user_of_tweet_liked}")
-						date = bot_logs_dict[id_str]['timestamp']
-						now = datetime.datetime.now()
-						if (now - date).seconds < PENALTY_LIKED_RECENTLY_SMALL_INTERVAL:
-							log.info("Bot has liked a tweet from the same user, but may not be that suspicious")
-							heuristic_value += PENALTY_LIKED_RECENTLY_SMALL
-						else:
-							log.info("Bot has recently liked a tweet from the same user")
-							heuristic_value += PENALTY_LIKED_RECENTLY_LARGE
+				if users_of_tweets_liked:
+					for user_of_tweet_liked in users_of_tweets_liked:
+						id_str = user_of_tweet_liked['user']['id_str']
+						if id_str == str(data["user_id"]) and id_str in bot_logs_dict:
+							log.info(f"Found a past like to the user with id <{data['user_id']}>: {user_of_tweet_liked}")
+							date = bot_logs_dict[id_str]['timestamp']
+							now = datetime.datetime.now()
+							if (now - date).seconds < PENALTY_LIKED_RECENTLY_SMALL_INTERVAL:
+								log.info("Bot has liked a tweet from the same user, but may not be that suspicious")
+								heuristic_value += PENALTY_LIKED_RECENTLY_SMALL
+							else:
+								log.info("Bot has recently liked a tweet from the same user")
+								heuristic_value += PENALTY_LIKED_RECENTLY_LARGE
 
 		log.info(f"Request to like to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
@@ -392,20 +372,21 @@ class PDP:
 			for bot_log in bot_logs['data']:
 				bot_logs_dict[str(bot_log['target_id'])] = {'timestamp': bot_log["timestamp"]}
 
-			users_of_retweets = self.mongo.search(
-				collection="tweets",
-				query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
-				fields=["user"],
-				single=False
-			)
+			if len(bot_logs_dict) > 0:
+				users_of_retweets = self.mongo.search(
+					collection="tweets",
+					query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
+					fields=["user"],
+					single=False
+				)
 
-			if users_of_retweets:
-				for user_of_retweet in users_of_retweets:
-					id_str = user_of_retweet['user']['id_str']
-					if id_str == str(data["user_id"]) and id_str in bot_logs_dict:
-						log.info(f"Found a past retweet to the user with id <{data['user_id']}>: {user_of_retweet}")
-						log.debug("Bot has recently retweet the user")
-						heuristic_value += PENALTY_RETWEETED_USER_RECENTLY
+				if users_of_retweets:
+					for user_of_retweet in users_of_retweets:
+						id_str = user_of_retweet['user']['id_str']
+						if id_str == str(data["user_id"]) and id_str in bot_logs_dict:
+							log.info(f"Found a past retweet to the user with id <{data['user_id']}>: {user_of_retweet}")
+							log.debug("Bot has recently retweet the user")
+							heuristic_value += PENALTY_RETWEETED_USER_RECENTLY
 
 		log.info(f"Request to retweet to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
@@ -468,115 +449,53 @@ class PDP:
 			for bot_log in bot_logs['data']:
 				bot_logs_dict[str(bot_log['target_id'])] = {'timestamp': bot_log["timestamp"]}
 
-			users_of_replies = self.mongo.search(
-				collection="tweets",
-				query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
-				fields=["user"],
-				single=False
-			)
+			if len(bot_logs_dict) > 0:
+				users_of_replies = self.mongo.search(
+					collection="tweets",
+					query={"$or": [{"id_str": target_id} for target_id in bot_logs_dict.keys()]},
+					fields=["user"],
+					single=False
+				)
 
-			if users_of_replies:
-				for user_of_reply in users_of_replies:
-					id_str = user_of_reply['user']['id_str']
-					if id_str == str(data['user_id']) and id_str in bot_logs_dict:
-						log.info(f"Found a past reply to the user with id <{data['user_id']}>: {user_of_reply}")
-						date = bot_logs_dict[id_str]['timestamp']
-						now = datetime.datetime.now()
-						if (now - date).seconds < PENALTY_REPLIED_USER_RECENTLY_INTERVAL:
-							log.debug("Bot recently replied to another tweet from user")
-							heuristic_value += PENALTY_REPLIED_USER_RECENTLY
-							break
+				if users_of_replies:
+					for user_of_reply in users_of_replies:
+						id_str = user_of_reply['user']['id_str']
+						if id_str == str(data['user_id']) and id_str in bot_logs_dict:
+							log.info(f"Found a past reply to the user with id <{data['user_id']}>: {user_of_reply}")
+							date = bot_logs_dict[id_str]['timestamp']
+							now = datetime.datetime.now()
+							if (now - date).seconds < PENALTY_REPLIED_USER_RECENTLY_INTERVAL:
+								log.debug("Bot recently replied to another tweet from user")
+								heuristic_value += PENALTY_REPLIED_USER_RECENTLY
+								break
 
 		log.info(f"Request to reply to tweet <{data['tweet_id']}> with heuristic value of <{heuristic_value}>")
 		return heuristic_value
 
 	def analyze_follow_user(self, data):
-		"""
-		Algorithm to analyse if a bot should follow
-		Takes the current statistics and turns them into a real value
-
-		@param: data - dictionary containing the data of the bot and the tweet it wants to like
-		@returns: float that will then be compared to the threshold previously defined
+		"""Used to follow if the bot already follow some predefined number of people and the requested follow is a
+			protected user
+		:param data:
+		:return:
 		"""
 
-		# Check if another bot has followed the user
+		# first, we verify if the user is protected
+		if 'user_protected' not in data or not data['user_protected']:
+			return 0
 
-		heuristic = 0
-
-		"""
-		user = data['user']
+		# second, we verify if the bot already follows a large number of users
 		bot_logs = self.postgres.search_logs({
-			"action": log_actions.FOLLOW_REQ_ACCEPT,
-			"target_id": user['id']
-		}, limit=LIMIT_LOGS)
+			"bot_id": data["bot_id"],
+			"action": log_actions.FOLLOW,
+			"target_id": data["user_id_str"]
+		}, limit=LIMIT_LOGS_FOLLOW_USERS_PROTECTED)
 
-		if bot_logs["success"] and len(bot_logs['data']) > 0:
-			log.debug("Found another bot who follows this user")
-			self.postgres.insert_log({
-				"bot_id": data["bot_id"],
-				"action": log_actions.ANOTHER_BOT_FOLLOWS_USER,
-				"target_id": user['id']
-			})
-			return heuristic
+		if bot_logs['success']:
+			number_follows = len(bot_logs['data'])
+			log.debug(f"The bot follows {number_follows}")
 
-		MODEL_PATH = "control_center/intelligence/models"
-
-		bot_id = data['bot_id']
-
-		policies = self.postgres.search_policies({
-			"bot_id": bot_id, "filter": "Keywords"
-		})
-
-		tweets = data['tweets']
-		tweets = sorted(tweets, key=lambda x: -len(x))[:min(len(tweets), NUMBER_TWEETS_FOLLOW_DECISION)]
-
-		user_description = user['description']
-		tweets_text = [t['full_text'] for t in tweets]
-		tweets_len_mean = np.mean([len(i) for i in tweets_text])
-
-		if policies['success'] and tweets_len_mean >= MEAN_WORDS_PER_TWEET:
-			policy_list = policies['data']
-			log.debug(f"Obtained policies: {policy_list}")
-
-			if len(policy_list) > 0:
-				policy_labels = {}
-				for policy in policy_list:
-					policy_labels[policy['name']] = policy['params']
-
-				labels = classifier.predict_soft_max(model_path=MODEL_PATH, x=tweets_text + [user_description],
-													 confidence_limit=THRESHOLD_FOLLOW_USER)
-				K.clear_session()
-				gc.collect()
-
-				policies_confidence = {}
-
-				for label in labels:
-					confidence, policy_name = label
-					if policy_name not in policies_confidence:
-						policies_confidence[policy_name] = []
-					policies_confidence[policy_name].append(confidence)
-
-				final_choices = {}
-
-				for key in policies_confidence:
-					mean = np.mean(
-						policies_confidence[key] + [0 for _ in range(len(labels) - len(policies_confidence[key]))])
-					final_choices[key] = {
-						'mean': mean,
-						'length': len(policies_confidence[key]),
-						'final_score': mean * len(policies_confidence[key]) if mean > 0 else
-						len(policies_confidence[key])
-					}
-
-				best_choice = sorted(list(final_choices.items()), reverse=True, key=lambda c: c[-1]['final_score'])[0]
-				picked_label, mean_score = best_choice[0], best_choice[-1]['mean']
-
-				if picked_label in policy_labels:
-					heuristic += mean_score
-		log.debug(f"Request to follow user with id: {user['id']} and name {user['name']} "
-				  f"{'Accepted' if heuristic > THRESHOLD_FOLLOW_USER else 'Denied'}")
-		"""
-		return heuristic
+			return 1 if number_follows >= LIMIT_LOGS_FOLLOW_USERS_PROTECTED - 1 else 0
+		return 0
 
 	def close(self):
 		self.neo4j.close()

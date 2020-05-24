@@ -1,16 +1,13 @@
 import json
 import logging
 import random
+
 import pytz
 from datetime import timedelta, datetime
 
 from control_center.text_generator import ParlaiReplier
 from control_center.translator_utils import Translator
 from control_center.utils import tweet_to_simple_text
-from wrappers.mongo_wrapper import MongoAPI
-from wrappers.neo4j_wrapper import Neo4jAPI
-from wrappers.postgresql_wrapper import PostgresAPI
-from wrappers.rabbitmq_wrapper import Rabbitmq
 
 from control_center.policies_types import PoliciesTypes
 from control_center.PEP import PEP
@@ -22,11 +19,13 @@ from control_center import mongo_utils
 
 from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, TASK_FOLLOW_QUEUE, \
 	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE
-
+from wrappers.mongo_wrapper import MongoAPI
+from wrappers.neo4j_wrapper import Neo4jAPI
+from wrappers.postgresql_wrapper import PostgresAPI
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(open("dbwritter.log", "w"))
+handler = logging.StreamHandler(open("control_center.log", "a"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
@@ -34,18 +33,18 @@ log.addHandler(handler)
 PROBABILITY_SEARCH_KEYWORD = 0.0001
 
 
-class Control_Center(Rabbitmq):
+class Control_Center:
 	"""
 	Class to simulate the behaviour of a bot:
 	On receiving a message from a message broker, this class will act accordingly
 	"""
 
-	def __init__(self):
+	def __init__(self, rabbit_wrapper):
 		"""
 		This will start instaces for all the DB's API
 		"""
+		log.info("Control center initiated")
 
-		super().__init__()
 		self.postgres_client = PostgresAPI()
 		self.mongo_client = MongoAPI()
 		self.neo4j_client = Neo4jAPI()
@@ -56,13 +55,22 @@ class Control_Center(Rabbitmq):
 		self.replier = ParlaiReplier(PARLAI_URL, PARLAI_PORT)
 		self.translator = Translator()
 
+		# rabbit vars
+		self.rabbit_wrapper = rabbit_wrapper
 		self.exchange = None
+		self.deliver_tag = None
+		self.channel = None
+
+		log.info(f"Control center configured: <{self.__dict__}>")
 
 	def action(self, message):
-		if self.exchange == SERVICE_QUERY_EXCHANGE:
-			self.follow_service_action(message)
-		else:
-			self.bot_action(message)
+		try:
+			if self.exchange == SERVICE_QUERY_EXCHANGE:
+				self.follow_service_action(message)
+			else:
+				self.bot_action(message)
+		except Exception as error:
+			log.exception(f"Error <{error}> on consuming new message: ")
 
 	def bot_action(self, message):
 		message_type = message['type']
@@ -86,7 +94,7 @@ class Control_Center(Rabbitmq):
 			self.__request_tweet_reply(message)
 
 		elif message_type == BotToServer.QUERY_FOLLOW_USER:
-			self.request_follow_user(message)
+			self.__request_follow_user(message)
 
 		elif message_type == BotToServer.SAVE_USER:
 			self.save_user(message)
@@ -236,7 +244,7 @@ class Control_Center(Rabbitmq):
 			log.debug(f"Bot {data['bot_id']} could not reply with {data['target_id']}")
 			log.error(f"Bot like caused error {result['error']}")
 
-	def __found_in_logs(self, bot, action, target):
+	def __found_in_logs(self, bot=None, action=None, target=None, max_number_hours=1):
 		"""
 		Function to check if an action is already found in logs recently, therefore not being necessary to be done
 
@@ -245,11 +253,19 @@ class Control_Center(Rabbitmq):
 		@param target: id of target that bot wants to take action to
 		@return Boolean value confirming it found the log recently
 		"""
-		bot_logs = self.postgres_client.search_logs(
-			params={"bot_id": bot, "action": action, "target_id": target,
-			        "timestamp": datetime.now() - timedelta(hours=1)},
-			limit=1
-		)
+		params = {}
+
+		if bot:
+			params['bot_id'] = bot
+		if action:
+			params['action'] = action
+		if target:
+			params['target_id'] = target
+		if max_number_hours:
+			params['timestamp'] = datetime.now() - timedelta(hours=max_number_hours)
+
+		bot_logs = self.postgres_client.search_logs(params=params, limit=1)
+
 		log.debug("Found the logs in the database")
 		return bot_logs["success"] and len(bot_logs['data']) > 0
 
@@ -437,7 +453,7 @@ class Control_Center(Rabbitmq):
 				"target_id": tweet['id_str']
 			})
 
-	def request_follow_user(self, data):
+	def __request_follow_user(self, data):
 		"""
 		Action to request a follow:
 				Calls the control center to request the follow
@@ -451,19 +467,43 @@ class Control_Center(Rabbitmq):
 		tweets = data['data']['tweets']
 		user_id = user['id']
 		user_id_str = user['id_str']
+		user_protected = user['protected'] if 'protected' in user else False
 
 		log.info(f"Bot {data['bot_id']} requests a follow from {user_id}")
-
-		# verify if the user already requested to follow the user
-		if self.__found_in_logs(data["bot_id_str"], log_actions.FOLLOW_REQ, user_id_str):
-			log.info("Action was already requested recently")
-			return
 
 		self.postgres_client.insert_log({
 			"bot_id": int(data["bot_id_str"]),
 			"action": log_actions.FOLLOW_REQ,
 			"target_id": user_id_str
 		})
+
+		# verify if some bot already requested to follow the user
+		if self.__found_in_logs(action=log_actions.FOLLOW_REQ, target=user_id_str, max_number_hours=0):
+			log.info(f"Action was already requested recently for some bot.")
+			return
+
+		request_accepted = self.pep.receive_message({
+			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
+			"bot_id": data['bot_id'],
+			"bot_id_str": data['bot_id_str'],
+			"user_id": user_id,
+			"user_id_str": user_id_str,
+			'user_protected': user_protected
+		})
+
+		if request_accepted:
+			log.info(f"Following protected user with id str <{user_id_str}>")
+			self.__follow_user({
+				'data': {
+					'status': True,
+					'bot_id_str': data['bot_id_str'],
+					'user': {
+						'id': user_id,
+						'id_str': user_id_str
+					}
+				}
+			})
+			return
 
 		# get the policies to this bot
 		policies = self.postgres_client.search_policies({
@@ -931,8 +971,9 @@ class Control_Center(Rabbitmq):
 			'params': params
 		}
 		try:
-			self._send(queue=TASKS_QUEUE_PREFIX, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload,
-			           father_exchange=self.exchange)
+			self.rabbit_wrapper.send(queue=TASKS_QUEUE_PREFIX,
+			                         routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload,
+			                         father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
 
@@ -950,18 +991,26 @@ class Control_Center(Rabbitmq):
 			'params': params
 		}
 		try:
-			self._send(queue=TASK_FOLLOW_QUEUE, routing_key=TASK_FOLLOW_ROUTING_KEY_PREFIX, message=payload,
-			           father_exchange=self.exchange)
+			self.rabbit_wrapper.send(queue=TASK_FOLLOW_QUEUE, routing_key=TASK_FOLLOW_ROUTING_KEY_PREFIX,
+			                         message=payload, father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
 
-	def _received_message_handler(self, channel, method, properties, body):
+	def received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
 		self.exchange = method.exchange
+		self.deliver_tag = method.delivery_tag
+		self.channel = channel
+
+		# acknowledge message
+		log.info("Acknowledging the consumed message")
+		self.channel.basic_ack(self.deliver_tag)
+		log.info("Acknowledged the consumed message")
+
+		log.debug(f"Starting to process a new message from exchange <{self.exchange}>")
 		message = json.loads(body)
 		self.action(message)
 
 	def close(self):
-		self.neo4j_client.close()
 		self.pep.pdp.close()
-		self._close()
+		self.neo4j_client.close()
