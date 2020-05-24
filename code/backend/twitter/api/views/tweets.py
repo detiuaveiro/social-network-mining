@@ -73,7 +73,7 @@ def twitter_tweet(_, tweet_id):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_tweet(int(tweet_id))
+	success, data, message = queries.twitter_tweet(tweet_id)
 	if success:
 		success_messages.append(message)
 	else:
@@ -125,7 +125,7 @@ def twitter_tweet_replies(_, tweet_id):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_tweet_replies(int(tweet_id))
+	success, data, message = queries.twitter_tweet_replies(tweet_id)
 	if success:
 		success_messages.append(message)
 	else:

@@ -14,12 +14,12 @@ def factory():
 
 @pytest.fixture
 def tweet(db):
-	return mixer.blend(Tweet, tweet_id="1", in_reply_to_status_id="1")
+	return mixer.blend(Tweet, tweet_id="1", in_reply_to_status_id_str="1", user={'id': 1, 'name': 'user'})
 
 
 @pytest.fixture
 def tweets_list(db):
-	return mixer.cycle(20).blend(Tweet)
+	return mixer.cycle(20).blend(Tweet, user={'id': 1, 'name': 'user'})
 
 
 @catch_exception
