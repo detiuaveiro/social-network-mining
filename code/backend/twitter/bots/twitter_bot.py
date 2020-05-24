@@ -12,8 +12,9 @@ import messages_types as messages_types
 from rabbit_messaging import RabbitMessaging
 from bots.settings import *
 from bots.utils import *
-from credentials import VHOST, LOG_EXCHANGE, LOG_ROUTING_KEY, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, \
-	TASKS_QUEUE_PREFIX
+from credentials import LOG_EXCHANGE, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, TASKS_QUEUE_PREFIX, TWEET_EXCHANGE, \
+	USER_EXCHANGE, TWEET_LIKE_EXCHANGE, QUERY_FOLLOW_USER_EXCHANGE, QUERY_KEYWORDS_EXCHANGE, QUERY_TWEET_REPLY_EXCHANGE, \
+	QUERY_TWEET_RETWEET_EXCHANGE, QUERY_TWEET_LIKE_EXCHANGE
 
 logger = logging.getLogger("bot-agents")
 logger.setLevel(logging.DEBUG)
@@ -33,6 +34,16 @@ class TwitterBot(RabbitMessaging):
 		self._twitter_api: tweepy.API = api
 		self.user: User
 
+		self.work_init_time = time.time()
+
+		self.query_msg_type_to_exchange = {
+			messages_types.BotToServer.QUERY_FOLLOW_USER: QUERY_FOLLOW_USER_EXCHANGE,
+			messages_types.BotToServer.QUERY_TWEET_LIKE: QUERY_TWEET_LIKE_EXCHANGE,
+			messages_types.BotToServer.QUERY_TWEET_RETWEET: QUERY_TWEET_RETWEET_EXCHANGE,
+			messages_types.BotToServer.QUERY_TWEET_REPLY: QUERY_TWEET_REPLY_EXCHANGE,
+			messages_types.BotToServer.QUERY_KEYWORDS: QUERY_KEYWORDS_EXCHANGE,
+		}
+
 	def __repr__(self):
 		return f"<TwitterBot id={self._id}, api={self._twitter_api}>"
 
@@ -40,18 +51,11 @@ class TwitterBot(RabbitMessaging):
 		logger.exception(f"TweepyError <{error}> with code=<{error.api_code}> and reason=<{error.reason}>: ")
 
 		if error.api_code in ACCOUNT_SUSPENDED_ERROR_CODES:
-			data = {
-				"type": messages_types.BotToServer.EVENT_ERROR,
-				"bot_id": self._id,
-				"timestamp": current_time(),
-				"data": {
+			self.__send_event(data={
 					"code": error.api_code,
 					"msg": error.reason,
 					"target_id": target_id
-				},
-			}
-
-			self._messaging.publish(vhost=VHOST, xname=LOG_EXCHANGE, rt_key=LOG_ROUTING_KEY, payload=to_json(data))
+				}, message_type=messages_types.BotToServer.EVENT_ERROR)
 
 	@staticmethod
 	def __get_tweet_dict(tweet: Status):
@@ -87,7 +91,7 @@ class TwitterBot(RabbitMessaging):
 		if not user._json['protected']:
 			tweets = [tweet._json for tweet in self.__user_timeline_tweets(user, tweet_mode="extended")]
 
-		self.__send_data({
+		self.__send_query({
 			'user': user._json,
 			'tweets': tweets
 		}, messages_types.BotToServer.QUERY_FOLLOW_USER)
@@ -98,20 +102,26 @@ class TwitterBot(RabbitMessaging):
 		:param user: user to send
 		"""
 		logger.debug(f"Sending {user.id} with message type {message_type}")
-		self.__send_data(user._json, message_type)
+		self.__send_message(user._json, message_type, USER_EXCHANGE)
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
 		logger.debug(f"Sending {tweet.id} with message_type <{message_type.name}>")
-		self.__send_data(self.__get_tweet_dict(tweet), message_type)
+		self.__send_message(self.__get_tweet_dict(tweet), message_type, TWEET_EXCHANGE)
 
 	def __send_data(self, data, message_type: messages_types.BotToServer):
 		self.__send_message(data, message_type, DATA_EXCHANGE)
 
 	def __send_query(self, data, message_type: messages_types.BotToServer):
-		self.__send_message(data, message_type, QUERY_EXCHANGE)
+		if message_type in self.query_msg_type_to_exchange.keys():
+			self.__send_message(data, message_type, self.query_msg_type_to_exchange[message_type])
+		else:
+			self.__send_message(data, message_type, QUERY_EXCHANGE)
 
 	def __send_event(self, data, message_type: messages_types.BotToServer):
-		self.__send_message(data, message_type, LOG_EXCHANGE)
+		if message_type == messages_types.BotToServer.EVENT_TWEET_LIKED:
+			self.__send_message(data, message_type, TWEET_LIKE_EXCHANGE)
+		else:
+			self.__send_message(data, message_type, LOG_EXCHANGE)
 
 	def __receive_message(self):
 		"""Function to consume a new message from the tasks's queue
@@ -133,18 +143,18 @@ class TwitterBot(RabbitMessaging):
 			self._name = self._twitter_api.me().name
 			self._screen_name = self._twitter_api.me().screen_name
 			self._id_str = self._twitter_api.me().id_str
+
+			logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
+			self.__send_user(self.user, messages_types.BotToServer.SAVE_USER)
+
+			logger.info(f"Sending the last 200 followers of our bot")
+			self.__get_followers(user_id=self._id_str)
+
+			logger.info("Reading home timeline")
+			self.__read_timeline(self.user)
 		except TweepError as error:
 			logger.exception(f"Error {error} verifying credentials:")
 			exit(1)
-
-		logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
-		self.__send_user(self.user, messages_types.BotToServer.SAVE_USER)
-
-		logger.info(f"Sending the last 200 followers of our bot")
-		self.__get_followers(user_id=self._id_str)
-
-		logger.info("Reading home timeline")
-		self.__read_timeline(self.user)
 
 	def __user_timeline_tweets(self, user: User, **kwargs) -> List[Status]:
 		"""Function to get the 20 (default) most recent tweets (including retweets) from some user
@@ -214,13 +224,13 @@ class TwitterBot(RabbitMessaging):
 
 			# Processing the tweet regarding liking/retweeting
 			if not tweet.favorited:
-				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_LIKE)
+				self.__send_query(self.__get_tweet_dict(tweet), messages_types.BotToServer.QUERY_TWEET_LIKE)
 
 			if not tweet.retweeted:
-				self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_RETWEET)
+				self.__send_query(self.__get_tweet_dict(tweet), messages_types.BotToServer.QUERY_TWEET_RETWEET)
 
 			# ask to reply to tweet
-			self.__send_tweet(tweet, messages_types.BotToServer.QUERY_TWEET_REPLY)
+			self.__send_query(self.__get_tweet_dict(tweet), messages_types.BotToServer.QUERY_TWEET_REPLY)
 
 			if not jump_users:
 				logger.info("Starting to read tweet's author")
@@ -303,7 +313,7 @@ class TwitterBot(RabbitMessaging):
 					logger.exception(f"Error <{error}> with api_code={error.api_code}: ")
 
 		if not user.protected or (user.protected and user.following):
-			self.__read_timeline(user, jump_users=False, max_depth=3)
+			self.__read_timeline(user, jump_users=False)
 
 	def __get_followers(self, user_id: str):
 		"""
@@ -450,6 +460,11 @@ class TwitterBot(RabbitMessaging):
 		self.__setup()
 
 		while True:
+			if time.time() - self.work_init_time > WAIT_TIME_BETWEEN_WORK:
+				logger.info(f"Stopping bot for {WAIT_TIME_RANDOM_STOP} seconds")
+				wait(WAIT_TIME_RANDOM_STOP)
+				self.work_init_time = time.time()
+
 			try:
 				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")
 				task = self.__receive_message()
@@ -457,6 +472,8 @@ class TwitterBot(RabbitMessaging):
 				if task:
 					task_type, task_params = task['type'], task['params']
 					logger.debug(f"Received task of type {messages_types.ServerToBot(task_type).name}: {task_params}")
+
+					wait(3)
 
 					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
 						logger.warning(
@@ -489,8 +506,7 @@ class TwitterBot(RabbitMessaging):
 					self.__get_followers(user_id=self._id_str)
 
 					logger.info("Ask control center for keywords to search new tweets")
-					self.__send_user(self._twitter_api.me(), messages_types.BotToServer.QUERY_KEYWORDS)
-					wait(5)
+					self.__send_query(self._twitter_api.me()._json, messages_types.BotToServer.QUERY_KEYWORDS)
+					wait(60)
 			except Exception as error:
 				logger.exception(f"Error {error} on bot's loop: ")
-# exit(1)

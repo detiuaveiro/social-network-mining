@@ -84,7 +84,7 @@ DATABASES = {
 		'NAME': MONGO_DB,
 		'HOST': "mongodb://" + (f"{MONGO_URL}:{MONGO_PORT}/{MONGO_DB}" if MONGO_USERNAME == '' and MONGO_PASSWORD == ''
 		                        else MONGO_FULL_URL),
-	'ENFORCE_SCHEMA': False,
+		'ENFORCE_SCHEMA': False,
 	},
 	'postgres': {
 		'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -93,6 +93,18 @@ DATABASES = {
 		'PASSWORD': POSTGRES_PASSWORD,
 		'HOST': POSTGRES_URL,
 		'PORT': POSTGRES_PORT,
+	}
+}
+
+CACHE_TTL = 60 * 60 * 24  # 1 day
+CACHES = {
+	"default": {
+		"BACKEND": "django_redis.cache.RedisCache",
+		"LOCATION": REDIS_FULL_URL,
+		"OPTIONS": {
+			"CLIENT_CLASS": "django_redis.client.DefaultClient"
+		},
+		"KEY_PREFIX": REDIS_KEY_PREFIX
 	}
 }
 

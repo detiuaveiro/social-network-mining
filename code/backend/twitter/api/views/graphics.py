@@ -3,8 +3,11 @@ from rest_framework.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 
 from api import queries
 from api.views.utils import create_response
+from django.views.decorators.cache import cache_page
+from rest.settings import CACHE_TTL
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def entities_counter(_, ):
 	"""
@@ -28,6 +31,7 @@ def entities_counter(_, ):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def latest_tweets(_, counter, entries_per_page=None, page=None):
 	"""
@@ -54,6 +58,7 @@ def latest_tweets(_, counter, entries_per_page=None, page=None):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def latest_tweets_daily(_, entries_per_page=None, page=None):
 	"""
@@ -80,6 +85,7 @@ def latest_tweets_daily(_, entries_per_page=None, page=None):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def latest_activities_daily(_, entries_per_page=None, page=None):
 	"""
@@ -106,6 +112,7 @@ def latest_activities_daily(_, entries_per_page=None, page=None):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def latest_activities(_, counter, entries_per_page=None, page=None):
 	"""
@@ -133,6 +140,7 @@ def latest_activities(_, counter, entries_per_page=None, page=None):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def gen_stats_grouped_accum(_, group_type):
 	"""
@@ -165,6 +173,7 @@ def gen_stats_grouped_accum(_, group_type):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def gen_stats_grouped_new(_, group_type):
 	"""
@@ -197,6 +206,7 @@ def gen_stats_grouped_new(_, group_type):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def user_tweets_stats_grouped_accum(_, group_type):
 	"""
@@ -229,6 +239,7 @@ def user_tweets_stats_grouped_accum(_, group_type):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def user_tweets_stats_grouped_new(_, group_type):
 	"""
@@ -261,6 +272,7 @@ def user_tweets_stats_grouped_new(_, group_type):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def relations_stats_grouped_accum(_, group_type):
 	"""
@@ -293,6 +305,7 @@ def relations_stats_grouped_accum(_, group_type):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def relations_stats_grouped_new(_, group_type):
 	"""
@@ -325,6 +338,7 @@ def relations_stats_grouped_new(_, group_type):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def general_today(_):
 	"""
@@ -349,6 +363,7 @@ def general_today(_):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def user_tweets_today(_):
 	"""
@@ -373,6 +388,7 @@ def user_tweets_today(_):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
+@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def relations_today(_):
 	"""

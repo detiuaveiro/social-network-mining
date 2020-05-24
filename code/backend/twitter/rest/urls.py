@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework_swagger.views import get_swagger_view
 
-from api.views import users, bots, tweets, policies, network, graphics
+from api.views import users, bots, tweets, policies, network, graphics, report
 
 schema_view = get_swagger_view(title='TwitterBots API')
 
@@ -30,8 +30,9 @@ urlpatterns = [
 	# Users
 	url(r"^twitter/users/count/$", users.twitter_users_count, name='twitter_users_count'),
 
-	url(r"^twitter/users/$", users.twitter_users, name="twitter_users"),
-	url(r"^twitter/users/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", users.twitter_users, name="twitter_users"),
+	url(r"^twitter/users/(?P<protected>(?:T)|(?:F))/$", users.twitter_users, name="twitter_users"),
+	url(r"^twitter/users/(?P<protected>(?:T)|(?:F))/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
+		users.twitter_users, name="twitter_users"),
 
 	url(r"^twitter/users/stats/$", users.twitter_users_stats, name="twitter_users_stats"),
 	url(r"^twitter/users/stats/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$", users.twitter_users_stats,
@@ -55,9 +56,16 @@ urlpatterns = [
 	url(r"^twitter/users/(?P<user_id>[0-9]+)/stats/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
 		users.twitter_user_stats, name="twitter_user_stats"),
 
-	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/$", users.twitter_search_users, name="twitter_search_users"),
-	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
+	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/(?P<protected>(?:T)|(?:F))/$", users.twitter_search_users,
+		name="twitter_search_users"),
+	url(r"^twitter/users/search/(?P<keywords>[\w\s()]+)/(?P<protected>(?:T)|(?:F))/"
+		r"(?P<entries_per_page>[0-9]+)/(?P<page>[0-9]+)/$",
 		users.twitter_search_users, name="twitter_search_users"),
+
+	url(r"^twitter/users/strict/search/(?P<type>(?:User)|(?:Bot))/(?P<keyword>[\w\s()]+)/$",
+		users.twitter_search_users_strict, name="twitter_search_users_strict"),
+
+	url(r"^twitter/strict/search/(?P<keyword>[\w\s()]+)/$", users.twitter_strict_search, name="twitter_strict_search"),
 
 	url(r"^twitter/users/(?P<user_id>[0-9]+)/stats/grouped/(?P<group_type>(?:year)|(?:month)|(?:day))/$",
 		users.twitter_user_stats_grouped, name="twitter_user_stats_grouped"),
@@ -95,6 +103,9 @@ urlpatterns = [
 		tweets.twitter_tweet_stats, name="twitter_tweet_stats"),
 
 	url(r"^twitter/tweets/(?P<tweet_id>[0-9]+)/replies/$", tweets.twitter_tweet_replies, name="twitter_tweet_replies"),
+
+	url(r"^twitter/tweets/strict/search/(?P<tweet>[\w\s()]+)/$",
+		tweets.twitter_search_tweets, name="twitter_search_tweets"),
 
 	# Policies
 	url(r"^policies/$", policies.policies, name="policies"),
@@ -155,6 +166,7 @@ urlpatterns = [
 
 	url(r'^graphs/general/today/$', graphics.general_today, name="general_today"),
 
-	url(r'^graphs/relations/today/$', graphics.relations_today, name="relations_today")
+	url(r'^graphs/relations/today/$', graphics.relations_today, name="relations_today"),
 
+	url(r'^report/$', report.create_report, name="create_report")
 ]

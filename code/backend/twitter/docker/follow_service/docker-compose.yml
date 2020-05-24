@@ -5,16 +5,19 @@ services:
     image: mongo:3.6.18
     container_name: mongo_follow_service
     restart: always
-    ports:
-      - "27017:27017"
     volumes:
       - mongo_follow_data:/data/db
   service:
     network_mode: host
     image: follow_service
-    depends_on: 
+    depends_on:
       - database
     container_name: follow_service
+    limits:
+      memory: 14g
+      cpus: '.8'
+    env_file:
+      - ~/PI_2020/env_vars/follow_service.env
 
 volumes:
   mongo_follow_data:
