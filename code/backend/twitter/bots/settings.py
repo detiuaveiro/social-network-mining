@@ -19,3 +19,4 @@ MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE = 2
 
 WAIT_TIME_BETWEEN_WORK = 60*60*2            # two hours
 WAIT_TIME_RANDOM_STOP = 60*30               # half an hour
+WAIT_TIME_IM_ALIVE = 60*5                   # five minutes

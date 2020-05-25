@@ -10,7 +10,8 @@ from credentials import TASKS_EXCHANGE, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PR
 	RABBITMQ_FULL_HTTP_URL, TWEET_EXCHANGE, TWEET_ROUTING_KEY, USER_EXCHANGE, USER_ROUTING_KEY, TWEET_LIKE_EXCHANGE, \
 	TWEET_LIKE_ROUTING_KEY, QUERY_FOLLOW_USER_EXCHANGE, QUERY_FOLLOW_USER_ROUTING_KEY, QUERY_TWEET_LIKE_EXCHANGE, \
 	QUERY_TWEET_LIKE_ROUTING_KEY, QUERY_TWEET_RETWEET_ROUTING_KEY, QUERY_TWEET_RETWEET_EXCHANGE, \
-	QUERY_TWEET_REPLY_EXCHANGE, QUERY_TWEET_REPLY_ROUTING_KEY, QUERY_KEYWORDS_EXCHANGE, QUERY_KEYWORDS_ROUTING_KEY
+	QUERY_TWEET_REPLY_EXCHANGE, QUERY_TWEET_REPLY_ROUTING_KEY, QUERY_KEYWORDS_EXCHANGE, QUERY_KEYWORDS_ROUTING_KEY, \
+	MAIN_EXCHANGE, MAIN_ROUTING_KEY
 from tweepy.binder import bind_api
 
 
@@ -20,22 +21,24 @@ if __name__ == "__main__":
 	messaging_settings = {
 		TASKS_EXCHANGE: MessagingSettings(exchange=TASKS_EXCHANGE, routing_key=f"{TASKS_ROUTING_KEY_PREFIX}.{bot_id}",
 		                                  queue=f"{TASKS_QUEUE_PREFIX}-{bot_id}"),
-		LOG_EXCHANGE: MessagingSettings(exchange=LOG_EXCHANGE, routing_key=LOG_ROUTING_KEY),
-		QUERY_EXCHANGE: MessagingSettings(exchange=QUERY_EXCHANGE, routing_key=QUERY_ROUTING_KEY),
-		DATA_EXCHANGE: MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY),
+		MAIN_EXCHANGE: MessagingSettings(exchange=MAIN_EXCHANGE, routing_key=MAIN_ROUTING_KEY),
 
-		TWEET_EXCHANGE: MessagingSettings(exchange=TWEET_EXCHANGE, routing_key=TWEET_ROUTING_KEY),
-		USER_EXCHANGE: MessagingSettings(exchange=USER_EXCHANGE, routing_key=USER_ROUTING_KEY),
-		TWEET_LIKE_EXCHANGE: MessagingSettings(exchange=TWEET_LIKE_EXCHANGE, routing_key=TWEET_LIKE_ROUTING_KEY),
-		QUERY_FOLLOW_USER_EXCHANGE: MessagingSettings(exchange=QUERY_FOLLOW_USER_EXCHANGE,
+		LOG_EXCHANGE: MessagingSettings(exchange=f"{LOG_EXCHANGE}.{bot_id}", routing_key=LOG_ROUTING_KEY),
+		QUERY_EXCHANGE: MessagingSettings(exchange=f"{QUERY_EXCHANGE}.{bot_id}", routing_key=QUERY_ROUTING_KEY),
+		DATA_EXCHANGE: MessagingSettings(exchange=f"{DATA_EXCHANGE}.{bot_id}", routing_key=DATA_ROUTING_KEY),
+
+		TWEET_EXCHANGE: MessagingSettings(exchange=f"{TWEET_EXCHANGE}.{bot_id}", routing_key=TWEET_ROUTING_KEY),
+		USER_EXCHANGE: MessagingSettings(exchange=f"{USER_EXCHANGE}.{bot_id}", routing_key=USER_ROUTING_KEY),
+		TWEET_LIKE_EXCHANGE: MessagingSettings(exchange=f"{TWEET_LIKE_EXCHANGE}.{bot_id}", routing_key=TWEET_LIKE_ROUTING_KEY),
+		QUERY_FOLLOW_USER_EXCHANGE: MessagingSettings(exchange=f"{QUERY_FOLLOW_USER_EXCHANGE}.{bot_id}",
 		                                              routing_key=QUERY_FOLLOW_USER_ROUTING_KEY),
-		QUERY_TWEET_LIKE_EXCHANGE: MessagingSettings(exchange=QUERY_TWEET_LIKE_EXCHANGE,
+		QUERY_TWEET_LIKE_EXCHANGE: MessagingSettings(exchange=f"{QUERY_TWEET_LIKE_EXCHANGE}.{bot_id}",
 		                                             routing_key=QUERY_TWEET_LIKE_ROUTING_KEY),
-		QUERY_TWEET_RETWEET_EXCHANGE: MessagingSettings(exchange=QUERY_TWEET_RETWEET_EXCHANGE,
+		QUERY_TWEET_RETWEET_EXCHANGE: MessagingSettings(exchange=f"{QUERY_TWEET_RETWEET_EXCHANGE}.{bot_id}",
 		                                                routing_key=QUERY_TWEET_RETWEET_ROUTING_KEY),
-		QUERY_TWEET_REPLY_EXCHANGE: MessagingSettings(exchange=QUERY_TWEET_REPLY_EXCHANGE,
+		QUERY_TWEET_REPLY_EXCHANGE: MessagingSettings(exchange=f"{QUERY_TWEET_REPLY_EXCHANGE}.{bot_id}",
 		                                              routing_key=QUERY_TWEET_REPLY_ROUTING_KEY),
-		QUERY_KEYWORDS_EXCHANGE: MessagingSettings(exchange=QUERY_KEYWORDS_EXCHANGE,
+		QUERY_KEYWORDS_EXCHANGE: MessagingSettings(exchange=f"{QUERY_KEYWORDS_EXCHANGE}.{bot_id}",
 		                                           routing_key=QUERY_KEYWORDS_ROUTING_KEY),
 	}
 
