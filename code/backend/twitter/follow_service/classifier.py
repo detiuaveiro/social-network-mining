@@ -126,7 +126,7 @@ def predict(models, label, x):
 
 
 def predict_soft_max(models, x, policy_label):
-	labels = get_labels(models, policy_label)
+	labels = list(get_labels(models, policy_label).keys())
 
 	best_labels = {}
 	for label in labels:
