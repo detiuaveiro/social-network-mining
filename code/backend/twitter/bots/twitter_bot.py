@@ -76,6 +76,7 @@ class TwitterBot(RabbitMessaging):
 		"""
 		if message_type != messages_types.BotToServer.IM_ALIVE:
 			cache_key = to_json({
+				'bot_id': self._id,
 				'type': message_type,
 				'data': data
 			})
