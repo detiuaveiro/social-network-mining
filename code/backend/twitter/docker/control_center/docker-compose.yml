@@ -10,5 +10,5 @@ services:
     container_name: control_center
     depends_on:
       - redis
-    env_file:
+    env_file: 
       - ~/PI_2020/env_vars/control_center.env
