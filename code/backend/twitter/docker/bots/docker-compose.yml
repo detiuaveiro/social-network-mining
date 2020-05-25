@@ -1,19 +1,14 @@
-version: '2.0'
+version: '3.0'
 
 services:
-  bot:
-    build: 
-      context: ../../
-      dockerfile: docker/bots/Dockerfile
-    container_name: bot
+  redis:
+    image: redis
+    container_name: bot_redis
     restart: always
-    environment:
-      RABBITMQ_URL: ${{ secrets.RABBITMQ_URL }}
-      RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
-      RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
-
-      BOT_ID: ${{ secrets.BOT_ID }}
-      CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
-      CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
-      TOKEN: ${{ secrets.TOKEN }}
-      TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
+  bot:
+    image: docker.pkg.github.com/detiuaveiro/social-network-mining/bot
+    container_name: bot
+    depends_on:
+      - redis
+    env_file:
+      - ~/PI_2020/env_vars/bot.env
