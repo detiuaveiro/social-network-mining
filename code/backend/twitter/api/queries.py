@@ -706,24 +706,6 @@ def update_policy(data, policy_id):
 	Returns: Update operation status wrapped on dictionary
 
 	"""
-	"""
-			if not policy_serializer.is_valid():
-			return False, policy_serializer.errors, "Invalid data"
-
-
-			if Policy.objects.filter(name=policy_serializer.data['name']).exists():
-				raise AddPolicyError("A policy with same name already exists")
-
-			if Policy.objects.filter(Q(tags__overlap=policy_serializer.data['tags'])).exists():
-				raise AddPolicyError(
-					"Some of the policy arguments are already defined in another policy. Tags cant overlap!")
-
-		data = policy_serializer.data
-		data['tags'] = list(set(data['tags']))
-
-		policy = Policy.objects.create(id=next_id(Policy), **data)
-	"""
-
 	class UpdatePolicyError(Exception):
 		pass
 
