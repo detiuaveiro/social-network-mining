@@ -15,7 +15,7 @@ from bots.settings import *
 from bots.utils import *
 from credentials import LOG_EXCHANGE, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, TASKS_QUEUE_PREFIX, TWEET_EXCHANGE, \
 	USER_EXCHANGE, TWEET_LIKE_EXCHANGE, QUERY_FOLLOW_USER_EXCHANGE, QUERY_KEYWORDS_EXCHANGE, QUERY_TWEET_REPLY_EXCHANGE, \
-	QUERY_TWEET_RETWEET_EXCHANGE, QUERY_TWEET_LIKE_EXCHANGE
+	QUERY_TWEET_RETWEET_EXCHANGE, QUERY_TWEET_LIKE_EXCHANGE, MAIN_EXCHANGE
 
 logger = logging.getLogger("bot-agents")
 logger.setLevel(logging.DEBUG)
@@ -35,7 +35,10 @@ class TwitterBot(RabbitMessaging):
 		self._twitter_api: tweepy.API = api
 		self.user: User
 
+		self.messaging_settings = messaging_settings
+
 		self.work_init_time = time.time()
+		self.im_alive_time = time.time()
 
 		self.query_msg_type_to_exchange = {
 			messages_types.BotToServer.QUERY_FOLLOW_USER: QUERY_FOLLOW_USER_EXCHANGE,
@@ -71,18 +74,19 @@ class TwitterBot(RabbitMessaging):
 		:param message_type: type of message to send to server
 		:param exchange: rabbit's exchange where to send the new message
 		"""
-		cache_key = to_json({
-			'type': message_type,
-			'data': data
-		})
-		if self._redis_cache.get(cache_key):
-			logger.info(f"Found <{message_type}> in redis")
-			return
+		if message_type != messages_types.BotToServer.IM_ALIVE:
+			cache_key = to_json({
+				'type': message_type,
+				'data': data
+			})
+			if self._redis_cache.get(cache_key):
+				logger.info(f"Found <{message_type}> in redis")
+				return
 
-		logger.info(f"Adding <{message_type}> to redis for {BOT_TTL} seconds")
+			logger.info(f"Adding <{message_type}> to redis for {BOT_TTL} seconds")
 
-		self._redis_cache.set(cache_key, 10)
-		self._redis_cache.expire(cache_key, BOT_TTL)
+			self._redis_cache.set(cache_key, 10)
+			self._redis_cache.expire(cache_key, BOT_TTL)
 
 		self._send_message(to_json({
 			'type': message_type,
@@ -148,6 +152,9 @@ class TwitterBot(RabbitMessaging):
 
 		logger.debug("Setting up messaging")
 		self._setup_messaging()
+
+		logger.debug("Send first message to main exchange")
+		self.__send_message({'bot_id': self._id_str}, messages_types.BotToServer.IM_ALIVE, MAIN_EXCHANGE)
 
 		logger.debug("Verifying credentials")
 		try:
@@ -478,6 +485,10 @@ class TwitterBot(RabbitMessaging):
 				logger.info(f"Stopping bot for {WAIT_TIME_RANDOM_STOP} seconds")
 				wait(WAIT_TIME_RANDOM_STOP)
 				self.work_init_time = time.time()
+
+			if time.time() - self.im_alive_time > WAIT_TIME_IM_ALIVE:
+				logger.debug("Send message to main exchange: I'm alive")
+				self.__send_message({'bot_id': self._id_str}, messages_types.BotToServer.IM_ALIVE, MAIN_EXCHANGE)
 
 			try:
 				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")

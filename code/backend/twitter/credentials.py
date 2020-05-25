@@ -49,6 +49,9 @@ TASKS_EXCHANGE = "tasks_deliver"
 TASKS_ROUTING_KEY_PREFIX = "tasks.twitter"
 TASKS_QUEUE_PREFIX = "bot"
 
+MAIN_EXCHANGE = "main"
+MAIN_ROUTING_KEY = "main.twitter"
+
 LOG_EXCHANGE = "logs"
 LOG_ROUTING_KEY = "logs.twitter"
 

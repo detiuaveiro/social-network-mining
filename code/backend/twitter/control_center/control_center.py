@@ -18,7 +18,12 @@ import neo4j_labels
 from control_center import mongo_utils
 
 from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, TASK_FOLLOW_QUEUE, \
-	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE
+	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE, API_QUEUE, QUERY_KEYWORDS_EXCHANGE, TASKS_EXCHANGE, \
+	QUERY_KEYWORDS_ROUTING_KEY, QUERY_TWEET_REPLY_ROUTING_KEY, QUERY_TWEET_REPLY_EXCHANGE, \
+	QUERY_TWEET_RETWEET_ROUTING_KEY, QUERY_TWEET_RETWEET_EXCHANGE, QUERY_TWEET_LIKE_ROUTING_KEY, \
+	QUERY_TWEET_LIKE_EXCHANGE, QUERY_FOLLOW_USER_EXCHANGE, QUERY_FOLLOW_USER_ROUTING_KEY, TWEET_LIKE_ROUTING_KEY, \
+	TWEET_LIKE_EXCHANGE, USER_ROUTING_KEY, USER_EXCHANGE, TWEET_ROUTING_KEY, TWEET_EXCHANGE, QUERY_ROUTING_KEY, \
+	QUERY_EXCHANGE, LOG_ROUTING_KEY, LOG_EXCHANGE, DATA_EXCHANGE, DATA_ROUTING_KEY
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
@@ -113,6 +118,9 @@ class Control_Center:
 
 		elif message_type == BotToServer.QUERY_KEYWORDS:
 			self.__send_keywords(message)
+
+		elif message_type == BotToServer.IM_ALIVE:
+			self.__start_connection_to_bot(message)
 
 	def follow_service_action(self, message):
 		message_type = message['type']
@@ -946,6 +954,71 @@ class Control_Center:
 			ServerToBot.KEYWORDS,
 			response
 		)
+
+	def __start_connection_to_bot(self, data):
+		bot_id = data["bot_id"]
+
+		if bot_id not in self.rabbit_wrapper.bots:
+			self.rabbit_wrapper.bots.append(bot_id)
+
+			self.rabbit_wrapper.exchanges_data[API_QUEUE].append({
+				'exchange': f"{DATA_EXCHANGE}.{bot_id}",
+				'routing_key': DATA_ROUTING_KEY,
+				'publish_exchange': TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[API_QUEUE].append({
+				'exchange': f"{LOG_EXCHANGE}.{bot_id}",
+				'routing_key': LOG_ROUTING_KEY,
+				'publish_exchange': TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[API_QUEUE].append({
+				'exchange': f"{QUERY_EXCHANGE}.{bot_id}",
+				'routing_key': QUERY_ROUTING_KEY,
+				'publish_exchange': TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[API_QUEUE].append({
+				'exchange': f"{TWEET_EXCHANGE}.{bot_id}",
+				'routing_key': TWEET_ROUTING_KEY,
+				'publish_exchange': TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[API_QUEUE].append({
+				'exchange': f"{USER_EXCHANGE}.{bot_id}",
+				'routing_key': USER_ROUTING_KEY,
+				'publish_exchange': TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[API_QUEUE].append({
+				'exchange': f"{TWEET_LIKE_EXCHANGE}.{bot_id}",
+				'routing_key': TWEET_LIKE_ROUTING_KEY,
+				'publish_exchange': TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[API_QUEUE].append({
+				'exchange': f"{QUERY_FOLLOW_USER_EXCHANGE}.{bot_id}",
+				'routing_key': QUERY_FOLLOW_USER_ROUTING_KEY,
+				'publish_exchange': TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[API_QUEUE].append({
+				'exchange': f"{QUERY_TWEET_LIKE_EXCHANGE}.{bot_id}",
+				'routing_key': QUERY_TWEET_LIKE_ROUTING_KEY,
+				'publish_exchange': TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[API_QUEUE].append({
+				'exchange': f"{QUERY_TWEET_RETWEET_EXCHANGE}.{bot_id}",
+				'routing_key': QUERY_TWEET_RETWEET_ROUTING_KEY,
+				'publish_exchange': TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[API_QUEUE].append({
+				'exchange': f"{QUERY_TWEET_REPLY_EXCHANGE}.{bot_id}",
+				'routing_key': QUERY_TWEET_REPLY_ROUTING_KEY,
+				'publish_exchange': TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+			self.rabbit_wrapper.exchanges_data[API_QUEUE].append({
+				'exchange': f"{QUERY_KEYWORDS_EXCHANGE}.{bot_id}",
+				'routing_key': QUERY_KEYWORDS_ROUTING_KEY,
+				'publish_exchange': TASKS_EXCHANGE,
+				'control_center': Control_Center(self.rabbit_wrapper)})
+
+			log.debug("Restarting connection to rabbitmq to add the new bot exchanges")
+			self.rabbit_wrapper.stop_and_restart()
 
 	def __user_type(self, user_id: str) -> str:
 		if self.neo4j_client.check_bot_exists(user_id):

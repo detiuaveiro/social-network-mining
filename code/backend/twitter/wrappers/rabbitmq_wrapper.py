@@ -1,23 +1,16 @@
 ## @package twitter.wrappers
 # coding: UTF-8
 import functools
+import json
+import logging
 
 import pika
-import logging
-import json
-
 from pika.adapters.asyncio_connection import AsyncioConnection
 
 from control_center.control_center import Control_Center
 from credentials import RABBITMQ_URL, RABBITMQ_PORT, VHOST, RABBITMQ_USERNAME, RABBITMQ_PASSWORD, API_QUEUE, \
-    API_FOLLOW_QUEUE, DATA_EXCHANGE, DATA_ROUTING_KEY, LOG_ROUTING_KEY, LOG_EXCHANGE, QUERY_EXCHANGE, \
-    QUERY_ROUTING_KEY, SERVICE_QUERY_EXCHANGE, SERVICE_QUERY_ROUTING_KEY, TASKS_QUEUE_PREFIX, TASKS_EXCHANGE, \
-    TASK_FOLLOW_QUEUE, TASK_FOLLOW_EXCHANGE, TWEET_EXCHANGE, TWEET_ROUTING_KEY, USER_ROUTING_KEY, USER_EXCHANGE, \
-    TWEET_LIKE_ROUTING_KEY, TWEET_LIKE_EXCHANGE, QUERY_FOLLOW_USER_EXCHANGE, QUERY_FOLLOW_USER_ROUTING_KEY, \
-    QUERY_TWEET_LIKE_EXCHANGE, QUERY_TWEET_LIKE_ROUTING_KEY, QUERY_TWEET_RETWEET_EXCHANGE, \
-    QUERY_TWEET_RETWEET_ROUTING_KEY, QUERY_TWEET_REPLY_EXCHANGE, QUERY_TWEET_REPLY_ROUTING_KEY, QUERY_KEYWORDS_EXCHANGE, \
-    QUERY_KEYWORDS_ROUTING_KEY
-
+    API_FOLLOW_QUEUE, SERVICE_QUERY_EXCHANGE, SERVICE_QUERY_ROUTING_KEY, TASKS_QUEUE_PREFIX, TASKS_EXCHANGE, \
+    TASK_FOLLOW_QUEUE, TASK_FOLLOW_EXCHANGE, MAIN_EXCHANGE, MAIN_ROUTING_KEY
 
 log = logging.getLogger('Rabbit')
 log.setLevel(logging.DEBUG)
@@ -64,48 +57,54 @@ class Rabbitmq:
         self.channels = {}
 
         self.exchanges_data = {API_QUEUE: [], API_FOLLOW_QUEUE: []}
+        self.bots = []
 
         # consumer exchanges data
-        self.exchanges_data[API_QUEUE].append({'exchange': DATA_EXCHANGE, 'routing_key': DATA_ROUTING_KEY,
-                                               'publish_exchange': TASKS_EXCHANGE,
-                                               'control_center': Control_Center(self)})
-        self.exchanges_data[API_QUEUE].append({'exchange': LOG_EXCHANGE, 'routing_key': LOG_ROUTING_KEY,
-                                               'publish_exchange': TASKS_EXCHANGE,
-                                               'control_center': Control_Center(self)})
-        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_EXCHANGE, 'routing_key': QUERY_ROUTING_KEY,
-                                               'publish_exchange': TASKS_EXCHANGE,
-                                               'control_center': Control_Center(self)})
+        # self.exchanges_data[API_QUEUE].append({'exchange': DATA_EXCHANGE, 'routing_key': DATA_ROUTING_KEY,
+        #                                        'publish_exchange': TASKS_EXCHANGE,
+        #                                        'control_center': Control_Center(self)})
+        # self.exchanges_data[API_QUEUE].append({'exchange': LOG_EXCHANGE, 'routing_key': LOG_ROUTING_KEY,
+        #                                        'publish_exchange': TASKS_EXCHANGE,
+        #                                        'control_center': Control_Center(self)})
+        # self.exchanges_data[API_QUEUE].append({'exchange': QUERY_EXCHANGE, 'routing_key': QUERY_ROUTING_KEY,
+        #                                        'publish_exchange': TASKS_EXCHANGE,
+        #                                        'control_center': Control_Center(self)})
+#
+        # self.exchanges_data[API_QUEUE].append({'exchange': TWEET_EXCHANGE,
+        #                                        'routing_key': TWEET_ROUTING_KEY,
+        #                                        'publish_exchange': TASKS_EXCHANGE,
+        #                                        'control_center': Control_Center(self)})
+        # self.exchanges_data[API_QUEUE].append({'exchange': USER_EXCHANGE,
+        #                                        'routing_key': USER_ROUTING_KEY,
+        #                                        'publish_exchange': TASKS_EXCHANGE,
+        #                                        'control_center': Control_Center(self)})
+        # self.exchanges_data[API_QUEUE].append({'exchange': TWEET_LIKE_EXCHANGE,
+        #                                        'routing_key': TWEET_LIKE_ROUTING_KEY,
+        #                                        'publish_exchange': TASKS_EXCHANGE,
+        #                                        'control_center': Control_Center(self)})
+        # self.exchanges_data[API_QUEUE].append({'exchange': QUERY_FOLLOW_USER_EXCHANGE,
+        #                                        'routing_key': QUERY_FOLLOW_USER_ROUTING_KEY,
+        #                                        'publish_exchange': TASKS_EXCHANGE,
+        #                                        'control_center': Control_Center(self)})
+        # self.exchanges_data[API_QUEUE].append({'exchange': QUERY_TWEET_LIKE_EXCHANGE,
+        #                                        'routing_key': QUERY_TWEET_LIKE_ROUTING_KEY,
+        #                                        'publish_exchange': TASKS_EXCHANGE,
+        #                                        'control_center': Control_Center(self)})
+        # self.exchanges_data[API_QUEUE].append({'exchange': QUERY_TWEET_RETWEET_EXCHANGE,
+        #                                        'routing_key': QUERY_TWEET_RETWEET_ROUTING_KEY,
+        #                                        'publish_exchange': TASKS_EXCHANGE,
+        #                                        'control_center': Control_Center(self)})
+        # self.exchanges_data[API_QUEUE].append({'exchange': QUERY_TWEET_REPLY_EXCHANGE,
+        #                                        'routing_key': QUERY_TWEET_REPLY_ROUTING_KEY,
+        #                                        'publish_exchange': TASKS_EXCHANGE,
+        #                                        'control_center': Control_Center(self)})
+        # self.exchanges_data[API_QUEUE].append({'exchange': QUERY_KEYWORDS_EXCHANGE,
+        #                                        'routing_key': QUERY_KEYWORDS_ROUTING_KEY,
+        #                                        'publish_exchange': TASKS_EXCHANGE,
+        #                                        'control_center': Control_Center(self)})
 
-        self.exchanges_data[API_QUEUE].append({'exchange': TWEET_EXCHANGE,
-                                               'routing_key': TWEET_ROUTING_KEY,
-                                               'publish_exchange': TASKS_EXCHANGE,
-                                               'control_center': Control_Center(self)})
-        self.exchanges_data[API_QUEUE].append({'exchange': USER_EXCHANGE,
-                                               'routing_key': USER_ROUTING_KEY,
-                                               'publish_exchange': TASKS_EXCHANGE,
-                                               'control_center': Control_Center(self)})
-        self.exchanges_data[API_QUEUE].append({'exchange': TWEET_LIKE_EXCHANGE,
-                                               'routing_key': TWEET_LIKE_ROUTING_KEY,
-                                               'publish_exchange': TASKS_EXCHANGE,
-                                               'control_center': Control_Center(self)})
-        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_FOLLOW_USER_EXCHANGE,
-                                               'routing_key': QUERY_FOLLOW_USER_ROUTING_KEY,
-                                               'publish_exchange': TASKS_EXCHANGE,
-                                               'control_center': Control_Center(self)})
-        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_TWEET_LIKE_EXCHANGE,
-                                               'routing_key': QUERY_TWEET_LIKE_ROUTING_KEY,
-                                               'publish_exchange': TASKS_EXCHANGE,
-                                               'control_center': Control_Center(self)})
-        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_TWEET_RETWEET_EXCHANGE,
-                                               'routing_key': QUERY_TWEET_RETWEET_ROUTING_KEY,
-                                               'publish_exchange': TASKS_EXCHANGE,
-                                               'control_center': Control_Center(self)})
-        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_TWEET_REPLY_EXCHANGE,
-                                               'routing_key': QUERY_TWEET_REPLY_ROUTING_KEY,
-                                               'publish_exchange': TASKS_EXCHANGE,
-                                               'control_center': Control_Center(self)})
-        self.exchanges_data[API_QUEUE].append({'exchange': QUERY_KEYWORDS_EXCHANGE,
-                                               'routing_key': QUERY_KEYWORDS_ROUTING_KEY,
+        self.exchanges_data[API_QUEUE].append({'exchange': MAIN_EXCHANGE,
+                                               'routing_key': MAIN_ROUTING_KEY,
                                                'publish_exchange': TASKS_EXCHANGE,
                                                'control_center': Control_Center(self)})
 
@@ -243,9 +242,9 @@ class Rabbitmq:
         ioloop.
         Adapted from the example on https://github.com/pika/pika/blob/master/examples/asynchronous_consumer_example.py
         """
-        self.__stop_and_restart()
+        self.stop_and_restart()
 
-    def __stop_and_restart(self):
+    def stop_and_restart(self):
         log.info('Stopping')
         self.__stop_consuming()
         log.info('Stopped')
