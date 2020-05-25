@@ -3,6 +3,7 @@
 import functools
 import json
 import logging
+import time
 
 import pika
 from pika.adapters.asyncio_connection import AsyncioConnection
@@ -69,7 +70,7 @@ class Rabbitmq:
         # self.exchanges_data[API_QUEUE].append({'exchange': QUERY_EXCHANGE, 'routing_key': QUERY_ROUTING_KEY,
         #                                        'publish_exchange': TASKS_EXCHANGE,
         #                                        'control_center': Control_Center(self)})
-#
+
         # self.exchanges_data[API_QUEUE].append({'exchange': TWEET_EXCHANGE,
         #                                        'routing_key': TWEET_ROUTING_KEY,
         #                                        'publish_exchange': TASKS_EXCHANGE,
@@ -172,6 +173,8 @@ class Rabbitmq:
     def __on_channel_open(self, channel, queue):
         self.channels[queue] = channel
 
+        log.info(f"Starting to configure channel <{channel}> with exchanges <{self.exchanges_data[queue]}>")
+
         for exchange_data in self.exchanges_data[queue]:
             exchange = exchange_data['exchange']
             routing_key = exchange_data['routing_key']
@@ -248,7 +251,7 @@ class Rabbitmq:
         log.info('Stopping')
         self.__stop_consuming()
         log.info('Stopped')
-        # time.sleep(2)
+        time.sleep(2)
         self.__connect()
 
     def __stop_consuming(self):
