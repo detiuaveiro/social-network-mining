@@ -99,7 +99,7 @@ def twitter_users_stats(entries_per_page, page, protected):
 	try:
 
 		stats = UserStats.objects.filter(protected=protected)
-		
+
 		data = paginator_factory(stats, entries_per_page, page)
 		data['entries'] = [serializers.UserStats(us).data for us in data['entries']]
 
@@ -653,17 +653,17 @@ def add_policy(data):
 			if not neo4j.check_bot_exists(str(bot_id)):
 				raise AddPolicyError("Invalid Bot's ID")
 
-		status = Policy.objects.filter(API_type=policy_serializer.data['API_type'],
-		                               filter=policy_serializer.data['filter'],
-		                               tags=policy_serializer.data['tags']).exists()
-		if status:
-			args = {"API_type": policy_serializer.data['API_type'],
-			        "filter": policy_serializer.data['filter'],
-			        "tags": policy_serializer.data['tags']}
+			if Policy.objects.filter(name=policy_serializer.data['name']).exists():
+				raise AddPolicyError("A policy with same name already exists")
 
-			raise AddPolicyError(f"A policy with similar arguments (args: {args}) is already on database ")
+			if Policy.objects.filter(Q(tags__overlap=policy_serializer.data['tags'])).exists():
+				raise AddPolicyError(
+					"Some of the policy arguments are already defined in another policy. Tags cant overlap!")
 
-		policy = Policy.objects.create(id=next_id(Policy), **policy_serializer.data)
+		data = policy_serializer.data
+		data['tags'] = list(set(data['tags']))
+
+		policy = Policy.objects.create(id=next_id(Policy), **data)
 
 		return True, {'id': policy.id}, "Success adding a new policy"
 
@@ -706,10 +706,46 @@ def update_policy(data, policy_id):
 	Returns: Update operation status wrapped on dictionary
 
 	"""
+	"""
+			if not policy_serializer.is_valid():
+			return False, policy_serializer.errors, "Invalid data"
+
+
+			if Policy.objects.filter(name=policy_serializer.data['name']).exists():
+				raise AddPolicyError("A policy with same name already exists")
+
+			if Policy.objects.filter(Q(tags__overlap=policy_serializer.data['tags'])).exists():
+				raise AddPolicyError(
+					"Some of the policy arguments are already defined in another policy. Tags cant overlap!")
+
+		data = policy_serializer.data
+		data['tags'] = list(set(data['tags']))
+
+		policy = Policy.objects.create(id=next_id(Policy), **data)
+	"""
+
+	class UpdatePolicyError(Exception):
+		pass
+
 	try:
 		policy_obj = Policy.objects.get(id=policy_id)
 		data = dict([(key, value) for key, value in data.items() if key != 'id'])
+		if 'tags' in data:
+			data['tags'] = list(set(data['tags']))
 		policy_obj.__dict__.update(data)
+
+		new_data = serializers.Policy(policy_obj).data
+		for bot_id in new_data['bots']:
+			if not neo4j.check_bot_exists(str(bot_id)):
+				raise UpdatePolicyError("Invalid Bot's ID")
+
+		if Policy.objects.filter(Q(name=new_data['name']) & ~Q(id=policy_id)).exists():
+			raise UpdatePolicyError("A policy with same name already exists")
+
+		if Policy.objects.filter(Q(tags__overlap=new_data['tags']) & ~Q(id=policy_id)).exists():
+			raise UpdatePolicyError(
+				"Some of the policy arguments are already defined in another policy. Tags cant overlap!")
+
 		policy_obj.save()
 
 		entry = serializers.Policy(policy_obj).data
@@ -725,6 +761,10 @@ def update_policy(data, policy_id):
 	except Policy.DoesNotExist as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {update_policy.__name__} -> {e}")
 		return False, None, f"Policy (id:{policy_id}) does not exists on database"
+
+	except UpdatePolicyError as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {update_policy.__name__} -> {e}")
+		return False, None, str(e)
 
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {update_policy.__name__} -> {e}")

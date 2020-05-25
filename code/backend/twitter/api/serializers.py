@@ -70,8 +70,8 @@ class TweetStats(serializers.Serializer):
 
 class Policy(serializers.Serializer):
 	id = serializers.IntegerField(required=False)
-	API_type = serializers.ChoiceField(choices=enum_policy.api_types())
-	filter = serializers.ChoiceField(choices=enum_policy.api_filter())
+	API_type = serializers.ChoiceField(choices=enum_policy.api_types(), default="Twitter")
+	filter = serializers.ChoiceField(choices=enum_policy.api_filter(), default="Keywords")
 	name = serializers.CharField()
 	tags = serializers.ListField(child=serializers.CharField(), allow_empty=False)
 	bots = serializers.ListField(child=serializers.CharField(), allow_empty=False)
