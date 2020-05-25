@@ -96,7 +96,7 @@ class TwitterBot(RabbitMessaging):
 			'bot_screen_name': self._screen_name,
 			'timestamp': current_time(),
 			'data': data
-		}), self.messaging_settings[exchange].exchange)
+		}), exchange)
 
 	def __send_request_follow(self, user: User):
 		"""Function to send a follow user request
