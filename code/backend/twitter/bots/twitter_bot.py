@@ -482,10 +482,10 @@ class TwitterBot(RabbitMessaging):
 		self.__setup()
 
 		while True:
-			if time.time() - self.work_init_time > WAIT_TIME_BETWEEN_WORK:
-				logger.info(f"Stopping bot for {WAIT_TIME_RANDOM_STOP} seconds")
-				wait(WAIT_TIME_RANDOM_STOP)
-				self.work_init_time = time.time()
+			# if time.time() - self.work_init_time > WAIT_TIME_BETWEEN_WORK:
+			# 	logger.info(f"Stopping bot for {WAIT_TIME_RANDOM_STOP} seconds")
+			# 	wait(WAIT_TIME_RANDOM_STOP)
+			# 	self.work_init_time = time.time()
 
 			if time.time() - self.im_alive_time > WAIT_TIME_IM_ALIVE:
 				logger.debug("Send message to main exchange: I'm alive")
@@ -500,7 +500,7 @@ class TwitterBot(RabbitMessaging):
 					task_type, task_params = task['type'], task['params']
 					logger.debug(f"Received task of type {messages_types.ServerToBot(task_type).name}: {task_params}")
 
-					wait(3)
+					# wait(3)
 
 					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
 						logger.warning(
