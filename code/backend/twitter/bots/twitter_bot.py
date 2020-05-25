@@ -490,6 +490,7 @@ class TwitterBot(RabbitMessaging):
 			if time.time() - self.im_alive_time > WAIT_TIME_IM_ALIVE:
 				logger.debug("Send message to main exchange: I'm alive")
 				self.__send_message({'bot_id': self._id_str}, messages_types.BotToServer.IM_ALIVE, MAIN_EXCHANGE)
+				self.im_alive_time = time.time()
 
 			try:
 				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")
