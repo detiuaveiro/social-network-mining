@@ -25,6 +25,7 @@ logger.addHandler(handler)
 WAIT_TIME_NO_TASKS = 10
 THRESHOLD_FOLLOW_USER = 0.7
 MEAN_WORDS_PER_TWEET = 120
+NUMBER_TWEETS_PREDICT = 5
 
 MONGO_URL = os.environ.get('MONGO_URL_SCRAPPER', 'localhost')
 MONGO_PORT = 27017
@@ -156,16 +157,18 @@ class Service(RabbitMessaging):
 		:param tweets: list of tweets to give the ml model to predict
 		"""
 
+		tweets_to_use = sorted(tweets, key=lambda x: len(x), reverse=True)[:NUMBER_TWEETS_PREDICT]
+
 		user_id = int(user['id_str'])
 		heuristic = 0
-		tweets_len_mean = np.mean([len(i) for i in tweets])
+		tweets_len_mean = np.mean([len(i) for i in tweets_to_use])
 
-		if tweets_len_mean >= MEAN_WORDS_PER_TWEET or len(tweets) == 0:
+		if tweets_len_mean >= MEAN_WORDS_PER_TWEET or len(tweets_to_use) == 0:
 			policies_labels = [p['name'] for p in policies]
 
 			description = user['description']
 
-			predictions = predict_soft_max(self.mongo_models, tweets + [description], policies_labels)
+			predictions = predict_soft_max(self.mongo_models, tweets_to_use + [description], policies_labels)
 
 			keras_backend.clear_session()
 			gc.collect()
