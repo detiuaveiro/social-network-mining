@@ -74,7 +74,7 @@ class TwitterBot(RabbitMessaging):
 		:param message_type: type of message to send to server
 		:param exchange: rabbit's exchange where to send the new message
 		"""
-		if message_type != messages_types.BotToServer.IM_ALIVE:
+		if message_type not in (messages_types.BotToServer.IM_ALIVE, messages_types.BotToServer.QUERY_KEYWORDS):
 			cache_key = to_json({
 				'bot_id': self._id,
 				'type': message_type,
