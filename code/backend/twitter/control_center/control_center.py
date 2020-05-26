@@ -77,6 +77,11 @@ class Control_Center:
 		except Exception as error:
 			log.exception(f"Error <{error}> on consuming new message: ")
 
+		# acknowledge message
+		log.info("Acknowledging the consumed message")
+		self.channel.basic_ack(self.deliver_tag)
+		log.info("Acknowledged the consumed message")
+
 	def bot_action(self, message):
 		message_type = message['type']
 		log.info(f"Received new action from bot: {message['bot_id']} wants to do {BotToServer(message_type).name}")
@@ -1074,11 +1079,6 @@ class Control_Center:
 		self.exchange = method.exchange
 		self.deliver_tag = method.delivery_tag
 		self.channel = channel
-
-		# acknowledge message
-		log.info("Acknowledging the consumed message")
-		self.channel.basic_ack(self.deliver_tag)
-		log.info("Acknowledged the consumed message")
 
 		log.debug(f"Starting to process a new message from exchange <{self.exchange}>")
 		message = json.loads(body)
