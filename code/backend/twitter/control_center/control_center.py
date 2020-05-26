@@ -1023,7 +1023,8 @@ class Control_Center:
 				'control_center': Control_Center(self.rabbit_wrapper)})
 
 			log.debug("Restarting connection to rabbitmq to add the new bot exchanges")
-			self.rabbit_wrapper.stop_and_restart()
+			# self.rabbit_wrapper.stop_and_restart()
+			self.rabbit_wrapper.close()
 
 	def __user_type(self, user_id: str) -> str:
 		if self.neo4j_client.check_bot_exists(user_id):
@@ -1074,6 +1075,7 @@ class Control_Center:
 			                         message=payload, father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
+			raise error
 
 	def received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")
