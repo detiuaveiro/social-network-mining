@@ -251,7 +251,7 @@ class Rabbitmq:
         log.info('Stopping')
         self.__stop_consuming()
         log.info('Stopped')
-        time.sleep(2)
+        time.sleep(2*len(self.channels.values()))
         self.__connect()
 
     def __stop_consuming(self):
@@ -264,6 +264,7 @@ class Rabbitmq:
             try:
                 callback = functools.partial(self.__close_channel, channel=channel)
                 channel.basic_cancel(callback=callback)
+                log.debug(f"Stopped channel {channel}")
             except Exception as error:
                 log.exception(f"Could not cancel the channel because of error <{error}>")
 
