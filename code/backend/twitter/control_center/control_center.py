@@ -1054,6 +1054,7 @@ class Control_Center:
 			                         father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
+			raise error
 
 	def send_to_follow_user_service(self, message_type, params):
 		"""
