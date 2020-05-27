@@ -21,15 +21,17 @@ class App extends Component {
   render() {
     return (
       <Router history={hist}>
-          <React.Suspense fallback={loading()}>
-            <Switch>
-              <Route exact path="/" name="Home" render={props => <LandingLayout {...props}/>} />
+        <React.Suspense fallback={loading()}>
+          <Switch>
+            <Route path="/" name="Dashboard" render={props => <DefaultLayout {...props} />} />
+            <Route exact path="/" name="Home" render={props => <LandingLayout {...props} />} />
 
-              <Route path="/404" name="Page 404" render={props => <Page404 {...props}/>} />
-              <Route path="/500" name="Page 500" render={props => <Page500 {...props}/>} />
-              <Route path="/dash" name="Dashboard" render={props => <DefaultLayout {...props}/>} />
-            </Switch>
-          </React.Suspense>
+            <Route path="/404" name="Page 404" render={props => <Page404 {...props} />} />
+            <Route path="/500" name="Page 500" render={props => <Page500 {...props} />} />
+            <Route path="/dash" name="Dashboard" render={props => <DefaultLayout {...props} />} />
+
+          </Switch>
+        </React.Suspense>
       </Router>
     );
   }

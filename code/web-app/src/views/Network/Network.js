@@ -380,6 +380,8 @@ class Network extends Component {
       loading: true
     })
 
+    console.log(this.props.returnValues)
+
     if (this.props.returnValues == null) {
       // Get Network
       await this.getBaseNetwork()
