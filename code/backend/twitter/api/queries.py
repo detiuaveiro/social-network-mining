@@ -843,8 +843,11 @@ def twitter_sub_network(request):
 			"intermediates": request["intermediate"],
 			"end": request["end"]
 		}
+		if "limit" not in request or not request["limit"]:
+			request["limit"] = 1000
 
-		return True, neo4j.export_query(Report.neo_query_builder(match, request["limit"])), \
+		data = neo4j.export_query(Report.neo_query_builder(match, request["limit"]))
+		return True, [process_neo4j_results(data)], \
 		       "Success obtaining a network defined by a query"
 
 	except AttributeError as e:
