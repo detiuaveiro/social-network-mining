@@ -479,16 +479,16 @@ class Control_Center:
 
 		log.info(f"Bot {data['bot_id']} requests a follow from {user_id}")
 
+		# verify if some bot already requested to follow the user
+		if self.__found_in_logs(action=log_actions.FOLLOW_REQ_ACCEPT, target=user_id_str, max_number_hours=0):
+			log.info(f"Action was already accepted recently for some bot.")
+			return
+
 		self.postgres_client.insert_log({
 			"bot_id": int(data["bot_id_str"]),
 			"action": log_actions.FOLLOW_REQ,
 			"target_id": user_id_str
 		})
-
-		# verify if some bot already requested to follow the user
-		if self.__found_in_logs(action=log_actions.FOLLOW_REQ, target=user_id_str, max_number_hours=0):
-			log.info(f"Action was already requested recently for some bot.")
-			return
 
 		request_accepted = self.pep.receive_message({
 			"type": PoliciesTypes.REQUEST_FOLLOW_USER,
@@ -1018,7 +1018,8 @@ class Control_Center:
 				'control_center': Control_Center(self.rabbit_wrapper)})
 
 			log.debug("Restarting connection to rabbitmq to add the new bot exchanges")
-			self.rabbit_wrapper.stop_and_restart()
+			# self.rabbit_wrapper.stop_and_restart()
+			self.rabbit_wrapper._close()
 
 	def __user_type(self, user_id: str) -> str:
 		if self.neo4j_client.check_bot_exists(user_id):
@@ -1049,6 +1050,7 @@ class Control_Center:
 			                         father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
+			raise error
 
 	def send_to_follow_user_service(self, message_type, params):
 		"""
@@ -1068,6 +1070,7 @@ class Control_Center:
 			                         message=payload, father_exchange=self.exchange)
 		except Exception as error:
 			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
+			raise error
 
 	def received_message_handler(self, channel, method, properties, body):
 		log.info("MESSAGE RECEIVED")

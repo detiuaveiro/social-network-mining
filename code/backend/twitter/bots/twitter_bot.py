@@ -74,8 +74,9 @@ class TwitterBot(RabbitMessaging):
 		:param message_type: type of message to send to server
 		:param exchange: rabbit's exchange where to send the new message
 		"""
-		if message_type != messages_types.BotToServer.IM_ALIVE:
+		if message_type not in (messages_types.BotToServer.IM_ALIVE, messages_types.BotToServer.QUERY_KEYWORDS):
 			cache_key = to_json({
+				'bot_id': self._id,
 				'type': message_type,
 				'data': data
 			})
@@ -481,14 +482,15 @@ class TwitterBot(RabbitMessaging):
 		self.__setup()
 
 		while True:
-			if time.time() - self.work_init_time > WAIT_TIME_BETWEEN_WORK:
-				logger.info(f"Stopping bot for {WAIT_TIME_RANDOM_STOP} seconds")
-				wait(WAIT_TIME_RANDOM_STOP)
-				self.work_init_time = time.time()
+			# if time.time() - self.work_init_time > WAIT_TIME_BETWEEN_WORK:
+			# 	logger.info(f"Stopping bot for {WAIT_TIME_RANDOM_STOP} seconds")
+			# 	wait(WAIT_TIME_RANDOM_STOP)
+			# 	self.work_init_time = time.time()
 
 			if time.time() - self.im_alive_time > WAIT_TIME_IM_ALIVE:
 				logger.debug("Send message to main exchange: I'm alive")
 				self.__send_message({'bot_id': self._id_str}, messages_types.BotToServer.IM_ALIVE, MAIN_EXCHANGE)
+				self.im_alive_time = time.time()
 
 			try:
 				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")
@@ -498,7 +500,7 @@ class TwitterBot(RabbitMessaging):
 					task_type, task_params = task['type'], task['params']
 					logger.debug(f"Received task of type {messages_types.ServerToBot(task_type).name}: {task_params}")
 
-					wait(3)
+					# wait(3)
 
 					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
 						logger.warning(
