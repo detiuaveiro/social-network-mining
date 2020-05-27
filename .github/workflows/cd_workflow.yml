@@ -9,19 +9,7 @@ jobs:
     runs-on: ubuntu-18.04
     if: contains(github.event.pull_request.labels.*.name, 'deploy')
     steps:
-    - uses: actions/checkout@master
-    - uses: actions/checkout@master
-    - name: Publish Rest to Registry
-      uses: elgohr/Publish-Docker-Github-Action@master
-      with:
-        name: detiuaveiro/social-network-mining/rest
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        registry: docker.pkg.github.com
-        dockerfile: code/backend/twitter/docker/rest/Dockerfile
-        context: code/backend/twitter
-        tags: "latest"
-        
+    - uses: actions/checkout@master    
     - name: Publish Frontend to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
@@ -44,7 +32,6 @@ jobs:
         context: code/backend/twitter
         tags: "latest"
 
-    - uses: actions/checkout@master
     - name: Publish Follow Service to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
@@ -56,7 +43,6 @@ jobs:
         context: code/backend/twitter
         tags: "latest"
 
-    - uses: actions/checkout@master
     - name: Publish Control Center to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
@@ -65,5 +51,16 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         registry: docker.pkg.github.com
         dockerfile: code/backend/twitter/docker/control_center/Dockerfile
+        context: code/backend/twitter
+        tags: "latest"
+
+    - name: Publish Rest to Registry
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: detiuaveiro/social-network-mining/rest
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        registry: docker.pkg.github.com
+        dockerfile: code/backend/twitter/docker/rest/Dockerfile
         context: code/backend/twitter
         tags: "latest"
