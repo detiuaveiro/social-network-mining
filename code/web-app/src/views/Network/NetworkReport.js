@@ -761,6 +761,7 @@ class NetworkReport extends Component {
         redirect: true,
         returnValues: data.data
       })
+      console.log(data)
 
     }).catch(error => {
       console.log("error: " + error);
@@ -924,7 +925,7 @@ class NetworkReport extends Component {
                     <i><b>Please note that...</b></i>
                   </h5>
                   <h6 style={{ marginLeft: "15px" }}>
-                    <span>Due to the high number of data our system processes, some report generations might take longer than others. We ask that you be patient and reasonable <i class="far fa-heart" style={{ color: "#fd1d1d" }}></i></span>
+                    <span>Due to the high number of data our system processes, some query generations might take longer than others. We ask that you be patient and reasonable <i class="far fa-heart" style={{ color: "#fd1d1d" }}></i></span>
                   </h6>
                 </div>
               </Col>
@@ -983,10 +984,10 @@ class NetworkReport extends Component {
                 <Card>
                   <CardHeader color="primary">
                     <h3 style={{ color: "white" }}>
-                      <strong>Reports</strong>
+                      <strong>Network Query</strong>
                     </h3>
                     <h5 style={{ color: "white" }}>
-                      Generate a new report for analysis
+                      Generate a new graph for analysis
                     </h5>
                     <Button block outline color="light" style={{
                       width: "150px", marginTop: "15px"
