@@ -23,7 +23,6 @@ class App extends Component {
       <Router history={hist}>
           <React.Suspense fallback={loading()}>
             <Switch>
-              <Route path="/" name="Dashboard" render={props => <DefaultLayout {...props}/>} />
               <Route exact path="/" name="Home" render={props => <LandingLayout {...props}/>} />
 
               <Route path="/404" name="Page 404" render={props => <Page404 {...props}/>} />
