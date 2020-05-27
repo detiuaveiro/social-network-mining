@@ -1024,7 +1024,7 @@ class Control_Center:
 
 			log.debug("Restarting connection to rabbitmq to add the new bot exchanges")
 			# self.rabbit_wrapper.stop_and_restart()
-			self.rabbit_wrapper.close()
+			self.rabbit_wrapper._close()
 
 	def __user_type(self, user_id: str) -> str:
 		if self.neo4j_client.check_bot_exists(user_id):

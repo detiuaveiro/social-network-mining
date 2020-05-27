@@ -9,7 +9,6 @@ from wrappers.rabbitmq_wrapper import Rabbitmq
 def main():
 	control_center = Rabbitmq()
 	while True:
-		print("ola")
 		control_center.run()
 	# control_center.close()
 
