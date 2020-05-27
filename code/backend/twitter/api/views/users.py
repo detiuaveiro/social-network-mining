@@ -31,6 +31,7 @@ def twitter_users_count(_):
 def twitter_users(_, protected, entries_per_page=None, page=None):
 	"""
 	Args:
+		protected:  Boolean to identify a protected user
 		_:  Http Request (ignored in this function)
 		entries_per_page: Number of entries per page or None
 		page: Number of page the user wants to retrieve or None
@@ -51,9 +52,10 @@ def twitter_users(_, protected, entries_per_page=None, page=None):
 
 
 @api_view(["GET"])
-def twitter_users_stats(_, entries_per_page=None, page=None):
+def twitter_users_stats(_, protected, entries_per_page=None, page=None):
 	"""
 	Args:
+		protected:  Boolean to identify a protected user
 		_: Http Request (ignored in this function)
 		entries_per_page: Number of entries per page or None
 		page: Number of page the user wants to retrieve or None
@@ -65,7 +67,7 @@ def twitter_users_stats(_, entries_per_page=None, page=None):
 	success_messages = []
 	status = HTTP_200_OK
 
-	success, data, message = queries.twitter_users_stats(entries_per_page, page)
+	success, data, message = queries.twitter_users_stats(entries_per_page, page, protected == 'T')
 	if success:
 		success_messages.append(message)
 	else:
@@ -317,6 +319,7 @@ def twitter_users_type(_, user_id):
 		status = HTTP_403_FORBIDDEN
 
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
+
 
 @api_view(["GET"])
 def twitter_strict_search(_, keyword):

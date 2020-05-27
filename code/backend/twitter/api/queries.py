@@ -91,16 +91,15 @@ def twitter_users_stats(entries_per_page, page, protected):
 	Args:
 		entries_per_page: Number of entries per page or None
 		page: Number of page the user wants to retrieve or None
+		protected:  Boolean to identify a protected user
 
 	Returns: Stats saved on the postgres database wrapped on a dictionary divided per pages
 	if entries_per_page and page are both None then all stats will be returned
 	"""
 	try:
-		if protected:
-			stats = UserStats.objects.filter(protected=True)
-		else:
-			stats = UserStats.objects.all()
 
+		stats = UserStats.objects.filter(protected=protected)
+		
 		data = paginator_factory(stats, entries_per_page, page)
 		data['entries'] = [serializers.UserStats(us).data for us in data['entries']]
 
@@ -172,7 +171,7 @@ def twitter_user_stats_grouped(user_id, types):
 			users_stats.append(obj)
 
 		return True, {'data': users_stats, 'start_date': start_date}, \
-			   f"Success obtaining user's (id:{user_id}) stats grouped"
+		       f"Success obtaining user's (id:{user_id}) stats grouped"
 
 	except Exception as e:
 		logger.error(
@@ -325,7 +324,7 @@ def twitter_search_users_strict(keyword, user_type):
 
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: "
-					 f"Function {twitter_search_users_strict.__name__} -> {e}")
+		             f"Function {twitter_search_users_strict.__name__} -> {e}")
 		return False, None, f"Error searching {user_type}s by {keyword}"
 
 
@@ -474,7 +473,7 @@ def twitter_tweet_replies(tweet_id):
 
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: "
-					 f"Function {twitter_tweet_replies.__name__} -> {e}")
+		             f"Function {twitter_tweet_replies.__name__} -> {e}")
 		return False, None, f"Error obtaining all tweet's (id:{tweet_id}) replies"
 
 
@@ -493,7 +492,8 @@ def twitter_search_tweets(tweet):
 		return True, data, f"Success searching users by {tweet}"
 
 	except Exception as e:
-		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_search_tweets.__name__} -> {e}")
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_search_tweets.__name__} -> {e}")
 		return False, None, f"Error searching users by {tweet}"
 
 
@@ -654,12 +654,12 @@ def add_policy(data):
 				raise AddPolicyError("Invalid Bot's ID")
 
 		status = Policy.objects.filter(API_type=policy_serializer.data['API_type'],
-									   filter=policy_serializer.data['filter'],
-									   tags=policy_serializer.data['tags']).exists()
+		                               filter=policy_serializer.data['filter'],
+		                               tags=policy_serializer.data['tags']).exists()
 		if status:
 			args = {"API_type": policy_serializer.data['API_type'],
-					"filter": policy_serializer.data['filter'],
-					"tags": policy_serializer.data['tags']}
+			        "filter": policy_serializer.data['filter'],
+			        "tags": policy_serializer.data['tags']}
 
 			raise AddPolicyError(f"A policy with similar arguments (args: {args}) is already on database ")
 
@@ -780,7 +780,7 @@ def twitter_bot(bot_id):
 			return False, None, f"Bot (id:{bot_id}) does not exist on database"
 
 		return True, serializers.User(User.objects.get(user_id=int(bot_id))).data, \
-			   f"Success obtaining bot's (id:{bot_id}) info"
+		       f"Success obtaining bot's (id:{bot_id}) info"
 
 	except User.DoesNotExist as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_bot.__name__} -> {e}")
@@ -843,8 +843,9 @@ def twitter_sub_network(request):
 			"intermediates": request["intermediate"],
 			"end": request["end"]
 		}
-		data = neo4j.export_query(Report.neo_query_builder(match, request["limit"]))
-		return True,  process_neo4j_results(data), "Success obtaining a network defined by a query"
+
+		return True, neo4j.export_query(Report.neo_query_builder(match, request["limit"])), \
+		       "Success obtaining a network defined by a query"
 
 	except AttributeError as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
@@ -923,7 +924,7 @@ def latest_activities_daily(entries_per_page, page):
 	"""
 	try:
 		activities = Log.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))
-										& Q(timestamp__lte=datetime.now())).order_by("-timestamp")
+		                                & Q(timestamp__lte=datetime.now())).order_by("-timestamp")
 
 		data = paginator_factory(activities, entries_per_page, page)
 		data['entries'] = [serializers.Log(activity).data for activity in data['entries']]
@@ -981,8 +982,8 @@ def __get_count_stats(types, accum, action=None):
 
 	order_by_list = [f"'{group_type}'" for group_type in types]
 	query += f".values({','.join(order_by_list)})" \
-			 f".annotate(activity=Count('*'))" \
-			 f".order_by({','.join(order_by_list)})"
+	         f".annotate(activity=Count('*'))" \
+	         f".order_by({','.join(order_by_list)})"
 
 	stats = {}
 	query_res = list(eval(query))
@@ -998,7 +999,7 @@ def __get_count_stats(types, accum, action=None):
 
 def __get_today_stats(action=None):
 	query = "Log.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))" \
-			"& Q(timestamp__lte=datetime.now())"
+	        "& Q(timestamp__lte=datetime.now())"
 	if action:
 		query += f" & Q(action='{action}')"
 
@@ -1143,8 +1144,8 @@ def relations_today():
 	"""
 	try:
 		data = {"follow": __get_today_stats("FOLLOW"), "likes": __get_today_stats("TWEET LIKE"),
-				"retweet": __get_today_stats("RETWEET"), "quotes": __get_today_stats("TWEET QUOTE"),
-				"replies": __get_today_stats("REPLIES")}
+		        "retweet": __get_today_stats("RETWEET"), "quotes": __get_today_stats("TWEET QUOTE"),
+		        "replies": __get_today_stats("REPLIES")}
 		return True, data, "Success obtaining stats grouped"
 	except Exception as e:
 		logger.error(
@@ -1164,7 +1165,7 @@ def latest_tweets_daily(entries_per_page, page):
 	"""
 	try:
 		tweets = TweetStats.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))
-										   & Q(timestamp__lte=datetime.now())).order_by("-timestamp")
+		                                   & Q(timestamp__lte=datetime.now())).order_by("-timestamp")
 
 		data = paginator_factory(tweets, entries_per_page, page)
 		tweet_list = [serializers.TweetStats(tweet).data["tweet_id"] for tweet in data['entries']]

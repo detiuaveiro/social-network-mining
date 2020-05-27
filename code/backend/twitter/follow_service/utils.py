@@ -48,7 +48,8 @@ def read_model(models, label):
 
 
 def get_labels(models, policy_label):
-	return [result['label'] for result in models.find({'label': {'$in': policy_label}}, {'_id': 0})]
+	return dict([(result['label'], result['args'])
+	             for result in models.find({'label': {'$in': policy_label}}, {'_id': 0})])
 
 
 def convert_policies_to_model_input_data(policies):
@@ -80,5 +81,7 @@ def update_tweets(policies_tweets_model, policies_tweets):
 		}}, upsert=True)
 
 
-def get_all_tweets_per_policy(policies_tweets):
-	return list(policies_tweets.find({}, {'_id': 0}))
+def get_all_tweets_per_policy(policies_tweets, query=None):
+	if not query:
+		query = {}
+	return list(policies_tweets.find(query, {'_id': 0}))

@@ -8,8 +8,9 @@ from wrappers.rabbitmq_wrapper import Rabbitmq
 
 def main():
 	control_center = Rabbitmq()
-	control_center.run()
-	control_center.close()
+	while True:
+		control_center.run()
+	# control_center.close()
 
 
 def tests(test_type):

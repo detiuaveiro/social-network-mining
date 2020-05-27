@@ -1,7 +1,5 @@
 ## @package twitter
 
-import os
-
 from follow_service.service import Service
 from rabbit_messaging import MessagingSettings
 from credentials import RABBITMQ_USERNAME, RABBITMQ_PASSWORD, VHOST, RABBITMQ_FULL_HTTP_URL, TASK_FOLLOW_QUEUE, \

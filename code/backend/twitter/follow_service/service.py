@@ -8,13 +8,12 @@ import numpy as np
 import messages_types
 from credentials import TASK_FOLLOW_EXCHANGE, SERVICE_QUERY_EXCHANGE
 from follow_service.utils import to_json, current_time, wait, convert_policies_to_model_input_data, get_labels, \
-	update_tweets, get_full_text, update_models
+	update_tweets, get_full_text, update_models, get_all_tweets_per_policy
 from rabbit_messaging import RabbitMessaging
 import os
 from follow_service.classifier import predict_soft_max, train_model
 from follow_service.tweets_scrapper import get_data
 from pymongo import MongoClient
-
 
 logger = logging.getLogger("follow-service")
 logger.setLevel(logging.DEBUG)
@@ -26,6 +25,7 @@ logger.addHandler(handler)
 WAIT_TIME_NO_TASKS = 10
 THRESHOLD_FOLLOW_USER = 0.7
 MEAN_WORDS_PER_TWEET = 120
+NUMBER_TWEETS_PREDICT = 5
 
 MONGO_URL = os.environ.get('MONGO_URL_SCRAPPER', 'localhost')
 MONGO_PORT = 27017
@@ -66,27 +66,7 @@ class Service(RabbitMessaging):
 		# send a request to get policies
 		self.__send_message(data={}, message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
 
-	def __train_models(self, policies: List[Dict]):
-		"""
-		:param policies: dictionary in which each key is the name of the policy and the values are lists with the
-			keywords of that policy
-		"""
-
-		# Distinçao entre keywords e target???
-		logger.debug("Starting train process")
-		model_input_data = convert_policies_to_model_input_data(policies)
-		if len(model_input_data) < 2:
-			logger.debug("Cant start training process. At least 2 policies need to be defined")
-			# Mandar uma mensagem para o Control Center ???
-			return
-
-		trained_labels = get_labels(self.mongo_models, list(model_input_data.keys()))
-
-		if len(trained_labels) == len(model_input_data):
-			logger.debug("All policies have been already trained")
-			return
-
-		not_trained_policies = list(set(model_input_data.keys()) - set(trained_labels))
+	def __train_full_policy(self, not_trained_policies, model_input_data):
 		policies_tweets = {}
 
 		logger.debug(f"Training {not_trained_policies} policies")
@@ -106,6 +86,69 @@ class Service(RabbitMessaging):
 		args_per_label = dict([(label, model_input_data[label]) for label in not_trained_policies])
 		update_models(self.mongo_models, new_models, args_per_label)
 
+	def __train_new_policy_args(self, new_args_per_label, trained_labels):
+		logger.debug(f"Updating arguments for a policy {new_args_per_label.keys()}")
+		policies_tweets = {}
+		new_args = {}
+		for policy_name in new_args_per_label:
+			tweets = []
+			args, to_remove = new_args_per_label[policy_name]
+			new_args[policy_name] = args
+			for q in args:
+				tweets += get_full_text(get_data(q))
+			if not to_remove:  # Check this to to_Remove=True
+				logger.debug("Adding new args")
+				tweets += get_all_tweets_per_policy(self.mongo_policies_tweets, {'name': policy_name})[0]['tweets']
+				for arg in trained_labels[policy_name]:
+					new_args[policy_name].append(arg)
+			else:
+				logger.debug("Deleting new args")
+
+			policies_tweets[policy_name] = list(set(tweets))
+
+		update_tweets(self.mongo_policies_tweets, policies_tweets)
+		new_models = train_model(self.mongo_policies_tweets, policies_tweets)
+
+		update_models(self.mongo_models, new_models, new_args)
+
+	def __train_models(self, policies: List[Dict]):
+		"""
+		:param policies: dictionary in which each key is the name of the policy and the values are lists with the
+			keywords of that policy
+		"""
+
+		logger.debug("Starting train process")
+		model_input_data = convert_policies_to_model_input_data(policies)
+		if len(model_input_data) < 2:
+			logger.debug("Cant start training process. At least 2 policies need to be defined")
+			return
+
+		trained_labels = get_labels(self.mongo_models, list(model_input_data.keys()))
+
+		new_args_per_label = {}
+		for label in model_input_data:
+			dif = ()
+			if label not in trained_labels:
+				continue
+			if len(model_input_data[label]) < len(trained_labels[label]):
+				dif = (model_input_data[label], True)
+			elif len(model_input_data[label]) > len(trained_labels[label]):
+				dif = (list(set(model_input_data[label]) - set(trained_labels[label])), False)
+
+			if dif:
+				new_args_per_label[label] = dif
+
+		if len(trained_labels) == len(model_input_data) and not new_args_per_label:
+			logger.debug("All policies have been already trained")
+			return
+
+		not_trained_policies = list(set(model_input_data.keys()) - set(trained_labels))
+		if not_trained_policies:
+			self.__train_full_policy(not_trained_policies, model_input_data)
+
+		if new_args_per_label:
+			self.__train_new_policy_args(new_args_per_label, trained_labels)
+
 		logger.debug(f"Training {not_trained_policies} policies process done")
 
 	def __predict_follow_user(self, user: Dict, tweets: List[str], policies, bot_id):
@@ -114,16 +157,18 @@ class Service(RabbitMessaging):
 		:param tweets: list of tweets to give the ml model to predict
 		"""
 
+		tweets_to_use = sorted(tweets, key=lambda x: len(x), reverse=True)[:NUMBER_TWEETS_PREDICT]
+
 		user_id = int(user['id_str'])
 		heuristic = 0
-		tweets_len_mean = np.mean([len(i) for i in tweets])
+		tweets_len_mean = np.mean([len(i) for i in tweets_to_use])
 
-		if tweets_len_mean >= MEAN_WORDS_PER_TWEET or len(tweets) == 0:
+		if tweets_len_mean >= MEAN_WORDS_PER_TWEET or len(tweets_to_use) == 0:
 			policies_labels = [p['name'] for p in policies]
 
 			description = user['description']
 
-			predictions = predict_soft_max(self.mongo_models, tweets + [description], policies_labels)
+			predictions = predict_soft_max(self.mongo_models, tweets_to_use + [description], policies_labels)
 
 			keras_backend.clear_session()
 			gc.collect()
