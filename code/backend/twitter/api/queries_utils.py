@@ -56,3 +56,15 @@ def paginator_factory_non_queryset(query_data, entries_per_page, page):
 
 	return data
 
+
+def process_neo4j_results(results):
+	nodes = []
+	node_id = []
+	rels = []
+	for row in results:
+		rels.append(row['r']['rels'])
+		for node in row['r']['nodes']:
+			if node['id'] not in node_id:
+				node_id.append(node['id'])
+				nodes.append(node)
+	return {'nodes': nodes, 'rels': rels}

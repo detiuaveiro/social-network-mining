@@ -1106,7 +1106,6 @@ class Policies extends Component {
               }}>
                 <div style={{ display: "inline-block" }}>
                   <Pagination count={this.state.noPages} page={this.state.curPage} onChange={this.changePage} variant="outlined" color="primary" showFirstButton showLastButton shape="rounded" />
-
                 </div>
               </div>
             </div>
