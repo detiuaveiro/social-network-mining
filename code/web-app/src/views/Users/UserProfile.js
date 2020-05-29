@@ -22,6 +22,9 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import Users from './Users';
 import BotProfile from '../Bots/BotProfile';
 import Statistics from '../Statistics/Statistics';
+import Dashboard from '../Dashboard/Dashboard';
+import Network from '../Network/Network';
+
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -596,6 +599,10 @@ class UserProfile extends Component {
                 return (<Users page={this.state.redirectionList[0].info["page"]} searchQuery={this.state.redirectionList[0].info["query"]} protec={this.state.redirectionList[0].info["protec"]} />)
             } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "STATS") {
                 return (<Statistics />)
+            } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "HOME") {
+                return (<Dashboard />)
+            } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "NET") {
+                return (<Network returnValue={this.state.redirectionList[0].info["returnValues"]}  />)
             } else {
                 var lastUser = this.state.redirectionList.pop()
                 if (lastUser.type == "PROFILE") {
@@ -1131,10 +1138,10 @@ class UserProfile extends Component {
                 ///////////////////////
 
                 var locked = null
-                if(this.state.userInfo.protected){
-                    locked = <span style={{ color: "#1da1f2" }}><i class="fas fa-lock" style={{marginRight:"5px"}}/>Private</span>
-                }else{
-                    locked = <span style={{ color: "#1da1f2" }}><i class="fas fa-lock-open" style={{marginRight:"5px"}} /> Public</span>
+                if (this.state.userInfo.protected) {
+                    locked = <span style={{ color: "#1da1f2" }}><i class="fas fa-lock" style={{ marginRight: "5px" }} />Private</span>
+                } else {
+                    locked = <span style={{ color: "#1da1f2" }}><i class="fas fa-lock-open" style={{ marginRight: "5px" }} /> Public</span>
                 }
                 return (
                     <div className="animated fadeIn">

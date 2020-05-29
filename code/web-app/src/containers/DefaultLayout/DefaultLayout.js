@@ -55,27 +55,14 @@ class DefaultLayout extends Component {
   render() {
     return (
       <div className="app">
-        <MobileView>
-          <AppHeader fixed>
-            <Suspense fallback={this.loading()}>
-              <DefaultHeader />
-            </Suspense>
-          </AppHeader>
-        </MobileView>
-        <div className="app-body" style={{backgroundColor: "#e9ebee"}}>
+        <AppHeader fixed>
+          <Suspense fallback={this.loading()}>
+            <DefaultHeader />
+          </Suspense>
+        </AppHeader>
+        <div className="app-body" style={{ backgroundColor: "#e9ebee" }}>
           <AppSidebar fixed display="lg">
-            <AppSidebarHeader>
-              <BrowserView>
-                <AppNavbarBrand
-                  full={{
-                    src: logo,
-                    width: 120,
-                    height: 103,
-                    alt: "Logo"
-                  }}
-                />
-              </BrowserView>
-            </AppSidebarHeader>
+            <AppSidebarHeader />
             <AppSidebarForm />
             <Suspense>
               <AppSidebarNav

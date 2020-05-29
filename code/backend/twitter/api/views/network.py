@@ -6,7 +6,6 @@ from django.views.decorators.cache import cache_page
 from rest.settings import CACHE_TTL
 
 
-@cache_page(CACHE_TTL)
 @api_view(["GET"])
 def twitter_network(_):
 	"""
@@ -32,8 +31,7 @@ def twitter_network(_):
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
 
 
-@cache_page(CACHE_TTL)
-@api_view(["GET"])
+@api_view(["POST"])
 def twitter_sub_network(request):
 	"""
 

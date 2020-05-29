@@ -6,7 +6,7 @@ import api.serializers as serializers
 from api import neo4j
 import json
 from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
-from api.queries_utils import paginator_factory, paginator_factory_non_queryset
+from api.queries_utils import paginator_factory, paginator_factory_non_queryset, process_neo4j_results
 from api.views.utils import NETWORK_QUERY
 from report.report_gen import Report
 
@@ -843,8 +843,11 @@ def twitter_sub_network(request):
 			"intermediates": request["intermediate"],
 			"end": request["end"]
 		}
+		if "limit" not in request or not request["limit"]:
+			request["limit"] = 1000
 
-		return True, neo4j.export_query(Report.neo_query_builder(match, request["limit"])), \
+		data = neo4j.export_query(Report.neo_query_builder(match, request["limit"]))
+		return True, [process_neo4j_results(data)], \
 		       "Success obtaining a network defined by a query"
 
 	except AttributeError as e:
@@ -865,7 +868,8 @@ def twitter_network():
 
 	try:
 		data = neo4j.export_query(NETWORK_QUERY)
-		return True, data, f"Success obtaining full network"
+
+		return True, [process_neo4j_results(data)], f"Success obtaining full network"
 
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_network.__name__} -> {e}")
