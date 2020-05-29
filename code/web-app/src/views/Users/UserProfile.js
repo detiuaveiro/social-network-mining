@@ -602,7 +602,7 @@ class UserProfile extends Component {
             } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "HOME") {
                 return (<Dashboard />)
             } else if (this.state.redirectionList[this.state.redirectionList.length - 1]['type'] == "NET") {
-                return (<Network returnValue={this.state.redirectionList[0].info["redirectionList"]} />)
+                return (<Network returnValue={this.state.redirectionList[0].info["returnValues"]}  />)
             } else {
                 var lastUser = this.state.redirectionList.pop()
                 if (lastUser.type == "PROFILE") {

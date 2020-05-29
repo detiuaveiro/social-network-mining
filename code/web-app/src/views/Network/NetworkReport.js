@@ -141,7 +141,6 @@ class NetworkReport extends Component {
     new Promise(resolve => {
       if (inputValue == "" || inputValue == null) {
         var requestValues = [{ "value": "aaaaaaaaaaaaaaa_" + Date.now(), "label": "All Nodes" }]
-        console.log(requestValues)
         resolve(requestValues)
       } else {
         if (!inputValue.match("^[A-Za-z0-9 ]+$")) {
@@ -731,8 +730,6 @@ class NetworkReport extends Component {
 
       search["limit"] = limit
 
-      console.log(search)
-
       this.startDownload(search, fileType)
     }
 
@@ -761,7 +758,6 @@ class NetworkReport extends Component {
         redirect: true,
         returnValues: data.data
       })
-      console.log(data)
 
     }).catch(error => {
       console.log("error: " + error);
@@ -1005,7 +1001,7 @@ class NetworkReport extends Component {
                 <Card>
                   <CardHeader color="primary">
                     <h3 style={{ color: "white" }}>
-                      Report Parameters
+                      Query Parameters
                     </h3>
                   </CardHeader>
                   <CardBody>

@@ -90,8 +90,8 @@ class Network extends Component {
       physics: {
         enabled: true,
         barnesHut: {
-          gravitationalConstant: -10000,
-          centralGravity: 0.1,
+          gravitationalConstant: -15000,
+          centralGravity: 0.3,
         }
       },
 
@@ -124,6 +124,8 @@ class Network extends Component {
     modalInfo: null,
 
     foundNode: null,
+    redirectionList: [],
+
 
     redirectNetwork: false,
     redirect: {
@@ -256,7 +258,7 @@ class Network extends Component {
 
     console.log(this.props.returnValues)
 
-    this.props.returnValues.nodes.forEach(item => {
+    this.props.returnValues[0].nodes.forEach(item => {
       var tempItem = {}
       tempItem['id'] = item.id
       tempItem['name'] = item.properties.name
@@ -309,7 +311,7 @@ class Network extends Component {
       }
     })
 
-    this.props.returnValues.rels.forEach(item => {
+    this.props.returnValues[0].rels.forEach(item => {
       if (item != [] && item != null && item != undefined) {
         item = item[0]
 
@@ -339,8 +341,9 @@ class Network extends Component {
     })
   }
 
-  handleOpenProfile(user) {
-    fetch(baseURL + "twitter/users/" + user + "/type/", {
+  async handleOpenProfile(user) {
+    console.log(user)
+    await fetch(baseURL + "twitter/users/" + user + "/type/", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -355,10 +358,18 @@ class Network extends Component {
         data = data.data
         var list = this.state.redirectionList
         list.push({ type: "PROFILE", info: this.state.userInfo })
+        var userObj = { "user": user, "type": data.type }
+
+        console.log(list)
+        console.log(userObj)
+
         this.setState({
-          redirectUser: { "user": user, "type": data.type },
+          redirectUser: userObj,
           redirectionList: list
         })
+
+        console.log(this.state.redirectionList)
+        console.log(this.state.redirectUser)
 
       }
     }).catch(error => {
@@ -379,8 +390,6 @@ class Network extends Component {
     await this.setState({
       loading: true
     })
-
-    console.log(this.props.returnValues)
 
     if (this.props.returnValues == null) {
       // Get Network
@@ -685,14 +694,14 @@ class Network extends Component {
       return (<NetworkReport></NetworkReport>)
     }
 
-    if (this.state.redirect.user != null) {
-      if (this.state.redirect.type == "Bot") {
+    if (this.state.redirectUser != null) {
+      if (this.state.redirectUser.type == "Bot") {
         return (
-          <BotProfile nextUser={this.state.redirect.user} redirection={[{ "type": "NET", "info": { "redirectionList": this.props.returnValues } }]}></BotProfile>
+          <BotProfile nextUser={this.state.redirectUser.user} redirection={[{ "type": "NET", "info": { "returnValues": this.props.returnValues } }]}></BotProfile>
         )
       } else {
         return (
-          <UserProfile nextUser={this.state.redirect.user} redirection={[{ "type": "NET", "info": "" }]}></UserProfile>
+          <UserProfile nextUser={this.state.redirectUser.user}  redirection={[{ "type": "NET", "info": { "returnValues": this.props.returnValues } }]}></UserProfile>
         )
       }
     }
