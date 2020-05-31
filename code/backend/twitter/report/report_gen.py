@@ -194,9 +194,11 @@ class Report:
 
 		if "intermediates" in match:
 			intermediates = match["intermediates"]
+			print(intermediates)
 			for interm in range(len(intermediates["types"])):
+				print(intermediates["types"])
 				query += f"{Report.node_builder(intermediates['types'][interm], intermediates['nodes'][interm])}" \
-						 f"{Report.relation_builder(intermediates['relations'][interm])}"
+						 f"{Report.relation_builder(intermediates['relations'][interm], intermediates['directions'][interm])}"
 
 		query += f"{Report.node_builder(match['end']['type'], match['end']['node'])} " \
 				 f"return r"
