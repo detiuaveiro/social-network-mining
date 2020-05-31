@@ -218,7 +218,7 @@ class Report:
 
 		start = time()
 
-		query_result = Report.neo.export_query(query, rel_node_properties=True)
+		query_result = Report.neo4j.export_query(query, rel_node_properties=True)
 
 		logger.info(f"It took <{time() - start}>s to get the network")
 
