@@ -540,7 +540,8 @@ class Reports extends Component {
 
     if (this.state.intermediate.type.length != 0 || this.state.intermediate.nodes.length != 0 || this.state.intermediate.relation.length != 0 || this.state.intermediate.direction.length != 0) {
       try {
-        if (this.state.intermediate.type.length != this.state.intermediate.nodes.length || this.state.intermediate.type.length != this.state.intermediate.relation.length || this.state.intermediate.nodes.length != this.state.intermediate.relation.length || this.state.intermediate.type.relation != this.state.intermediate.direction.length) {
+
+        if (this.state.intermediate.type.length != this.state.intermediate.nodes.length || this.state.intermediate.type.length != this.state.intermediate.relation.length || this.state.intermediate.nodes.length != this.state.intermediate.relation.length || this.state.intermediate.type.length != this.state.intermediate.direction.length) {
           error = true
           toast.error('You need to specify the same amount of intermediate nodes, node types, relation types and relation directions!', {
             position: "top-center",
