@@ -382,12 +382,11 @@
               <div class="special_description_content">
                 <h2>Our Backend</h2>
                 <p>
-                  Minerva is a tool for analyzing the connections observable on
-                  the Twitter social network. It allows you to study the
-                  connections between people, how the information gets passed
-                  around between users, how news and media get propagated
-                  throughout and infiltrate Twitter's "deep web" of private user
-                  circles.
+                  Our backend was entirely written in Python3 due to it's
+                  extensible features and because it was the language most
+                  familiar to our development team. As for our REST API, which
+                  is used as a middle point between our Web App and our
+                  databases, we chose to make it in Django.
                 </p>
               </div>
             </div>
@@ -402,12 +401,21 @@
               <div class="special_description_content">
                 <h2>Our Databases</h2>
                 <p>
-                  Minerva is a tool for analyzing the connections observable on
-                  the Twitter social network. It allows you to study the
-                  connections between people, how the information gets passed
-                  around between users, how news and media get propagated
-                  throughout and infiltrate Twitter's "deep web" of private user
-                  circles.
+                  As our problem is one that fits in the paradigm of Big Data,
+                  we had to choose our DBMS' carefully. We opted to go with
+                  Neo4j to store our entities and the connections between them
+                  since, as a Graph Database, it fit the model pretty well. This
+                  DBMS, however, isn't very well optimized to treat loads of
+                  informaton, and as such we chose to store each of our
+                  entities' properties in a MongoDB database. It's imperative
+                  that these two systems are consistent between each other.
+                  PostgreSQL was used to store statistical data for further
+                  analysis and inclusion in graphs and finally Redis was used to
+                  implement a Caching system in order to decrease the load time
+                  of certain heavy-weight queries. An additional MongoDB
+                  database was also created further down the line to store our
+                  Machine Learning models, which are used to train and govern
+                  our Bots' policies.
                 </p>
               </div>
             </div>
@@ -483,12 +491,12 @@
               <div class="special_description_content">
                 <h2>Our Frontend</h2>
                 <p>
-                  Minerva is a tool for analyzing the connections observable on
-                  the Twitter social network. It allows you to study the
-                  connections between people, how the information gets passed
-                  around between users, how news and media get propagated
-                  throughout and infiltrate Twitter's "deep web" of private user
-                  circles.
+                  Minerva's web app was built using React JS and consists on a
+                  very user-friendly and clean dashboard that allows for the
+                  easy visualization of our gathered data in graphs, tables and
+                  exportable reports, alongside the ability to define and
+                  control our Bot's policies. For our graphs we utilized the
+                  ReChart library and for our Network Graph we used React Vis.
                 </p>
               </div>
             </div>
