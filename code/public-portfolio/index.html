@@ -27,6 +27,10 @@
 
     <!-- Responsive CSS -->
     <link href="css/responsive.css" rel="stylesheet" />
+
+    <!-- Owl Carousel -->
+    <link rel="stylesheet" href="owlcarousel/owl.carousel.min.css">
+    <link rel="stylesheet" href="owlcarousel/owl.theme.default.min.css">
   </head>
 
   <body>
@@ -441,12 +445,7 @@
               <div class="special_description_content">
                 <h2>Our Message Brokers</h2>
                 <p>
-                  Minerva is a tool for analyzing the connections observable on
-                  the Twitter social network. It allows you to study the
-                  connections between people, how the information gets passed
-                  around between users, how news and media get propagated
-                  throughout and infiltrate Twitter's "deep web" of private user
-                  circles.
+                  Our product is made up of several services that communicate between each other. As such we had to make use of mechanisms that would allow for such interactions to take place. For most of our communications we utilized RabbitMQ, which permits the swapping of messages even if services are currently unavailable (although with the promise that the message will eventually reach it's destined service). We also used ZeroMQ for the communication between our Control Centre and Response Centre due to it's ease of usage and light-weightedness (and since ParlAI already possesses a server that integrates well with connections made using this tool).
                 </p>
               </div>
             </div>
@@ -506,6 +505,100 @@
     </section>
     <!-- ***** How it was Built End ***** -->
 
+    <!-- ***** Bots Start ***** -->
+    <section
+      class="awesome-feature-area bg-white section_padding_0_50 clearfix"
+      id="features"
+    >
+      <div class="container">
+        <div class="row">
+          <div class="col-12">
+            <!-- Heading Text -->
+            <div class="section-heading text-center">
+              <h2>How the Bots Work</h2>
+              <div class="line-shape"></div>
+            </div>
+          </div>
+        </div>
+        <div class="special_description_area mt-50 wow fadeInUp">
+          <div class="container">
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="special_description_img">
+                  <img src="img/core-img/bots.png" alt="" />
+                </div>
+              </div>
+              <div class="col-lg-6 col-xl-5 ml-xl-auto mt-50">
+                <div class="special_description_content">
+                  <h2>Passing the Turing Test</h2>
+                  <p>
+                    Our Bots are intelligent and capable of mimicking human behaviour. So intelligent, in fact, that they've even, inadvertadly, 
+                    passed the Turing Test. They're capable of replying to real users' tweets by creating retweets and 
+                    participating in threads of conversation, which leads to direct interaction with actual human beings. 
+                    They're behaviour is governed by three microservices which are vital to our project. Each of these places 
+                    a unique piece in the complex puzzle that are our bots AI.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container mt-50">
+        <div class="row">
+          <!-- Single Special Area -->
+          <div class="col-12 col-md-4">
+            <div
+              class="single-special text-center wow fadeInUp"
+              data-wow-delay="0.2s"
+            >
+              <div class="single-icon">
+                <i class="fas fa-network-wired" aria-hidden="true"></i>
+              </div>
+              <h4>Control Centre</h4>
+              <p>
+                
+              </p>
+            </div>
+          </div>
+          <!-- Single Special Area -->
+          <div class="col-12 col-md-4">
+            <div
+              class="single-special text-center wow fadeInUp"
+              data-wow-delay="0.4s"
+            >
+              <div class="single-icon">
+                <i class="far fa-comment-alt" aria-hidden="true"></i>
+              </div>
+              <h4>Response Centre</h4>
+              <p>
+                
+              </p>
+            </div>
+          </div>
+          <!-- Single Special Area -->
+          <div class="col-12 col-md-4">
+            <div
+              class="single-special text-center wow fadeInUp"
+              data-wow-delay="0.6s"
+            >
+              <div class="single-icon">
+                <i class="fas fa-users" aria-hidden="true"></i>
+              </div>
+              <h4>Follow Centre</h4>
+              <p>
+                
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ***** Bots End ***** -->
+
+
     <!-- ***** Video Area Start ***** -->
     <div class="video-section">
       <div class="container">
@@ -541,13 +634,12 @@
               data-wow-delay="0.2s"
             >
               <div class="counter-area">
-                <h3><span class="counter">90</span></h3>
+                <h3><span class="counter">2</span></h3>
               </div>
-              <div class="cool-facts-content">
-                <i class="ion-arrow-down-a"></i>
+              <div class="cool-facts-content" >
+                <i class="fas fa-robot"></i>
                 <p>
-                  APP <br />
-                  DOWNLOADS
+                  BOTS
                 </p>
               </div>
             </div>
@@ -559,13 +651,12 @@
               data-wow-delay="0.4s"
             >
               <div class="counter-area">
-                <h3><span class="counter">120</span></h3>
+                <h3>><span class="counter">300</span>K</h3>
               </div>
-              <div class="cool-facts-content">
-                <i class="ion-happy-outline"></i>
+              <div class="cool-facts-content" style="margin-left: 15px;">
+                <i class="fas fa-users"></i>
                 <p>
-                  Happy <br />
-                  Clients
+                  USERS
                 </p>
               </div>
             </div>
@@ -577,11 +668,11 @@
               data-wow-delay="0.6s"
             >
               <div class="counter-area">
-                <h3><span class="counter">40</span></h3>
+                <h3>><span class="counter">500</span>K</h3>
               </div>
-              <div class="cool-facts-content">
-                <i class="ion-person"></i>
-                <p>ACTIVE <br />ACCOUNTS</p>
+              <div class="cool-facts-content" style="margin-left: 15px;">
+                <i class="far fa-comment-alt"></i>
+                <p>TWEETS</p>
               </div>
             </div>
           </div>
@@ -592,11 +683,11 @@
               data-wow-delay="0.8s"
             >
               <div class="counter-area">
-                <h3><span class="counter">10</span></h3>
+                <h3>><span class="counter">1</span>M</h3>
               </div>
-              <div class="cool-facts-content">
-                <i class="ion-ios-star-outline"></i>
-                <p>TOTAL <br />APP RATES</p>
+              <div class="cool-facts-content" style="margin-left: 15px;">
+                <i class="fas fa-project-diagram"></i>
+                <p>RELATIONS</p>
               </div>
             </div>
           </div>
@@ -615,7 +706,7 @@
           <div class="col-12 text-center">
             <!-- Heading Text  -->
             <div class="section-heading">
-              <h2>App Screenshots</h2>
+              <h2>The Web App</h2>
               <div class="line-shape"></div>
             </div>
           </div>
@@ -638,11 +729,139 @@
               <div class="single-shot">
                 <img src="img/scr-img/app-4.jpg" alt="" />
               </div>
-              <div class="single-shot">
-                <img src="img/scr-img/app-5.jpg" alt="" />
+          </div>
+        </div>
+      </div>
+
+      <div class="special_description_area mt-50 wow fadeInUp">
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="special_description_img">
+                <img src="img/core-img/backend.png" alt="" />
               </div>
-              <div class="single-shot">
-                <img src="img/scr-img/app-3.jpg" alt="" />
+            </div>
+
+            <div class="col-lg-6 col-xl-5 ml-xl-auto mt-50">
+              <div class="special_description_content">
+                <h2>View User Info</h2>
+                <p>
+                  Our backend was entirely written in Python3 due to it's
+                  extensible features and because it was the language most
+                  familiar to our development team. As for our REST API, which
+                  is used as a middle point between our Web App and our
+                  databases, we chose to make it in Django.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="special_description_area mt-50 wow fadeInUp">
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-6 col-xl-5 ml-xl-auto mt-50">
+              <div class="special_description_content">
+                <h2>Analyze Graphs</h2>
+                <p>
+                  As our problem is one that fits in the paradigm of Big Data,
+                  we had to choose our DBMS' carefully. We opted to go with
+                  Neo4j to store our entities and the connections between them
+                  since, as a Graph Database, it fit the model pretty well. This
+                  DBMS, however, isn't very well optimized to treat loads of
+                  informaton, and as such we chose to store each of our
+                  entities' properties in a MongoDB database. It's imperative
+                  that these two systems are consistent between each other.
+                  PostgreSQL was used to store statistical data for further
+                  analysis and inclusion in graphs and finally Redis was used to
+                  implement a Caching system in order to decrease the load time
+                  of certain heavy-weight queries. An additional MongoDB
+                  database was also created further down the line to store our
+                  Machine Learning models, which are used to train and govern
+                  our Bots' policies.
+                </p>
+              </div>
+            </div>
+
+            <div class="col-lg-6">
+              <div class="special_description_img">
+                <img src="img/core-img/dbs.png" alt="" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="special_description_area mt-50 wow fadeInUp">
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="special_description_img">
+                <img src="img/core-img/mq.png" alt="" />
+              </div>
+            </div>
+            <div class="col-lg-6 col-xl-5 ml-xl-auto mt-50">
+              <div class="special_description_content">
+                <h2>Travel the Network</h2>
+                <p>
+                  Minerva is a tool for analyzing the connections observable on
+                  the Twitter social network. It allows you to study the
+                  connections between people, how the information gets passed
+                  around between users, how news and media get propagated
+                  throughout and infiltrate Twitter's "deep web" of private user
+                  circles.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="special_description_area mt-50 wow fadeInUp">
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-6 col-xl-5 ml-xl-auto mt-50">
+              <div class="special_description_content">
+                <h2>Generate Reports</h2>
+                <p>
+                  Minerva is a tool for analyzing the connections observable on
+                  the Twitter social network. It allows you to study the
+                  connections between people, how the information gets passed
+                  around between users, how news and media get propagated
+                  throughout and infiltrate Twitter's "deep web" of private user
+                  circles.
+                </p>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="special_description_img">
+                <img src="img/core-img/intelligence.png" alt="" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="special_description_area mt-50 wow fadeInUp">
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="special_description_img">
+                <img src="img/core-img/frontend.png" alt="" />
+              </div>
+            </div>
+            <div class="col-lg-6 col-xl-5 ml-xl-auto mt-50">
+              <div class="special_description_content">
+                <h2>Define Policies</h2>
+                <p>
+                  Minerva's web app was built using React JS and consists on a
+                  very user-friendly and clean dashboard that allows for the
+                  easy visualization of our gathered data in graphs, tables and
+                  exportable reports, alongside the ability to define and
+                  control our Bot's policies. For our graphs we utilized the
+                  ReChart library and for our Network Graph we used React Vis.
+                </p>
               </div>
             </div>
           </div>
@@ -656,6 +875,17 @@
       class="clients-feedback-area bg-white section_padding_100 clearfix"
       id="testimonials"
     >
+    <div class="container">
+      <div class="row" style="padding-bottom: 0px;">
+        <div class="col-12 text-center">
+          <!-- Heading Text  -->
+          <div class="section-heading">
+            <h2>Real Replies from Users</h2>
+            <div class="line-shape"></div>
+          </div>
+        </div>
+      </div>
+    </div>
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-12 col-md-10">
@@ -673,16 +903,9 @@
                     me the coding time and just the general hassle of hosting. ”
                   </p>
                 </div>
-                <div class="star-icon text-center">
-                  <i class="ion-ios-star"></i>
-                  <i class="ion-ios-star"></i>
-                  <i class="ion-ios-star"></i>
-                  <i class="ion-ios-star"></i>
-                  <i class="ion-ios-star"></i>
-                </div>
                 <div class="client-name text-center">
                   <h5>Aigars Silkalns</h5>
-                  <p>Ceo Colorlib</p>
+                  <a href="#" style="color: #fb397d;">Check out on Twitter</a>
                 </div>
               </div>
               <!-- Client Feedback Text  -->
@@ -1066,6 +1289,8 @@
 
     <!-- Jquery-2.2.4 JS -->
     <script src="js/jquery-2.2.4.min.js"></script>
+    <script src="owlcarousel/owl.carousel.min.js"></script>
+
     <!-- Popper js -->
     <script src="js/popper.min.js"></script>
     <!-- Bootstrap-4 Beta JS -->
@@ -1078,5 +1303,10 @@
     <script src="js/footer-reveal.min.js"></script>
     <!-- Active JS -->
     <script src="js/active.js"></script>
+    <script>
+      $(document).ready(function(){
+        $(".owl-carousel").owlCarousel();
+      });
+    </script>
   </body>
 </html>
