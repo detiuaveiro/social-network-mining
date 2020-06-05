@@ -460,12 +460,7 @@
               <div class="special_description_content">
                 <h2>Our Bot's Intelligence</h2>
                 <p>
-                  Minerva is a tool for analyzing the connections observable on
-                  the Twitter social network. It allows you to study the
-                  connections between people, how the information gets passed
-                  around between users, how news and media get propagated
-                  throughout and infiltrate Twitter's "deep web" of private user
-                  circles.
+            
                 </p>
               </div>
             </div>
@@ -558,7 +553,13 @@
               </div>
               <h4>Control Centre</h4>
               <p>
-                
+                In our project, we had to make sure that the bots themselves didn't 
+                have too much logic in them and were as light-weight as possible. As such, they won't connect to our databases or 
+                make decisions on their own. Instead they will contact our Control Centre; 
+                this is the entity that will serve as the middle man between the databases 
+                and the decision making entities and our bots. It's very important that this 
+                module is ready to receive thousands of messages from various bots, and effectively 
+                wrap the data it received to save the data in our DBs and send the Decision Centres.
               </p>
             </div>
           </div>
@@ -573,7 +574,13 @@
               </div>
               <h4>Response Centre</h4>
               <p>
-                
+                In order to imitate human behaviour to the furthest extent possible, we implemented a way to respond to interactions 
+                (i.e tweets) using a machine learning model. At first we started by using an old but widely popular response model 
+                based around ELIZA. However, teh responses generated were very repetitive so we opted to go another route. We used the 
+                ParlAI Open Source tool with a pre-trained language interpreter and response generator and a Poly-encoder which we trained using 
+                tweets we gathered over time. All of these are submodules of our Response Centre service, which the Control Centre connects upon allowing 
+                a bot to respond to a tweet sending it the tweet and a set of policies that control the bots behaviour. This centre then responds with 
+                an appropriate message for the bot to respond with.
               </p>
             </div>
           </div>
@@ -746,11 +753,7 @@
               <div class="special_description_content">
                 <h2>View User Info</h2>
                 <p>
-                  Our backend was entirely written in Python3 due to it's
-                  extensible features and because it was the language most
-                  familiar to our development team. As for our REST API, which
-                  is used as a middle point between our Web App and our
-                  databases, we chose to make it in Django.
+                 
                 </p>
               </div>
             </div>
@@ -765,21 +768,7 @@
               <div class="special_description_content">
                 <h2>Analyze Graphs</h2>
                 <p>
-                  As our problem is one that fits in the paradigm of Big Data,
-                  we had to choose our DBMS' carefully. We opted to go with
-                  Neo4j to store our entities and the connections between them
-                  since, as a Graph Database, it fit the model pretty well. This
-                  DBMS, however, isn't very well optimized to treat loads of
-                  informaton, and as such we chose to store each of our
-                  entities' properties in a MongoDB database. It's imperative
-                  that these two systems are consistent between each other.
-                  PostgreSQL was used to store statistical data for further
-                  analysis and inclusion in graphs and finally Redis was used to
-                  implement a Caching system in order to decrease the load time
-                  of certain heavy-weight queries. An additional MongoDB
-                  database was also created further down the line to store our
-                  Machine Learning models, which are used to train and govern
-                  our Bots' policies.
+                  
                 </p>
               </div>
             </div>
@@ -805,12 +794,7 @@
               <div class="special_description_content">
                 <h2>Travel the Network</h2>
                 <p>
-                  Minerva is a tool for analyzing the connections observable on
-                  the Twitter social network. It allows you to study the
-                  connections between people, how the information gets passed
-                  around between users, how news and media get propagated
-                  throughout and infiltrate Twitter's "deep web" of private user
-                  circles.
+                  
                 </p>
               </div>
             </div>
@@ -825,12 +809,7 @@
               <div class="special_description_content">
                 <h2>Generate Reports</h2>
                 <p>
-                  Minerva is a tool for analyzing the connections observable on
-                  the Twitter social network. It allows you to study the
-                  connections between people, how the information gets passed
-                  around between users, how news and media get propagated
-                  throughout and infiltrate Twitter's "deep web" of private user
-                  circles.
+                  
                 </p>
               </div>
             </div>
@@ -855,12 +834,7 @@
               <div class="special_description_content">
                 <h2>Define Policies</h2>
                 <p>
-                  Minerva's web app was built using React JS and consists on a
-                  very user-friendly and clean dashboard that allows for the
-                  easy visualization of our gathered data in graphs, tables and
-                  exportable reports, alongside the ability to define and
-                  control our Bot's policies. For our graphs we utilized the
-                  ReChart library and for our Network Graph we used React Vis.
+                  
                 </p>
               </div>
             </div>
@@ -897,15 +871,15 @@
                 </div>
                 <div class="client-description text-center">
                   <p>
-                    “ I have been using it for a number of years. I use Colorlib
-                    for usability testing. It's great for taking images and
-                    making clickable image prototypes that do the job and save
-                    me the coding time and just the general hassle of hosting. ”
+                    “Acontece comigo também 🤷‍♀️”
+                  </p>
+                  <p style="color: #999;">
+                    Replying to: “Porque é que nas fotos fico diferente do que no espelho”
                   </p>
                 </div>
                 <div class="client-name text-center">
-                  <h5>Aigars Silkalns</h5>
-                  <a href="#" style="color: #fb397d;">Check out on Twitter</a>
+                  <h5>@MaileMoreira</h5>
+                  <a href="https://twitter.com/MaileMoreira/status/1262391250679934983" style="color: #fb397d;">Check out on Twitter</a>
                 </div>
               </div>
               <!-- Client Feedback Text  -->
@@ -915,10 +889,10 @@
                 </div>
                 <div class="client-description text-center">
                   <p>
-                    “ I use Colorlib for usability testing. It's great for
-                    taking images and making clickable image prototypes that do
-                    the job and save me the coding time and just the general
-                    hassle of hosting. ”
+                    “Já reparei nisso. É realmente um fenómeno engraçado. Andas com a máscara mal, mas como andas com ela já te sentes seguro.”
+                  </p>
+                  <p style="color: #999;">
+                    Replying to: “Tive de ir à vila e a quantidade de gente que vejo com máscara mas por baixo do queixo é estupidamente alta, eu só vi mais uma ou duas senhoras a usar a máscara como deve ser. De resto, cotas todos andam com máscara em baixo do queixo tipo que o corona vai bater naquele papo.”
                   </p>
                 </div>
                 <div class="star-icon text-center">
@@ -929,8 +903,8 @@
                   <i class="ion-ios-star"></i>
                 </div>
                 <div class="client-name text-center">
-                  <h5>Jennifer</h5>
-                  <p>Developer</p>
+                  <h5>@BBessa13</h5>
+                  <a href="https://twitter.com/BBessa13/status/1262307922362671104" style="color: #fb397d;">Check out on Twitter</a>
                 </div>
               </div>
               <!-- Client Feedback Text  -->
@@ -940,9 +914,10 @@
                 </div>
                 <div class="client-description text-center">
                   <p>
-                    “ I have been using it for a number of years. I use Colorlib
-                    for usability testing. It's great for taking images and
-                    making clickable image prototypes that do the job.”
+                    “Concordo com o teu tweet,era uma referência aos vídeos que tenho visto. Também ao aprender a fazer máscaras em casa,que as façam ou as comprem,de acordo com a OMS. Pois para fazerem pão precisaram de receita culinária,”
+                  </p>
+                  <p style="color: #999;">
+                    Replying to: “Mas as pessoas das filas do supermercado tinham máscaras e estão à procura de um bem de primeira necessidade, cumprindo o que foi estabelecido por aqueles que defendes”
                   </p>
                 </div>
                 <div class="star-icon text-center">
@@ -953,8 +928,8 @@
                   <i class="ion-ios-star"></i>
                 </div>
                 <div class="client-name text-center">
-                  <h5>Helen</h5>
-                  <p>Marketer</p>
+                  <h5>@lipalopes11</h5>
+                  <a href="https://twitter.com/lipalopes11/status/1261489297854738432" style="color: #fb397d;">Check out on Twitter</a>
                 </div>
               </div>
               <!-- Client Feedback Text  -->
@@ -964,10 +939,10 @@
                 </div>
                 <div class="client-description text-center">
                   <p>
-                    “ I have been using it for a number of years. I use Colorlib
-                    for usability testing. It's great for taking images and
-                    making clickable image prototypes that do the job and save
-                    me the coding time and just the general hassle of hosting. ”
+                    “Amo te”
+                  </p>
+                  <p style="color: #999;">
+                    Replying to: “O cara é médico há trezentos anos e não sabe colocar uma máscara? Que diabo de médico é esse, pelo amor de Santo Agostinho”
                   </p>
                 </div>
                 <div class="star-icon text-center">
@@ -978,8 +953,64 @@
                   <i class="ion-ios-star"></i>
                 </div>
                 <div class="client-name text-center">
-                  <h5>Henry smith</h5>
-                  <p>Developer</p>
+                  <h5>@AndreTripeiro</h5>
+                  <a href="https://twitter.com/AndreTripeiro/status/1261013759457480707" style="color: #fb397d;">Check out on Twitter</a>
+                </div>
+              </div>
+
+              <!-- Client Feedback Text  -->
+              <div class="client-feedback-text text-center">
+                <div class="client">
+                  <i class="fa fa-quote-left" aria-hidden="true"></i>
+                </div>
+                <div class="client-description text-center">
+                  <p>
+                    “Caro António<br/>
+                    <br/>
+                    Se fosse Brasileiro também não conseguia.<br/>
+                    Tenha cuidado.<br/>
+                    Grande Abraço”
+                  </p>
+                  <p style="color: #999;">
+                    Replying to: “E mais uma vez não consigo dormir, a sério oq se passa”
+                  </p>
+                </div>
+                <div class="star-icon text-center">
+                  <i class="ion-ios-star"></i>
+                  <i class="ion-ios-star"></i>
+                  <i class="ion-ios-star"></i>
+                  <i class="ion-ios-star"></i>
+                  <i class="ion-ios-star"></i>
+                </div>
+                <div class="client-name text-center">
+                  <h5>@NobreJorge2</h5>
+                  <a href="https://twitter.com/NobreJorge2/status/1261210711629463552" style="color: #fb397d;">Check out on Twitter</a>
+                </div>
+              </div>
+
+              <!-- Client Feedback Text  -->
+              <div class="client-feedback-text text-center">
+                <div class="client">
+                  <i class="fa fa-quote-left" aria-hidden="true"></i>
+                </div>
+                <div class="client-description text-center">
+                  <p>
+                    Senhor bot do @psocialista, escreve-se Deus com letra maiúscula.
+                  </p>
+                  <p style="color: #999;">
+                    Replying to: “O que irrita neste vídeo é o português dele, tpoo pelo amor de deus fala como deve ser”
+                  </p>
+                </div>
+                <div class="star-icon text-center">
+                  <i class="ion-ios-star"></i>
+                  <i class="ion-ios-star"></i>
+                  <i class="ion-ios-star"></i>
+                  <i class="ion-ios-star"></i>
+                  <i class="ion-ios-star"></i>
+                </div>
+                <div class="client-name text-center">
+                  <h5>@brito_fdx</h5>
+                  <a href="https://twitter.com/brito_fdx/status/1265592648825438210" style="color: #fb397d;">Check out on Twitter</a>
                 </div>
               </div>
             </div>
@@ -988,16 +1019,22 @@
           <div class="col-12 col-md-6 col-lg-5">
             <div class="slider slider-nav">
               <div class="client-thumbnail">
-                <img src="img/bg-img/client-3.jpg" alt="" />
+                <img src="https://pbs.twimg.com/profile_images/1251670304000299013/Z7kAw8xe_400x400.jpg" alt="" />
               </div>
               <div class="client-thumbnail">
-                <img src="img/bg-img/client-2.jpg" alt="" />
+                <img src="https://pbs.twimg.com/profile_images/1217744615979323392/xlR993zw_400x400.jpg" alt="" />
               </div>
               <div class="client-thumbnail">
-                <img src="img/bg-img/client-1.jpg" alt="" />
+                <img src="https://pbs.twimg.com/profile_images/1014282143697113089/7AGOays8_400x400.jpg" alt="" />
               </div>
               <div class="client-thumbnail">
-                <img src="img/bg-img/client-2.jpg" alt="" />
+                <img src="https://pbs.twimg.com/profile_images/1267637364895166469/nT5M15Xv_400x400.jpg" alt="" />
+              </div>
+              <div class="client-thumbnail">
+                <img src="https://pbs.twimg.com/profile_images/1265803647319003141/wG54Nlf8_400x400.jpg" alt="" />
+              </div>
+              <div class="client-thumbnail">
+                <img src="https://pbs.twimg.com/profile_images/1152469772124270592/fL4MGKIk_400x400.jpg" alt="" />
               </div>
             </div>
           </div>
@@ -1012,9 +1049,9 @@
         <div class="row align-items-center">
           <div class="col-md-8">
             <div class="membership-description">
-              <h2>Join our Monthly Membership</h2>
+              <h2>Give our Web-App a try!</h2>
               <p>
-                Find the perfect plan for you — 100% satisfaction guaranteed.
+                Start mining today!
               </p>
             </div>
           </div>
@@ -1023,7 +1060,7 @@
               class="get-started-button wow bounceInDown"
               data-wow-delay="0.5s"
             >
-              <a href="#">Get Started</a>
+              <a href="#">Web-App</a>
             </div>
           </div>
         </div>
@@ -1053,24 +1090,17 @@
                 <img src="img/team-img/team-1.png" alt="" />
                 <div class="team-hover-effects">
                   <div class="team-social-icon">
-                    <a href="#"
-                      ><i class="fa fa-facebook" aria-hidden="true"></i
+                    <a href="https://www.linkedin.com/in/pedro-escaleira-b9b39115b/"
+                      ><i class="fab fa-linkedin-in" aria-hidden="true"></i
                     ></a>
-                    <a href="#"
-                      ><i class="fa fa-twitter" aria-hidden="true"></i
-                    ></a>
-                    <a href="#"
-                      ><i class="fa fa-google-plus" aria-hidden="true"></i
-                    ></a>
-                    <a href="#">
-                      <i class="fa fa-instagram" aria-hidden="true"></i
+                    <a href="https://github.com/oEscal"
+                      ><i class="fab fa-github" aria-hidden="true"></i
                     ></a>
                   </div>
                 </div>
               </div>
               <div class="member-text">
-                <h4>Jackson Nash</h4>
-                <p>Tax Advice</p>
+                <h4>Pedro Nicopau</h4>
               </div>
             </div>
           </div>
@@ -1080,24 +1110,17 @@
                 <img src="img/team-img/team-2.png" alt="" />
                 <div class="team-hover-effects">
                   <div class="team-social-icon">
-                    <a href="#"
-                      ><i class="fa fa-facebook" aria-hidden="true"></i
+                    <a href="https://www.linkedin.com/in/rafael-sim%C3%B5es-60958b173/"
+                      ><i class="fab fa-linkedin-in" aria-hidden="true"></i
                     ></a>
-                    <a href="#"
-                      ><i class="fa fa-twitter" aria-hidden="true"></i
-                    ></a>
-                    <a href="#"
-                      ><i class="fa fa-google-plus" aria-hidden="true"></i
-                    ></a>
-                    <a href="#">
-                      <i class="fa fa-instagram" aria-hidden="true"></i
+                    <a href="https://github.com/Rafaelyot"
+                      ><i class="fab fa-github" aria-hidden="true"></i
                     ></a>
                   </div>
                 </div>
               </div>
               <div class="member-text">
-                <h4>Alex Manning</h4>
-                <p>CEO-Founder</p>
+                <h4>Rafael Simões</h4>
               </div>
             </div>
           </div>
@@ -1107,24 +1130,17 @@
                 <img src="img/team-img/team-3.png" alt="" />
                 <div class="team-hover-effects">
                   <div class="team-social-icon">
-                    <a href="#"
-                      ><i class="fa fa-facebook" aria-hidden="true"></i
+                    <a href="https://www.linkedin.com/in/diogosilvads/"
+                      ><i class="fab fa-linkedin-in" aria-hidden="true"></i
                     ></a>
-                    <a href="#"
-                      ><i class="fa fa-twitter" aria-hidden="true"></i
-                    ></a>
-                    <a href="#"
-                      ><i class="fa fa-google-plus" aria-hidden="true"></i
-                    ></a>
-                    <a href="#">
-                      <i class="fa fa-instagram" aria-hidden="true"></i
+                    <a href="https://github.com/HerouFenix"
+                      ><i class="fab fa-github" aria-hidden="true"></i
                     ></a>
                   </div>
                 </div>
               </div>
               <div class="member-text">
-                <h4>Ollie Schneider</h4>
-                <p>Business Planner</p>
+                <h4>Diogo Silva</h4>
               </div>
             </div>
           </div>
@@ -1134,24 +1150,33 @@
                 <img src="img/team-img/team-4.png" alt="" />
                 <div class="team-hover-effects">
                   <div class="team-social-icon">
-                    <a href="#"
-                      ><i class="fa fa-facebook" aria-hidden="true"></i
+                    <a href="https://www.linkedin.com/in/pedromroliveirapt/"
+                      ><i class="fab fa-linkedin-in" aria-hidden="true"></i
                     ></a>
-                    <a href="#"
-                      ><i class="fa fa-twitter" aria-hidden="true"></i
-                    ></a>
-                    <a href="#"
-                      ><i class="fa fa-google-plus" aria-hidden="true"></i
-                    ></a>
-                    <a href="#">
-                      <i class="fa fa-instagram" aria-hidden="true"></i
+                    <a href="https://github.com/DrPunpun"
+                      ><i class="fab fa-github" aria-hidden="true"></i
                     ></a>
                   </div>
                 </div>
               </div>
               <div class="member-text">
-                <h4>Roger West</h4>
-                <p>Financer</p>
+                <h4>Pedro Oliveira</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="align-items: center;">
+          <div class="col-12 col-md-6 col-lg-3" style="margin: auto;">
+            <div class="single-team-member">
+              <div class="member-image">
+                <img src="https://api-assets.ua.pt/v1/image/resizer?imageUrl=https://uaonline.ua.pt/upload/img/joua_i_510.jpg&width=1200" alt="" />
+                <div class="team-hover-effects">
+                  
+                </div>
+              </div>
+              <div class="member-text">
+                <h4>Diogo Gomes</h4>
+                <p>Coordinator</p>
               </div>
             </div>
           </div>
@@ -1160,128 +1185,16 @@
     </section>
     <!-- ***** Our Team Area End ***** -->
 
-    <!-- ***** Contact Us Area Start ***** -->
-    <section
-      class="footer-contact-area section_padding_100 clearfix"
-      id="contact"
-    >
-      <div class="container">
-        <div class="row">
-          <div class="col-md-6">
-            <!-- Heading Text  -->
-            <div class="section-heading">
-              <h2>Get in touch with us!</h2>
-              <div class="line-shape"></div>
-            </div>
-            <div class="footer-text">
-              <p>
-                We'll send you epic weekly blogs, whitepapers and things to make
-                your app startup thrive, all FREE!
-              </p>
-            </div>
-            <div class="address-text">
-              <p><span>Address:</span> 40 Baria Sreet 133/2 NewYork City, US</p>
-            </div>
-            <div class="phone-text">
-              <p><span>Phone:</span> +11-225-888-888-66</p>
-            </div>
-            <div class="email-text">
-              <p><span>Email:</span> info.deercreative@gmail.com</p>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <!-- Form Start-->
-            <div class="contact_from">
-              <form action="#" method="post">
-                <!-- Message Input Area Start -->
-                <div class="contact_input_area">
-                  <div class="row">
-                    <!-- Single Input Area Start -->
-                    <div class="col-md-12">
-                      <div class="form-group">
-                        <input
-                          type="text"
-                          class="form-control"
-                          name="name"
-                          id="name"
-                          placeholder="Your Name"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <!-- Single Input Area Start -->
-                    <div class="col-md-12">
-                      <div class="form-group">
-                        <input
-                          type="email"
-                          class="form-control"
-                          name="email"
-                          id="email"
-                          placeholder="Your E-mail"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <!-- Single Input Area Start -->
-                    <div class="col-12">
-                      <div class="form-group">
-                        <textarea
-                          name="message"
-                          class="form-control"
-                          id="message"
-                          cols="30"
-                          rows="4"
-                          placeholder="Your Message *"
-                          required
-                        ></textarea>
-                      </div>
-                    </div>
-                    <!-- Single Input Area Start -->
-                    <div class="col-12">
-                      <button type="submit" class="btn submit-btn">
-                        Send Now
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <!-- Message Input Area End -->
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- ***** Contact Us Area End ***** -->
-
     <!-- ***** Footer Area Start ***** -->
     <footer class="footer-social-icon text-center section_padding_70 clearfix">
       <!-- footer logo -->
       <div class="footer-text">
-        <h2>Ca.</h2>
-      </div>
-      <!-- social icon-->
-      <div class="footer-social-icon">
-        <a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a>
-        <a href="#"><i class="active fa fa-twitter" aria-hidden="true"></i></a>
-        <a href="#"> <i class="fa fa-instagram" aria-hidden="true"></i></a>
-        <a href="#"><i class="fa fa-google-plus" aria-hidden="true"></i></a>
-      </div>
-      <div class="footer-menu">
-        <nav>
-          <ul>
-            <li><a href="#">About</a></li>
-            <li><a href="#">Terms &amp; Conditions</a></li>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
-        </nav>
+        <img src="img/core-img/logo_minerva.png" style="width: 20%;" alt="" />
       </div>
       <!-- Foooter Text-->
       <div class="copyright-text">
-        <!-- ***** Removing this text is now allowed! This template is licensed under CC BY 3.0 ***** -->
         <p>
-          Copyright ©2017 Ca. Designed by
-          <a href="https://colorlib.com" target="_blank">Colorlib</a>
+          Minerva - Social Network Mining - Projeto de Infromática Grupo 14
         </p>
       </div>
     </footer>
