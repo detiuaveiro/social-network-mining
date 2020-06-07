@@ -482,10 +482,10 @@ class TwitterBot(RabbitMessaging):
 		self.__setup()
 
 		while True:
-			# if time.time() - self.work_init_time > WAIT_TIME_BETWEEN_WORK:
-			# 	logger.info(f"Stopping bot for {WAIT_TIME_RANDOM_STOP} seconds")
-			# 	wait(WAIT_TIME_RANDOM_STOP)
-			# 	self.work_init_time = time.time()
+			if time.time() - self.work_init_time > WAIT_TIME_BETWEEN_WORK:
+				logger.info(f"Stopping bot for {WAIT_TIME_RANDOM_STOP} seconds")
+				wait(WAIT_TIME_RANDOM_STOP)
+				self.work_init_time = time.time()
 
 			if time.time() - self.im_alive_time > WAIT_TIME_IM_ALIVE:
 				logger.debug("Send message to main exchange: I'm alive")
