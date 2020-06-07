@@ -457,7 +457,15 @@
               <div class="special_description_content">
                 <h2>Our Bot's Intelligence</h2>
                 <p>
-            
+                  In order to achieve a good performance in terms of mimicry of human behaviour, we had to implement several Artifial Intelligence 
+                  paradigms to regulate the Bots' behaviour. As the project evolved so did our AI and ML algorithms and as such we had to utilize different 
+                  tool, libraries and frameworks such as Keras ParlAI, NLTK and skLearn. For our Deep Learning algorithms we built a Convolutional Neural Network 
+                  using Keras. This was done to treat the problem of Text Classification used by the Follow Centre service (which deals with the decision of following a 
+                  given user in accordance to the Bots' policies). The model's training processes were then made faster by using the skLearn library which allows for the tunning of the model's
+                  parameters in order to implement Parallel Computing, hence taking advanced of the Multi-Core processors present in our servers. Other AI algorithms were used in order to 
+                  allow our Bots to generate human-like responses to tweets. These problems, related to natural-language interpretation, were solved, first using ELIZA style AI. This, however, prooved 
+                  to generate repetitive responses, and as such we turned to Facebook's Open Source tool - ParlAI. This, mixed in with a Poly-Encoder that we re-trained using our own tweets dataset, managed 
+                  to improve our Bots' response quality by a visible margin.
                 </p>
               </div>
             </div>
@@ -592,7 +600,14 @@
               </div>
               <h4>Follow Centre</h4>
               <p>
-                
+                One of our Bots' main directives is to follow users. Due to the importance of this feature we decided it'd be best to implement 
+                a service capable of discriminating which users to follow in accordance to the policies that govern each Bots' behaviour. For each 
+                policy we train a Deep Learning Model using previously obtained tweets, which are constantly updated, that are marked with the tags that 
+                define said policy. When a decision to follow or ignore a user has to be made this module takes as inputs the description and most recent tweets of the 
+                targeted user (if they're not a private account). Besides descriminating profiles, this service is also capable of regulating actions related to the 
+                maintenance and consistency of data used in our models, detect changes made to our previously trained policies (so that they may be re-trained) and add/eliminate new models 
+                in accordance to the creation of deletion of policies. All messages interchange between this service and our Bots passes through the Control Centre so from a Bot's point of view 
+                they need only ask the Control Centre. This centre then sends the request to our Follows Center.
               </p>
             </div>
           </div>
