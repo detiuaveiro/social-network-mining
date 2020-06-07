@@ -228,7 +228,7 @@ class PostgresAPI:
 				if "action" in params:
 					query += f"action='{params['action']}' AND "
 				if "timestamp" in params:
-					query +=f"timestamp>'{params['timestamp']}' AND "
+					query += f"timestamp>'{params['timestamp']}' AND "
 				query = query[:-4]
 
 			query += f"ORDER BY timestamp DESC " \
@@ -246,6 +246,40 @@ class PostgresAPI:
 			for tuple in data:
 				result.append(
 					{"bot_id": int(tuple[0]), "action": tuple[1], "target_id": int(tuple[2]), "timestamp": tuple[3]})
+
+			return {"success": True, "data": result}
+		except psycopg2.Error as error:
+			self.conn.rollback()
+			return {"success": False, "error": error}
+		except Exception as error:
+			self.conn.rollback()
+			return {"success": False, "error": error}
+
+	def search_notifications(self, params=None):
+		try:
+			cursor = self.conn.cursor()
+
+			query = "select notifications.email,notifications.status from notifications"
+
+			if params is not None:
+				query += " WHERE true"
+				if "email" in params.keys():
+					query += f" AND notifications.email='{params['email']}'"
+
+				if "status" in params.keys():
+					query += f" AND notifications.status={params['status']}"
+
+			cursor.execute(query)
+
+			data = cursor.fetchall()
+
+			self.conn.commit()
+			cursor.close()
+
+			result = []  # Array of jsons
+
+			for entry in data:
+				result.append({'email': entry[0], 'status': entry[1]})
 
 			return {"success": True, "data": result}
 		except psycopg2.Error as error:

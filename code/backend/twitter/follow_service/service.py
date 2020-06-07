@@ -7,6 +7,7 @@ import numpy as np
 
 import messages_types
 from credentials import TASK_FOLLOW_EXCHANGE, SERVICE_QUERY_EXCHANGE
+from email_service.email import Email
 from follow_service.utils import to_json, current_time, wait, convert_policies_to_model_input_data, get_labels, \
 	update_tweets, get_full_text, update_models, get_all_tweets_per_policy
 from rabbit_messaging import RabbitMessaging
@@ -38,6 +39,7 @@ class Service(RabbitMessaging):
 		self.client = MongoClient(f"mongodb://{MONGO_URL}:{MONGO_PORT}/{MONGO_DB}")
 		self.mongo_models = eval(f"self.client.{MONGO_DB}.models")
 		self.mongo_policies_tweets = eval(f"self.client.{MONGO_DB}.policies_tweets")
+		self.email_service = Email()
 
 	def __send_message(self, data, message_type: messages_types.FollowServiceToServer):
 		"""Function to send a new message to the server through rabbitMQ
@@ -67,6 +69,7 @@ class Service(RabbitMessaging):
 		self.__send_message(data={}, message_type=messages_types.FollowServiceToServer.REQUEST_POLICIES)
 
 	def __train_full_policy(self, not_trained_policies, model_input_data):
+
 		policies_tweets = {}
 
 		logger.debug(f"Training {not_trained_policies} policies")

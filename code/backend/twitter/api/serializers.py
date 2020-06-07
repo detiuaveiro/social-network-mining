@@ -107,3 +107,8 @@ class Message(serializers.Serializer):
 	text = serializers.CharField()
 	entities = Message_entities(required=False)
 	bot_id = serializers.CharField()
+
+
+class Notification(serializers.Serializer):
+	email = serializers.EmailField(required=True)
+	status = serializers.BooleanField(default=True)

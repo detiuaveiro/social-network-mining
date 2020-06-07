@@ -518,6 +518,12 @@ class Control_Center:
 			"bot_id": int(data["bot_id_str"])
 		})
 
+		activated_notifications = self.postgres_client.search_notifications({"status": True})
+		if not activated_notifications['success']:
+			activated_notifications = []
+		else:
+			activated_notifications = activated_notifications['data']
+
 		all_policies = self.postgres_client.search_policies()
 
 		if policies['success'] and all_policies['success']:
@@ -526,7 +532,8 @@ class Control_Center:
 				'bot_id_str': data["bot_id_str"],
 				'tweets': [t['full_text'] for t in tweets],
 				'policies': policies['data'],
-				'all_policies': all_policies['data']
+				'all_policies': all_policies['data'],
+				'activated_notifications': activated_notifications
 			}
 
 			self.send_to_follow_user_service(ServerToFollowService.REQUEST_FOLLOW_USER, params)

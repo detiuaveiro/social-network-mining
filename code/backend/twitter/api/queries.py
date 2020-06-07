@@ -99,7 +99,7 @@ def twitter_users_stats(entries_per_page, page, protected):
 	try:
 
 		stats = UserStats.objects.filter(protected=protected)
-		
+
 		data = paginator_factory(stats, entries_per_page, page)
 		data['entries'] = [serializers.UserStats(us).data for us in data['entries']]
 
@@ -1179,3 +1179,23 @@ def latest_tweets_daily(entries_per_page, page):
 		logger.error(
 			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_tweets_daily.__name__} -> {e}")
 		return False, None, "Error obtaining latest bot's tweets daily"
+
+
+def add_emails(data):
+	"""
+	:param data: Dictionary with data to be inserted
+	Returns: Add operation status wrapped on dictionary
+	"""
+	try:
+		n_data = serializers.Notification(data=data)
+		if not n_data.is_valid():
+			return False, n_data.errors
+
+		if not Notification.objects.filter(email=n_data.data['email']).exists():
+			Notification.objects.create(email=n_data.data['email'], status=n_data.data['status'])
+
+		return True, "Success adding a new email"
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {add_emails.__name__} -> {e}")
+		return False, "Error adding a new email"

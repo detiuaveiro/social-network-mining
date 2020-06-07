@@ -1,0 +1,5 @@
+{
+    "html" : "templates/train_finished.html",
+    "subject": "Treino acabou",
+    "text": "Treino acabou"
+}
