@@ -420,6 +420,18 @@ class PDP:
 				f"Request to reply to tweet <{data['tweet_id']}> denied because the bot already replied to this tweet")
 			return 0
 
+		# then, we if the tweet we want to reply to is in some thread we already replied to
+		if data["tweet_in_reply_to_status_id_str"]:
+			bot_logs = self.postgres.search_logs({
+				"bot_id": data["bot_id"],
+				"action": log_actions.REPLY_REQ_ACCEPT,
+				"target_id": int(data["tweet_in_reply_to_status_id_str"])
+			}, limit=LIMIT_LOGS)
+			if not bot_logs["success"] or bot_logs['data']:
+				log.info(
+					f"Request to reply to tweet <{data['tweet_id']}> denied because the bot already replied to this thread")
+				return 0
+
 		heuristic_value = 0
 		# Verify if there's a relation between the bot and the user
 		heuristic_value += self._score_for_relation(data)
@@ -482,6 +494,8 @@ class PDP:
 		# first, we verify if the user is protected
 		if 'user_protected' not in data or not data['user_protected']:
 			return 0
+
+		log.debug("The user requested to follow is protected")
 
 		# second, we verify if the bot already follows a large number of users
 		bot_logs = self.postgres.search_logs({
