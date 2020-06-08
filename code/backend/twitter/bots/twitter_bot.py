@@ -13,9 +13,7 @@ import messages_types as messages_types
 from rabbit_messaging import RabbitMessaging
 from bots.settings import *
 from bots.utils import *
-from credentials import LOG_EXCHANGE, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, TASKS_QUEUE_PREFIX, TWEET_EXCHANGE, \
-	USER_EXCHANGE, TWEET_LIKE_EXCHANGE, QUERY_FOLLOW_USER_EXCHANGE, QUERY_KEYWORDS_EXCHANGE, QUERY_TWEET_REPLY_EXCHANGE, \
-	QUERY_TWEET_RETWEET_EXCHANGE, QUERY_TWEET_LIKE_EXCHANGE, MAIN_EXCHANGE
+from credentials import LOG_EXCHANGE, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, TASKS_QUEUE_PREFIX
 
 logger = logging.getLogger("bot-agents")
 logger.setLevel(logging.DEBUG)
@@ -38,15 +36,7 @@ class TwitterBot(RabbitMessaging):
 		self.messaging_settings = messaging_settings
 
 		self.work_init_time = time.time()
-		self.im_alive_time = time.time()
 
-		self.query_msg_type_to_exchange = {
-			messages_types.BotToServer.QUERY_FOLLOW_USER: QUERY_FOLLOW_USER_EXCHANGE,
-			messages_types.BotToServer.QUERY_TWEET_LIKE: QUERY_TWEET_LIKE_EXCHANGE,
-			messages_types.BotToServer.QUERY_TWEET_RETWEET: QUERY_TWEET_RETWEET_EXCHANGE,
-			messages_types.BotToServer.QUERY_TWEET_REPLY: QUERY_TWEET_REPLY_EXCHANGE,
-			messages_types.BotToServer.QUERY_KEYWORDS: QUERY_KEYWORDS_EXCHANGE,
-		}
 		self._redis_cache = redis.Redis(host=REDIS_HOST)
 
 	def __repr__(self):
@@ -121,26 +111,20 @@ class TwitterBot(RabbitMessaging):
 		:param user: user to send
 		"""
 		logger.debug(f"Sending {user.id} with message type {message_type}")
-		self.__send_message(user._json, message_type, USER_EXCHANGE)
+		self.__send_message(user._json, message_type, DATA_EXCHANGE)
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
 		logger.debug(f"Sending {tweet.id} with message_type <{message_type.name}>")
-		self.__send_message(self.__get_tweet_dict(tweet), message_type, TWEET_EXCHANGE)
+		self.__send_message(self.__get_tweet_dict(tweet), message_type, DATA_EXCHANGE)
 
 	def __send_data(self, data, message_type: messages_types.BotToServer):
 		self.__send_message(data, message_type, DATA_EXCHANGE)
 
 	def __send_query(self, data, message_type: messages_types.BotToServer):
-		if message_type in self.query_msg_type_to_exchange.keys():
-			self.__send_message(data, message_type, self.query_msg_type_to_exchange[message_type])
-		else:
-			self.__send_message(data, message_type, QUERY_EXCHANGE)
+		self.__send_message(data, message_type, QUERY_EXCHANGE)
 
 	def __send_event(self, data, message_type: messages_types.BotToServer):
-		if message_type == messages_types.BotToServer.EVENT_TWEET_LIKED:
-			self.__send_message(data, message_type, TWEET_LIKE_EXCHANGE)
-		else:
-			self.__send_message(data, message_type, LOG_EXCHANGE)
+		self.__send_message(data, message_type, LOG_EXCHANGE)
 
 	def __receive_message(self):
 		"""Function to consume a new message from the tasks's queue
@@ -153,9 +137,6 @@ class TwitterBot(RabbitMessaging):
 
 		logger.debug("Setting up messaging")
 		self._setup_messaging()
-
-		logger.debug("Send first message to main exchange")
-		self.__send_message({'bot_id': self._id_str}, messages_types.BotToServer.IM_ALIVE, MAIN_EXCHANGE)
 
 		logger.debug("Verifying credentials")
 		try:
@@ -487,11 +468,6 @@ class TwitterBot(RabbitMessaging):
 				wait(WAIT_TIME_RANDOM_STOP)
 				self.work_init_time = time.time()
 
-			if time.time() - self.im_alive_time > WAIT_TIME_IM_ALIVE:
-				logger.debug("Send message to main exchange: I'm alive")
-				self.__send_message({'bot_id': self._id_str}, messages_types.BotToServer.IM_ALIVE, MAIN_EXCHANGE)
-				self.im_alive_time = time.time()
-
 			try:
 				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")
 				task = self.__receive_message()
@@ -534,6 +510,6 @@ class TwitterBot(RabbitMessaging):
 
 					logger.info("Ask control center for keywords to search new tweets")
 					self.__send_query(self._twitter_api.me()._json, messages_types.BotToServer.QUERY_KEYWORDS)
-					wait(60)
+					wait(WAIT_TIME_NO_MESSAGES)
 			except Exception as error:
 				logger.exception(f"Error {error} on bot's loop: ")
