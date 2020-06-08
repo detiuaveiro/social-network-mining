@@ -416,6 +416,14 @@ class Control_Center:
 				"target_id": int(tweet['id_str'])
 			})
 
+			# also save the thread
+			if tweet['in_reply_to_status_id_str']:
+				self.postgres_client.insert_log({
+					"bot_id": int(data["bot_id_str"]),
+					"action": log_actions.REPLY_REQ_ACCEPT,
+					"target_id": int(tweet['in_reply_to_status_id_str'])
+				})
+
 			# get bot policies
 			policy_list = self.postgres_client.search_policies({
 				"bot_id": int(data["bot_id_str"]),
