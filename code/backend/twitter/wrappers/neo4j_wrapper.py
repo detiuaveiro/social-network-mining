@@ -70,10 +70,11 @@ class Neo4jAPI:
 				"id" not in data.keys()
 				or "name" not in data.keys()
 				or "username" not in data.keys()
+				or "protected" not in data.keys()
 		):
 			log.error("ERROR CREATING A USER")
 			log.debug(
-				"Error: Specified data doesn't contain necessary fields - id, name, username"
+				"Error: Specified data doesn't contain necessary fields - id, name, username, protected"
 			)
 
 			return
@@ -86,10 +87,11 @@ class Neo4jAPI:
 		log.debug("CREATING USER")
 
 		try:
-			tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username }})",
+			tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username, protected=$protected }})",
 					id=str(data["id"]),
 					name=data["name"],
-					username=data["username"])
+					username=data["username"],
+				    protected=data["protected"])
 		except Exception as e:
 			log.exception(f"Error trying to create a User {e}")
 
