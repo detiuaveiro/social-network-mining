@@ -24,6 +24,9 @@ class Neo4jAPI:
 			"bolt://" + FULL_URL,
 			auth=(credentials.NEO4J_USERNAME, credentials.NEO4J_PASSWORD), encrypted=False
 		)
+		self.list_of_users = []
+		self.list_of_tweets = []
+		self.list_of_relations = []
 
 	def close(self):
 		self.driver.close()
@@ -78,9 +81,7 @@ class Neo4jAPI:
 
 			return
 
-		with self.driver.session() as session:
-			# Caller for transactional unit of work
-			return session.write_transaction(self.__create_user, data)
+		self.list_of_users.append(data)
 
 	def __create_user(self, tx, data):
 		log.debug("CREATING USER")
@@ -104,9 +105,7 @@ class Neo4jAPI:
 			log.debug("Error: Specified data doesn't contain necessary fields - id")
 			return
 
-		with self.driver.session() as session:
-			# Caller for transactional unit of work
-			return session.write_transaction(self.__create_tweet, data)
+		self.list_of_tweets.append(data)
 
 	def __create_tweet(self, tx, data):
 		log.debug("CREATING TWEET")
@@ -132,15 +131,13 @@ class Neo4jAPI:
 			log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 			return
 
-		with self.driver.session() as session:
-			data['label'] = WROTE_LABEL
-			data['type_1'] = data['user_type']
-			data['id_1'] = data['user_id']
-			data['type_2'] = TWEET_LABEL
-			data['id_2'] = data['tweet_id']
+		data['label'] = WROTE_LABEL
+		data['type_1'] = data['user_type']
+		data['id_1'] = data['user_id']
+		data['type_2'] = TWEET_LABEL
+		data['id_2'] = data['tweet_id']
 
-			# Caller for transactional unit of work
-			return session.write_transaction(self.__create_relationship, data)
+		self.list_of_relations.append(data)
 
 	def add_retweet_relationship(self, data):
 		"""Method used to create a new RETWEET relationship
@@ -159,15 +156,14 @@ class Neo4jAPI:
 			log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 			return
 
-		with self.driver.session() as session:
-			data['label'] = RETWEET_LABEL
-			data['type_2'] = TWEET_LABEL
-			data['id_2'] = data['tweet_id']
-			data['type_1'] = data['user_type']
-			data['id_1'] = data['user_id']
+		data['label'] = RETWEET_LABEL
+		data['type_2'] = TWEET_LABEL
+		data['id_2'] = data['tweet_id']
+		data['type_1'] = data['user_type']
+		data['id_1'] = data['user_id']
 
-			# Caller for transactional unit of work
-			return session.write_transaction(self.__create_relationship, data)
+		self.list_of_relations.append(data)
+
 
 	def add_quote_relationship(self, data):
 		"""Method used to create a new QUOTE relationship
@@ -182,15 +178,14 @@ class Neo4jAPI:
 			log.error(data)
 			return
 
-		with self.driver.session() as session:
-			data['label'] = QUOTE_LABEL
-			data['type_1'] = TWEET_LABEL
-			data['id_1'] = data['tweet_id']
-			data['type_2'] = TWEET_LABEL
-			data['id_2'] = data['quoted_tweet']
+		data['label'] = QUOTE_LABEL
+		data['type_1'] = TWEET_LABEL
+		data['id_1'] = data['tweet_id']
+		data['type_2'] = TWEET_LABEL
+		data['id_2'] = data['quoted_tweet']
 
-			# Caller for transactional unit of work
-			return session.write_transaction(self.__create_relationship, data)
+		self.list_of_relations.append(data)
+
 
 	def add_reply_relationship(self, data):
 		"""Method used to create a new REPLY relationship
@@ -202,15 +197,14 @@ class Neo4jAPI:
 			log.error("Error: Specified data doesn't contain necessary fields - tweet and reply")
 			return
 
-		with self.driver.session() as session:
-			data['label'] = REPLY_LABEL
-			data['type_2'] = TWEET_LABEL
-			data['id_2'] = data['tweet']
-			data['type_1'] = TWEET_LABEL
-			data['id_1'] = data['reply']
+		data['label'] = REPLY_LABEL
+		data['type_2'] = TWEET_LABEL
+		data['id_2'] = data['tweet']
+		data['type_1'] = TWEET_LABEL
+		data['id_1'] = data['reply']
 
-			# Caller for transactional unit of work
-			return session.write_transaction(self.__create_relationship, data)
+		self.list_of_relations.append(data)
+
 
 	def add_follow_relationship(self, data):
 		"""Method used to create a new FOLLOWS relationship
@@ -239,10 +233,20 @@ class Neo4jAPI:
 
 			return
 
+		data['label'] = FOLLOW_LABEL
+		self.list_of_relations.append(data)
+
+	def save_all(self):
+		"""Method used to save all previously inserted nodes and relations"""
 		with self.driver.session() as session:
-			# Caller for transactional unit of work
-			data['label'] = FOLLOW_LABEL
-			return session.write_transaction(self.__create_relationship, data)
+			for user in self.list_of_users:
+				session.write_transaction(self.__create_user, user)
+
+			for tweet in self.list_of_tweets:
+				session.write_transaction(self.__create_tweet, tweet)
+
+			for relation in self.list_of_relations:
+				session.write_transaction(self.__create_relationship, relation)
 
 	def __create_relationship(self, tx, data):
 		log.debug(f"CREATING RELATIONSHIP <{data['label']}> betweet {data['id_1']} and {data['id_2']}")

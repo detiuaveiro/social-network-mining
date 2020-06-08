@@ -29,6 +29,10 @@ class MongoAPI:
         self.tweets = eval(f"self.client.{credentials.MONGO_DB}.tweets")
         self.messages = eval(f"self.client.{credentials.MONGO_DB}.messages")
 
+        self.list_of_users = []
+        self.list_of_tweets = []
+        self.list_of_messages = []
+
 
     # TODO - IMPLEMENT ME PLEASE!
     def verify_integrity(self, collection, document):
@@ -66,33 +70,24 @@ class MongoAPI:
 
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
-        try:
-            self.users.insert_one(data)
-            log.debug("INSERT SUCCESSFUL")
-        except Exception as error:
-            log.exception(f"ERROR <{error}> INSERTING DOCUMENT <{data}>: ")
+        self.list_of_users.append(data)
+        log.debug("INSERT SUCCESSFUL")
 
     def insert_tweets(self, data):
         """Inserts a new single document into our Tweets Collection
 
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
-        try:
-            self.tweets.insert_one(data)
-            log.debug("INSERT SUCCESFUL")
-        except Exception as error:
-            log.exception(f"ERROR <{error}> INSERTING DOCUMENT <{data}>:")
+        self.list_of_tweets.append(data)
+        log.debug("INSERT SUCCESFUL")
 
     def insert_messages(self, data):
         """Inserts a new single document into our Messages Collection
 
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
-        try:
-            self.messages.insert_one(data)
-            log.debug("INSERT SUCCESSFUL")
-        except Exception as error:
-            log.exception(f"ERROR <{error}> INSERTING DOCUMENT <{data}>: ")
+        self.list_of_messages.append(data)
+        log.debug("INSERT SUCCESFUL")
 
     def update_users(self, match, new_data, all=True):
         """Updates one or many documents on Users Collection
@@ -208,6 +203,24 @@ class MongoAPI:
                     return list(result)
         except Exception as error:
             log.exception(f"ERROR <{error}> SEARCHING FOR DOCUMENT with query <{query}>: ")
+
+    def save(self):
+        """Bulk inserts the saved documents from previous inserts to the appropriate collections"""
+        try:
+            self.users.insert_many(self.list_of_users)
+            self.list_of_users = []
+        except Exception as error:
+            log.exception(f"ERROR <{error}> INSERTING USERS")
+        try:
+            self.tweets.insert_many(self.list_of_tweets)
+            self.list_of_tweets = []
+        except Exception as error:
+            log.exception(f"ERROR <{error}> INSERTING TWEETS")
+        try:
+            self.messages.insert_many(self.list_of_messages)
+            self.list_of_messages = []
+        except Exception as error:
+            log.exception(f"ERROR <{error}> INSERTING MESSAGES")
 
     def __export_data(self, data, export_type):
         """Exports a given array of documents into a csv or json

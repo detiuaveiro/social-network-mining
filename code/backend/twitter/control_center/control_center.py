@@ -61,6 +61,10 @@ class Control_Center:
 		self.deliver_tag = None
 		self.channel = None
 
+		# messages to send to old bot
+		self.old_bot = None
+		self.messages_to_send = []
+
 		log.info(f"Control center configured: <{self.__dict__}>")
 
 	def action(self, message):
@@ -72,47 +76,50 @@ class Control_Center:
 		except Exception as error:
 			log.exception(f"Error <{error}> on consuming new message: ")
 
-	def bot_action(self, message):
-		message_type = message['type']
-		log.info(f"Received new action from bot: {message['bot_id']} wants to do {BotToServer(message_type).name}")
+	def bot_action(self, messages):
+		for message in messages:
+			message_type = message['type']
+			log.info(f"Received new action from bot: {message['bot_id']} wants to do {BotToServer(message_type).name}")
 
-		# search for keyword tweets time to time
-		if random.random() < PROBABILITY_SEARCH_KEYWORD:
-			log.info(f"Random sending a request to search for tweets of keywords to bot with id <{message['bot_id']}>")
-			self.__send_keywords(message)
+			# search for keyword tweets time to time
+			if random.random() < PROBABILITY_SEARCH_KEYWORD:
+				log.info(f"Random sending a request to search for tweets of keywords to bot with id <{message['bot_id']}>")
+				self.__send_keywords(message)
 
-		if message_type == BotToServer.EVENT_TWEET_LIKED:
-			self.__like_tweet_log(message)
+			if message_type == BotToServer.EVENT_TWEET_LIKED:
+				self.__like_tweet_log(message)
 
-		elif message_type == BotToServer.QUERY_TWEET_LIKE:
-			self.request_tweet_like(message)
+			elif message_type == BotToServer.QUERY_TWEET_LIKE:
+				self.request_tweet_like(message)
 
-		elif message_type == BotToServer.QUERY_TWEET_RETWEET:
-			self.request_retweet(message)
+			elif message_type == BotToServer.QUERY_TWEET_RETWEET:
+				self.request_retweet(message)
 
-		elif message_type == BotToServer.QUERY_TWEET_REPLY:
-			self.__request_tweet_reply(message)
+			elif message_type == BotToServer.QUERY_TWEET_REPLY:
+				self.__request_tweet_reply(message)
 
-		elif message_type == BotToServer.QUERY_FOLLOW_USER:
-			self.__request_follow_user(message)
+			elif message_type == BotToServer.QUERY_FOLLOW_USER:
+				self.__request_follow_user(message)
 
-		elif message_type == BotToServer.SAVE_USER:
-			self.save_user(message)
+			elif message_type == BotToServer.SAVE_USER:
+				self.save_user(message)
 
-		elif message_type == BotToServer.SAVE_TWEET:
-			self.save_tweet(message)
+			elif message_type == BotToServer.SAVE_TWEET:
+				self.save_tweet(message)
 
-		elif message_type == BotToServer.SAVE_DIRECT_MESSAGES:
-			self.save_dm(message)
+			elif message_type == BotToServer.SAVE_DIRECT_MESSAGES:
+				self.save_dm(message)
 
-		elif message_type == BotToServer.EVENT_ERROR:
-			self.error(message)
+			elif message_type == BotToServer.EVENT_ERROR:
+				self.error(message)
 
-		elif message_type == BotToServer.SAVE_FOLLOWERS:
-			self.__add_followers(message)
+			elif message_type == BotToServer.SAVE_FOLLOWERS:
+				self.__add_followers(message)
 
-		elif message_type == BotToServer.QUERY_KEYWORDS:
-			self.__send_keywords(message)
+			elif message_type == BotToServer.QUERY_KEYWORDS:
+				self.__send_keywords(message)
+		self.mongo_client.save()
+		self.neo4j_client.save_all()
 
 	def follow_service_action(self, message):
 		message_type = message['type']
@@ -565,9 +572,9 @@ class Control_Center:
 				"target_id": user_id_str
 			})
 
-	def save_user(self, data):
+	def save_user(self, data_list):
 		"""
-		Stores info about a user:
+		Stores info about a list of users:
 				Calls the neo4j and the mongo object to update or store the user be it a bot or a user)
 				Adds the log of the operation to postgres_stats
 				If the user is a bot, must also call the Policy API object
@@ -575,105 +582,107 @@ class Control_Center:
 		@param data: dict containing the id of the bot and the user object
 		"""
 
-		log.info(f"Saving User <{data['data']['id']}>")
+		for data in data_list:
 
-		user, bot_id, bot_id_str = data["data"], data["bot_id"], data["bot_id_str"]
+			log.info(f"Saving User <{data['data']['id']}>")
 
-		exists_in_neo4j = self.neo4j_client.check_bot_exists(bot_id_str)
-		if not exists_in_neo4j:
-			log.info(f"Bot {bot_id} is new to the party {data}")
+			user, bot_id, bot_id_str = data["data"], data["bot_id"], data["bot_id_str"]
 
-			# save bot to mongo and neo4j
-			self.neo4j_client.add_bot({
-				"id": bot_id_str,
-				"name": data['bot_name'],
-				"username": data['bot_screen_name']
-			})
+			exists_in_neo4j = self.neo4j_client.check_bot_exists(bot_id_str)
+			if not exists_in_neo4j:
+				log.info(f"Bot {bot_id} is new to the party {data}")
 
-			# we send the list of initial users to follow
-			# follow_list = self.pep.first_time_policy()
+				# save bot to mongo and neo4j
+				self.neo4j_client.add_bot({
+					"id": bot_id_str,
+					"name": data['bot_name'],
+					"username": data['bot_screen_name']
+				})
 
-			bot_policies = self.postgres_client.search_policies({
-				"bot_id": int(data["bot_id_str"])
-			})
+				# we send the list of initial users to follow
+				# follow_list = self.pep.first_time_policy()
 
-			bot_policies_args = []
-			for policy in bot_policies:
-				bot_policies_args += policy['params']
+				bot_policies = self.postgres_client.search_policies({
+					"bot_id": int(data["bot_id_str"])
+				})
 
-			self.send(bot_id, ServerToBot.FOLLOW_FIRST_TIME_USERS, {
-				'queries': bot_policies_args
-			})
+				bot_policies_args = []
+				for policy in bot_policies:
+					bot_policies_args += policy['params']
 
-			"""
-			self.send(bot_id, ServerToBot.FOLLOW_USERS, {
-				"type": "screen_name",
-				"data": follow_list,
-			})
-			"""
+				self.send(bot_id, ServerToBot.FOLLOW_FIRST_TIME_USERS, {
+					'queries': bot_policies_args
+				})
 
-		is_bot = self.neo4j_client.check_bot_exists(user["id_str"])
-		if is_bot:
-			log.info("It's a bot that's already been registered in the database")
-			# Update the info of the bot
-			exists_in_mongo = self.mongo_client.search(
-				collection="users",
-				query={"id_str": user['id_str']},
-				single=True
-			)
-			if not exists_in_mongo:
-				self.mongo_client.insert_users(user)
-			else:
-				self.mongo_client.update_users(
-					match={"id_str": user['id_str']},
-					new_data=user,
-					all=False
+				"""
+				self.send(bot_id, ServerToBot.FOLLOW_USERS, {
+					"type": "screen_name",
+					"data": follow_list,
+				})
+				"""
+
+			is_bot = self.neo4j_client.check_bot_exists(user["id_str"])
+			if is_bot:
+				log.info("It's a bot that's already been registered in the database")
+				# Update the info of the bot
+				exists_in_mongo = self.mongo_client.search(
+					collection="users",
+					query={"id_str": user['id_str']},
+					single=True
 				)
-				self.neo4j_client.update_bot({
-					"id": user['id_str'],
-					"name": user['name'],
-					"username": user['screen_name']
-				})
-		else:
-			if self.neo4j_client.check_user_exists(user["id_str"]):
-				log.info(f"User {user['id']} has already been registered in the database")
-				self.mongo_client.update_users(
-					match={"id_str": user['id_str']},
-					new_data=user,
-					all=False
-				)
-				self.neo4j_client.update_user({
-					"id": user["id_str"],
-					"name": user['name'],
-					"username": user['screen_name']
-				})
-				self.postgres_client.insert_log({
-					"bot_id": bot_id,
-					"action": log_actions.UPDATE_USER,
-					"target_id": user['id_str']
-				})
+				if not exists_in_mongo:
+					self.mongo_client.insert_users(user)
+				else:
+					self.mongo_client.update_users(
+						match={"id_str": user['id_str']},
+						new_data=user,
+						all=False
+					)
+					self.neo4j_client.update_bot({
+						"id": user['id_str'],
+						"name": user['name'],
+						"username": user['screen_name']
+					})
 			else:
-				log.info(f"User {data['data']['id']} is new to the party")
-				self.mongo_client.insert_users(data["data"])
-				self.neo4j_client.add_user({
-					"id": user["id_str"],
-					"name": user['name'],
-					"username": user['screen_name']
+				if self.neo4j_client.check_user_exists(user["id_str"]):
+					log.info(f"User {user['id']} has already been registered in the database")
+					self.mongo_client.update_users(
+						match={"id_str": user['id_str']},
+						new_data=user,
+						all=False
+					)
+					self.neo4j_client.update_user({
+						"id": user["id_str"],
+						"name": user['name'],
+						"username": user['screen_name']
+					})
+					self.postgres_client.insert_log({
+						"bot_id": bot_id,
+						"action": log_actions.UPDATE_USER,
+						"target_id": user['id_str']
+					})
+				else:
+					log.info(f"User {data['data']['id']} is new to the party")
+					self.mongo_client.insert_users(data["data"])
+					self.neo4j_client.add_user({
+						"id": user["id_str"],
+						"name": user['name'],
+						"username": user['screen_name']
+					})
+					self.postgres_client.insert_log({
+						"bot_id": bot_id,
+						"action": log_actions.INSERT_USER,
+						"target_id": user['id_str']
+					})
+				self.postgres_client.insert_user({
+					"user_id": int(user['id_str']),
+					"followers": user["followers_count"],
+					"following": user["friends_count"],
+					"protected": user["protected"]
 				})
-				self.postgres_client.insert_log({
-					"bot_id": bot_id,
-					"action": log_actions.INSERT_USER,
-					"target_id": user['id_str']
-				})
-			self.postgres_client.insert_user({
-				"user_id": int(user['id_str']),
-				"followers": user["followers_count"],
-				"following": user["friends_count"],
-				"protected": user["protected"]
-			})
 
-			if 'following' in user and user['following']:
-				self.__find_followers(bot_id_str, user['id_str'])
+				if 'following' in user and user['following']:
+					self.__find_followers(bot_id_str, user['id_str'])
 
 	def __save_user_or_blank_user(self, data):
 		user = data['data']
@@ -978,13 +987,19 @@ class Control_Center:
 			'type': message_type,
 			'params': params
 		}
-		try:
-			self.rabbit_wrapper.send(queue=TASKS_QUEUE_PREFIX,
-			                         routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot), message=payload,
-			                         father_exchange=self.exchange)
-		except Exception as error:
-			log.exception(f"Failed to send message <{payload}> because of error <{error}>: ")
-			raise error
+		if self.old_bot != bot or len(self.messages_to_send) == 0:
+			if self.old_bot:
+				try:
+					self.rabbit_wrapper.send(queue=TASKS_QUEUE_PREFIX,
+											 routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot),
+											 message=self.messages_to_send,
+											 father_exchange=self.exchange)
+				except Exception as error:
+					log.exception(f"Failed to send messages <{self.messages_to_send}> because of error <{error}>: ")
+					raise error
+			self.old_bot = bot
+			self.messages_to_send = []
+		self.messages_to_send.append(payload)
 
 	def send_to_follow_user_service(self, message_type, params):
 		"""
