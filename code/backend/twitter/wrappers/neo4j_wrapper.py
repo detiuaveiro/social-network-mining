@@ -84,7 +84,7 @@ class Neo4jAPI:
 			return session.write_transaction(self.__create_user, data)
 
 	def __create_user(self, tx, data):
-		log.debug("CREATING USER")
+		log.debug("CREATING USER " + data)
 
 		try:
 			tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username, protected=$protected }})",
