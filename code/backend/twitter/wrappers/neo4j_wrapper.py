@@ -241,12 +241,15 @@ class Neo4jAPI:
 		with self.driver.session() as session:
 			for user in self.list_of_users:
 				session.write_transaction(self.__create_user, user)
+			self.list_of_users = []
 
 			for tweet in self.list_of_tweets:
 				session.write_transaction(self.__create_tweet, tweet)
+			self.list_of_tweets = []
 
 			for relation in self.list_of_relations:
 				session.write_transaction(self.__create_relationship, relation)
+			self.list_of_relations = []
 
 	def __create_relationship(self, tx, data):
 		log.debug(f"CREATING RELATIONSHIP <{data['label']}> betweet {data['id_1']} and {data['id_2']}")

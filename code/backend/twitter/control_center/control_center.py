@@ -120,6 +120,7 @@ class Control_Center:
 				self.__send_keywords(message)
 		self.mongo_client.save()
 		self.neo4j_client.save_all()
+		self.postgres_client.save_all()
 
 	def follow_service_action(self, message):
 		message_type = message['type']
