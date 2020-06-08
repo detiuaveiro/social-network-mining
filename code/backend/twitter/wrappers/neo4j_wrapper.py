@@ -84,7 +84,7 @@ class Neo4jAPI:
 			return session.write_transaction(self.__create_user, data)
 
 	def __create_user(self, tx, data):
-		log.debug("CREATING USER " + data)
+		log.debug(f"UPDATING {'PROTECTED' if data['protected'] else 'UNPROTECTED'} USER")
 
 		try:
 			tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username, protected=$protected }})",
@@ -330,7 +330,7 @@ class Neo4jAPI:
 			return session.write_transaction(self.__update_user, data)
 
 	def __update_user(self, tx, data):
-		log.debug("UPDATING USER")
+		log.debug(f"UPDATING {'PROTECTED' if data['protected'] else 'UNPROTECTED'} USER")
 		try:
 			tx.run(f"MATCH (r: {USER_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
 				   id=str(data['id']),
