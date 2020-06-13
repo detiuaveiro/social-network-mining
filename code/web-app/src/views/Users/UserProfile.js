@@ -1260,7 +1260,6 @@ class UserProfile extends Component {
                                                         <Legend verticalAlign="bottom" height={36} />
                                                         <Line name="Followers" type="monotone" dataKey="followers" stroke="#63c2de" strokeWidth={3} />
                                                         <Line name="Following" type="monotone" dataKey="following" stroke="#833ab4" strokeWidth={3} />
-                                                        <Line name="Tweets" type="monotone" dataKey="tweets" stroke="#f77737" strokeWidth={3} strokeDasharray="5 5" />
 
                                                         <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
                                                         <XAxis dataKey="name" />
