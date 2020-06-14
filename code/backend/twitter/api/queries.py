@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime, timedelta
 from django.db.models import Max, Count, Sum, Q
+
+from api.cache_decorator import cache
 from api.models import *
 import api.serializers as serializers
 from api import neo4j
@@ -99,7 +101,7 @@ def twitter_users_stats(entries_per_page, page, protected):
 	try:
 
 		stats = UserStats.objects.filter(protected=protected)
-		
+
 		data = paginator_factory(stats, entries_per_page, page)
 		data['entries'] = [serializers.UserStats(us).data for us in data['entries']]
 
@@ -915,6 +917,7 @@ def latest_tweets(counter, entries_per_page, page):
 		return False, None, f"Error obtaining latest tweets"
 
 
+@cache(model_name="Log")
 def latest_activities_daily(entries_per_page, page):
 	"""
 	Args:
@@ -933,7 +936,12 @@ def latest_activities_daily(entries_per_page, page):
 		data['entries'] = [serializers.Log(activity).data for activity in data['entries']]
 
 		for entry in data['entries']:
-			entry['bot_screen_name'] = User.objects.get(user_id=int(entry['id_bot'])).screen_name
+			user = User.objects.filter(user_id=int(entry['id_bot']))
+			screen_name = ''
+			if user.count() >= 1:
+				screen_name = user[0].screen_name
+
+			entry['bot_screen_name'] =screen_name
 			user_obj = User.objects.filter(user_id=int(entry['target_id']))
 			entry['target_screen_name'] = user_obj[0].screen_name if len(user_obj) > 0 else ''
 
@@ -945,6 +953,7 @@ def latest_activities_daily(entries_per_page, page):
 		return False, None, "Error obtaining latest bot's activities daily"
 
 
+@cache(model_name="Log")
 def latest_activities(counter, entries_per_page, page):
 	"""
 	Args:
@@ -957,13 +966,17 @@ def latest_activities(counter, entries_per_page, page):
 
 	"""
 	try:
-		activities = Log.objects.all().order_by("-timestamp")[:counter].values()
+		activities = Log.objects.all().order_by("-timestamp")[:counter]
 
-		data = paginator_factory_non_queryset(activities, entries_per_page, page)
+		data = paginator_factory(activities, entries_per_page, page)
 		data['entries'] = [serializers.Log(activity).data for activity in data['entries']]
 
 		for entry in data['entries']:
-			entry['bot_screen_name'] = User.objects.get(user_id=int(entry['id_bot'])).screen_name
+			bot_screen_name = ''
+			bot = User.objects.filter(user_id=int(entry['id_bot']))
+			if bot.count() > 0:
+				bot_screen_name = bot[0].screen_name
+			entry['bot_screen_name'] = bot_screen_name
 			user_obj = User.objects.filter(user_id=int(entry['target_id']))
 			entry['target_screen_name'] = user_obj[0].screen_name if len(user_obj) > 0 else ''
 
@@ -975,6 +988,7 @@ def latest_activities(counter, entries_per_page, page):
 		return False, None, "Error obtaining latest bot's activities"
 
 
+@cache(model_name="Log")
 def __get_count_stats(types, accum, action=None):
 	query = "Log.objects"
 	if action:
@@ -1000,6 +1014,7 @@ def __get_count_stats(types, accum, action=None):
 	return stats
 
 
+@cache(model_name="Log")
 def __get_today_stats(action=None):
 	query = "Log.objects.filter(Q(timestamp__gte=datetime.now() - timedelta(days=1))" \
 	        "& Q(timestamp__lte=datetime.now())"
@@ -1156,6 +1171,7 @@ def relations_today():
 		return False, None, f"Error obtaining stats grouped"
 
 
+@cache(model_name="TweetStats")
 def latest_tweets_daily(entries_per_page, page):
 	"""
 	Args:
@@ -1171,8 +1187,24 @@ def latest_tweets_daily(entries_per_page, page):
 		                                   & Q(timestamp__lte=datetime.now())).order_by("-timestamp")
 
 		data = paginator_factory(tweets, entries_per_page, page)
-		tweet_list = [serializers.TweetStats(tweet).data["tweet_id"] for tweet in data['entries']]
-		data['entries'] = [serializers.Tweet(Tweet.objects.get(tweet_id=tweet)).data for tweet in tweet_list]
+		tweet_list = [serializers.TweetStats(tweet).data for tweet in data['entries']]
+		serialized_entries = []
+
+		for tweet in tweet_list:
+			entry = Tweet.objects.filter(tweet_id=tweet["tweet_id"])
+			if entry.count() == 0:
+				kwargs = {
+					"tweet_id": str(tweet['tweet_id']),
+					"user": {
+						"id": tweet['user_id'],
+						"id_str": str(tweet['user_id'])
+					}
+				}
+				entry = [Tweet(**kwargs)]
+			serialized_entries.append(serializers.Tweet(entry[0]).data)
+
+		data['entries'] = serialized_entries
+
 		return True, data, "Success obtaining latest bot's tweets daily"
 
 	except Exception as e:

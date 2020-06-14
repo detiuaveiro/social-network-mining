@@ -7,6 +7,7 @@ import credentials
 from neo4j_labels import BOT_LABEL, USER_LABEL, TWEET_LABEL, WROTE_LABEL, \
 	RETWEET_LABEL, REPLY_LABEL, FOLLOW_LABEL, QUOTE_LABEL, QUERY
 import json
+import django.dispatch
 
 log = logging.getLogger("Neo4j")
 log.setLevel(logging.DEBUG)
@@ -15,6 +16,8 @@ handler.setFormatter(
 	logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s")
 )
 log.addHandler(handler)
+
+signal = django.dispatch.Signal()
 
 
 class Neo4jAPI:
@@ -33,6 +36,7 @@ class Neo4jAPI:
 
 		@param data: The params of the new bot we want to create. Should include an id, name and username
 		"""
+
 		if (
 				"id" not in data.keys()
 				or "name" not in data.keys()
@@ -55,9 +59,10 @@ class Neo4jAPI:
 		try:
 			# Note we use Merge rather than Create to avoid duplicates
 			tx.run(f"MERGE (:{BOT_LABEL} {{ name: $name, id: $id, username: $username }} )",
-					id=str(data["id"]),
-					name=data["name"],
-					username=data["username"])
+			       id=str(data["id"]),
+			       name=data["name"],
+			       username=data["username"])
+			signal.send(sender=Neo4jAPI)
 		except Exception as e:
 			log.exception(f"Error trying to create a bot -> {e}")
 
@@ -87,9 +92,10 @@ class Neo4jAPI:
 
 		try:
 			tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username }})",
-					id=str(data["id"]),
-					name=data["name"],
-					username=data["username"])
+			       id=str(data["id"]),
+			       name=data["name"],
+			       username=data["username"])
+			signal.send(sender=Neo4jAPI)
 		except Exception as e:
 			log.exception(f"Error trying to create a User {e}")
 
@@ -112,6 +118,7 @@ class Neo4jAPI:
 		log.debug("CREATING TWEET")
 		try:
 			tx.run(f"MERGE (:{TWEET_LABEL} {{id: $id}})", id=str(data["id"]))
+			signal.send(sender=Neo4jAPI)
 		except Exception as e:
 			log.exception(f"Error trying to create a Tweet {e}")
 
@@ -249,9 +256,10 @@ class Neo4jAPI:
 
 		try:
 			result = tx.run(f"MATCH (u: {data['type_1']} {{ id: $id1 }}), (r: {data['type_2']} {{ id: $id2 }}) "
-							f"MERGE (u)-[:{data['label']}]->(r)", id1=str(data['id_1']), id2=str(data['id_2']))
+			                f"MERGE (u)-[:{data['label']}]->(r)", id1=str(data['id_1']), id2=str(data['id_2']))
 
 			log.debug(f"Created relationship:{result}")
+			signal.send(sender=Neo4jAPI)
 		except Exception as e:
 			log.exception(f"Error trying to create a relationship -> {e}")
 
@@ -331,9 +339,10 @@ class Neo4jAPI:
 		log.debug("UPDATING USER")
 		try:
 			tx.run(f"MATCH (r: {USER_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
-				   id=str(data['id']),
-				   username=data['username'] if 'username' in data else '',
-				   name=data['name'] if 'name' in data else '')
+			       id=str(data['id']),
+			       username=data['username'] if 'username' in data else '',
+			       name=data['name'] if 'name' in data else '')
+			signal.send(sender=Neo4jAPI)
 		except Exception as e:
 			log.exception(f"Error updating user -> {e}")
 
@@ -357,9 +366,10 @@ class Neo4jAPI:
 
 		try:
 			tx.run(f"MATCH (r: {BOT_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
-				   id=str(data['id']),
-				   username=data['username'] if 'username' in data else '',
-				   name=data['name'] if 'name' in data else '')
+			       id=str(data['id']),
+			       username=data['username'] if 'username' in data else '',
+			       name=data['name'] if 'name' in data else '')
+			signal.send(sender=Neo4jAPI)
 		except Exception as e:
 			log.exception(f"Error trying to update bot -> {e}")
 
@@ -397,6 +407,7 @@ class Neo4jAPI:
 		log.debug("DELETING NODE")
 		try:
 			tx.run(f'MATCH (r:{type} {{ id: $id }}) DETACH DELETE r', id=str(id))
+			signal.send(sender=Neo4jAPI)
 		except Exception as e:
 			log.exception(f"Error trying to delete node -> {e}")
 
@@ -561,11 +572,12 @@ class Neo4jAPI:
 
 		try:
 			tx.run(f"MATCH (a:{data['type_1']}{{id: $from_id}})-[r:{data['label']}]->(b:{data['type_2']}{{id: $to_id}})"
-				   f"DELETE r",
-				   from_id=str(data['id_1']), to_id=str(data['id_2']))
+			       f"DELETE r",
+			       from_id=str(data['id_1']), to_id=str(data['id_2']))
+			signal.send(sender=Neo4jAPI)
 		except Exception as e:
 			log.exception(f"Error trying to delete relationship {e}")
-			
+
 	def search_tweets(self, tweet=None):
 		"""Method used to search for a given tweet
 
@@ -610,7 +622,7 @@ class Neo4jAPI:
 		query_filters = (query_filters[:-1] if len(query_filters) > 1 else query_filters) + "}"
 
 		query_result = tx.run(f'MATCH (r:{BOT_LABEL} {query_filters}) RETURN r',
-							  data)
+		                      data)
 
 		result = []
 		for i in query_result:
@@ -644,7 +656,7 @@ class Neo4jAPI:
 		query_filters = (query_filters[:-1] if len(query_filters) > 1 else query_filters) + "}"
 
 		query_result = tx.run(f'MATCH (r:{USER_LABEL} {query_filters}) RETURN r',
-							  data)
+		                      data)
 
 		result = []
 		for i in query_result:
@@ -814,7 +826,7 @@ class Neo4jAPI:
 		log.debug("VERIFYING RELATIONSHIP EXISTANCE")
 
 		query = f'MATCH (a: {data["type_1"]} {{id: $id1 }})-[r:{data["label"]}]' \
-				f'->(b:{data["type_2"]} {{id: $id2 }}) RETURN a, b'
+		        f'->(b:{data["type_2"]} {{id: $id2 }}) RETURN a, b'
 
 		result = tx.run(query, id1=str(data["id_1"]), id2=str(data["id_2"]))
 
@@ -847,7 +859,7 @@ class Neo4jAPI:
 		log.debug("GETTING FOLLOWINGS")
 
 		query = f"MATCH (a {':' + data['type'] if 'type' in data else ''} {{id: $id }})-" \
-				f"[r:{FOLLOW_LABEL}]->(b) RETURN b"
+		        f"[r:{FOLLOW_LABEL}]->(b) RETURN b"
 
 		result = []
 		for i in tx.run(query, id=data['id']):
@@ -884,7 +896,7 @@ class Neo4jAPI:
 		log.debug("GETTING FOLLOWERS")
 
 		query = f'MATCH (b)-[r:{FOLLOW_LABEL}]->' \
-				f'(a {":" + data["type"] if "type" in data else ""} {{id: $id }}) RETURN b'
+		        f'(a {":" + data["type"] if "type" in data else ""} {{id: $id }}) RETURN b'
 
 		result = []
 		for i in tx.run(query, id=data["id"]):
@@ -939,7 +951,7 @@ class Neo4jAPI:
 		log.debug("EXPORTING QUERY NETWORK")
 		log.debug(query)
 		return tx.run(f"CALL apoc.export.{export_type}.query(\"{query}\",null,"
-					  f"{{useTypes:true, stream:true, writeNodeProperties:{rel_node_properties}}})")
+		              f"{{useTypes:true, stream:true, writeNodeProperties:{rel_node_properties}}})")
 
 	def export_network(self, export_type="graphml"):
 		"""Method used to export the entire database

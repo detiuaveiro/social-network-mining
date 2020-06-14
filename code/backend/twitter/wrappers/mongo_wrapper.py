@@ -5,7 +5,7 @@ from pymongo import MongoClient
 import logging
 import json
 import credentials as credentials
-
+import django.dispatch
 log = logging.getLogger("Mongo")
 log.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(open("mongo.log", "w"))
@@ -13,6 +13,8 @@ handler.setFormatter(
     logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s")
 )
 log.addHandler(handler)
+
+signal = django.dispatch.Signal()
 
 
 class MongoAPI:
@@ -68,6 +70,7 @@ class MongoAPI:
         """
         try:
             self.users.insert_one(data)
+            signal.send(sender=MongoAPI)
             log.debug("INSERT SUCCESSFUL")
         except Exception as error:
             log.exception(f"ERROR <{error}> INSERTING DOCUMENT <{data}>: ")
@@ -79,6 +82,7 @@ class MongoAPI:
         """
         try:
             self.tweets.insert_one(data)
+            signal.send(sender=MongoAPI)
             log.debug("INSERT SUCCESFUL")
         except Exception as error:
             log.exception(f"ERROR <{error}> INSERTING DOCUMENT <{data}>:")
@@ -90,6 +94,7 @@ class MongoAPI:
         """
         try:
             self.messages.insert_one(data)
+            signal.send(sender=MongoAPI)
             log.debug("INSERT SUCCESSFUL")
         except Exception as error:
             log.exception(f"ERROR <{error}> INSERTING DOCUMENT <{data}>: ")
@@ -106,6 +111,7 @@ class MongoAPI:
                 self.users.update_many(match, {"$set": new_data})
             else:
                 self.users.update_one(match, {"$set": new_data})
+            signal.send(sender=MongoAPI)
             log.debug("UPDATE SUCCESSFUL")
         except Exception as error:
             log.exception(f"ERROR <{error}> UPDATING DOCUMENT with match <{match}> and data <{new_data}>: ")
@@ -122,6 +128,7 @@ class MongoAPI:
                 self.tweets.update_many(match, {"$set": new_data})
             else:
                 self.tweets.update_one(match, {"$set": new_data})
+            signal.send(sender=MongoAPI)
             log.debug("UPDATE SUCCESSFUL")
         except Exception as error:
             log.exception(f"ERROR <{error}> UPDATING DOCUMENT with match <{match}> <{new_data}>: ")
@@ -138,6 +145,7 @@ class MongoAPI:
                 self.messages.update_many(match, {"$set": new_data})
             else:
                 self.messages.update_one(match, {"$set": new_data})
+            signal.send(sender=MongoAPI)
             log.debug("UPDATE SUCCESSFUL")
         except Exception as error:
             log.exception(f"ERROR <{error}> UPDATING DOCUMENT with match <{match}> and data <{new_data}>: ")

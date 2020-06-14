@@ -6,6 +6,7 @@ import logging
 
 import credentials as credentials
 from api.enums import Policy as enum_policy
+import django.dispatch
 
 log = logging.getLogger("PostgreSQL")
 log.setLevel(logging.DEBUG)
@@ -14,6 +15,8 @@ handler.setFormatter(
 	logging.Formatter("[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s")
 )
 log.addHandler(handler)
+
+signal = django.dispatch.Signal(providing_args=["table_name"])
 
 
 class PostgresAPI:
@@ -55,6 +58,7 @@ class PostgresAPI:
 				"INSERT INTO tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",
 				(int(data["tweet_id"]), int(data["user_id"]), data["likes"], data["retweets"]))
 			self.conn.commit()
+			signal.send(sender=PostgresAPI, table_name="tweets")
 			cursor.close()
 		except psycopg2.Error as error:
 			self.conn.rollback()
@@ -82,6 +86,7 @@ class PostgresAPI:
 				(data["user_id"], data["followers"], data["following"], data["protected"])
 			)
 			self.conn.commit()
+			signal.send(sender=PostgresAPI, table_name="users")
 			cursor.close()
 		except psycopg2.Error as error:
 			self.conn.rollback()
@@ -228,7 +233,7 @@ class PostgresAPI:
 				if "action" in params:
 					query += f"action='{params['action']}' AND "
 				if "timestamp" in params:
-					query +=f"timestamp>'{params['timestamp']}' AND "
+					query += f"timestamp>'{params['timestamp']}' AND "
 				query = query[:-4]
 
 			query += f"ORDER BY timestamp DESC " \
@@ -338,6 +343,7 @@ class PostgresAPI:
 
 			cursor.execute(insertion_query)
 			self.conn.commit()
+			signal.send(sender=PostgresAPI, table_name="logs")
 			cursor.close()
 			log.debug(f"Inserted log <{insertion_query}> on database")
 		except psycopg2.Error as error:
@@ -381,6 +387,7 @@ class PostgresAPI:
 				 data["bots"]))
 
 			self.conn.commit()
+			signal.send(sender=PostgresAPI, table_name="policies")
 			cursor.close()
 		except psycopg2.Error as error:
 			self.conn.rollback()
@@ -408,6 +415,7 @@ class PostgresAPI:
 			cursor.execute(query)
 
 			self.conn.commit()
+			signal.send(sender=PostgresAPI, table_name="policies")
 			cursor.close()
 
 			return {"success": True}
@@ -476,6 +484,7 @@ class PostgresAPI:
 			cursor.execute(query)
 
 			self.conn.commit()
+			signal.send(sender=PostgresAPI, table_name="policies")
 			cursor.close()
 
 			return {"success": True}
