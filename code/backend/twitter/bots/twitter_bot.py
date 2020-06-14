@@ -70,7 +70,6 @@ class TwitterBot(RabbitMessaging):
 		:param data: data to send
 		:param exchange: rabbit's exchange where to send the new message
 		"""
-		
 		self._send_message(to_json(data), exchange)
 
 	def __send_request_follow(self, user: User):
