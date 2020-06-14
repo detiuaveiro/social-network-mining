@@ -701,9 +701,11 @@ class Control_Center:
 
 	def __save_user_or_blank_user(self, data):
 		user = data['data']
-		user_type = self.__user_type(user['id_str'])
+		user_id_str = user['id_str']
 
-		if user_type == "" or 'name' not in user or not user['name']:
+		user_exists = self.neo4j_client.check_user_exists(user_id_str)
+
+		if user_exists or 'name' not in user or not user['name']:
 			blank_user = mongo_utils.BLANK_USER.copy()
 			blank_user["id"] = user['id']
 			blank_user["id_str"] = str(user['id'])

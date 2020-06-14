@@ -300,7 +300,8 @@ class Neo4jAPI:
 			# Caller for transactional unit of work
 			return session.write_transaction(self.__user_exists, id)
 
-	def __user_exists(self, tx, data):
+	@staticmethod
+	def __user_exists(tx, data):
 		log.debug("CHECKING USER EXISTANCE")
 
 		result = tx.run(f"MATCH (r:{USER_LABEL} {{ id:$id }}) RETURN r", id=str(data))
