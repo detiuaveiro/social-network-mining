@@ -39,6 +39,13 @@ class TwitterBot(RabbitMessaging):
 
 		self._redis_cache = redis.Redis(host=REDIS_HOST)
 
+		# bulk messages to send
+		self.__users_to_send = []
+		self.__tweets_to_send = []
+		self.__data_to_send = []
+		self.__queries_to_send = []
+		self.__events_to_send = []
+
 	def __repr__(self):
 		return f"<TwitterBot id={self._id}, api={self._twitter_api}>"
 
@@ -57,14 +64,33 @@ class TwitterBot(RabbitMessaging):
 		tweet_dict = tweet._json.copy()
 		return tweet_dict
 
-	def __send_message(self, data, message_type: messages_types.BotToServer, exchange):
+	def __send_message(self, data, exchange):
 		"""Function to send a new message to the server through rabbitMQ
 
 		:param data: data to send
-		:param message_type: type of message to send to server
 		:param exchange: rabbit's exchange where to send the new message
 		"""
-		if message_type not in (messages_types.BotToServer.IM_ALIVE, messages_types.BotToServer.QUERY_KEYWORDS):
+		self._send_message(to_json(data), exchange)
+
+	def __send_request_follow(self, user: User):
+		"""Function to send a follow user request
+
+		:param user:  user to send
+		:return:
+		"""
+		logger.debug(f"Sending request follow to {user.id} ")
+		tweets = []
+		if not user._json['protected']:
+			tweets = [tweet._json for tweet in self.__user_timeline_tweets(user, tweet_mode="extended")]
+
+		self.__send_query({
+			'user': user._json,
+			'tweets': tweets
+		}, messages_types.BotToServer.QUERY_FOLLOW_USER)
+
+	def __add_to_bulk_list(self, bulk_list: list, data, message_type: messages_types.BotToServer):
+
+		if message_type != messages_types.BotToServer.QUERY_KEYWORDS:
 			cache_key = to_json({
 				'bot_id': self._id,
 				'type': message_type,
@@ -79,7 +105,7 @@ class TwitterBot(RabbitMessaging):
 			self._redis_cache.set(cache_key, 10)
 			self._redis_cache.expire(cache_key, BOT_TTL)
 
-		self._send_message(to_json({
+		bulk_list.append({
 			'type': message_type,
 			'bot_id': self._id,
 			'bot_id_str': self._id_str,
@@ -87,44 +113,61 @@ class TwitterBot(RabbitMessaging):
 			'bot_screen_name': self._screen_name,
 			'timestamp': current_time(),
 			'data': data
-		}), exchange)
-
-	def __send_request_follow(self, user: User):
-		"""Function to send a follow user request
-
-		:param user: user to send
-		:return:
-		"""
-		logger.debug(f"Sending request follow to {user.id} ")
-		tweets = []
-		if not user._json['protected']:
-			tweets = [tweet._json for tweet in self.__user_timeline_tweets(user, tweet_mode="extended")]
-
-		self.__send_query({
-			'user': user._json,
-			'tweets': tweets
-		}, messages_types.BotToServer.QUERY_FOLLOW_USER)
+		})
 
 	def __send_user(self, user: User, message_type: messages_types.BotToServer):
 		"""Function to send a twitter's User object to the server
 
 		:param user: user to send
 		"""
-		logger.debug(f"Sending {user.id} with message type {message_type}")
-		self.__send_message(user._json, message_type, DATA_EXCHANGE)
+
+		if len(self.__users_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
+			logger.debug(f"Adding user {user.id} to users to send bulk list")
+			self.__add_to_bulk_list(self.__users_to_send, user._json, message_type)
+		else:
+			logger.debug(f"Sending bulk users with message type {message_type.name}")
+			self.__send_message(self.__users_to_send, DATA_EXCHANGE)
+			self.__users_to_send.clear()
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
-		logger.debug(f"Sending {tweet.id} with message_type <{message_type.name}>")
-		self.__send_message(self.__get_tweet_dict(tweet), message_type, DATA_EXCHANGE)
+
+		if len(self.__tweets_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
+			logger.debug(f"Adding tweet {tweet.id} to tweets to send bulk list")
+			self.__add_to_bulk_list(self.__tweets_to_send, tweet._json, message_type)
+		else:
+			logger.debug(f"Sending bulk tweets with message type {message_type.name}")
+			self.__send_message(self.__tweets_to_send, DATA_EXCHANGE)
+			self.__tweets_to_send.clear()
 
 	def __send_data(self, data, message_type: messages_types.BotToServer):
-		self.__send_message(data, message_type, DATA_EXCHANGE)
+
+		if len(self.__data_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
+			logger.debug(f"Adding data to data to send bulk list")
+			self.__add_to_bulk_list(self.__data_to_send, data, message_type)
+		else:
+			logger.debug(f"Sending bulk data with message type {message_type.name}")
+			self.__send_message(self.__data_to_send, DATA_EXCHANGE)
+			self.__data_to_send.clear()
 
 	def __send_query(self, data, message_type: messages_types.BotToServer):
-		self.__send_message(data, message_type, QUERY_EXCHANGE)
+
+		if len(self.__queries_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
+			logger.debug(f"Adding query to queries to send bulk list")
+			self.__add_to_bulk_list(self.__queries_to_send, data, message_type)
+		else:
+			logger.debug(f"Sending bulk queries with message type {message_type.name}")
+			self.__send_message(self.__queries_to_send, QUERY_EXCHANGE)
+			self.__queries_to_send.clear()
 
 	def __send_event(self, data, message_type: messages_types.BotToServer):
-		self.__send_message(data, message_type, LOG_EXCHANGE)
+
+		if len(self.__events_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
+			logger.debug(f"Adding event to events to send bulk list")
+			self.__add_to_bulk_list(self.__events_to_send, data, message_type)
+		else:
+			logger.debug(f"Sending bulk events with message type {message_type.name}")
+			self.__send_message(self.__events_to_send, LOG_EXCHANGE)
+			self.__events_to_send.clear()
 
 	def __receive_message(self):
 		"""Function to consume a new message from the tasks's queue
@@ -470,46 +513,47 @@ class TwitterBot(RabbitMessaging):
 
 			try:
 				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")
-				task = self.__receive_message()
+				messages = self.__receive_message()
 
-				if task:
-					task_type, task_params = task['type'], task['params']
-					logger.debug(f"Received task of type {messages_types.ServerToBot(task_type).name}: {task_params}")
+				for task in messages:
+					if task:
+						task_type, task_params = task['type'], task['params']
+						logger.debug(f"Received task of type {messages_types.ServerToBot(task_type).name}: {task_params}")
 
-					# wait(3)
+						# wait(3)
 
-					if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
-						logger.warning(
-							f"Not processing {messages_types.ServerToBot.FIND_BY_KEYWORDS} with {task_params}")
-					elif task_type == messages_types.ServerToBot.FOLLOW_USERS:
-						self.__follow_users(id_type=task_params['type'], data=task_params['data'])
-					elif task_type == messages_types.ServerToBot.LIKE_TWEETS:
-						self.__like_tweet(task_params)
-					elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
-						self.__retweet_tweet(task_params)
-					elif task_type == messages_types.ServerToBot.FIND_FOLLOWERS:
-						logger.info(f"The bot was asked to get the followers for user with id <{task_params}>")
-						self.__get_followers(user_id=task_params)
-					elif task_type == messages_types.ServerToBot.POST_TWEET:
-						self.__post_tweet(**task_params)
-					elif task_type == messages_types.ServerToBot.KEYWORDS:
-						self.__search_tweets(keywords=task_params)
-					elif task_type == messages_types.ServerToBot.GET_TWEET_BY_ID:
-						self.__get_tweet_by_id(tweet_id=task_params)
-					elif task_type == messages_types.ServerToBot.GET_USER_BY_ID:
-						self.__get_user_dict(user_id=task_params)
-					elif task_type == messages_types.ServerToBot.FOLLOW_FIRST_TIME_USERS:
-						self.__follow_first_time_users(queries=task_params['queries'])
+						if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
+							logger.warning(
+								f"Not processing {messages_types.ServerToBot.FIND_BY_KEYWORDS} with {task_params}")
+						elif task_type == messages_types.ServerToBot.FOLLOW_USERS:
+							self.__follow_users(id_type=task_params['type'], data=task_params['data'])
+						elif task_type == messages_types.ServerToBot.LIKE_TWEETS:
+							self.__like_tweet(task_params)
+						elif task_type == messages_types.ServerToBot.RETWEET_TWEETS:
+							self.__retweet_tweet(task_params)
+						elif task_type == messages_types.ServerToBot.FIND_FOLLOWERS:
+							logger.info(f"The bot was asked to get the followers for user with id <{task_params}>")
+							self.__get_followers(user_id=task_params)
+						elif task_type == messages_types.ServerToBot.POST_TWEET:
+							self.__post_tweet(**task_params)
+						elif task_type == messages_types.ServerToBot.KEYWORDS:
+							self.__search_tweets(keywords=task_params)
+						elif task_type == messages_types.ServerToBot.GET_TWEET_BY_ID:
+							self.__get_tweet_by_id(tweet_id=task_params)
+						elif task_type == messages_types.ServerToBot.GET_USER_BY_ID:
+							self.__get_user_dict(user_id=task_params)
+						elif task_type == messages_types.ServerToBot.FOLLOW_FIRST_TIME_USERS:
+							self.__follow_first_time_users(queries=task_params['queries'])
+						else:
+							logger.warning(f"Received unknown task type: {task_type}")
 					else:
-						logger.warning(f"Received unknown task type: {task_type}")
-				else:
-					logger.warning("There are not new messages on the tasks's queue")
+						logger.warning("There are not new messages on the tasks's queue")
 
-					logger.info("Update the control center with the users who follow us")
-					self.__get_followers(user_id=self._id_str)
+						logger.info("Update the control center with the users who follow us")
+						self.__get_followers(user_id=self._id_str)
 
-					logger.info("Ask control center for keywords to search new tweets")
-					self.__send_query(self._twitter_api.me()._json, messages_types.BotToServer.QUERY_KEYWORDS)
-					wait(WAIT_TIME_NO_MESSAGES)
+						logger.info("Ask control center for keywords to search new tweets")
+						self.__send_query(self._twitter_api.me()._json, messages_types.BotToServer.QUERY_KEYWORDS)
+						wait(WAIT_TIME_NO_MESSAGES)
 			except Exception as error:
 				logger.exception(f"Error {error} on bot's loop: ")
