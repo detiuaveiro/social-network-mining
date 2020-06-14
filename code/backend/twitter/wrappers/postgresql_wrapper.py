@@ -109,7 +109,7 @@ class PostgresAPI:
 		self.list_of_tweets = []
 
 		for user in self.list_of_users:
-			self.__save_user(user)
+			self.__save_user(user)	
 		self.list_of_users = []
 
 	def search_tweet(self, params=None):
