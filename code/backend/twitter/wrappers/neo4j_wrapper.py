@@ -88,7 +88,7 @@ class Neo4jAPI:
 		log.debug(f"UPDATING {'PROTECTED' if data['protected'] else 'UNPROTECTED'} USER")
 
 		try:
-			tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username, protected=$protected }})",
+			tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username, protected: $protected }})",
 					id=str(data["id"]),
 					name=data["name"],
 					username=data["username"],
