@@ -1297,6 +1297,15 @@ class Reports extends Component {
                       </Col>
                     </Row>
 
+                    <Row style={{ marginTop: "20px" }}>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="u_protected_only" name="option-check" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Show Protected Users Only</Label>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
 
                     <Row style={{ marginTop: "30px" }}>
                       <Col md="12">
