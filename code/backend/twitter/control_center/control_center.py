@@ -625,7 +625,6 @@ class Control_Center:
 				self.send(bot_id, ServerToBot.FOLLOW_FIRST_TIME_USERS, {
 					'queries': bot_policies_args
 				})
-
 				"""
 				self.send(bot_id, ServerToBot.FOLLOW_USERS, {
 					"type": "screen_name",
@@ -667,7 +666,8 @@ class Control_Center:
 					self.neo4j_client.update_user({
 						"id": user["id_str"],
 						"name": user['name'],
-						"username": user['screen_name']
+						"username": user['screen_name'],
+						"protected": user['protected']
 					})
 					self.postgres_client.insert_log({
 						"bot_id": bot_id,
@@ -680,13 +680,15 @@ class Control_Center:
 					self.neo4j_client.add_user({
 						"id": user["id_str"],
 						"name": user['name'],
-						"username": user['screen_name']
+						"username": user['screen_name'],
+						"protected": user['protected']
 					})
 					self.postgres_client.insert_log({
 						"bot_id": bot_id,
 						"action": log_actions.INSERT_USER,
 						"target_id": user['id_str']
 					})
+					
 				self.postgres_client.insert_user({
 					"user_id": int(user['id_str']),
 					"followers": user["followers_count"],

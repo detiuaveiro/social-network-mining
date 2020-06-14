@@ -73,10 +73,11 @@ class Neo4jAPI:
 				"id" not in data.keys()
 				or "name" not in data.keys()
 				or "username" not in data.keys()
+				or "protected" not in data.keys()
 		):
 			log.error("ERROR CREATING A USER")
 			log.debug(
-				"Error: Specified data doesn't contain necessary fields - id, name, username"
+				"Error: Specified data doesn't contain necessary fields - id, name, username, protected"
 			)
 
 			return
@@ -84,13 +85,14 @@ class Neo4jAPI:
 		self.list_of_users.append(data)
 
 	def __create_user(self, tx, data):
-		log.debug("CREATING USER")
+		log.debug(f"UPDATING {'PROTECTED' if data['protected'] else 'UNPROTECTED'} USER")
 
 		try:
-			tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username }})",
+			tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username, protected=$protected }})",
 					id=str(data["id"]),
 					name=data["name"],
-					username=data["username"])
+					username=data["username"],
+				    protected=data["protected"])
 		except Exception as e:
 			log.exception(f"Error trying to create a User {e}")
 
@@ -341,7 +343,7 @@ class Neo4jAPI:
 			return session.write_transaction(self.__update_user, data)
 
 	def __update_user(self, tx, data):
-		log.debug("UPDATING USER")
+		log.debug(f"UPDATING {'PROTECTED' if data['protected'] else 'UNPROTECTED'} USER")
 		try:
 			tx.run(f"MATCH (r: {USER_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
 				   id=str(data['id']),
