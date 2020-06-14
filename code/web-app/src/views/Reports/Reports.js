@@ -742,6 +742,8 @@ class Reports extends Component {
       processing: true
     })
 
+    console.log(search)
+
     await fetch(baseURL + "report/", {
       method: "POST",
       headers: {
