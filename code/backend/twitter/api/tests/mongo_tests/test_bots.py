@@ -20,6 +20,7 @@ def user(db):
 
 def add_bot_neo4j():
 	neo4j.add_bot({'id': "1", 'name': 'bot_test', 'username': 'bot_test_username'})
+	neo4j.save_all()
 	return neo4j.check_bot_exists("1")
 
 
