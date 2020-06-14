@@ -86,10 +86,12 @@ class Report:
 		return parameters
 
 	@staticmethod
-	def node_builder(label, node):
+	def node_builder(label, node, protected):
 		query_node = "("
 		if label:
 			query_node += f":{label}"
+			if label == 'User' and protected and not node:
+				query_node += "{protected: true}"
 		if node and len(node) > 0:
 			query_node += f"{{id: '{node}'}}"
 
@@ -180,7 +182,7 @@ class Report:
 		locations_dict[node].append(location)
 
 	@staticmethod
-	def neo_query_builder(match: dict, limit=None):
+	def neo_query_builder(match: dict, limit, protected):
 		query = "MATCH r="
 		if ("relation" in match['start'] and match['start']['relation']) \
 				or ('type' in match['start'] and match['start']['type']) \
@@ -189,7 +191,7 @@ class Report:
 				match['start']['node'] = None
 			if 'direction' not in match['start']:
 				match['start']['direction'] = None
-			query += f"{Report.node_builder(match['start']['type'], match['start']['node'])}" \
+			query += f"{Report.node_builder(match['start']['type'], match['start']['node'], protected)}" \
 					 f"{Report.relation_builder(match['start']['relation'], match['start']['direction'])}"
 
 		if "intermediates" in match:
@@ -197,10 +199,10 @@ class Report:
 			print(intermediates)
 			for interm in range(len(intermediates["types"])):
 				print(intermediates["types"])
-				query += f"{Report.node_builder(intermediates['types'][interm], intermediates['nodes'][interm])}" \
+				query += f"{Report.node_builder(intermediates['types'][interm], intermediates['nodes'][interm], protected)}" \
 						 f"{Report.relation_builder(intermediates['relations'][interm], intermediates['directions'][interm])}"
 
-		query += f"{Report.node_builder(match['end']['type'], match['end']['node'])} " \
+		query += f"{Report.node_builder(match['end']['type'], match['end']['node'], protected)} " \
 				 f"return r"
 
 		if limit:
@@ -211,10 +213,10 @@ class Report:
 		return query
 
 	@staticmethod
-	def create_report(match: dict, params: dict, limit=None, export="csv"):
+	def create_report(match: dict, params: dict, limit=None, export="csv", protected=False):
 		params = Report.translate_params(params)
 
-		query = Report.neo_query_builder(match, limit)
+		query = Report.neo_query_builder(match, limit, protected)
 
 		result = []
 
