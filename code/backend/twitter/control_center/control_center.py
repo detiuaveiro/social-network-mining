@@ -22,6 +22,7 @@ from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
+import api.signal
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
