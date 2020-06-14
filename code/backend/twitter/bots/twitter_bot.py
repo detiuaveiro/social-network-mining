@@ -92,7 +92,7 @@ class TwitterBot(RabbitMessaging):
 	def __send_request_follow(self, user: User):
 		"""Function to send a follow user request
 
-		:param user:  user to send
+		:param user: user to send
 		:return:
 		"""
 		logger.debug(f"Sending request follow to {user.id} ")
