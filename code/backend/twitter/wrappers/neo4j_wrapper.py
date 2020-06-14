@@ -80,7 +80,7 @@ class Neo4jAPI:
 			)
 
 			return
-
+		log.info(data)
 		self.list_of_users.append(data)
 
 	def __create_user(self, tx, data):
@@ -243,13 +243,19 @@ class Neo4jAPI:
 				session.write_transaction(self.__create_user, user)
 			self.list_of_users = []
 
+			log.info("Saved all users")
+
 			for tweet in self.list_of_tweets:
 				session.write_transaction(self.__create_tweet, tweet)
 			self.list_of_tweets = []
 
+			log.info("Saved all tweets")
+
 			for relation in self.list_of_relations:
 				session.write_transaction(self.__create_relationship, relation)
 			self.list_of_relations = []
+
+			log.info("Saved all relations")
 
 	def __create_relationship(self, tx, data):
 		log.debug(f"CREATING RELATIONSHIP <{data['label']}> betweet {data['id_1']} and {data['id_2']}")

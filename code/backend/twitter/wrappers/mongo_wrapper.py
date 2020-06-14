@@ -206,21 +206,34 @@ class MongoAPI:
 
     def save(self):
         """Bulk inserts the saved documents from previous inserts to the appropriate collections"""
-        try:
-            self.users.insert_many(self.list_of_users)
-            self.list_of_users = []
-        except Exception as error:
-            log.exception(f"ERROR <{error}> INSERTING USERS")
-        try:
-            self.tweets.insert_many(self.list_of_tweets)
-            self.list_of_tweets = []
-        except Exception as error:
-            log.exception(f"ERROR <{error}> INSERTING TWEETS")
-        try:
-            self.messages.insert_many(self.list_of_messages)
-            self.list_of_messages = []
-        except Exception as error:
-            log.exception(f"ERROR <{error}> INSERTING MESSAGES")
+        if len(self.list_of_users) != 0:
+            try:
+                log.info("Users " + str(self.list_of_users))
+                self.users.insert_many(self.list_of_users)
+                self.list_of_users = []
+            except Exception as error:
+                log.exception(f"ERROR <{error}> INSERTING USERS")
+
+        log.info("Saved all users")
+
+        if len(self.list_of_tweets) != 0:
+            try:
+                log.info("Tweets: " + str(self.list_of_tweets))
+                self.tweets.insert_many(self.list_of_tweets)
+                self.list_of_tweets = []
+            except Exception as error:
+                log.exception(f"ERROR <{error}> INSERTING TWEETS")
+
+        log.info("Saved all tweets")
+
+        if len(self.list_of_messages) != 0:
+            try:
+                self.messages.insert_many(self.list_of_messages)
+                self.list_of_messages = []
+            except Exception as error:
+                log.exception(f"ERROR <{error}> INSERTING MESSAGES")
+
+        log.info("Saved all messages")
 
     def __export_data(self, data, export_type):
         """Exports a given array of documents into a csv or json

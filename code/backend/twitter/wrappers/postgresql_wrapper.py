@@ -102,15 +102,19 @@ class PostgresAPI:
 
 		return {"success": True}
 
-	def save(self):
+	def save_all(self):
 		"""Method to bulk save all tweets and users"""
 		for tweet in self.list_of_tweets:
 			self.__save_tweet(tweet)
 		self.list_of_tweets = []
 
+		log.info("Save all tweets")
+
 		for user in self.list_of_users:
 			self.__save_user(user)	
 		self.list_of_users = []
+
+		log.info("Save all users")
 
 	def search_tweet(self, params=None):
 		"""
