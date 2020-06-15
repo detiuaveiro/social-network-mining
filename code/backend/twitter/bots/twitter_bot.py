@@ -551,15 +551,15 @@ class TwitterBot(RabbitMessaging):
 							self.__follow_first_time_users(queries=task_params['queries'])
 						else:
 							logger.warning(f"Received unknown task type: {task_type}")
-					else:
-						logger.warning("There are not new messages on the tasks's queue")
+				if not messages:
+					logger.warning("There are not new messages on the tasks's queue")
 
-						logger.info("Update the control center with the users who follow us")
-						self.__get_followers(user_id=self._id_str)
+					logger.info("Update the control center with the users who follow us")
+					self.__get_followers(user_id=self._id_str)
 
-						logger.info("Ask control center for keywords to search new tweets")
-						self.__send_query(self._twitter_api.me()._json, messages_types.BotToServer.QUERY_KEYWORDS,
+					logger.info("Ask control center for keywords to search new tweets")
+					self.__send_query(self._twitter_api.me()._json, messages_types.BotToServer.QUERY_KEYWORDS,
 						                  send_now=True)
-						wait(WAIT_TIME_NO_MESSAGES)
+					wait(WAIT_TIME_NO_MESSAGES)
 			except Exception as error:
 				logger.exception(f"Error {error} on bot's loop: ")
