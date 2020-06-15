@@ -27,6 +27,9 @@ class Neo4jAPI:
 			"bolt://" + FULL_URL,
 			auth=(credentials.NEO4J_USERNAME, credentials.NEO4J_PASSWORD), encrypted=False
 		)
+		self.list_of_users = []
+		self.list_of_tweets = []
+		self.list_of_relations = []
 
 	def close(self):
 		self.driver.close()
@@ -75,27 +78,26 @@ class Neo4jAPI:
 				"id" not in data.keys()
 				or "name" not in data.keys()
 				or "username" not in data.keys()
+				or "protected" not in data.keys()
 		):
 			log.error("ERROR CREATING A USER")
 			log.debug(
-				"Error: Specified data doesn't contain necessary fields - id, name, username"
+				"Error: Specified data doesn't contain necessary fields - id, name, username, protected"
 			)
 
 			return
-
-		with self.driver.session() as session:
-			# Caller for transactional unit of work
-			return session.write_transaction(self.__create_user, data)
+		log.info(data)
+		self.list_of_users.append(data)
 
 	def __create_user(self, tx, data):
-		log.debug("CREATING USER")
+		log.debug(f"UPDATING {'PROTECTED' if data['protected'] else 'UNPROTECTED'} USER")
 
 		try:
-			tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username }})",
-			       id=str(data["id"]),
-			       name=data["name"],
-			       username=data["username"])
-			signal.send(sender=Neo4jAPI)
+			tx.run(f"MERGE (:{USER_LABEL} {{ name: $name, id: $id, username: $username, protected: $protected }})",
+					id=str(data["id"]),
+					name=data["name"],
+					username=data["username"],
+				    protected=data["protected"])
 		except Exception as e:
 			log.exception(f"Error trying to create a User {e}")
 
@@ -110,9 +112,7 @@ class Neo4jAPI:
 			log.debug("Error: Specified data doesn't contain necessary fields - id")
 			return
 
-		with self.driver.session() as session:
-			# Caller for transactional unit of work
-			return session.write_transaction(self.__create_tweet, data)
+		self.list_of_tweets.append(data)
 
 	def __create_tweet(self, tx, data):
 		log.debug("CREATING TWEET")
@@ -139,15 +139,13 @@ class Neo4jAPI:
 			log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 			return
 
-		with self.driver.session() as session:
-			data['label'] = WROTE_LABEL
-			data['type_1'] = data['user_type']
-			data['id_1'] = data['user_id']
-			data['type_2'] = TWEET_LABEL
-			data['id_2'] = data['tweet_id']
+		data['label'] = WROTE_LABEL
+		data['type_1'] = data['user_type']
+		data['id_1'] = data['user_id']
+		data['type_2'] = TWEET_LABEL
+		data['id_2'] = data['tweet_id']
 
-			# Caller for transactional unit of work
-			return session.write_transaction(self.__create_relationship, data)
+		self.list_of_relations.append(data)
 
 	def add_retweet_relationship(self, data):
 		"""Method used to create a new RETWEET relationship
@@ -166,15 +164,14 @@ class Neo4jAPI:
 			log.error(f"Error: Unacceptable specified types. Types must be {BOT_LABEL} or {USER_LABEL}")
 			return
 
-		with self.driver.session() as session:
-			data['label'] = RETWEET_LABEL
-			data['type_2'] = TWEET_LABEL
-			data['id_2'] = data['tweet_id']
-			data['type_1'] = data['user_type']
-			data['id_1'] = data['user_id']
+		data['label'] = RETWEET_LABEL
+		data['type_2'] = TWEET_LABEL
+		data['id_2'] = data['tweet_id']
+		data['type_1'] = data['user_type']
+		data['id_1'] = data['user_id']
 
-			# Caller for transactional unit of work
-			return session.write_transaction(self.__create_relationship, data)
+		self.list_of_relations.append(data)
+
 
 	def add_quote_relationship(self, data):
 		"""Method used to create a new QUOTE relationship
@@ -189,15 +186,14 @@ class Neo4jAPI:
 			log.error(data)
 			return
 
-		with self.driver.session() as session:
-			data['label'] = QUOTE_LABEL
-			data['type_1'] = TWEET_LABEL
-			data['id_1'] = data['tweet_id']
-			data['type_2'] = TWEET_LABEL
-			data['id_2'] = data['quoted_tweet']
+		data['label'] = QUOTE_LABEL
+		data['type_1'] = TWEET_LABEL
+		data['id_1'] = data['tweet_id']
+		data['type_2'] = TWEET_LABEL
+		data['id_2'] = data['quoted_tweet']
 
-			# Caller for transactional unit of work
-			return session.write_transaction(self.__create_relationship, data)
+		self.list_of_relations.append(data)
+
 
 	def add_reply_relationship(self, data):
 		"""Method used to create a new REPLY relationship
@@ -209,15 +205,14 @@ class Neo4jAPI:
 			log.error("Error: Specified data doesn't contain necessary fields - tweet and reply")
 			return
 
-		with self.driver.session() as session:
-			data['label'] = REPLY_LABEL
-			data['type_2'] = TWEET_LABEL
-			data['id_2'] = data['tweet']
-			data['type_1'] = TWEET_LABEL
-			data['id_1'] = data['reply']
+		data['label'] = REPLY_LABEL
+		data['type_2'] = TWEET_LABEL
+		data['id_2'] = data['tweet']
+		data['type_1'] = TWEET_LABEL
+		data['id_1'] = data['reply']
 
-			# Caller for transactional unit of work
-			return session.write_transaction(self.__create_relationship, data)
+		self.list_of_relations.append(data)
+
 
 	def add_follow_relationship(self, data):
 		"""Method used to create a new FOLLOWS relationship
@@ -246,10 +241,29 @@ class Neo4jAPI:
 
 			return
 
+		data['label'] = FOLLOW_LABEL
+		self.list_of_relations.append(data)
+
+	def save_all(self):
+		"""Method used to save all previously inserted nodes and relations"""
 		with self.driver.session() as session:
-			# Caller for transactional unit of work
-			data['label'] = FOLLOW_LABEL
-			return session.write_transaction(self.__create_relationship, data)
+			for user in self.list_of_users:
+				session.write_transaction(self.__create_user, user)
+			self.list_of_users = []
+
+			log.info("Saved all users")
+
+			for tweet in self.list_of_tweets:
+				session.write_transaction(self.__create_tweet, tweet)
+			self.list_of_tweets = []
+
+			log.info("Saved all tweets")
+
+			for relation in self.list_of_relations:
+				session.write_transaction(self.__create_relationship, relation)
+			self.list_of_relations = []
+
+			log.info("Saved all relations")
 
 	def __create_relationship(self, tx, data):
 		log.debug(f"CREATING RELATIONSHIP <{data['label']}> betweet {data['id_1']} and {data['id_2']}")
@@ -293,7 +307,8 @@ class Neo4jAPI:
 			# Caller for transactional unit of work
 			return session.write_transaction(self.__user_exists, id)
 
-	def __user_exists(self, tx, data):
+	@staticmethod
+	def __user_exists(tx, data):
 		log.debug("CHECKING USER EXISTANCE")
 
 		result = tx.run(f"MATCH (r:{USER_LABEL} {{ id:$id }}) RETURN r", id=str(data))
@@ -336,7 +351,7 @@ class Neo4jAPI:
 			return session.write_transaction(self.__update_user, data)
 
 	def __update_user(self, tx, data):
-		log.debug("UPDATING USER")
+		log.debug(f"UPDATING {'PROTECTED' if data['protected'] else 'UNPROTECTED'} USER")
 		try:
 			tx.run(f"MATCH (r: {USER_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
 			       id=str(data['id']),

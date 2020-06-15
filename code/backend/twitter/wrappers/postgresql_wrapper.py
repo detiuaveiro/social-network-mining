@@ -41,11 +41,16 @@ class PostgresAPI:
 
 			self.api_types = [x[0] for x in enum_policy.api_types()]
 			self.filters = [x[0] for x in enum_policy.api_filter()]
+			self.list_of_users = []
+			self.list_of_tweets = []
 
 		except (Exception, psycopg2.DatabaseError) as error:
 			log.exception(f"Error <{error}> trying to connect to database: ")
 
 	def insert_tweet(self, data):
+		self.list_of_tweets.append(data)
+
+	def __save_tweet(self, data):
 		"""
 		Attempts to insert a new Tweet item into the database
 
@@ -72,6 +77,9 @@ class PostgresAPI:
 		return {"success": True}
 
 	def insert_user(self, data):
+		self.list_of_users.append(data)
+
+	def __save_user(self, data):
 		"""
 		Attempts to insert a new User item into the database
 
@@ -98,6 +106,20 @@ class PostgresAPI:
 			return {"success": False, "error": error}
 
 		return {"success": True}
+
+	def save_all(self):
+		"""Method to bulk save all tweets and users"""
+		for tweet in self.list_of_tweets:
+			self.__save_tweet(tweet)
+		self.list_of_tweets = []
+
+		log.info("Save all tweets")
+
+		for user in self.list_of_users:
+			self.__save_user(user)	
+		self.list_of_users = []
+
+		log.info("Save all users")
 
 	def search_tweet(self, params=None):
 		"""
