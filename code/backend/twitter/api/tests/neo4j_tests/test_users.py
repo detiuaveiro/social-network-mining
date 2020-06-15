@@ -22,6 +22,7 @@ def delete_neo4j_data():
 def add_bot_neo4j(list_id):
 	for id in list_id:
 		neo4j.add_bot({'id': id, 'name': 'bot_test', 'username': 'bot_test_username'})
+		neo4j.save_all()
 		if not neo4j.check_bot_exists(id):
 			return False
 	return True
@@ -29,6 +30,7 @@ def add_bot_neo4j(list_id):
 
 def add_relationship(id_1, id_2):
 	neo4j.add_follow_relationship({"id_1": id_1, "id_2": id_2, "type_1": "Bot", "type_2": "Bot"})
+	neo4j.save_all()
 	return neo4j.check_follow_exists({"id_1": id_1, "id_2": id_2, "type_1": "Bot", "type_2": "Bot"})
 
 
