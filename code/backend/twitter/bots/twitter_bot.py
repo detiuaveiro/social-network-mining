@@ -121,55 +121,55 @@ class TwitterBot(RabbitMessaging):
 		:param user: user to send
 		"""
 
-		if len(self.__users_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
+		if len(self.__users_to_send) <= BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Adding user {user.id} to users to send bulk list")
 			self.__add_to_bulk_list(self.__users_to_send, user._json, message_type)
 
-		if len(self.__users_to_send) > BULK_MESSAGES_SIZE_LIMIT_SEND:
+		if len(self.__users_to_send) >= BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Sending bulk users with message type {message_type.name}")
 			self.__send_message(self.__users_to_send, DATA_EXCHANGE)
 			self.__users_to_send.clear()
 
 	def __send_tweet(self, tweet: Status, message_type: messages_types.BotToServer):
 
-		if len(self.__tweets_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
+		if len(self.__tweets_to_send) <= BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Adding tweet {tweet.id} to tweets to send bulk list")
 			self.__add_to_bulk_list(self.__tweets_to_send, tweet._json, message_type)
 
-		if len(self.__tweets_to_send) > BULK_MESSAGES_SIZE_LIMIT_SEND:
+		if len(self.__tweets_to_send) >= BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Sending bulk tweets with message type {message_type.name}")
 			self.__send_message(self.__tweets_to_send, DATA_EXCHANGE)
 			self.__tweets_to_send.clear()
 
 	def __send_data(self, data, message_type: messages_types.BotToServer):
 
-		if len(self.__data_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
+		if len(self.__data_to_send) <= BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Adding data to data to send bulk list")
 			self.__add_to_bulk_list(self.__data_to_send, data, message_type)
 
-		if len(self.__data_to_send) > BULK_MESSAGES_SIZE_LIMIT_SEND:
+		if len(self.__data_to_send) >= BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Sending bulk data with message type {message_type.name}")
 			self.__send_message(self.__data_to_send, DATA_EXCHANGE)
 			self.__data_to_send.clear()
 
 	def __send_query(self, data, message_type: messages_types.BotToServer, send_now=False):
 
-		if len(self.__queries_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
+		if len(self.__queries_to_send) <= BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Adding query to queries to send bulk list")
 			self.__add_to_bulk_list(self.__queries_to_send, data, message_type)
 
-		if len(self.__queries_to_send) > BULK_MESSAGES_SIZE_LIMIT_SEND or send_now:
+		if len(self.__queries_to_send) >= BULK_MESSAGES_SIZE_LIMIT_SEND or send_now:
 			logger.debug(f"Sending bulk queries with message type {message_type.name}")
 			self.__send_message(self.__queries_to_send, QUERY_EXCHANGE)
 			self.__queries_to_send.clear()
 
 	def __send_event(self, data, message_type: messages_types.BotToServer):
 
-		if len(self.__events_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
+		if len(self.__events_to_send) <= BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Adding event to events to send bulk list")
 			self.__add_to_bulk_list(self.__events_to_send, data, message_type)
 
-		if len(self.__events_to_send) > BULK_MESSAGES_SIZE_LIMIT_SEND:
+		if len(self.__events_to_send) >= BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Sending bulk events with message type {message_type.name}")
 			self.__send_message(self.__events_to_send, LOG_EXCHANGE)
 			self.__events_to_send.clear()
