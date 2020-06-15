@@ -542,6 +542,21 @@ class PostgresAPI:
 			self.conn.rollback()
 			return {"success": False, "error": error}
 
+	def update_notifications_status(self):
+		cursor = self.conn.cursor()
+		query = "update notifications set status='f' where status='t'"
+		try:
+			cursor.execute(query)
+			self.conn.commit()
+			cursor.close()
+			return {"success": True}
+		except psycopg2.Error as error:
+			self.conn.rollback()
+			return {"success": False, "error": error}
+		except Exception as error:
+			self.conn.rollback()
+			return {"success": False, "error": error}
+
 
 if __name__ == "__main__":
 	# TODO: Test and implement searching by timestamp ; Policies API

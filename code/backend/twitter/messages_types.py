@@ -46,6 +46,7 @@ class BotToServer(IntEnum):
 class FollowServiceToServer(IntEnum):
 	REQUEST_POLICIES = 0
 	FOLLOW_USER = 1
+	CHANGE_EMAIL_STATUS = 2
 
 	def __str__(self):
 		return self.name

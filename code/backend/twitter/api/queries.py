@@ -1193,6 +1193,8 @@ def add_emails(data):
 
 		if not Notification.objects.filter(email=n_data.data['email']).exists():
 			Notification.objects.create(email=n_data.data['email'], status=n_data.data['status'])
+		else:
+			Notification.objects.filter(email=n_data.data['email']).update(status=True)
 
 		return True, "Success adding a new email"
 	except Exception as e:

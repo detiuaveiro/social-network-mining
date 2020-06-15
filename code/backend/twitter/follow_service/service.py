@@ -114,12 +114,11 @@ class Service(RabbitMessaging):
 
 		update_models(self.mongo_models, new_models, new_args)
 
-	def __train_models(self, policies: List[Dict]):
+	def __train_models(self, policies: List[Dict], emails: List[str]):
 		"""
 		:param policies: dictionary in which each key is the name of the policy and the values are lists with the
 			keywords of that policy
 		"""
-
 		logger.debug("Starting train process")
 		model_input_data = convert_policies_to_model_input_data(policies)
 		if len(model_input_data) < 2:
@@ -146,13 +145,27 @@ class Service(RabbitMessaging):
 			return
 
 		not_trained_policies = list(set(model_input_data.keys()) - set(trained_labels))
+
+		if not_trained_policies or new_args_per_label:
+			for email in emails:
+				self.email_service.send_train_started(email)
+
 		if not_trained_policies:
 			self.__train_full_policy(not_trained_policies, model_input_data)
 
 		if new_args_per_label:
 			self.__train_new_policy_args(new_args_per_label, trained_labels)
 
+		if not_trained_policies or new_args_per_label:
+			for email in emails:
+				self.email_service.send_train_finished(email)
+
 		logger.debug(f"Training {not_trained_policies} policies process done")
+
+		# Send a message to cc to change email status
+		self.__send_message(data=None,
+		                    message_type=messages_types.FollowServiceToServer.CHANGE_EMAIL_STATUS)
+
 
 	def __predict_follow_user(self, user: Dict, tweets: List[str], policies, bot_id):
 		"""
@@ -198,11 +211,11 @@ class Service(RabbitMessaging):
 		self.__send_message(data={'user': user, 'status': status, 'bot_id_str': bot_id},
 		                    message_type=messages_types.FollowServiceToServer.FOLLOW_USER)
 
-	def __verify_if_new_policies(self, policies: List[Dict]):
+	def __verify_if_new_policies(self, policies: List[Dict], emails: List[str]):
 		"""
 		:param policies: list of policies names to verify if we have models for them all
 		"""
-		self.__train_models(policies)
+		self.__train_models(policies, emails)
 
 	def run(self):
 		"""Service's loop. As simple as a normal handler, tries to get tasks from the queue and, depending on the
@@ -220,11 +233,11 @@ class Service(RabbitMessaging):
 						f"Received task of type {messages_types.ServerToFollowService(task_type).name}")
 
 					if task_type == messages_types.ServerToFollowService.POLICIES_KEYWORDS:
-						self.__train_models(policies=task_params)
+						self.__train_models(policies=task_params['data'], emails=[e['email'] for e in task_params['activated_notifications']])
 					elif task_type == messages_types.ServerToFollowService.REQUEST_FOLLOW_USER:
 						self.__predict_follow_user(user=task_params['user'], tweets=task_params['tweets'],
 						                           policies=task_params['policies'], bot_id=task_params['bot_id_str'])
-						self.__verify_if_new_policies(policies=task_params['all_policies'])
+						self.__verify_if_new_policies(policies=task_params['all_policies'], emails=[e['email'] for e in task_params['activated_notifications']])
 					else:
 						logger.warning(f"Received unknown task type: {task_type}")
 				else:

@@ -13,7 +13,7 @@ import messages_types as messages_types
 from rabbit_messaging import RabbitMessaging
 from bots.settings import *
 from bots.utils import *
-from credentials import LOG_EXCHANGE, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, TASKS_QUEUE_PREFIX
+from credentials import LOG_EXCHANGE, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, TASKS_QUEUE_PREFIX, REDIS_URL
 
 logger = logging.getLogger("bot-agents")
 logger.setLevel(logging.DEBUG)
@@ -37,7 +37,7 @@ class TwitterBot(RabbitMessaging):
 
 		self.work_init_time = time.time()
 
-		self._redis_cache = redis.Redis(host=REDIS_HOST)
+		self._redis_cache = redis.Redis(host=REDIS_URL)
 
 		# bulk messages to send
 		self.__users_to_send = []

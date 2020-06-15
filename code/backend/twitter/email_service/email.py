@@ -18,14 +18,14 @@ class Email:
 	def __init__(self):
 		self.smtp_server = "smtp.gmail.com"
 		self.sender_email = "social.network.mining.ua@gmail.com"
-		self.password = os.environ.get('MAIL_PASSWORD', '')  # Ir buscar aos segredos do github
+		self.password = os.environ.get('MAIL_PASSWORD', '')
 		self.port = 587
 		self.context = ssl.create_default_context()
 
-	def send_train_started(self, receiver_email, config_file="conf/train_started.json"):
+	def send_train_started(self, receiver_email, config_file="email_service/conf/train_started.json"):
 		self.__send_email(receiver_email, self.__data_loader(config_file))
 
-	def send_train_finished(self, receiver_email, config_file="conf/train_finished.json"):
+	def send_train_finished(self, receiver_email, config_file="email_service/conf/train_finished.json"):
 		self.__send_email(receiver_email, self.__data_loader(config_file))
 
 	def __data_loader(self, config_file):

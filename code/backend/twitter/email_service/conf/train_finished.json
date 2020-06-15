@@ -1,5 +1,5 @@
 {
-    "html" : "templates/train_finished.html",
-    "subject": "Treino acabou",
-    "text": "Treino acabou"
+    "html" : "email_service/templates/policy_done_training.html",
+    "subject": "Policy finished training!",
+    "text": "The policy [INSERT POLICY NAME] has finished training! Bots who have been assigned to this policy will now start following its dictated behaviour."
 }
