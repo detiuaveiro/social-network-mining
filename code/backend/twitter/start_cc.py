@@ -10,7 +10,7 @@ def main():
 	control_center = Rabbitmq()
 	while True:
 		control_center.run()
-	# control_center.close()
+	control_center.close()
 
 
 def tests(test_type):
