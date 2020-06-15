@@ -1002,7 +1002,6 @@ class Control_Center:
 		@param params: dict with arguments of the message
 		"""
 		log.info(f"Sending {message_type.name} to Bot with ID: <{bot}>")
-		log.debug(f"Content: {params}")
 		payload = {
 			'type': message_type,
 			'params': params
