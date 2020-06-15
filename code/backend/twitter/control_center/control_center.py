@@ -126,6 +126,7 @@ class Control_Center:
 			elif message_type == BotToServer.QUERY_KEYWORDS:
 				self.__send_keywords(message)
 
+		log.info("Finished processing all messages")
 		self.__save_dbs()
 		self.__force_send()
 
@@ -1006,16 +1007,9 @@ class Control_Center:
 			'type': message_type,
 			'params': params
 		}
-		if self.old_bot != bot or len(self.messages_to_send) == 0:
+		if self.old_bot != bot:
 			if self.old_bot:
-				try:
-					self.rabbit_wrapper.send(queue=TASKS_QUEUE_PREFIX,
-											 routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot),
-											 message=self.messages_to_send,
-											 father_exchange=self.exchange)
-				except Exception as error:
-					log.exception(f"Failed to send messages <{self.messages_to_send}> because of error <{error}>: ")
-					raise error
+				self.__force_send()
 			self.old_bot = bot
 			self.messages_to_send = []
 		self.messages_to_send.append(payload)
