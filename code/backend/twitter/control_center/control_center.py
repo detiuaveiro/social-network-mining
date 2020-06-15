@@ -549,7 +549,7 @@ class Control_Center:
 
 		for tweet in tweets:
 			data['data'] = tweet
-			self.save_tweet(data)
+			self.save_tweet([data])
 
 	def __follow_user(self, data):
 		"""
@@ -949,11 +949,11 @@ class Control_Center:
 				log.info(f"Save list of followers for {follower['id']}")
 
 			# add or update user in databases and its relation with our bot
-			self.save_user({
+			self.save_user([{
 				'bot_id': bot_id,
 				"bot_id_str": bot_id_str,
 				'data': follower
-			})
+			}])
 
 			self.__find_followers(follower['id_str'], user_id_str)
 
