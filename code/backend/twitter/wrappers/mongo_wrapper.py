@@ -25,7 +25,7 @@ class MongoAPI:
         log.debug("Connecting to MongoDB")
         self.client = MongoClient("mongodb://" + credentials.MONGO_FULL_URL)
 
-        self.users = eval(f"self.client.{credentials.MONGO_DB}nem .users")
+        self.users = eval(f"self.client.{credentials.MONGO_DB}.users")
         self.tweets = eval(f"self.client.{credentials.MONGO_DB}.tweets")
         self.messages = eval(f"self.client.{credentials.MONGO_DB}.messages")
 
