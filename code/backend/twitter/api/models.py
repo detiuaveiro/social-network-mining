@@ -104,7 +104,8 @@ class Policy(models.Model):
 
 
 class Log(models.Model):
-	id_bot = models.IntegerField(primary_key=True)
+	id = models.BigIntegerField(primary_key=True)
+	id_bot = models.IntegerField()
 	timestamp = models.DateTimeField()
 	action = models.TextField()
 	target_id = models.BigIntegerField()

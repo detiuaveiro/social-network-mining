@@ -32,19 +32,66 @@ class RedisAPI:
 		for key in keys:
 			encoded_key = pickle.dumps(key)
 			data = self.get(encoded_key)
-			self.delete_key(encoded_key)
 			func = eval(f"{key['function_name']}")
-			status, data, message = func(*key['args'])
+			self.delete_key(encoded_key)
 
-			if status:
-				new_data = {
-					'data': data,
-					'message': message
-				}
+			if data['pagination']:
+				status, n_data, message = func(*key['args'], **key['kwargs'])
 
-				self.set(encoded_key, new_data)
+				if status:
+					new_data = {
+						'data': n_data,
+						'message': message
+					}
+
+					self.set(encoded_key, new_data)
+				else:
+					self.set(encoded_key, data)
+
 			else:
-				self.set(encoded_key, data)
+				last_id = data['data']['last_id']
+				key['kwargs']['last_id'] = last_id
+
+				status, n_data, message = func(*key['args'], **key['kwargs'])
+				if status:
+					entries_dict = {}
+					for entry in data['data']['entries']:
+						entries_dict[entry.pop('date')] = entry
+
+					for entry in n_data['entries']:
+						date = entry.pop('date')
+						general = entry
+
+						if date not in entries_dict:
+							empty_counter = {}
+							for entity in general:
+								empty_counter[entity] = 0
+							entries_dict[date] = empty_counter
+
+						current_counter = entries_dict[date]
+						for entity in current_counter:
+							current_counter[entity] += general[entity]
+						entries_dict[date] = current_counter
+
+					entries = []
+					for date in entries_dict:
+						entries.append({
+							**entries_dict[date],
+							'date': date
+						})
+
+					new_data = {
+						'message': data['message'],
+						'data': {
+							'last_id': n_data['last_id'],
+							'entries': entries
+						},
+						'pagination': False
+					}
+
+					self.set(encoded_key, new_data)
+				else:
+					self.set(encoded_key, data)
 
 
 cacheAPI = RedisAPI()
