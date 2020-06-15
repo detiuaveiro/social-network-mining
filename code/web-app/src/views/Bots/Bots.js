@@ -553,6 +553,15 @@ class Bots extends Component {
             </div>
           }
 
+          var addNew = null
+
+          if (false) {
+            addNew = <Button block outline color="light" style={{
+              width: "150px", marginTop: "15px"
+            }} onClick={() => this.handleOpenAdd()}
+            >Add new</Button>
+          }
+
           users =
             <CardBody>
               <div style={{ position: "relative" }}>
@@ -627,7 +636,7 @@ class Bots extends Component {
                           }
                         }} >
                           {this.state.noBots}
-                      </h3>
+                        </h3>
                       </CardHeader>
                       <CardBody style={{ minHeight: "38px" }}>
                       </CardBody>
@@ -651,10 +660,7 @@ class Bots extends Component {
                             lineHeight: "1"
                           }
                         }} > Registered Bots</h4>
-                        <Button block outline color="light" style={{
-                          width: "150px", marginTop: "15px"
-                        }} onClick={() => this.handleOpenAdd()}
-                        >Add new</Button>
+                        {addNew}
 
                       </CardHeader>
                       {users}

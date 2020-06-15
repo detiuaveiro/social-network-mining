@@ -501,43 +501,46 @@ class Network extends Component {
 
   // Hide Methods //////////////////////////////////////////////////////////
 
-  hideBots = () => {
-    this.setState({ hideBots: !this.state.hideBots }, () => {
-      if (this.state.hideBots) {
-        var tempArray = []
+  hideBots = async () => {
+    var hideBots = this.state.hideBots
+    
+    await this.setState({ hideBots: !this.state.hideBots })
+    if (this.state.hideBots) {
+      var tempArray = []
 
-        this.state.graph.nodes.forEach(node => {
-          if (node.type != "Bot") {
-            tempArray.push(node)
-          }
-        })
+      this.state.graph.nodes.forEach(node => {
+        if (node.type != "Bot") {
+          tempArray.push(node)
+        }
+      })
 
-        this.setState({
-          graph: {
-            nodes: tempArray,
-            edges: this.state.allLinks
-          }
-        })
-      } else {
-        var tempArray = this.state.graph.nodes
+      await this.setState({
+        graph: {
+          nodes: tempArray,
+          edges: this.state.allLinks
+        }
+      })
+    } else {
+      var tempArray = []
 
-        this.state.allNodes.forEach(node => {
-          if (node.type == "Bot") {
-            tempArray.push(node)
-          }
-        })
+      await this.state.allNodes.forEach(node => {
+        if (node.type == "Bot") {
+          tempArray.push(node)
+        }
+      })
 
-        this.setState({
-          graph: {
-            nodes: tempArray,
-            edges: this.state.allLinks
-          }
-        })
-      }
+      tempArray = tempArray.concat(this.state.graph.nodes)
 
-      this.state.graphRef.body.emitter.emit('_dataChanged')
-      this.state.graphRef.redraw()
-    })
+      await this.setState({
+        graph: {
+          nodes: tempArray,
+          edges: this.state.allLinks
+        }
+      })
+    }
+
+    this.state.graphRef.body.emitter.emit('_dataChanged')
+    this.state.graphRef.redraw()
   }
 
   hideUsers = () => {
@@ -558,13 +561,15 @@ class Network extends Component {
           }
         })
       } else {
-        var tempArray = this.state.graph.nodes
+        var tempArray = []
 
         this.state.allNodes.forEach(node => {
           if (node.type == "User") {
             tempArray.push(node)
           }
         })
+
+        tempArray = tempArray.concat(this.state.graph.nodes)
 
         this.setState({
           graph: {
@@ -597,13 +602,15 @@ class Network extends Component {
           }
         })
       } else {
-        var tempArray = this.state.graph.nodes
+        var tempArray = []
 
         this.state.allNodes.forEach(node => {
           if (node.type == "Tweet") {
             tempArray.push(node)
           }
         })
+
+        tempArray = tempArray.concat(this.state.graph.nodes)
 
         this.setState({
           graph: {
@@ -701,7 +708,7 @@ class Network extends Component {
         )
       } else {
         return (
-          <UserProfile nextUser={this.state.redirectUser.user}  redirection={[{ "type": "NET", "info": { "returnValues": this.props.returnValues } }]}></UserProfile>
+          <UserProfile nextUser={this.state.redirectUser.user} redirection={[{ "type": "NET", "info": { "returnValues": this.props.returnValues } }]}></UserProfile>
         )
       }
     }
