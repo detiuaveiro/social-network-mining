@@ -124,7 +124,8 @@ class TwitterBot(RabbitMessaging):
 		if len(self.__users_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Adding user {user.id} to users to send bulk list")
 			self.__add_to_bulk_list(self.__users_to_send, user._json, message_type)
-		else:
+
+		if len(self.__users_to_send) > BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Sending bulk users with message type {message_type.name}")
 			self.__send_message(self.__users_to_send, DATA_EXCHANGE)
 			self.__users_to_send.clear()
@@ -134,7 +135,8 @@ class TwitterBot(RabbitMessaging):
 		if len(self.__tweets_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Adding tweet {tweet.id} to tweets to send bulk list")
 			self.__add_to_bulk_list(self.__tweets_to_send, tweet._json, message_type)
-		else:
+
+		if len(self.__tweets_to_send) > BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Sending bulk tweets with message type {message_type.name}")
 			self.__send_message(self.__tweets_to_send, DATA_EXCHANGE)
 			self.__tweets_to_send.clear()
@@ -144,17 +146,19 @@ class TwitterBot(RabbitMessaging):
 		if len(self.__data_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Adding data to data to send bulk list")
 			self.__add_to_bulk_list(self.__data_to_send, data, message_type)
-		else:
+
+		if len(self.__data_to_send) > BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Sending bulk data with message type {message_type.name}")
 			self.__send_message(self.__data_to_send, DATA_EXCHANGE)
 			self.__data_to_send.clear()
 
-	def __send_query(self, data, message_type: messages_types.BotToServer):
+	def __send_query(self, data, message_type: messages_types.BotToServer, send_now=False):
 
 		if len(self.__queries_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Adding query to queries to send bulk list")
 			self.__add_to_bulk_list(self.__queries_to_send, data, message_type)
-		else:
+
+		if len(self.__queries_to_send) > BULK_MESSAGES_SIZE_LIMIT_SEND or send_now:
 			logger.debug(f"Sending bulk queries with message type {message_type.name}")
 			self.__send_message(self.__queries_to_send, QUERY_EXCHANGE)
 			self.__queries_to_send.clear()
@@ -164,7 +168,8 @@ class TwitterBot(RabbitMessaging):
 		if len(self.__events_to_send) < BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Adding event to events to send bulk list")
 			self.__add_to_bulk_list(self.__events_to_send, data, message_type)
-		else:
+
+		if len(self.__events_to_send) > BULK_MESSAGES_SIZE_LIMIT_SEND:
 			logger.debug(f"Sending bulk events with message type {message_type.name}")
 			self.__send_message(self.__events_to_send, LOG_EXCHANGE)
 			self.__events_to_send.clear()
@@ -546,14 +551,15 @@ class TwitterBot(RabbitMessaging):
 							self.__follow_first_time_users(queries=task_params['queries'])
 						else:
 							logger.warning(f"Received unknown task type: {task_type}")
-					else:
-						logger.warning("There are not new messages on the tasks's queue")
+				if not messages:
+					logger.warning("There are not new messages on the tasks's queue")
 
-						logger.info("Update the control center with the users who follow us")
-						self.__get_followers(user_id=self._id_str)
+					logger.info("Update the control center with the users who follow us")
+					self.__get_followers(user_id=self._id_str)
 
-						logger.info("Ask control center for keywords to search new tweets")
-						self.__send_query(self._twitter_api.me()._json, messages_types.BotToServer.QUERY_KEYWORDS)
-						wait(WAIT_TIME_NO_MESSAGES)
+					logger.info("Ask control center for keywords to search new tweets")
+					self.__send_query(self._twitter_api.me()._json, messages_types.BotToServer.QUERY_KEYWORDS,
+						                  send_now=True)
+					wait(WAIT_TIME_NO_MESSAGES)
 			except Exception as error:
 				logger.exception(f"Error {error} on bot's loop: ")

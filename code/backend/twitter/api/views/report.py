@@ -24,7 +24,12 @@ def create_report(request):
 
 	export = request.data['fileType']
 
-	file_dir = report.create_report(match=match, params=request.data['fields'], limit=request.data['limit'], export=export)
+	protected = 'u_protected_only' in request.data['fields']['User']
+	if protected:
+		request.data['fields']['User'].remove('u_protected_only')
+
+	file_dir = report.create_report(match=match, params=request.data['fields'], limit=request.data['limit'],
+									export=export, protected=protected)
 	result = ""
 	if file_dir:
 		with open(file_dir, "r") as file_reader:

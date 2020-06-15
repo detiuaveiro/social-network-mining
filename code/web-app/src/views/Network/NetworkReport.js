@@ -1233,6 +1233,15 @@ class NetworkReport extends Component {
                       </Col>
                     </Row>
 
+                    <Row style={{ marginTop: "10px" }}>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="u_protected_only" name="option-check" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Show Protected Users Only</Label>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
                     <hr />
 
                     <Row style={{ marginTop: "35px" }}>

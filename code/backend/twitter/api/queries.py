@@ -846,9 +846,12 @@ def twitter_sub_network(request):
 		if "limit" not in request or not request["limit"]:
 			request["limit"] = 1000
 
-		data = neo4j.export_query(Report.neo_query_builder(match, request["limit"]))
+		protected = 'u_protected_only' in request['fields']['User']
+		print(request)
+
+		data = neo4j.export_query(Report.neo_query_builder(match, request["limit"], protected))
 		return True, [process_neo4j_results(data)], \
-		       "Success obtaining a network defined by a query"
+			   "Success obtaining a network defined by a query"
 
 	except AttributeError as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
@@ -1097,7 +1100,7 @@ def relations_stats_grouped(types, accum=False):
 
 	except Exception as e:
 		logger.error(
-			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {relations_stats_grouped.__name__} -> {e}")
 		return False, None, f"Error obtaining stats grouped"
 
 
@@ -1112,7 +1115,7 @@ def rafa_is_lindo():
 		return True, "Rafa é lindo", "Success obtaining stats grouped"
 	except Exception as e:
 		logger.error(
-			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {rafa_is_lindo.__name__} -> {e}")
 		return False, None, f"Error obtaining stats grouped"
 
 
@@ -1124,7 +1127,7 @@ def general_today():
 		return True, {"data": __get_today_stats()}, "Success obtaining stats grouped"
 	except Exception as e:
 		logger.error(
-			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {general_today.__name__} -> {e}")
 		return False, None, f"Error obtaining stats grouped"
 
 
