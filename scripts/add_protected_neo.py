@@ -2,7 +2,14 @@ from pymongo import MongoClient
 from neo4j import GraphDatabase
 import os
 
-mongo = MongoClient("mongodb://localhost:27017")
+
+MONGO_URL = os.environ.get('MONGO_URL', 'localhost')
+MONGO_PORT = 27017
+MONGO_DB = os.environ.get('MONGO_DB', 'twitter')
+MONGO_USERNAME = os.environ.get('MONGO_USERNAME', 'admin')
+MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD', 'admin')
+MONGO_FULL_URL = f"{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_URL}:{MONGO_PORT}/{MONGO_DB}"
+mongo = MongoClient("mongodb://" + MONGO_FULL_URL)
 users = eval(f"mongo.twitter.users")
 
 FULL_URL = f"{os.environ.get('NEO4J_URL', 'localhost')}:7687"
