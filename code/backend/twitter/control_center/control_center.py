@@ -25,7 +25,7 @@ from wrappers.postgresql_wrapper import PostgresAPI
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(open("control_center.log", "w"))
+handler = logging.StreamHandler(open("control_center.log", "a"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
