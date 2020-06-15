@@ -20,12 +20,10 @@
 \prefrontmatter
 \include{prefrontmatter/titlepage}
 \cleartoevenpage
-\include{prefrontmatter/colophon}
-\clearforchapter
 
 \frontmatter
-\include{frontmatter/Summary}
-\include{frontmatter/Preface}
+\include{frontmatter/Keywords}
+\include{frontmatter/Abstract}
 \include{frontmatter/Acknowledgements}
 \clearforchapter
 \tableofcontents
@@ -36,14 +34,15 @@
 
 \mainmatter
 \include{chapters/Introduction}
-\blinddocument
-\include{chapters/ExampleChapter}
-\include{chapters/Analysis}
+\include{chapters/State_of_the_art}
+\include{chapters/Conceptual_modelling}
+\include{chapters/Procedure}
+\include{chapters/Results_and_discussion}
 \include{chapters/Conclusion}
 
-\appendix
-\include{appendices/Appendix}
-\include{appendices/Acronyms}
+% \appendix
+% \include{appendices/Appendix}
+% \include{appendices/Acronyms}
 
 \backmatter
 \printbibliography

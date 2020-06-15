@@ -283,28 +283,3 @@
         \AddToShipoutPictureFG*{\confidentialbox{100}} % 100% classified box in foreground on first page
     \fi
 }
-
-% DTU frieze
-\newcommand{\frieze}{%
-    \AddToShipoutPicture*{
-        \put(0,0){
-            \parbox[b][\paperheight]{\paperwidth}{%
-                %\includegraphics[trim=130mm 0 0 0,width=0.9\textwidth]{tex_DTU_frise}
-                %\vspace*{2.5cm}
-                \includegraphics[width=0.5\textwidth]{logoQIM.png}
-                \vspace*{5cm}
-            }
-        }
-    }
-}
-
-% This is a double sided book. If there is a last empty page lets use it for some fun e.g. the frieze.
-% NB: For a fully functional hack the \clearpage used in \include does some odd thinks with the sequence numbering. Thefore use \input instead of \include at the end of the book. If bibliography is used at last everything should be ok.
-\makeatletter
-% Adjust so gatherings is allowed for single sheets too! (hacking functions in memoir.dtx)
-\patchcmd{\leavespergathering}{\ifnum\@memcnta<\tw@}{\ifnum\@memcnta<\@ne}{
-    \leavespergathering{1}
-    % Insert the frieze
-    \patchcmd{\@memensuresigpages}{\repeat}{\repeat\frieze}{}{}
-}{}
-\makeatother
