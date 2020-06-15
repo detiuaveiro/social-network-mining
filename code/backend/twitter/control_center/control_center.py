@@ -1025,6 +1025,7 @@ class Control_Center:
 			log.info(f"No messages to send to {self.old_bot}")
 			return
 		try:
+			log.info(f"Sendind messages <{self.messages_to_send}>")
 			self.rabbit_wrapper.send(queue=TASKS_QUEUE_PREFIX,
 									 routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(self.old_bot),
 									 message=self.messages_to_send,
