@@ -4,7 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import logging
 import json
-import os
+from credentials import EMAIL, EMAIL_PASSWORD, EMAIL_PORT
 
 log = logging.getLogger('Email Service')
 log.setLevel(logging.DEBUG)
@@ -17,9 +17,9 @@ log.addHandler(handler)
 class Email:
 	def __init__(self):
 		self.smtp_server = "smtp.gmail.com"
-		self.sender_email = "social.network.mining.ua@gmail.com"
-		self.password = os.environ.get('MAIL_PASSWORD', '')
-		self.port = 587
+		self.sender_email = EMAIL
+		self.password = EMAIL_PASSWORD
+		self.port = EMAIL_PORT
 		self.context = ssl.create_default_context()
 
 	def send_train_started(self, receiver_email, config_file="email_service/conf/train_started.json"):
