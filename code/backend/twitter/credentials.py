@@ -58,30 +58,6 @@ QUERY_ROUTING_KEY = "queries.twitter"
 DATA_EXCHANGE = "twitter_data"
 DATA_ROUTING_KEY = "data.twitter"
 
-TWEET_EXCHANGE = "tweet_data"
-TWEET_ROUTING_KEY = "data.tweet"
-
-USER_EXCHANGE = "user_data"
-USER_ROUTING_KEY = "data.user"
-
-TWEET_LIKE_EXCHANGE = "tweet_like_data"
-TWEET_LIKE_ROUTING_KEY = "data.tweet_like"
-
-QUERY_FOLLOW_USER_EXCHANGE = "query_follow_user_data"
-QUERY_FOLLOW_USER_ROUTING_KEY = "data.query_follow_user"
-
-QUERY_TWEET_LIKE_EXCHANGE = "query_like_data"
-QUERY_TWEET_LIKE_ROUTING_KEY = "data.query_follow_user"
-
-QUERY_TWEET_RETWEET_EXCHANGE = "query_retweet_data"
-QUERY_TWEET_RETWEET_ROUTING_KEY = "data.query_follow_user"
-
-QUERY_TWEET_REPLY_EXCHANGE = "query_reply_data"
-QUERY_TWEET_REPLY_ROUTING_KEY = "data.query_follow_user"
-
-QUERY_KEYWORDS_EXCHANGE = "query_keywords_data"
-QUERY_KEYWORDS_ROUTING_KEY = "data.query_follow_user"
-
 TASK_FOLLOW_EXCHANGE = "follow_deliver"
 TASK_FOLLOW_ROUTING_KEY_PREFIX = "follow.twitter"
 TASK_FOLLOW_QUEUE = "follow"

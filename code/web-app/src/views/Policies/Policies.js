@@ -328,6 +328,103 @@ class Policies extends Component {
     });
   }
 
+  async subscribeEmail() {
+    var email = document.getElementById("email").value
+
+    function validateEmail(email) {
+      const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(String(email).toLowerCase());
+    }
+
+    if (!validateEmail(email)) {
+      toast.error('Please specify a valid email', {
+        position: "top-center",
+        autoClose: 7500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+    } else {
+      await this.setState({
+        processing: true,
+      })
+
+      var body = {
+        email: email
+      }
+
+      await fetch(baseURL + "email/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body)
+      }).then(response => {
+        if (response.ok) return response;
+        else {
+          throw new Error(response.status);
+        }
+      }).then(data => {
+        toast.success('📧 Successfully registered the email!', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        });
+      }).catch(error => {
+        console.log("error: " + error);
+        toast.error('Sorry, an error occured when registering the email!', {
+          position: "top-center",
+          autoClose: 7500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        });
+      });
+
+      await this.setState({
+        processing: false,
+      })
+
+      this.handleClose();
+    }
+
+
+    /*
+    await fetch(baseURL + "policies/numbers/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if (response.ok) return response.json();
+      else {
+        throw new Error(response.status);
+      }
+    }).then(data => {
+      if (data != null && data != {}) {
+        data = data.data
+        console.log(data)
+
+        this.setState({
+          noPolicies: data.total,
+          noActivePolicies: data.active
+        })
+      }
+    }).catch(error => {
+      console.log("error: " + error);
+      this.setState({
+        error: true,
+      })
+    });
+    */
+
+  }
+
   async componentDidMount() {
     await this.getPolicies(1, true)
     await this.getBotList(1)
@@ -487,6 +584,14 @@ class Policies extends Component {
         pauseOnHover: true,
         draggable: true
       });
+    });
+  }
+
+  handleOpenEmail() {
+    console.log("oof")
+    this.setState({
+      modal: true,
+      modalType: "EMAIL",
     });
   }
 
@@ -918,7 +1023,7 @@ class Policies extends Component {
         )
       } else {
         var modal = null
-        if (this.state.modalPolicy != null) {
+        if (this.state.modalType != null && this.state.modalType != "") {
           if (this.state.modalType == "DELETE") {
             modal = <Dialog class="fade-in"
               open={this.state.modal}
@@ -997,6 +1102,37 @@ class Policies extends Component {
                 <Button
                   onClick={() => this.handleDeactivate()}
                   color="warning"
+                  autoFocus
+                >
+                  Confirm
+                </Button>
+              </DialogActions>
+            </Dialog>
+          } else if (this.state.modalType == "EMAIL") {
+            modal = <Dialog class="fade-in"
+              open={this.state.modal}
+              onClose={() => this.handleClose()}
+              aria-labelledby="alert-dialog-title"
+              aria-describedby="alert-dialog-description"
+            >
+              <DialogTitle id="alert-dialog-title">
+                {"Register your Email to receive updates on the policies' training"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                  You'll receive emails when the policies' training starts and is completed.
+                </DialogContentText>
+                <FormGroup>
+                  <Input type="text" id="email" placeholder="Your email" required />
+                </FormGroup>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => this.handleClose()} color="danger">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => this.subscribeEmail()}
+                  color="success"
                   autoFocus
                 >
                   Confirm
@@ -1106,7 +1242,6 @@ class Policies extends Component {
               }}>
                 <div style={{ display: "inline-block" }}>
                   <Pagination count={this.state.noPages} page={this.state.curPage} onChange={this.changePage} variant="outlined" color="primary" showFirstButton showLastButton shape="rounded" />
-
                 </div>
               </div>
             </div>
@@ -1213,10 +1348,21 @@ class Policies extends Component {
                           lineHeight: "1"
                         }
                       }} > Defined Policies</h4>
-                      <Button block outline color="light" style={{
-                        width: "150px", marginTop: "15px"
-                      }} onClick={() => this.handleOpenAdd()}
-                      >Add new</Button>
+                      <Row>
+                        <Col md="2">
+                          <Button block outline color="light" style={{
+                            width: "150px", marginTop: "15px"
+                          }} onClick={() => this.handleOpenAdd()}
+                          >Add new</Button>
+                        </Col>
+
+                        <Col md="2">
+                          <Button block outline color="light" style={{
+                            width: "150px", marginTop: "15px"
+                          }} onClick={() => this.handleOpenEmail()}
+                          ><i class="far fa-envelope"></i> Register Email</Button>
+                        </Col>
+                      </Row>
 
                     </CardHeader>
                     {policies}

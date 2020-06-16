@@ -34,4 +34,4 @@ ENV NEO4J_USERNAME=$NEO4J_USERNAME
 ENV NEO4J_PASSWORD=$NEO4J_PASSWORD
 
 # run
-CMD [ "python3", "start_rest.py", "runserver", "7000" ]
+CMD [ "python3", "start_rest.py", "runserver", "0.0.0.0:7000" ]

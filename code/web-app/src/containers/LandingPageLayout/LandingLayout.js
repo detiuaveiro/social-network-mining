@@ -105,12 +105,6 @@ class LandingLayout extends Component {
                                                     <p className="mb-0"><span>available as</span> a Web-App</p>
                                                 </a>
                                             </div>
-                                            <div className="app-download-btn wow fadeInUp" data-wow-delay="0.2s">
-                                                <a href="#">
-                                                    <i className="fa fa-android"></i>
-                                                    <p className="mb-0"><span>available for</span> Android</p>
-                                                </a>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -238,13 +232,6 @@ class LandingLayout extends Component {
                                     <p>Build and analyze a network of followers, the flow of tweets and how data is spread through one of the most viral social networks.</p>
                                 </div>
                             </div>
-                            <div className="col-12 col-sm-6 col-lg-4 offset-lg-4">
-                                <div className="single-feature">
-                                    <i className="fab fa-instagram" aria-hidden="true"></i>
-                                    <h5>Instagram</h5>
-                                    <p>Find and label influencers to categorize their target audience and make better business decisions before paying for sponsorships</p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </section>
@@ -273,13 +260,13 @@ class LandingLayout extends Component {
                                     <div className="counter-area">
                                         <h3>
                                             <span className="counter">
-                                                1
+                                                3
                                             </span>
                                         </h3>
                                     </div>
                                     <div className="cool-facts-content">
                                         <i className="fas fa-robot"></i>
-                                        <p>BOTS <br /> DEPLOYED</p>
+                                        <p>BOTS</p>
                                     </div>
                                 </div>
                             </div>
@@ -288,13 +275,13 @@ class LandingLayout extends Component {
                                     <div className="counter-area">
                                         <h3>
                                             <span className="counter">
-                                                48696
+                                                >300K
                                             </span>
                                         </h3>
                                     </div>
                                     <div className="cool-facts-content">
                                         <i className="fas fa-users"></i>
-                                        <p>USERS IN <br /> NETWORK</p>
+                                        <p>USERS</p>
                                     </div>
                                 </div>
                             </div>
@@ -303,13 +290,13 @@ class LandingLayout extends Component {
                                     <div className="counter-area">
                                         <h3>
                                             <span className="counter">
-                                                3069
+                                                >500K
                                             </span>
                                         </h3>
                                     </div>
                                     <div className="cool-facts-content">
                                         <i className="far fa-comment-alt"></i>
-                                        <p>TWEETS IN<br /> NETWORK</p>
+                                        <p>TWEETS</p>
                                     </div>
                                 </div>
                             </div>
@@ -318,13 +305,13 @@ class LandingLayout extends Component {
                                     <div className="counter-area">
                                         <h3>
                                             <span className="counter">
-                                                58284
+                                                >1M
                                             </span>
                                         </h3>
                                     </div>
                                     <div className="cool-facts-content">
                                         <i className="fas fa-project-diagram"></i>
-                                        <p>RELS. IN <br />NETWORK</p>
+                                        <p>RELATIONS</p>
                                     </div>
                                 </div>
                             </div>
@@ -347,12 +334,6 @@ class LandingLayout extends Component {
                                     <a href="/dash">
                                         <i className="fa fa-globe"></i>
                                         <p className="mb-0"><span>available as</span> a Web-App</p>
-                                    </a>
-                                </div>
-                                <div className="app-download-btn2 wow fadeInUp" data-wow-delay="0.2s">
-                                    <a href="#">
-                                        <i className="fa fa-android"></i>
-                                        <p className="mb-0"><span>available for</span> Android</p>
                                     </a>
                                 </div>
                             </div>

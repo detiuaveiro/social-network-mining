@@ -7,10 +7,7 @@ import tweepy
 from bots.twitter_bot import TwitterBot
 from credentials import TASKS_EXCHANGE, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, LOG_EXCHANGE, LOG_ROUTING_KEY, \
 	QUERY_EXCHANGE, QUERY_ROUTING_KEY, DATA_EXCHANGE, DATA_ROUTING_KEY, RABBITMQ_USERNAME, RABBITMQ_PASSWORD, VHOST, \
-	RABBITMQ_FULL_HTTP_URL, TWEET_EXCHANGE, TWEET_ROUTING_KEY, USER_EXCHANGE, USER_ROUTING_KEY, TWEET_LIKE_EXCHANGE, \
-	TWEET_LIKE_ROUTING_KEY, QUERY_FOLLOW_USER_EXCHANGE, QUERY_FOLLOW_USER_ROUTING_KEY, QUERY_TWEET_LIKE_EXCHANGE, \
-	QUERY_TWEET_LIKE_ROUTING_KEY, QUERY_TWEET_RETWEET_ROUTING_KEY, QUERY_TWEET_RETWEET_EXCHANGE, \
-	QUERY_TWEET_REPLY_EXCHANGE, QUERY_TWEET_REPLY_ROUTING_KEY, QUERY_KEYWORDS_EXCHANGE, QUERY_KEYWORDS_ROUTING_KEY
+	RABBITMQ_FULL_HTTP_URL
 from tweepy.binder import bind_api
 
 
@@ -23,20 +20,6 @@ if __name__ == "__main__":
 		LOG_EXCHANGE: MessagingSettings(exchange=LOG_EXCHANGE, routing_key=LOG_ROUTING_KEY),
 		QUERY_EXCHANGE: MessagingSettings(exchange=QUERY_EXCHANGE, routing_key=QUERY_ROUTING_KEY),
 		DATA_EXCHANGE: MessagingSettings(exchange=DATA_EXCHANGE, routing_key=DATA_ROUTING_KEY),
-
-		TWEET_EXCHANGE: MessagingSettings(exchange=TWEET_EXCHANGE, routing_key=TWEET_ROUTING_KEY),
-		USER_EXCHANGE: MessagingSettings(exchange=USER_EXCHANGE, routing_key=USER_ROUTING_KEY),
-		TWEET_LIKE_EXCHANGE: MessagingSettings(exchange=TWEET_LIKE_EXCHANGE, routing_key=TWEET_LIKE_ROUTING_KEY),
-		QUERY_FOLLOW_USER_EXCHANGE: MessagingSettings(exchange=QUERY_FOLLOW_USER_EXCHANGE,
-		                                              routing_key=QUERY_FOLLOW_USER_ROUTING_KEY),
-		QUERY_TWEET_LIKE_EXCHANGE: MessagingSettings(exchange=QUERY_TWEET_LIKE_EXCHANGE,
-		                                             routing_key=QUERY_TWEET_LIKE_ROUTING_KEY),
-		QUERY_TWEET_RETWEET_EXCHANGE: MessagingSettings(exchange=QUERY_TWEET_RETWEET_EXCHANGE,
-		                                                routing_key=QUERY_TWEET_RETWEET_ROUTING_KEY),
-		QUERY_TWEET_REPLY_EXCHANGE: MessagingSettings(exchange=QUERY_TWEET_REPLY_EXCHANGE,
-		                                              routing_key=QUERY_TWEET_REPLY_ROUTING_KEY),
-		QUERY_KEYWORDS_EXCHANGE: MessagingSettings(exchange=QUERY_KEYWORDS_EXCHANGE,
-		                                           routing_key=QUERY_KEYWORDS_ROUTING_KEY),
 	}
 
 	proxy_port = os.environ.get('PROXY_PORT', '9050')

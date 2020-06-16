@@ -49,7 +49,7 @@ class Bots extends Component {
       }
     },
 
-    noUsers: 0,
+    noBots: 0,
     empty: false,
   };
 
@@ -144,6 +144,7 @@ class Bots extends Component {
         this.setState({
           error: false,
           bots: tempBots,
+          noBots: tempBots.length,
           empty: empty
         })
       }
@@ -552,6 +553,15 @@ class Bots extends Component {
             </div>
           }
 
+          var addNew = null
+
+          if (false) {
+            addNew = <Button block outline color="light" style={{
+              width: "150px", marginTop: "15px"
+            }} onClick={() => this.handleOpenAdd()}
+            >Add new</Button>
+          }
+
           users =
             <CardBody>
               <div style={{ position: "relative" }}>
@@ -614,7 +624,7 @@ class Bots extends Component {
                           marginTop: "0",
                           paddingTop: "10px",
                           marginBottom: "0"
-                        }}>Total number of active accounts</p>
+                        }}>Total number of bot accounts</p>
                         <h3 style={{
                           color: "#23282c",
                           minHeight: "auto",
@@ -625,8 +635,8 @@ class Bots extends Component {
                             lineHeight: "1"
                           }
                         }} >
-                          1/1
-                      </h3>
+                          {this.state.noBots}
+                        </h3>
                       </CardHeader>
                       <CardBody style={{ minHeight: "38px" }}>
                       </CardBody>
@@ -650,10 +660,7 @@ class Bots extends Component {
                             lineHeight: "1"
                           }
                         }} > Registered Bots</h4>
-                        <Button block outline color="light" style={{
-                          width: "150px", marginTop: "15px"
-                        }} onClick={() => this.handleOpenAdd()}
-                        >Add new</Button>
+                        {addNew}
 
                       </CardHeader>
                       {users}

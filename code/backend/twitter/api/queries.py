@@ -6,7 +6,7 @@ import api.serializers as serializers
 from api import neo4j
 import json
 from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
-from api.queries_utils import paginator_factory, paginator_factory_non_queryset
+from api.queries_utils import paginator_factory, paginator_factory_non_queryset, process_neo4j_results
 from api.views.utils import NETWORK_QUERY
 from report.report_gen import Report
 
@@ -865,9 +865,15 @@ def twitter_sub_network(request):
 			"intermediates": request["intermediate"],
 			"end": request["end"]
 		}
+		if "limit" not in request or not request["limit"]:
+			request["limit"] = 1000
 
-		return True, neo4j.export_query(Report.neo_query_builder(match, request["limit"])), \
-		       "Success obtaining a network defined by a query"
+		protected = 'u_protected_only' in request['fields']['User']
+		print(request)
+
+		data = neo4j.export_query(Report.neo_query_builder(match, request["limit"], protected))
+		return True, [process_neo4j_results(data)], \
+			   "Success obtaining a network defined by a query"
 
 	except AttributeError as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
@@ -887,7 +893,8 @@ def twitter_network():
 
 	try:
 		data = neo4j.export_query(NETWORK_QUERY)
-		return True, data, f"Success obtaining full network"
+
+		return True, [process_neo4j_results(data)], f"Success obtaining full network"
 
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_network.__name__} -> {e}")
@@ -1115,7 +1122,7 @@ def relations_stats_grouped(types, accum=False):
 
 	except Exception as e:
 		logger.error(
-			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {relations_stats_grouped.__name__} -> {e}")
 		return False, None, f"Error obtaining stats grouped"
 
 
@@ -1130,7 +1137,7 @@ def rafa_is_lindo():
 		return True, "Rafa é lindo", "Success obtaining stats grouped"
 	except Exception as e:
 		logger.error(
-			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {rafa_is_lindo.__name__} -> {e}")
 		return False, None, f"Error obtaining stats grouped"
 
 
@@ -1142,7 +1149,7 @@ def general_today():
 		return True, {"data": __get_today_stats()}, "Success obtaining stats grouped"
 	except Exception as e:
 		logger.error(
-			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {general_today.__name__} -> {e}")
 		return False, None, f"Error obtaining stats grouped"
 
 

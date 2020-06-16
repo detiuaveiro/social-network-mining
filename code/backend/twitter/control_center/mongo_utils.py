@@ -54,5 +54,5 @@ BLANK_USER = {
 	"default_profile_image": False,
 	"following": False,
 	"follow_request_sent": False,
-	"notifications": False
+	"notifications": False,
 }

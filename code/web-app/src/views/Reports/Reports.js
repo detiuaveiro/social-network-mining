@@ -540,7 +540,8 @@ class Reports extends Component {
 
     if (this.state.intermediate.type.length != 0 || this.state.intermediate.nodes.length != 0 || this.state.intermediate.relation.length != 0 || this.state.intermediate.direction.length != 0) {
       try {
-        if (this.state.intermediate.type.length != this.state.intermediate.nodes.length || this.state.intermediate.type.length != this.state.intermediate.relation.length || this.state.intermediate.nodes.length != this.state.intermediate.relation.length || this.state.intermediate.type.relation != this.state.intermediate.direction.length) {
+
+        if (this.state.intermediate.type.length != this.state.intermediate.nodes.length || this.state.intermediate.type.length != this.state.intermediate.relation.length || this.state.intermediate.nodes.length != this.state.intermediate.relation.length || this.state.intermediate.type.length != this.state.intermediate.direction.length) {
           error = true
           toast.error('You need to specify the same amount of intermediate nodes, node types, relation types and relation directions!', {
             position: "top-center",
@@ -740,6 +741,8 @@ class Reports extends Component {
     this.setState({
       processing: true
     })
+
+    console.log(search)
 
     await fetch(baseURL + "report/", {
       method: "POST",
@@ -1292,6 +1295,15 @@ class Reports extends Component {
                         <FormGroup check>
                           <Input className="form-check-input" type="checkbox" id="u_protected" name="option-check" defaultChecked />
                           <Label className="form-check-label" check htmlFor="inline-checkbox1">Is Protected</Label>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "20px" }}>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="u_protected_only" name="option-check" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Show Protected Users Only</Label>
                         </FormGroup>
                       </Col>
                     </Row>

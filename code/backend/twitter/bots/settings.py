@@ -13,7 +13,7 @@ FOLLOW_USER_ERROR_CODE = 161
 # Tweepy settings
 # -----------------------------------------------------------
 
-MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE = 2
+MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE = 5
 
 
 # -----------------------------------------------------------
@@ -27,6 +27,9 @@ REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
 # Other settings
 # -----------------------------------------------------------
 
-WAIT_TIME_BETWEEN_WORK = 60*60*2            # two hours
-WAIT_TIME_RANDOM_STOP = 60*30               # half an hour
-BOT_TTL = 60*60*24							# One day
+BULK_MESSAGES_SIZE_LIMIT_SEND = 20
+
+WAIT_TIME_BETWEEN_WORK = 60*60*3            # three hours
+WAIT_TIME_RANDOM_STOP = 60*60*0.5           # half an hour
+WAIT_TIME_NO_MESSAGES = 60*15               # 15 minutes
+BOT_TTL = 60*60*24							# one day
