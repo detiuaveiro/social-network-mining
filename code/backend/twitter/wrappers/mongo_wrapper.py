@@ -77,7 +77,6 @@ class MongoAPI:
             self.index_of_users[data["id_str"]] = len(self.list_of_users)
             self.list_of_users.append(data)
             log.debug("INSERT SUCCESSFUL")
-            log.debug(self.index_of_users)
         else:
             self.list_of_users[self.index_of_users[data["id_str"]]] = data
             log.debug("UPDATE SUCCESSFUL ON BULK INSERT")
@@ -91,7 +90,6 @@ class MongoAPI:
             self.index_of_tweets[data["id_str"]] = len(self.list_of_tweets)
             self.list_of_tweets.append(data)
             log.debug("INSERT SUCCESSFUL")
-            log.debug(self.index_of_tweets)
         else:
             self.list_of_tweets[self.index_of_tweets[data["id_str"]]] = data
             log.debug("UPDATE SUCCESSFUL ON BULK INSERT")
@@ -254,7 +252,7 @@ class MongoAPI:
                     except Exception as error2:
                         log.exception(f"ERROR <{error2}> ON TRYING TO INSERT <{user}>")
             self.list_of_users = []
-            self.index_of_users = []
+            self.index_of_users = {}
 
         log.info("Saved all users")
 
