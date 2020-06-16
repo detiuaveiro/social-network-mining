@@ -127,6 +127,7 @@ class Control_Center:
 				self.__send_keywords(message)
 
 		self.__save_dbs()
+		self.__force_send()
 
 	def follow_service_action(self, message):
 		message_type = message['type']
@@ -730,9 +731,10 @@ class Control_Center:
 		user = data['data']
 		user_id_str = user['id_str']
 
-		user_exists = self.neo4j_client.check_user_exists(user_id_str)
+		user_exists = self.neo4j_client.check_user_exists(user_id_str) \
+					  or self.neo4j_client.check_bot_exists(user_id_str)
 
-		if user_exists or 'name' not in user or not user['name']:
+		if not user_exists or 'name' not in user or not user['name']:
 			blank_user = mongo_utils.BLANK_USER.copy()
 			blank_user["id"] = user['id']
 			blank_user["id_str"] = str(user['id'])
@@ -1044,6 +1046,20 @@ class Control_Center:
 			self.old_bot = bot
 			self.messages_to_send = []
 		self.messages_to_send.append(payload)
+
+	def __force_send(self):
+		if len(self.messages_to_send) == 0:
+			log.info(f"No messages to send to {self.old_bot}")
+			return
+		try:
+			self.rabbit_wrapper.send(queue=TASKS_QUEUE_PREFIX,
+									 routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(self.old_bot),
+									 message=self.messages_to_send,
+									 father_exchange=self.exchange)
+		except Exception as error:
+			log.exception(f"Failed to send messages <{self.messages_to_send}> because of error <{error}>: ")
+			raise error
+		self.messages_to_send = []
 
 	def send_to_follow_user_service(self, message_type, params):
 		"""
