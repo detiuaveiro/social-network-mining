@@ -198,8 +198,11 @@ class TwitterBot(RabbitMessaging):
 			logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
 			self.__send_user(self.user, messages_types.BotToServer.SAVE_USER, send_now=True)
 
-			logger.info(f"Sending the last 200 followers of our bot")
-			self.__get_followers(user_id=self._id_str)
+			logger.info(f"Sending all bot followers")
+			self.__get_followers(user_id=self._id_str, get_all=True)
+
+			logger.info(f"Sending all bot friends")
+			self.__get_following(user_id=self._id_str, get_all=True)
 
 			logger.info("Reading home timeline")
 			self.__read_timeline(self.user)
@@ -366,15 +369,38 @@ class TwitterBot(RabbitMessaging):
 		if not user.protected or (user.protected and user.following):
 			self.__read_timeline(user, jump_users=False)
 
-	def __get_followers(self, user_id: str):
+	def __get_following(self, user_id: str, get_all=False):
+		"""
+		Function to get friends of some user
+
+		:param user_id: user's id of whom we want to get the friends
+		"""
+		logger.info(f"Start to get the friends of user with id {user_id}")
+
+		if get_all:
+			friends = []
+			for page in tweepy.Cursor(self._twitter_api.friends, id=user_id, count=200).pages():
+				friends += page
+		else:
+			friends = self._twitter_api.followers(id=user_id, count=200)
+
+		logger.info(f"Sending friends of user {user_id} to the control center")
+		for user in friends:
+			self.__send_user(user, messages_types.BotToServer.SAVE_USER)
+
+	def __get_followers(self, user_id: str, get_all=False):
 		"""
 		Function to get follower of some user
 
-		Note: for now, it just gets the last 200 followers per user. TODO -> get all users maybe
 		:param user_id: user's id of whom we want to get the followers
 		"""
 		logger.info(f"Start to get the followers of user with id {user_id}")
-		followers = self._twitter_api.followers(id=user_id, count=200)
+		if get_all:
+			followers = []
+			for page in tweepy.Cursor(self._twitter_api.followers, id=user_id, count=200).pages():
+				followers += page
+		else:
+			followers = self._twitter_api.followers(id=user_id, count=200)
 
 		logger.info(f"Sending followers of user {user_id} to the control center")
 		self.__send_data({
