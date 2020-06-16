@@ -33,6 +33,9 @@ class MongoAPI:
         self.list_of_tweets = []
         self.list_of_messages = []
 
+        self.index_of_users = {}
+        self.index_of_tweets = {}
+        self.index_of_messages = {}
 
     # TODO - IMPLEMENT ME PLEASE!
     def verify_integrity(self, collection, document):
@@ -70,24 +73,39 @@ class MongoAPI:
 
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
-        self.list_of_users.append(data)
-        log.debug("INSERT SUCCESSFUL")
+        if data["id_str"] not in self.index_of_users:
+            self.index_of_users[data["id_str"]] = len(self.list_of_users)
+            self.list_of_users.append(data)
+            log.debug("INSERT SUCCESSFUL")
+        else:
+            self.list_of_users[self.index_of_users[data["id_str"]]] = data
+            log.debug("UPDATE SUCCESSFUL ON BULK INSERT")
 
     def insert_tweets(self, data):
         """Inserts a new single document into our Tweets Collection
 
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
-        self.list_of_tweets.append(data)
-        log.debug("INSERT SUCCESFUL")
+        if data["id_str"] not in self.index_of_tweets:
+            self.index_of_tweets[data["id_str"]] = len(self.list_of_tweets)
+            self.list_of_tweets.append(data)
+            log.debug("INSERT SUCCESSFUL")
+        else:
+            self.list_of_tweets[self.index_of_tweets[data["id_str"]]] = data
+            log.debug("UPDATE SUCCESSFUL ON BULK INSERT")
 
     def insert_messages(self, data):
         """Inserts a new single document into our Messages Collection
 
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
-        self.list_of_messages.append(data)
-        log.debug("INSERT SUCCESFUL")
+        if data["id_str"] not in self.index_of_messages:
+            self.index_of_messages["id_str"] = len(self.list_of_messages)
+            self.list_of_messages.append(data)
+            log.debug("INSERT SUCCESSFUL")
+        else:
+            self.list_of_messages[self.index_of_messages["id_str"]] = data
+            log.debug("UPDATE SUCCESSFUL ON BULK INSERT")
 
     def update_users(self, match, new_data, all=True):
         """Updates one or many documents on Users Collection
@@ -204,23 +222,7 @@ class MongoAPI:
         except Exception as error:
             log.exception(f"ERROR <{error}> SEARCHING FOR DOCUMENT with query <{query}>: ")
 
-    def save(self):
-        """Bulk inserts the saved documents from previous inserts to the appropriate collections"""
-        if len(self.list_of_users) != 0:
-            try:
-                log.info("Users " + str(self.list_of_users))
-                self.users.insert_many(self.list_of_users)
-            except Exception as error:
-                log.exception(f"ERROR <{error}> INSERTING USERS, INSERTING ONE BY ONE")
-                for user in self.list_of_users:
-                    try:
-                        self.users.insert_one(user)
-                    except Exception as error2:
-                        log.exception(f"ERROR <{error2}> ON TRYING TO INSERT <{user}>")
-            self.list_of_users = []
-
-        log.info("Saved all users")
-
+    def save_tweets(self):
         if len(self.list_of_tweets) != 0:
             try:
                 log.info("Tweets: " + str(self.list_of_tweets))
@@ -233,17 +235,44 @@ class MongoAPI:
                     except Exception as error2:
                         log.exception(f"ERROR <{error2}> ON TRYING TO INSERT <{tweet}>")
             self.list_of_tweets = []
+            self.index_of_tweets = {}
 
         log.info("Saved all tweets")
 
+    def save_users(self):
+        if len(self.list_of_users) != 0:
+            try:
+                log.info("Users " + str(self.list_of_users))
+                self.users.insert_many(self.list_of_users)
+            except Exception as error:
+                log.exception(f"ERROR <{error}> INSERTING USERS, INSERTING ONE BY ONE")
+                for user in self.list_of_users:
+                    try:
+                        self.users.insert_one(user)
+                    except Exception as error2:
+                        log.exception(f"ERROR <{error2}> ON TRYING TO INSERT <{user}>")
+            self.list_of_users = []
+            self.index_of_users = {}
+
+        log.info("Saved all users")
+
+    def save_messages(self):
         if len(self.list_of_messages) != 0:
             try:
                 self.messages.insert_many(self.list_of_messages)
                 self.list_of_messages = []
+                self.index_of_messages = {}
             except Exception as error:
                 log.exception(f"ERROR <{error}> INSERTING MESSAGES")
 
         log.info("Saved all messages")
+
+    def save(self):
+        """Bulk inserts the saved documents from previous inserts to the appropriate collections"""
+
+        self.save_users()
+        self.save_tweets()
+        self.save_messages()
 
     def __export_data(self, data, export_type):
         """Exports a given array of documents into a csv or json
