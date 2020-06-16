@@ -225,15 +225,9 @@ class MongoAPI:
     def save_tweets(self):
         if len(self.list_of_tweets) != 0:
             try:
-                log.info("Tweets: " + str(self.list_of_tweets))
-                self.tweets.insert_many(self.list_of_tweets)
+                self.tweets.insert_many(self.list_of_tweets, ordered=False)
             except Exception as error:
                 log.exception(f"ERROR <{error}> INSERTING TWEETS, INSERTING ONE BY ONE")
-                for tweet in self.list_of_tweets:
-                    try:
-                        self.tweets.insert_one(tweet)
-                    except Exception as error2:
-                        log.exception(f"ERROR <{error2}> ON TRYING TO INSERT <{tweet}>")
             self.list_of_tweets = []
             self.index_of_tweets = {}
 
@@ -242,15 +236,9 @@ class MongoAPI:
     def save_users(self):
         if len(self.list_of_users) != 0:
             try:
-                log.info("Users " + str(self.list_of_users))
-                self.users.insert_many(self.list_of_users)
+                self.users.insert_many(self.list_of_users, ordered=False)
             except Exception as error:
                 log.exception(f"ERROR <{error}> INSERTING USERS, INSERTING ONE BY ONE")
-                for user in self.list_of_users:
-                    try:
-                        self.users.insert_one(user)
-                    except Exception as error2:
-                        log.exception(f"ERROR <{error2}> ON TRYING TO INSERT <{user}>")
             self.list_of_users = []
             self.index_of_users = {}
 
