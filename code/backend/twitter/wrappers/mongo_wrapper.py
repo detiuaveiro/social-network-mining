@@ -74,11 +74,12 @@ class MongoAPI:
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
         if data["id_str"] not in self.index_of_users:
-            self.index_of_users["id_str"] = len(self.list_of_users)
+            self.index_of_users[data["id_str"]] = len(self.list_of_users)
             self.list_of_users.append(data)
             log.debug("INSERT SUCCESSFUL")
+            log.debug(self.index_of_users)
         else:
-            self.list_of_users[self.index_of_users["id_str"]] = data
+            self.list_of_users[self.index_of_users[data["id_str"]]] = data
             log.debug("UPDATE SUCCESSFUL ON BULK INSERT")
 
     def insert_tweets(self, data):
@@ -87,11 +88,12 @@ class MongoAPI:
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
         if data["id_str"] not in self.index_of_tweets:
-            self.index_of_tweets["id_str"] = len(self.list_of_tweets)
+            self.index_of_tweets[data["id_str"]] = len(self.list_of_tweets)
             self.list_of_tweets.append(data)
             log.debug("INSERT SUCCESSFUL")
+            log.debug(self.index_of_tweets)
         else:
-            self.list_of_tweets[self.index_of_tweets["id_str"]] = data
+            self.list_of_tweets[self.index_of_tweets[data["id_str"]]] = data
             log.debug("UPDATE SUCCESSFUL ON BULK INSERT")
 
     def insert_messages(self, data):
