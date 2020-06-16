@@ -520,6 +520,11 @@ class Control_Center:
 			log.info(f"Action was already accepted recently for some bot.")
 			return
 
+		# verify if the bot already requested to follow user
+		if self.__found_in_logs(action=log_actions.FOLLOW_REQ, bot=data["bot_id_str"], target=user_id_str, max_number_hours=0):
+			log.info(f"Action was already requested by this bot.")
+			return
+
 		self.postgres_client.insert_log({
 			"bot_id": int(data["bot_id_str"]),
 			"action": log_actions.FOLLOW_REQ,
@@ -1045,7 +1050,7 @@ class Control_Center:
 			log.info(f"No messages to send to {self.old_bot}")
 			return
 		try:
-			log.info(f"Sendind messages <{self.messages_to_send}>")
+			log.info(f"Sending messages <{self.messages_to_send}>")
 			self.rabbit_wrapper.send(queue=TASKS_QUEUE_PREFIX,
 									 routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(self.old_bot),
 									 message=self.messages_to_send,
