@@ -179,3 +179,26 @@ def update_policy(request, policy_id):
 		status = HTTP_403_FORBIDDEN
 
 	return create_response(data=data, error_messages=error_messages, success_messages=success_messages, status=status)
+
+
+@api_view(["POST"])
+def add_emails(request):
+	"""
+	Args:
+		request: Http Request (ignored in this function)
+
+	Returns: Add operation status wrapped on response's object
+
+	"""
+	error_messages = []
+	success_messages = []
+	status = HTTP_200_OK
+
+	success, message = queries.add_emails(request.data)
+	if success:
+		success_messages.append(message)
+	else:
+		error_messages.append(message)
+		status = HTTP_403_FORBIDDEN
+
+	return create_response(error_messages=error_messages, success_messages=success_messages, status=status)

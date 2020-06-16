@@ -1,0 +1,5 @@
+{
+    "html" : "email_service/templates/policy_training.html",
+    "subject": "Policy in training!",
+    "text": "The policy you wanted is now being trained. You will be notified when this process has finished and as soon as bots are capable of using it!"
+}

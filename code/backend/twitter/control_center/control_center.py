@@ -139,13 +139,33 @@ class Control_Center:
 			self.__all_policies()
 		elif message_type == FollowServiceToServer.FOLLOW_USER:
 			self.__follow_user(message)
+		elif message_type == FollowServiceToServer.CHANGE_EMAIL_STATUS:
+			self.__change_email_status()
+
+	def __change_email_status(self):
+		log.debug("Changing email status")
+		updated_notifications = self.postgres_client.update_notifications_status()
+		if updated_notifications['success']:
+			log.debug("Email status changed with success")
+		else:
+			log.error(f"Email status changed not committed due to the error -> {updated_notifications['error']}")
 
 	def __all_policies(self):
 		log.debug("Obtaining all policies available")
 		policies = self.postgres_client.search_policies()
 		if policies['success']:
 			log.debug("Success obtaining all policies available")
-			self.send_to_follow_user_service(ServerToFollowService.POLICIES_KEYWORDS, policies['data'])
+
+			activated_notifications = self.postgres_client.search_notifications({"status": True})
+			if not activated_notifications['success']:
+				activated_notifications = []
+			else:
+				activated_notifications = activated_notifications['data']
+
+			self.send_to_follow_user_service(ServerToFollowService.POLICIES_KEYWORDS, {
+				'data': policies['data'],
+				'activated_notifications': activated_notifications
+			})
 		else:
 			log.error("Error obtaining all policies available")
 
@@ -534,6 +554,12 @@ class Control_Center:
 			"bot_id": int(data["bot_id_str"])
 		})
 
+		activated_notifications = self.postgres_client.search_notifications({"status": True})
+		if not activated_notifications['success']:
+			activated_notifications = []
+		else:
+			activated_notifications = activated_notifications['data']
+
 		all_policies = self.postgres_client.search_policies()
 
 		if policies['success'] and all_policies['success']:
@@ -542,7 +568,8 @@ class Control_Center:
 				'bot_id_str': data["bot_id_str"],
 				'tweets': [t['full_text'] for t in tweets],
 				'policies': policies['data'],
-				'all_policies': all_policies['data']
+				'all_policies': all_policies['data'],
+				'activated_notifications': activated_notifications
 			}
 
 			self.send_to_follow_user_service(ServerToFollowService.REQUEST_FOLLOW_USER, params)

@@ -1,0 +1,5 @@
+{
+    "html" : "email_service/templates/policy_done_training.html",
+    "subject": "Policy finished training!",
+    "text": "The policy you wanted has finished training! Bots who have been assigned to this policy will now start following its dictated behaviour."
+}
