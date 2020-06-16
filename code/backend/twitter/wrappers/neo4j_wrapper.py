@@ -346,10 +346,12 @@ class Neo4jAPI:
 	def __update_user(self, tx, data):
 		log.debug(f"UPDATING {'PROTECTED' if data['protected'] else 'UNPROTECTED'} USER")
 		try:
-			tx.run(f"MATCH (r: {USER_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
+			tx.run(f"MATCH (r: {USER_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name, r.protected=$protected"
+			       f" RETURN r",
 				   id=str(data['id']),
 				   username=data['username'] if 'username' in data else '',
-				   name=data['name'] if 'name' in data else '')
+				   name=data['name'] if 'name' in data else '',
+			       protected=data['protected'] if 'protected' in data else False)
 		except Exception as e:
 			log.exception(f"Error updating user -> {e}")
 

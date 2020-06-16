@@ -802,7 +802,7 @@ class Control_Center:
 		"""
 		log.info(f"Received bulk of tweets {data_list}")
 		for data in data_list:
-			log.info(f"Saving Tweet <{data['data']}>")
+			log.info(f"Saving Tweet with id=<{data['data']['id_str']}>")
 
 			tweet_exists = self.mongo_client.search(
 				collection="tweets",
