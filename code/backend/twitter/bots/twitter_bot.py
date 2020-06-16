@@ -115,7 +115,7 @@ class TwitterBot(RabbitMessaging):
 			'data': data
 		})
 
-	def __send_user(self, user: User, message_type: messages_types.BotToServer):
+	def __send_user(self, user: User, message_type: messages_types.BotToServer, send_now=False):
 		"""Function to send a twitter's User object to the server
 
 		:param user: user to send
@@ -125,7 +125,7 @@ class TwitterBot(RabbitMessaging):
 			logger.debug(f"Adding user {user.id} to users to send bulk list")
 			self.__add_to_bulk_list(self.__users_to_send, user._json, message_type)
 
-		if len(self.__users_to_send) >= BULK_MESSAGES_SIZE_LIMIT_SEND:
+		if len(self.__users_to_send) >= BULK_MESSAGES_SIZE_LIMIT_SEND or send_now:
 			logger.debug(f"Sending bulk users with message type {message_type.name}")
 			self.__send_message(self.__users_to_send, DATA_EXCHANGE)
 			self.__users_to_send.clear()
@@ -196,7 +196,7 @@ class TwitterBot(RabbitMessaging):
 			self._id_str = self._twitter_api.me().id_str
 
 			logger.debug(f"Sending our user <{self._id}> to {DATA_EXCHANGE}")
-			self.__send_user(self.user, messages_types.BotToServer.SAVE_USER)
+			self.__send_user(self.user, messages_types.BotToServer.SAVE_USER, send_now=True)
 
 			logger.info(f"Sending the last 200 followers of our bot")
 			self.__get_followers(user_id=self._id_str)
