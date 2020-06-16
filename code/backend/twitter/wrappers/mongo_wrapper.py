@@ -236,6 +236,7 @@ class MongoAPI:
                     except Exception as error2:
                         log.exception(f"ERROR <{error2}> ON TRYING TO INSERT <{user}>")
             self.list_of_users = []
+            self.index_of_users = []
 
         log.info("Saved all users")
 
@@ -251,6 +252,7 @@ class MongoAPI:
                     except Exception as error2:
                         log.exception(f"ERROR <{error2}> ON TRYING TO INSERT <{tweet}>")
             self.list_of_tweets = []
+            self.index_of_tweets = {}
 
         log.info("Saved all tweets")
 
@@ -258,6 +260,7 @@ class MongoAPI:
             try:
                 self.messages.insert_many(self.list_of_messages)
                 self.list_of_messages = []
+                self.index_of_messages = {}
             except Exception as error:
                 log.exception(f"ERROR <{error}> INSERTING MESSAGES")
 
