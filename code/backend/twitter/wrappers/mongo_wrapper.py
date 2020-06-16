@@ -33,6 +33,9 @@ class MongoAPI:
         self.list_of_tweets = []
         self.list_of_messages = []
 
+        self.index_of_users = {}
+        self.index_of_tweets = {}
+        self.index_of_messages = {}
 
     # TODO - IMPLEMENT ME PLEASE!
     def verify_integrity(self, collection, document):
@@ -70,24 +73,39 @@ class MongoAPI:
 
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
-        self.list_of_users.append(data)
-        log.debug("INSERT SUCCESSFUL")
+        if data["id_str"] not in self.index_of_users:
+            self.index_of_users["id_str"] = len(self.list_of_users)
+            self.list_of_users.append(data)
+            log.debug("INSERT SUCCESSFUL")
+        else:
+            self.list_of_users[self.index_of_users["id_str"]] = data
+            log.debug("UPDATE SUCCESSFUL")
 
     def insert_tweets(self, data):
         """Inserts a new single document into our Tweets Collection
 
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
-        self.list_of_tweets.append(data)
-        log.debug("INSERT SUCCESFUL")
+        if data["id_str"] not in self.index_of_tweets:
+            self.index_of_tweets["id_str"] = len(self.list_of_tweets)
+            self.list_of_tweets.append(data)
+            log.debug("INSERT SUCCESSFUL")
+        else:
+            self.list_of_tweets[self.index_of_tweets["id_str"]] = data
+            log.debug("UPDATE SUCCESSFUL")
 
     def insert_messages(self, data):
         """Inserts a new single document into our Messages Collection
 
         @param data: The document to be inserted. Should be in the form of a dictionary
         """
-        self.list_of_messages.append(data)
-        log.debug("INSERT SUCCESFUL")
+        if data["id_str"] not in self.index_of_messages:
+            self.index_of_messages["id_str"] = len(self.list_of_messages)
+            self.list_of_messages.append(data)
+            log.debug("INSERT SUCCESSFUL")
+        else:
+            self.list_of_messages[self.index_of_messages["id_str"]] = data
+            log.debug("UPDATE SUCCESSFUL")
 
     def update_users(self, match, new_data, all=True):
         """Updates one or many documents on Users Collection
