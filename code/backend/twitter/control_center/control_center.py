@@ -727,6 +727,7 @@ class Control_Center:
 
 				if 'following' in user and user['following']:
 					self.__find_followers(bot_id_str, user['id_str'])
+		self.mongo_client.save_users()
 
 	def __save_user_or_blank_user(self, data):
 		user = data['data']
@@ -909,6 +910,7 @@ class Control_Center:
 				"likes": data['data']['favorite_count'],
 				"retweets": data['data']['retweet_count']
 			})
+		self.mongo_client.save_tweets()
 
 	def save_dm(self, data):
 		"""
@@ -933,6 +935,7 @@ class Control_Center:
 					"target_id": int(data['data']['id_str'])
 				})
 				self.mongo_client.insert_messages(message)
+		self.mongo_client.save_messages()
 
 	def error(self, data):
 		"""
