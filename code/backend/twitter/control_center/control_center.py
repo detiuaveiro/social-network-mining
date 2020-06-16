@@ -756,6 +756,7 @@ class Control_Center:
 			)
 
 			data['data'] = blank_user
+			data['data']['is_blank'] = True
 
 		self.save_user([data])
 		return self.__user_type(user['id'])
@@ -775,6 +776,7 @@ class Control_Center:
 		blank_tweet["id"] = data["id"]
 		blank_tweet["id_str"] = data["id_str"]
 		blank_tweet["user"] = data["user"]
+		blank_tweet["is_blank"] = True
 
 		self.save_tweet([{
 			"bot_id": data["bot_id"],

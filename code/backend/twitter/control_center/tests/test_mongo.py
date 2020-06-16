@@ -6,9 +6,9 @@ mongo = MongoAPI()
 
 
 def test_bulk_insert():
-	for i in range(5):
+	for i in range(10000):
 		tweet = BLANK_TWEET.copy()
-		tweet_id = randint(1000000, 1000001)
+		tweet_id = randint(1000000, 2000000)
 		tweet["id"] = tweet_id
 		tweet["id_str"] = str(tweet_id)
 		mongo.insert_tweets(tweet)
