@@ -1,7 +1,11 @@
 from django.dispatch import receiver
 from wrappers.postgresql_wrapper import signal, PostgresAPI
-from api.cache_manager import cacheAPI
+import os
 import logging
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'rest.settings')
+django.setup()
 
 log = logging.getLogger('Signal Handler')
 log.setLevel(logging.DEBUG)
@@ -20,6 +24,7 @@ table_to_model = {
 
 @receiver(signal, sender=PostgresAPI)
 def postgres_update(sender, **kwargs):
+	from api.queries import update_per_table, cacheAPI
 	log.info("Updating cache")
 	model_name = table_to_model[kwargs['table_name']]
-	cacheAPI.update_per_table(model_name)
+	update_per_table(cacheAPI, model_name)

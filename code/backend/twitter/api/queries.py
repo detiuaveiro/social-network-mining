@@ -1,8 +1,6 @@
 import logging
 from datetime import datetime, timedelta
 from django.db.models import Max, Count, Sum, Q
-
-from api.cache_decorator import cache
 from api.models import *
 import api.serializers as serializers
 from api import neo4j
@@ -11,8 +9,82 @@ from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
 from api.queries_utils import paginator_factory, paginator_factory_non_queryset, process_neo4j_results
 from api.views.utils import NETWORK_QUERY
 from report.report_gen import Report
+from api.cache_manager import RedisAPI
+from api.cache_decorator import cache
+import pickle
 
 logger = logging.getLogger('queries')
+
+cacheAPI = RedisAPI()
+
+
+def update_per_table(cache_manager, model_name):
+	keys = filter(lambda k: model_name == k['model_name'],
+	              map(lambda k: pickle.loads(k), cache_manager.client.scan_iter()))
+
+	for key in keys:
+		encoded_key = pickle.dumps(key)
+		data = cache_manager.get(encoded_key)
+		func = eval(f"{key['function_name']}")
+		cache_manager.delete_key(encoded_key)
+
+		if data['pagination']:
+			status, n_data, message = func(*key['args'], **key['kwargs'])
+
+			if status:
+				new_data = {
+					'data': n_data,
+					'message': message
+				}
+
+				cache_manager.set(encoded_key, new_data)
+			else:
+				cache_manager.set(encoded_key, data)
+
+		else:
+			last_id = data['data']['last_id']
+			key['kwargs']['last_id'] = last_id
+
+			status, n_data, message = func(*key['args'], **key['kwargs'])
+			if status:
+				entries_dict = {}
+				for entry in data['data']['entries']:
+					entries_dict[entry.pop('date')] = entry
+
+				for entry in n_data['entries']:
+					date = entry.pop('date')
+					general = entry
+
+					if date not in entries_dict:
+						empty_counter = {}
+						for entity in general:
+							empty_counter[entity] = 0
+						entries_dict[date] = empty_counter
+
+					current_counter = entries_dict[date]
+					for entity in current_counter:
+						current_counter[entity] += general[entity]
+					entries_dict[date] = current_counter
+
+				entries = []
+				for date in entries_dict:
+					entries.append({
+						**entries_dict[date],
+						'date': date
+					})
+
+				new_data = {
+					'message': data['message'],
+					'data': {
+						'last_id': n_data['last_id'],
+						'entries': entries
+					},
+					'pagination': False
+				}
+
+				cache_manager.set(encoded_key, new_data)
+			else:
+				cache_manager.set(encoded_key, data)
 
 
 def next_id(model):
@@ -917,7 +989,7 @@ def latest_tweets(counter, entries_per_page, page):
 		return False, None, f"Error obtaining latest tweets"
 
 
-@cache(model_name="Log", pagination=True)
+@cache(cacheAPI, model_name="Log", pagination=True)
 def latest_activities_daily(entries_per_page, page):
 	"""
 	Args:
@@ -953,7 +1025,7 @@ def latest_activities_daily(entries_per_page, page):
 		return False, None, "Error obtaining latest bot's activities daily"
 
 
-@cache(model_name="Log", pagination=True)
+@cache(cacheAPI, model_name="Log", pagination=True)
 def latest_activities(counter, entries_per_page, page):
 	"""
 	Args:
@@ -1029,7 +1101,7 @@ def __get_today_stats(action=None):
 	return eval(query)
 
 
-@cache(model_name="Log")
+@cache(cacheAPI, model_name="Log")
 def gen_stats_grouped(types, accum=False, last_id=None):
 	"""
 	Args:
@@ -1056,7 +1128,7 @@ def gen_stats_grouped(types, accum=False, last_id=None):
 		return False, None, f"Error obtaining stats grouped"
 
 
-@cache(model_name="Log")
+@cache(cacheAPI, model_name="Log")
 def user_tweets_stats_grouped(types, accum=False, last_id=None):
 	try:
 		user_stats = __get_count_stats(types, accum, last_id['user'] if last_id else None, action='INSERT USER')
@@ -1085,7 +1157,7 @@ def user_tweets_stats_grouped(types, accum=False, last_id=None):
 		return False, None, f"Error obtaining stats grouped"
 
 
-@cache(model_name="Log")
+@cache(cacheAPI, model_name="Log")
 def relations_stats_grouped(types, accum=False, last_id=None):
 	try:
 		follow_stats = __get_count_stats(types, accum, last_id['follow'] if last_id else None, action='FOLLOW')
@@ -1096,10 +1168,10 @@ def relations_stats_grouped(types, accum=False, last_id=None):
 
 		retweet_stats = __get_count_stats(types, accum, last_id['retweet'] if last_id else None, action="RETWEET")
 
-		quote_stats = __get_count_stats(types, accum,  last_id['quote'] if last_id else None, action="TWEET QUOTE")
+		quote_stats = __get_count_stats(types, accum, last_id['quote'] if last_id else None, action="TWEET QUOTE")
 
 		data = {
-			'entries':  [],
+			'entries': [],
 			'last_id': {
 				'follow': follow_stats['last_id'],
 				'like': like_stats['last_id'],
@@ -1109,7 +1181,8 @@ def relations_stats_grouped(types, accum=False, last_id=None):
 			}
 		}
 		for date in follow_stats['entries']:
-			stats = {'date': date, 'follows': follow_stats['entries'][date], 'likes': 0, 'replies': 0, 'retweets': 0, 'quote': 0}
+			stats = {'date': date, 'follows': follow_stats['entries'][date], 'likes': 0, 'replies': 0, 'retweets': 0,
+			         'quote': 0}
 
 			if len(data['entries']) > 0 and accum:
 				stats['likes'] = data['entries'][-1]['likes']
@@ -1191,7 +1264,7 @@ def relations_today():
 		return False, None, f"Error obtaining stats grouped"
 
 
-@cache(model_name="TweetStats", pagination=True)
+@cache(cacheAPI, model_name="TweetStats", pagination=True)
 def latest_tweets_daily(entries_per_page, page):
 	"""
 	Args:
