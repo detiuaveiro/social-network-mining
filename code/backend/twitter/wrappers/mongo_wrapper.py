@@ -212,7 +212,7 @@ class MongoAPI:
                 self.users.insert_many(self.list_of_users)
             except Exception as error:
                 log.exception(f"ERROR <{error}> INSERTING USERS, INSERTING ONE BY ONE")
-                for user in self.users:
+                for user in self.list_of_users:
                     try:
                         self.users.insert_one(user)
                     except Exception as error2:
