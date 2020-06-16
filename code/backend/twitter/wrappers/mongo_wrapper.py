@@ -25,7 +25,7 @@ class MongoAPI:
         log.debug("Connecting to MongoDB")
         self.client = MongoClient("mongodb://" + credentials.MONGO_FULL_URL)
 
-        self.users = eval(f"self.client.{credentials.MONGO_DB}nem .users")
+        self.users = eval(f"self.client.{credentials.MONGO_DB}.users")
         self.tweets = eval(f"self.client.{credentials.MONGO_DB}.tweets")
         self.messages = eval(f"self.client.{credentials.MONGO_DB}.messages")
 
@@ -210,9 +210,14 @@ class MongoAPI:
             try:
                 log.info("Users " + str(self.list_of_users))
                 self.users.insert_many(self.list_of_users)
-                self.list_of_users = []
             except Exception as error:
-                log.exception(f"ERROR <{error}> INSERTING USERS")
+                log.exception(f"ERROR <{error}> INSERTING USERS, INSERTING ONE BY ONE")
+                for user in self.users:
+                    try:
+                        self.users.insert_one(user)
+                    except Exception as error2:
+                        log.exception(f"ERROR <{error2}> ON TRYING TO INSERT <{user}>")
+            self.list_of_users = []
 
         log.info("Saved all users")
 
@@ -220,9 +225,14 @@ class MongoAPI:
             try:
                 log.info("Tweets: " + str(self.list_of_tweets))
                 self.tweets.insert_many(self.list_of_tweets)
-                self.list_of_tweets = []
             except Exception as error:
-                log.exception(f"ERROR <{error}> INSERTING TWEETS")
+                log.exception(f"ERROR <{error}> INSERTING TWEETS, INSERTING ONE BY ONE")
+                for tweet in self.list_of_tweets:
+                    try:
+                        self.tweets.insert_one(tweet)
+                    except Exception as error2:
+                        log.exception(f"ERROR <{error2}> ON TRYING TO INSERT <{tweet}>")
+            self.list_of_tweets = []
 
         log.info("Saved all tweets")
 

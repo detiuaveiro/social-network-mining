@@ -25,7 +25,7 @@ from wrappers.postgresql_wrapper import PostgresAPI
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(open("control_center.log", "w"))
+handler = logging.StreamHandler(open("control_center.log", "a"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
@@ -126,6 +126,7 @@ class Control_Center:
 			elif message_type == BotToServer.QUERY_KEYWORDS:
 				self.__send_keywords(message)
 
+		log.info("Finished processing all messages")
 		self.__save_dbs()
 		self.__force_send()
 
@@ -548,7 +549,7 @@ class Control_Center:
 
 		for tweet in tweets:
 			data['data'] = tweet
-			self.save_tweet(data)
+			self.save_tweet([data])
 
 	def __follow_user(self, data):
 		"""
@@ -948,11 +949,11 @@ class Control_Center:
 				log.info(f"Save list of followers for {follower['id']}")
 
 			# add or update user in databases and its relation with our bot
-			self.save_user({
+			self.save_user([{
 				'bot_id': bot_id,
 				"bot_id_str": bot_id_str,
 				'data': follower
-			})
+			}])
 
 			self.__find_followers(follower['id_str'], user_id_str)
 
@@ -1001,21 +1002,13 @@ class Control_Center:
 		@param params: dict with arguments of the message
 		"""
 		log.info(f"Sending {message_type.name} to Bot with ID: <{bot}>")
-		log.debug(f"Content: {params}")
 		payload = {
 			'type': message_type,
 			'params': params
 		}
-		if self.old_bot != bot or len(self.messages_to_send) == 0:
+		if self.old_bot != bot:
 			if self.old_bot:
-				try:
-					self.rabbit_wrapper.send(queue=TASKS_QUEUE_PREFIX,
-											 routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot),
-											 message=self.messages_to_send,
-											 father_exchange=self.exchange)
-				except Exception as error:
-					log.exception(f"Failed to send messages <{self.messages_to_send}> because of error <{error}>: ")
-					raise error
+				self.__force_send()
 			self.old_bot = bot
 			self.messages_to_send = []
 		self.messages_to_send.append(payload)
