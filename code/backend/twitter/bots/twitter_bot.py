@@ -37,7 +37,7 @@ class TwitterBot(RabbitMessaging):
 
 		self.work_init_time = time.time()
 
-		self._redis_cache = redis.Redis(host=REDIS_URL)
+		self._redis_cache = redis.Redis(host=REDIS_HOST)
 
 		# bulk messages to send
 		self.__users_to_send = []
