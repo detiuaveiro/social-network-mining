@@ -79,7 +79,7 @@ class MongoAPI:
             log.debug("INSERT SUCCESSFUL")
         else:
             self.list_of_users[self.index_of_users["id_str"]] = data
-            log.debug("UPDATE SUCCESSFUL")
+            log.debug("UPDATE SUCCESSFUL ON BULK INSERT")
 
     def insert_tweets(self, data):
         """Inserts a new single document into our Tweets Collection
@@ -92,7 +92,7 @@ class MongoAPI:
             log.debug("INSERT SUCCESSFUL")
         else:
             self.list_of_tweets[self.index_of_tweets["id_str"]] = data
-            log.debug("UPDATE SUCCESSFUL")
+            log.debug("UPDATE SUCCESSFUL ON BULK INSERT")
 
     def insert_messages(self, data):
         """Inserts a new single document into our Messages Collection
@@ -105,7 +105,7 @@ class MongoAPI:
             log.debug("INSERT SUCCESSFUL")
         else:
             self.list_of_messages[self.index_of_messages["id_str"]] = data
-            log.debug("UPDATE SUCCESSFUL")
+            log.debug("UPDATE SUCCESSFUL ON BULK INSERT")
 
     def update_users(self, match, new_data, all=True):
         """Updates one or many documents on Users Collection
