@@ -214,7 +214,7 @@ class Rabbitmq:
         log.info('Stopping')
         self.__stop_consuming()
         log.info('Stopped')
-        time.sleep(2*len(self.channels.values()))
+        time.sleep(5*len(self.channels.values()))
         self.__connect()
 
     def __stop_consuming(self):
