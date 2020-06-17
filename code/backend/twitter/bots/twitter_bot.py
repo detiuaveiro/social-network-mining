@@ -551,8 +551,6 @@ class TwitterBot(RabbitMessaging):
 						task_type, task_params = task['type'], task['params']
 						logger.debug(f"Received task of type {messages_types.ServerToBot(task_type).name}: {task_params}")
 
-						# wait(3)
-
 						if task_type == messages_types.ServerToBot.FIND_BY_KEYWORDS:
 							logger.warning(
 								f"Not processing {messages_types.ServerToBot.FIND_BY_KEYWORDS} with {task_params}")
