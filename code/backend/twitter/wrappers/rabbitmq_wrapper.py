@@ -179,7 +179,7 @@ class Rabbitmq:
 
     def __set_prefetch(self, _unused_frame, queue, control_center):
         self.channels[queue].basic_qos(
-            prefetch_count=10, callback=functools.partial(self._receive, queue=queue, control_center=control_center))
+            prefetch_count=5, callback=functools.partial(self._receive, queue=queue, control_center=control_center))
 
     def __on_connection_open_error(self, _unused_connection, err):
         """This method is called by pika if the connection to RabbitMQ
