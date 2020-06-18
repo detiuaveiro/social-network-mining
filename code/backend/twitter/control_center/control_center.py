@@ -849,7 +849,7 @@ class Control_Center:
 				self.redis_client.set(data["data"]["id_str"], mongo_utils.BLANK if is_blank else mongo_utils.NOT_BLANK)
 				if is_blank:
 					data["data"].pop("is_blank")
-					
+
 				self.postgres_client.insert_log({
 					"bot_id": int(data["bot_id_str"]),
 					"action": log_actions.INSERT_TWEET,
