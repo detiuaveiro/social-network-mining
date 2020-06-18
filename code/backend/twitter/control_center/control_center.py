@@ -4,6 +4,7 @@ import random
 
 import pytz
 from datetime import timedelta, datetime
+import redis
 
 from control_center.text_generator import ParlaiReplier
 from control_center.translator_utils import Translator
@@ -18,7 +19,7 @@ import neo4j_labels
 from control_center import mongo_utils
 
 from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, TASK_FOLLOW_QUEUE, \
-	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE
+	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE, REDIS_URL
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
@@ -31,6 +32,7 @@ handler.setFormatter(logging.Formatter(
 log.addHandler(handler)
 
 PROBABILITY_SEARCH_KEYWORD = 0.000001
+OBJECT_TTL = 60 #Object id will be in redis for 60s
 
 
 class Control_Center:
@@ -48,6 +50,7 @@ class Control_Center:
 		self.postgres_client = PostgresAPI()
 		self.mongo_client = MongoAPI()
 		self.neo4j_client = Neo4jAPI()
+		self.redis_client = redis.Redis(host=REDIS_URL)
 		self.pep = PEP()
 		self.__utc = pytz.UTC
 
@@ -629,6 +632,10 @@ class Control_Center:
 		"""
 
 		for data in data_list:
+			data_id_in_redis = self.redis_client.get(data['data']['id_str'])
+			if data_id_in_redis and data_id_in_redis == mongo_utils.NOT_BLANK:
+				log.info("User id found in Redis")
+				continue
 
 			log.info(f"Saving User <{data['data']['id']}>")
 
@@ -690,8 +697,10 @@ class Control_Center:
 						"username": user['screen_name']
 					})
 			else:
-				if self.neo4j_client.check_user_exists(user["id_str"]):
+				if self.neo4j_client.check_user_exists(user["id_str"]) or data_id_in_redis:
 					log.info(f"User {user['id']} has already been registered in the database")
+					if "is_blank" in user:
+						user.pop("is_blank")
 					self.mongo_client.update_users(
 						match={"id_str": user['id_str']},
 						new_data=user,
@@ -709,8 +718,13 @@ class Control_Center:
 						"target_id": user['id_str']
 					})
 				else:
-					log.info(f"User {data['data']['id']} is new to the party")
-					self.mongo_client.insert_users(data["data"])
+					log.info(f"User {user['id']} is new to the party")
+					is_blank = "is_blank" in user['id'] and user['is_blank']
+					self.redis_client.set(user["id_str"], mongo_utils.BLANK if is_blank else mongo_utils.NOT_BLANK)
+					if is_blank:
+						user.pop("is_blank")
+
+					self.mongo_client.insert_users(user)
 					self.neo4j_client.add_user({
 						"id": user["id_str"],
 						"name": user['name'],
@@ -804,6 +818,11 @@ class Control_Center:
 		"""
 		log.info(f"Received bulk of tweets {data_list}")
 		for data in data_list:
+			data_id_in_redis = self.redis_client.get(data['data']['id_str'])
+			if data_id_in_redis and data_id_in_redis == mongo_utils.NOT_BLANK:
+				log.info("Tweet id found in Redis")
+				continue
+
 			log.info(f"Saving Tweet with id=<{data['data']['id_str']}>")
 
 			tweet_exists = self.mongo_client.search(
@@ -812,7 +831,7 @@ class Control_Center:
 				single=True
 			)
 
-			if tweet_exists:
+			if data_id_in_redis and tweet_exists:
 				log.info(f"Updating tweet {data['data']['id']}")
 				self.mongo_client.update_tweets(
 					match={"id_str": data["data"]['id_str']},
@@ -826,6 +845,11 @@ class Control_Center:
 					"target_id": int(data['data']['id_str'])
 				})
 			else:
+				is_blank = "is_blank" in data["data"]['id'] and data["data"]['is_blank']
+				self.redis_client.set(data["data"]["id_str"], mongo_utils.BLANK if is_blank else mongo_utils.NOT_BLANK)
+				if is_blank:
+					data["data"].pop("is_blank")
+					
 				self.postgres_client.insert_log({
 					"bot_id": int(data["bot_id_str"]),
 					"action": log_actions.INSERT_TWEET,
