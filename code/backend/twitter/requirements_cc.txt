@@ -33,3 +33,4 @@ tqdm==4.46.0
 urllib3==1.25.9
 wasabi==0.6.0
 zmq==0.0.0
+redis==3.5.2
