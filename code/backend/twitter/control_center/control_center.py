@@ -19,7 +19,7 @@ import neo4j_labels
 from control_center import mongo_utils
 
 from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, TASK_FOLLOW_QUEUE, \
-	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE, REDIS_URL
+	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE, REDIS_FULL_URL
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
@@ -50,7 +50,7 @@ class Control_Center:
 		self.postgres_client = PostgresAPI()
 		self.mongo_client = MongoAPI()
 		self.neo4j_client = Neo4jAPI()
-		self.redis_client = redis.Redis(host=REDIS_URL)
+		self.redis_client = redis.Redis(host=REDIS_FULL_URL)
 		self.pep = PEP()
 		self.__utc = pytz.UTC
 
