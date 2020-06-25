@@ -721,6 +721,7 @@ class Control_Center:
 					log.info(f"User {user['id']} is new to the party")
 					is_blank = "is_blank" in user and user['is_blank']
 					self.redis_client.set(user["id_str"], mongo_utils.BLANK if is_blank else mongo_utils.NOT_BLANK)
+					self.redis_client.expire(user["id_str"], OBJECT_TTL)
 					if is_blank:
 						user.pop("is_blank")
 
@@ -847,6 +848,7 @@ class Control_Center:
 			else:
 				is_blank = "is_blank" in data["data"] and data["data"]['is_blank']
 				self.redis_client.set(data["data"]["id_str"], mongo_utils.BLANK if is_blank else mongo_utils.NOT_BLANK)
+				self.redis_client.expire(data["data"]["id_str"], OBJECT_TTL)
 				if is_blank:
 					data["data"].pop("is_blank")
 
