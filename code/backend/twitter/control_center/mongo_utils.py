@@ -59,5 +59,5 @@ BLANK_USER = {
 	"is_blank": True
 }
 
-BLANK = 1
-NOT_BLANK = 2
+BLANK = "blank"
+NOT_BLANK = "normal"
