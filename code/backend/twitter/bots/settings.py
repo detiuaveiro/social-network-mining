@@ -27,9 +27,10 @@ REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
 # Other settings
 # -----------------------------------------------------------
 
-BULK_MESSAGES_SIZE_LIMIT_SEND = 10
+BULK_MESSAGES_SIZE_LIMIT_SEND = 8
 
 WAIT_TIME_BETWEEN_WORK = 60*60*3            # three hours
 WAIT_TIME_RANDOM_STOP = 60*60*0.5           # half an hour
 WAIT_TIME_NO_MESSAGES = 60*5                # 5 minute
-BOT_TTL = 60*60*24							# one day
+BOT_TTL = 60*60*24							# a day
+WAIT_TIME_NEW_SETUP = 60*60*24              # a day

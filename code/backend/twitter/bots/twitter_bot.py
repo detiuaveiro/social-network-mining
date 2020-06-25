@@ -36,6 +36,7 @@ class TwitterBot(RabbitMessaging):
 		self.messaging_settings = messaging_settings
 
 		self.work_init_time = time.time()
+		self.setup_init_time = time.time()
 
 		self._redis_cache = redis.Redis(host=REDIS_HOST)
 
@@ -541,6 +542,11 @@ class TwitterBot(RabbitMessaging):
 				logger.info(f"Stopping bot for {WAIT_TIME_RANDOM_STOP} seconds")
 				wait(WAIT_TIME_RANDOM_STOP)
 				self.work_init_time = time.time()
+
+			if time.time() - self.setup_init_time > WAIT_TIME_BETWEEN_WORK:
+				logger.info(f"Setting up bot")
+				self.__setup()
+				self.setup_init_time = time.time()
 
 			try:
 				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")
