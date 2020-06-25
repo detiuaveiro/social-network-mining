@@ -752,8 +752,9 @@ class Control_Center:
 		user = data['data']
 		user_id_str = user['id_str']
 
-		user_exists = self.neo4j_client.check_user_exists(user_id_str) \
-					  or self.neo4j_client.check_bot_exists(user_id_str)
+		user_exists = self.redis_client.get(user_id_str) \
+					  or self.neo4j_client.check_user_exists(user_id_str) \
+					  or self.neo4j_client.check_bot_exists(user_id_str) \
 
 		if not user_exists or 'name' not in user or not user['name']:
 			blank_user = mongo_utils.BLANK_USER.copy()
@@ -783,7 +784,9 @@ class Control_Center:
 			single=True
 		)
 
-		if tweet_exists:
+		data_id_in_redis = self.redis_client.get(data['data']['id_str'])
+
+		if tweet_exists or data_id_in_redis:
 			return
 
 		log.debug(f"Inserting blank tweet with id {data['id']}")
