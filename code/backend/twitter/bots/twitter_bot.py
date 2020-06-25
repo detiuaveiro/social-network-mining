@@ -591,5 +591,5 @@ class TwitterBot(RabbitMessaging):
 					self.__send_query(self._twitter_api.me()._json, messages_types.BotToServer.QUERY_KEYWORDS,
 						                  send_now=True)
 					wait(WAIT_TIME_NO_MESSAGES)
-			except Exception as error:
+			except Exception as error: 
 				logger.exception(f"Error {error} on bot's loop: ")
