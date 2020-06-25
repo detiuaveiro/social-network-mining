@@ -242,19 +242,28 @@ class Neo4jAPI:
 		"""Method used to save all previously inserted nodes and relations"""
 		with self.driver.session() as session:
 			for user in self.list_of_users:
-				session.write_transaction(self.__create_user, user)
+				try:
+					session.write_transaction(self.__create_user, user)
+				except Exception as error:
+					log.exception(f"Error <{error}> writing user save transaction: ")
 			self.list_of_users = []
 
 			log.info("Saved all users")
 
 			for tweet in self.list_of_tweets:
-				session.write_transaction(self.__create_tweet, tweet)
+				try:
+					session.write_transaction(self.__create_tweet, tweet)
+				except Exception as error:
+					log.exception(f"Error <{error}> writing tweet save transaction: ")
 			self.list_of_tweets = []
 
 			log.info("Saved all tweets")
 
 			for relation in self.list_of_relations:
-				session.write_transaction(self.__create_relationship, relation)
+				try:
+					session.write_transaction(self.__create_relationship, relation)
+				except Exception as error:
+					log.exception(f"Error <{error}> writing relation save transaction: ")
 			self.list_of_relations = []
 
 			log.info("Saved all relations")
@@ -346,10 +355,12 @@ class Neo4jAPI:
 	def __update_user(self, tx, data):
 		log.debug(f"UPDATING {'PROTECTED' if data['protected'] else 'UNPROTECTED'} USER")
 		try:
-			tx.run(f"MATCH (r: {USER_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name RETURN r",
+			tx.run(f"MATCH (r: {USER_LABEL} {{ id : $id }}) SET r.username=$username, r.name=$name, r.protected=$protected"
+			       f" RETURN r",
 				   id=str(data['id']),
 				   username=data['username'] if 'username' in data else '',
-				   name=data['name'] if 'name' in data else '')
+				   name=data['name'] if 'name' in data else '',
+			       protected=data['protected'] if 'protected' in data else False)
 		except Exception as e:
 			log.exception(f"Error updating user -> {e}")
 

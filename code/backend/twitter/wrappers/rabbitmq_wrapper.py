@@ -51,8 +51,8 @@ class Rabbitmq:
             port=port,
             virtual_host=vhost,
             credentials=pika_credentials,
-            heartbeat=0,
-            blocked_connection_timeout=0
+            heartbeat=10000,
+            blocked_connection_timeout=10000
         )
 
         self._connection = None
@@ -179,7 +179,7 @@ class Rabbitmq:
 
     def __set_prefetch(self, _unused_frame, queue, control_center):
         self.channels[queue].basic_qos(
-            prefetch_count=30, callback=functools.partial(self._receive, queue=queue, control_center=control_center))
+            prefetch_count=5, callback=functools.partial(self._receive, queue=queue, control_center=control_center))
 
     def __on_connection_open_error(self, _unused_connection, err):
         """This method is called by pika if the connection to RabbitMQ
@@ -214,7 +214,7 @@ class Rabbitmq:
         log.info('Stopping')
         self.__stop_consuming()
         log.info('Stopped')
-        time.sleep(2*len(self.channels.values()))
+        time.sleep(5*len(self.channels.values()))
         self.__connect()
 
     def __stop_consuming(self):
