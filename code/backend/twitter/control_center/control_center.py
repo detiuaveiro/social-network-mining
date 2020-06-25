@@ -820,6 +820,8 @@ class Control_Center:
 		log.info(f"Received bulk of tweets {data_list}")
 		for data in data_list:
 			data_id_in_redis = self.redis_client.get(data['data']['id_str'])
+			if data_id_in_redis:
+				log.info(f"Tweet id found in REDIS: {data_id_in_redis}")
 			if data_id_in_redis and data_id_in_redis == mongo_utils.NOT_BLANK:
 				log.info("Tweet id found in Redis")
 				continue
