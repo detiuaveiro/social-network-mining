@@ -282,6 +282,40 @@ class PostgresAPI:
 			self.conn.rollback()
 			return {"success": False, "error": error}
 
+	def search_notifications(self, params=None):
+		try:
+			cursor = self.conn.cursor()
+
+			query = "select notifications.email,notifications.status from notifications"
+
+			if params is not None:
+				query += " WHERE true"
+				if "email" in params.keys():
+					query += f" AND notifications.email='{params['email']}'"
+
+				if "status" in params.keys():
+					query += f" AND notifications.status={params['status']}"
+
+			cursor.execute(query)
+
+			data = cursor.fetchall()
+
+			self.conn.commit()
+			cursor.close()
+
+			result = []  # Array of jsons
+
+			for entry in data:
+				result.append({'email': entry[0], 'status': entry[1]})
+
+			return {"success": True, "data": result}
+		except psycopg2.Error as error:
+			self.conn.rollback()
+			return {"success": False, "error": error}
+		except Exception as error:
+			self.conn.rollback()
+			return {"success": False, "error": error}
+
 	def search_policies(self, params=None, limit=None):
 		"""
 		Searches and returns all policies if no data is specified, or the specific policies matching the parameters.
@@ -509,6 +543,21 @@ class PostgresAPI:
 			signal.send(sender=PostgresAPI, table_name="policies")
 			cursor.close()
 
+			return {"success": True}
+		except psycopg2.Error as error:
+			self.conn.rollback()
+			return {"success": False, "error": error}
+		except Exception as error:
+			self.conn.rollback()
+			return {"success": False, "error": error}
+
+	def update_notifications_status(self):
+		cursor = self.conn.cursor()
+		query = "update notifications set status='f' where status='t'"
+		try:
+			cursor.execute(query)
+			self.conn.commit()
+			cursor.close()
 			return {"success": True}
 		except psycopg2.Error as error:
 			self.conn.rollback()

@@ -727,17 +727,17 @@ def add_policy(data):
 			if not neo4j.check_bot_exists(str(bot_id)):
 				raise AddPolicyError("Invalid Bot's ID")
 
-		status = Policy.objects.filter(API_type=policy_serializer.data['API_type'],
-		                               filter=policy_serializer.data['filter'],
-		                               tags=policy_serializer.data['tags']).exists()
-		if status:
-			args = {"API_type": policy_serializer.data['API_type'],
-			        "filter": policy_serializer.data['filter'],
-			        "tags": policy_serializer.data['tags']}
+			if Policy.objects.filter(name=policy_serializer.data['name']).exists():
+				raise AddPolicyError("A policy with same name already exists")
 
-			raise AddPolicyError(f"A policy with similar arguments (args: {args}) is already on database ")
+			if Policy.objects.filter(Q(tags__overlap=policy_serializer.data['tags'])).exists():
+				raise AddPolicyError(
+					"Some of the policy arguments are already defined in another policy. Tags cant overlap!")
 
-		policy = Policy.objects.create(id=next_id(Policy), **policy_serializer.data)
+		data = policy_serializer.data
+		data['tags'] = list(set(data['tags']))
+
+		policy = Policy.objects.create(id=next_id(Policy), **data)
 
 		return True, {'id': policy.id}, "Success adding a new policy"
 
@@ -780,10 +780,28 @@ def update_policy(data, policy_id):
 	Returns: Update operation status wrapped on dictionary
 
 	"""
+	class UpdatePolicyError(Exception):
+		pass
+
 	try:
 		policy_obj = Policy.objects.get(id=policy_id)
 		data = dict([(key, value) for key, value in data.items() if key != 'id'])
+		if 'tags' in data:
+			data['tags'] = list(set(data['tags']))
 		policy_obj.__dict__.update(data)
+
+		new_data = serializers.Policy(policy_obj).data
+		for bot_id in new_data['bots']:
+			if not neo4j.check_bot_exists(str(bot_id)):
+				raise UpdatePolicyError("Invalid Bot's ID")
+
+		if Policy.objects.filter(Q(name=new_data['name']) & ~Q(id=policy_id)).exists():
+			raise UpdatePolicyError("A policy with same name already exists")
+
+		if Policy.objects.filter(Q(tags__overlap=new_data['tags']) & ~Q(id=policy_id)).exists():
+			raise UpdatePolicyError(
+				"Some of the policy arguments are already defined in another policy. Tags cant overlap!")
+
 		policy_obj.save()
 
 		entry = serializers.Policy(policy_obj).data
@@ -799,6 +817,10 @@ def update_policy(data, policy_id):
 	except Policy.DoesNotExist as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {update_policy.__name__} -> {e}")
 		return False, None, f"Policy (id:{policy_id}) does not exists on database"
+
+	except UpdatePolicyError as e:
+		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {update_policy.__name__} -> {e}")
+		return False, None, str(e)
 
 	except Exception as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {update_policy.__name__} -> {e}")
@@ -920,9 +942,12 @@ def twitter_sub_network(request):
 		if "limit" not in request or not request["limit"]:
 			request["limit"] = 1000
 
-		data = neo4j.export_query(Report.neo_query_builder(match, request["limit"]))
+		protected = 'u_protected_only' in request['fields']['User']
+		print(request)
+
+		data = neo4j.export_query(Report.neo_query_builder(match, request["limit"], protected))
 		return True, [process_neo4j_results(data)], \
-		       "Success obtaining a network defined by a query"
+			   "Success obtaining a network defined by a query"
 
 	except AttributeError as e:
 		logger.error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {twitter_sub_network.__name__} -> {e}")
@@ -1205,7 +1230,7 @@ def relations_stats_grouped(types, accum=False, last_id=None):
 
 	except Exception as e:
 		logger.error(
-			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {relations_stats_grouped.__name__} -> {e}")
 		return False, None, f"Error obtaining stats grouped"
 
 
@@ -1220,7 +1245,7 @@ def rafa_is_lindo():
 		return True, "Rafa é lindo", "Success obtaining stats grouped"
 	except Exception as e:
 		logger.error(
-			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {rafa_is_lindo.__name__} -> {e}")
 		return False, None, f"Error obtaining stats grouped"
 
 
@@ -1232,7 +1257,7 @@ def general_today():
 		return True, {"data": __get_today_stats()}, "Success obtaining stats grouped"
 	except Exception as e:
 		logger.error(
-			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {user_tweets_stats_grouped.__name__} -> {e}")
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {general_today.__name__} -> {e}")
 		return False, None, f"Error obtaining stats grouped"
 
 
@@ -1304,3 +1329,25 @@ def latest_tweets_daily(entries_per_page, page):
 		logger.error(
 			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {latest_tweets_daily.__name__} -> {e}")
 		return False, None, "Error obtaining latest bot's tweets daily"
+
+
+def add_emails(data):
+	"""
+	:param data: Dictionary with data to be inserted
+	Returns: Add operation status wrapped on dictionary
+	"""
+	try:
+		n_data = serializers.Notification(data=data)
+		if not n_data.is_valid():
+			return False, n_data.errors
+
+		if not Notification.objects.filter(email=n_data.data['email']).exists():
+			Notification.objects.create(email=n_data.data['email'], status=n_data.data['status'])
+		else:
+			Notification.objects.filter(email=n_data.data['email']).update(status=True)
+
+		return True, "Success adding a new email"
+	except Exception as e:
+		logger.error(
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Function {add_emails.__name__} -> {e}")
+		return False, "Error adding a new email"

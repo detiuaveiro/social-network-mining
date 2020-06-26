@@ -18,7 +18,8 @@ BLANK_TWEET = {
 	"is_quote_status": False,
 	"retweet_count": 0,
 	"favorite_count": 0,
-	"lang": ""
+	"lang": "",
+	"is_blank": True
 }
 
 BLANK_USER = {
@@ -55,4 +56,8 @@ BLANK_USER = {
 	"following": False,
 	"follow_request_sent": False,
 	"notifications": False,
+	"is_blank": True
 }
+
+BLANK = "blank"
+NOT_BLANK = "normal"

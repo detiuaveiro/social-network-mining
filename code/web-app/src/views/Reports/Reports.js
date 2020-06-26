@@ -742,6 +742,8 @@ class Reports extends Component {
       processing: true
     })
 
+    console.log(search)
+
     await fetch(baseURL + "report/", {
       method: "POST",
       headers: {
@@ -1293,6 +1295,15 @@ class Reports extends Component {
                         <FormGroup check>
                           <Input className="form-check-input" type="checkbox" id="u_protected" name="option-check" defaultChecked />
                           <Label className="form-check-label" check htmlFor="inline-checkbox1">Is Protected</Label>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "20px" }}>
+                      <Col md="2">
+                        <FormGroup check>
+                          <Input className="form-check-input" type="checkbox" id="u_protected_only" name="option-check" />
+                          <Label className="form-check-label" check htmlFor="inline-checkbox1">Show Protected Users Only</Label>
                         </FormGroup>
                       </Col>
                     </Row>

@@ -1,0 +1,50 @@
+\input{preamble/static}
+
+%!TEX TS-program = xelatex
+%!TEX root = Report.tex
+\RequirePackage[l2tabu,orthodox]{nag} % Old habits die hard
+
+\newcommand{\papersizeswitch}[3]{\ifnum\strcmp{\papersize}{#1}=0#2\else#3\fi}
+\papersizeswitch{b5paper}{\def\classfontsize{10pt}}{\def\classfontsize{12pt}}
+
+\documentclass[\classfontsize,\papersize,twoside,showtrims,extrafontsizes]{memoir}
+
+\input{preamble/general}
+\input{preamble/fonts}
+\input{preamble/etc}
+
+\addbibresource{bibliography/Bibliography.bib}
+
+\begin{document}
+
+\prefrontmatter
+\include{prefrontmatter/titlepage}
+\cleartoevenpage
+
+\frontmatter
+\include{frontmatter/Keywords}
+\include{frontmatter/Abstract}
+\include{frontmatter/Acknowledgements}
+\clearforchapter
+\tableofcontents
+\clearforchapter
+\listoffigures
+\clearforchapter
+\mylistoftodos
+
+\mainmatter
+\include{chapters/Introduction}
+\include{chapters/State_of_the_art}
+\include{chapters/Conceptual_modelling}
+\include{chapters/Procedure}
+\include{chapters/Results_and_discussion}
+\include{chapters/Conclusion}
+
+% \appendix
+% \include{appendices/Appendix}
+% \include{appendices/Acronyms}
+
+\backmatter
+\printbibliography
+
+\end{document}

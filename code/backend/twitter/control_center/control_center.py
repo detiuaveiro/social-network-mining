@@ -4,6 +4,7 @@ import random
 
 import pytz
 from datetime import timedelta, datetime
+import redis
 
 from control_center.text_generator import ParlaiReplier
 from control_center.translator_utils import Translator
@@ -18,7 +19,7 @@ import neo4j_labels
 from control_center import mongo_utils
 
 from credentials import PARLAI_URL, PARLAI_PORT, TASKS_ROUTING_KEY_PREFIX, TASKS_QUEUE_PREFIX, TASK_FOLLOW_QUEUE, \
-	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE
+	TASK_FOLLOW_ROUTING_KEY_PREFIX, SERVICE_QUERY_EXCHANGE, REDIS_URL, REDIS_PORT
 from wrappers.mongo_wrapper import MongoAPI
 from wrappers.neo4j_wrapper import Neo4jAPI
 from wrappers.postgresql_wrapper import PostgresAPI
@@ -26,12 +27,13 @@ import api.signal
 
 log = logging.getLogger('Database Writer')
 log.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(open("control_center.log", "w"))
+handler = logging.StreamHandler(open("control_center.log", "a"))
 handler.setFormatter(logging.Formatter(
 	"[%(asctime)s]:[%(levelname)s]:%(module)s - %(message)s"))
 log.addHandler(handler)
 
 PROBABILITY_SEARCH_KEYWORD = 0.000001
+OBJECT_TTL = 60 #Object id will be in redis for 60s
 
 
 class Control_Center:
@@ -49,6 +51,7 @@ class Control_Center:
 		self.postgres_client = PostgresAPI()
 		self.mongo_client = MongoAPI()
 		self.neo4j_client = Neo4jAPI()
+		self.redis_client = redis.Redis(host=REDIS_URL, port=REDIS_PORT)
 		self.pep = PEP()
 		self.__utc = pytz.UTC
 
@@ -127,7 +130,9 @@ class Control_Center:
 			elif message_type == BotToServer.QUERY_KEYWORDS:
 				self.__send_keywords(message)
 
+		log.info("Finished processing all messages")
 		self.__save_dbs()
+		self.__force_send()
 
 	def follow_service_action(self, message):
 		message_type = message['type']
@@ -138,13 +143,33 @@ class Control_Center:
 			self.__all_policies()
 		elif message_type == FollowServiceToServer.FOLLOW_USER:
 			self.__follow_user(message)
+		elif message_type == FollowServiceToServer.CHANGE_EMAIL_STATUS:
+			self.__change_email_status()
+
+	def __change_email_status(self):
+		log.debug("Changing email status")
+		updated_notifications = self.postgres_client.update_notifications_status()
+		if updated_notifications['success']:
+			log.debug("Email status changed with success")
+		else:
+			log.error(f"Email status changed not committed due to the error -> {updated_notifications['error']}")
 
 	def __all_policies(self):
 		log.debug("Obtaining all policies available")
 		policies = self.postgres_client.search_policies()
 		if policies['success']:
 			log.debug("Success obtaining all policies available")
-			self.send_to_follow_user_service(ServerToFollowService.POLICIES_KEYWORDS, policies['data'])
+
+			activated_notifications = self.postgres_client.search_notifications({"status": True})
+			if not activated_notifications['success']:
+				activated_notifications = []
+			else:
+				activated_notifications = activated_notifications['data']
+
+			self.send_to_follow_user_service(ServerToFollowService.POLICIES_KEYWORDS, {
+				'data': policies['data'],
+				'activated_notifications': activated_notifications
+			})
 		else:
 			log.error("Error obtaining all policies available")
 
@@ -499,6 +524,11 @@ class Control_Center:
 			log.info(f"Action was already accepted recently for some bot.")
 			return
 
+		# verify if the bot already requested to follow user
+		if self.__found_in_logs(action=log_actions.FOLLOW_REQ, bot=data["bot_id_str"], target=user_id_str, max_number_hours=0):
+			log.info(f"Action was already requested by this bot.")
+			return
+
 		self.postgres_client.insert_log({
 			"bot_id": int(data["bot_id_str"]),
 			"action": log_actions.FOLLOW_REQ,
@@ -533,6 +563,12 @@ class Control_Center:
 			"bot_id": int(data["bot_id_str"])
 		})
 
+		activated_notifications = self.postgres_client.search_notifications({"status": True})
+		if not activated_notifications['success']:
+			activated_notifications = []
+		else:
+			activated_notifications = activated_notifications['data']
+
 		all_policies = self.postgres_client.search_policies()
 
 		if policies['success'] and all_policies['success']:
@@ -541,14 +577,15 @@ class Control_Center:
 				'bot_id_str': data["bot_id_str"],
 				'tweets': [t['full_text'] for t in tweets],
 				'policies': policies['data'],
-				'all_policies': all_policies['data']
+				'all_policies': all_policies['data'],
+				'activated_notifications': activated_notifications
 			}
 
 			self.send_to_follow_user_service(ServerToFollowService.REQUEST_FOLLOW_USER, params)
 
 		for tweet in tweets:
 			data['data'] = tweet
-			self.save_tweet(data)
+			self.save_tweet([data])
 
 	def __follow_user(self, data):
 		"""
@@ -596,6 +633,10 @@ class Control_Center:
 		"""
 
 		for data in data_list:
+			data_id_in_redis = self.redis_client.get(data['data']['id_str'])
+			if data_id_in_redis and data_id_in_redis == mongo_utils.NOT_BLANK:
+				log.info("User id found in Redis")
+				continue
 
 			log.info(f"Saving User <{data['data']['id']}>")
 
@@ -657,8 +698,10 @@ class Control_Center:
 						"username": user['screen_name']
 					})
 			else:
-				if self.neo4j_client.check_user_exists(user["id_str"]):
+				if self.neo4j_client.check_user_exists(user["id_str"]) or data_id_in_redis:
 					log.info(f"User {user['id']} has already been registered in the database")
+					if "is_blank" in user:
+						user.pop("is_blank")
 					self.mongo_client.update_users(
 						match={"id_str": user['id_str']},
 						new_data=user,
@@ -676,8 +719,13 @@ class Control_Center:
 						"target_id": user['id_str']
 					})
 				else:
-					log.info(f"User {data['data']['id']} is new to the party")
-					self.mongo_client.insert_users(data["data"])
+					log.info(f"User {user['id']} is new to the party")
+					is_blank = "is_blank" in user and user['is_blank']
+					self.redis_client.set(user["id_str"], mongo_utils.BLANK if is_blank else mongo_utils.NOT_BLANK)
+					if is_blank:
+						user.pop("is_blank")
+
+					self.mongo_client.insert_users(user)
 					self.neo4j_client.add_user({
 						"id": user["id_str"],
 						"name": user['name'],
@@ -704,9 +752,10 @@ class Control_Center:
 		user = data['data']
 		user_id_str = user['id_str']
 
-		user_exists = self.neo4j_client.check_user_exists(user_id_str)
+		user_exists = self.neo4j_client.check_user_exists(user_id_str) \
+					  or self.neo4j_client.check_bot_exists(user_id_str)
 
-		if user_exists or 'name' not in user or not user['name']:
+		if not user_exists or 'name' not in user or not user['name']:
 			blank_user = mongo_utils.BLANK_USER.copy()
 			blank_user["id"] = user['id']
 			blank_user["id_str"] = str(user['id'])
@@ -722,6 +771,7 @@ class Control_Center:
 			)
 
 			data['data'] = blank_user
+			data['data']['is_blank'] = True
 
 		self.save_user([data])
 		return self.__user_type(user['id'])
@@ -741,6 +791,7 @@ class Control_Center:
 		blank_tweet["id"] = data["id"]
 		blank_tweet["id_str"] = data["id_str"]
 		blank_tweet["user"] = data["user"]
+		blank_tweet["is_blank"] = True
 
 		self.save_tweet([{
 			"bot_id": data["bot_id"],
@@ -768,7 +819,12 @@ class Control_Center:
 		"""
 		log.info(f"Received bulk of tweets {data_list}")
 		for data in data_list:
-			log.info(f"Saving Tweet <{data['data']}>")
+			data_id_in_redis = self.redis_client.get(data['data']['id_str'])
+			if data_id_in_redis and data_id_in_redis == mongo_utils.NOT_BLANK:
+				log.info("Tweet id found in Redis")
+				continue
+
+			log.info(f"Saving Tweet with id=<{data['data']['id_str']}>")
 
 			tweet_exists = self.mongo_client.search(
 				collection="tweets",
@@ -776,7 +832,7 @@ class Control_Center:
 				single=True
 			)
 
-			if tweet_exists:
+			if data_id_in_redis and tweet_exists:
 				log.info(f"Updating tweet {data['data']['id']}")
 				self.mongo_client.update_tweets(
 					match={"id_str": data["data"]['id_str']},
@@ -790,6 +846,11 @@ class Control_Center:
 					"target_id": int(data['data']['id_str'])
 				})
 			else:
+				is_blank = "is_blank" in data["data"] and data["data"]['is_blank']
+				self.redis_client.set(data["data"]["id_str"], mongo_utils.BLANK if is_blank else mongo_utils.NOT_BLANK)
+				if is_blank:
+					data["data"].pop("is_blank")
+
 				self.postgres_client.insert_log({
 					"bot_id": int(data["bot_id_str"]),
 					"action": log_actions.INSERT_TWEET,
@@ -947,11 +1008,11 @@ class Control_Center:
 				log.info(f"Save list of followers for {follower['id']}")
 
 			# add or update user in databases and its relation with our bot
-			self.save_user({
+			self.save_user([{
 				'bot_id': bot_id,
 				"bot_id_str": bot_id_str,
 				'data': follower
-			})
+			}])
 
 			self.__find_followers(follower['id_str'], user_id_str)
 
@@ -1000,24 +1061,31 @@ class Control_Center:
 		@param params: dict with arguments of the message
 		"""
 		log.info(f"Sending {message_type.name} to Bot with ID: <{bot}>")
-		log.debug(f"Content: {params}")
 		payload = {
 			'type': message_type,
 			'params': params
 		}
-		if self.old_bot != bot or len(self.messages_to_send) == 0:
+		if self.old_bot != bot:
 			if self.old_bot:
-				try:
-					self.rabbit_wrapper.send(queue=TASKS_QUEUE_PREFIX,
-											 routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(bot),
-											 message=self.messages_to_send,
-											 father_exchange=self.exchange)
-				except Exception as error:
-					log.exception(f"Failed to send messages <{self.messages_to_send}> because of error <{error}>: ")
-					raise error
+				self.__force_send()
 			self.old_bot = bot
 			self.messages_to_send = []
 		self.messages_to_send.append(payload)
+
+	def __force_send(self):
+		if len(self.messages_to_send) == 0:
+			log.info(f"No messages to send to {self.old_bot}")
+			return
+		try:
+			log.info(f"Sending messages <{self.messages_to_send}>")
+			self.rabbit_wrapper.send(queue=TASKS_QUEUE_PREFIX,
+									 routing_key=f"{TASKS_ROUTING_KEY_PREFIX}." + str(self.old_bot),
+									 message=self.messages_to_send,
+									 father_exchange=self.exchange)
+		except Exception as error:
+			log.exception(f"Failed to send messages <{self.messages_to_send}> because of error <{error}>: ")
+			raise error
+		self.messages_to_send = []
 
 	def send_to_follow_user_service(self, message_type, params):
 		"""

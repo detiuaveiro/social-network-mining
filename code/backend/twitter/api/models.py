@@ -141,3 +141,12 @@ class Message(djongo_models.Model):
 	class Meta:
 		managed = True
 		db_table = "messages"
+
+
+class Notification(models.Model): # create table notifications("email" text not null primary key,"status" boolean)
+	email = models.TextField(primary_key=True)
+	status = models.BooleanField()
+
+	class Meta:
+		managed = True
+		db_table = "notifications"
