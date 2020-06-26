@@ -122,7 +122,7 @@ class Dashboard extends Component {
       }
     }).then(data => {
       if (data != null && data != {}) {
-        data = data.data
+        data = data.data;
 
         var tempInfo = {}
         tempInfo['name'] = ""
@@ -234,8 +234,8 @@ class Dashboard extends Component {
         throw new Error(response.status);
       }
     }).then(data => {
-      if (data != null && data != {}) {
-        data = data.data
+      if (data != null && data != {}) {http://192.168.85.60/#/stacks
+        data = data.data;
 
         var tempTweets = []
 
@@ -327,11 +327,10 @@ class Dashboard extends Component {
       }
     }).then(data => {
       if (data != null && data != {}) {
-        data = data.data
 
-        var tempActivities = []
+        data = data.data;
 
-        console.log(data)
+        var tempActivities = [];
 
         data.entries.forEach(activity => {
           var tempInfo = []
@@ -393,7 +392,7 @@ class Dashboard extends Component {
       }
     }).then(data => {
       if (data != null && data != {}) {
-        data = data.data
+        data = data.data.entries;
 
         var tempData = []
 
@@ -437,7 +436,7 @@ class Dashboard extends Component {
       }
     }).then(data => {
       if (data != null && data != {}) {
-        data = data.data
+        data = data.data.entries;
 
         var tempData = []
 
@@ -481,7 +480,7 @@ class Dashboard extends Component {
       }
     }).then(data => {
       if (data != null && data != {}) {
-        data = data.data
+        data = data.data.entries;
 
         var tempData = []
 
@@ -516,16 +515,16 @@ class Dashboard extends Component {
   }
 
   async componentDidMount() {
-    await this.getActivityStats("month")
-    await this.getRelationStats("month")
-    await this.getEntityStats("month")
+    await this.getActivityStats("month");
+    await this.getRelationStats("month");
+    await this.getEntityStats("month");
 
-    await this.getActivities(1)
-    await this.getTweets(1)
+    await this.getActivities(1);
+    await this.getTweets(1);
 
-    await this.getTodayStats()
+    await this.getTodayStats();
 
-    console.log(this.state.todayStats)
+
 
     this.setState({
       doneLoading: true

@@ -306,7 +306,7 @@ class Statistics extends Component {
       }
     }).then(data => {
       if (data != null && data != {}) {
-        data = data.data
+        data = data.data.entries;
 
         var tempData = []
 
@@ -350,7 +350,7 @@ class Statistics extends Component {
       }
     }).then(data => {
       if (data != null && data != {}) {
-        data = data.data
+        data = data.data.entries;
 
         var tempData = []
 
@@ -394,7 +394,7 @@ class Statistics extends Component {
       }
     }).then(data => {
       if (data != null && data != {}) {
-        data = data.data
+        data = data.data.entries;
 
         var tempData = []
 
