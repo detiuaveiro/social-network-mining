@@ -43,3 +43,4 @@ uritemplate==3.0.1
 urllib3==1.25.8
 wcwidth==0.1.8
 django-redis==4.11.0
+redis==3.5.3

@@ -68,3 +68,5 @@ def process_neo4j_results(results):
 				node_id.append(node['id'])
 				nodes.append(node)
 	return {'nodes': nodes, 'rels': rels}
+
+

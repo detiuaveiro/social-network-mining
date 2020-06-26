@@ -9,8 +9,82 @@ from django.db.models.functions import ExtractMonth, ExtractYear, ExtractDay
 from api.queries_utils import paginator_factory, paginator_factory_non_queryset, process_neo4j_results
 from api.views.utils import NETWORK_QUERY
 from report.report_gen import Report
+from api.cache_manager import RedisAPI
+from api.cache_decorator import cache
+import pickle
 
 logger = logging.getLogger('queries')
+
+cacheAPI = RedisAPI()
+
+
+def update_per_table(cache_manager, model_name):
+	keys = filter(lambda k: model_name == k['model_name'],
+	              map(lambda k: pickle.loads(k), cache_manager.client.scan_iter()))
+
+	for key in keys:
+		encoded_key = pickle.dumps(key)
+		data = cache_manager.get(encoded_key)
+		func = eval(f"{key['function_name']}")
+		cache_manager.delete_key(encoded_key)
+
+		if data['pagination']:
+			status, n_data, message = func(*key['args'], **key['kwargs'])
+
+			if status:
+				new_data = {
+					'data': n_data,
+					'message': message
+				}
+
+				cache_manager.set(encoded_key, new_data)
+			else:
+				cache_manager.set(encoded_key, data)
+
+		else:
+			last_id = data['data']['last_id']
+			key['kwargs']['last_id'] = last_id
+
+			status, n_data, message = func(*key['args'], **key['kwargs'])
+			if status:
+				entries_dict = {}
+				for entry in data['data']['entries']:
+					entries_dict[entry.pop('date')] = entry
+
+				for entry in n_data['entries']:
+					date = entry.pop('date')
+					general = entry
+
+					if date not in entries_dict:
+						empty_counter = {}
+						for entity in general:
+							empty_counter[entity] = 0
+						entries_dict[date] = empty_counter
+
+					current_counter = entries_dict[date]
+					for entity in current_counter:
+						current_counter[entity] += general[entity]
+					entries_dict[date] = current_counter
+
+				entries = []
+				for date in entries_dict:
+					entries.append({
+						**entries_dict[date],
+						'date': date
+					})
+
+				new_data = {
+					'message': data['message'],
+					'data': {
+						'last_id': n_data['last_id'],
+						'entries': entries
+					},
+					'pagination': False
+				}
+
+				cache_manager.set(encoded_key, new_data)
+			else:
+				cache_manager.set(encoded_key, data)
 
 
 def next_id(model):
@@ -940,6 +1014,7 @@ def latest_tweets(counter, entries_per_page, page):
 		return False, None, f"Error obtaining latest tweets"
 
 
+@cache(cacheAPI, model_name="Log", pagination=True)
 def latest_activities_daily(entries_per_page, page):
 	"""
 	Args:
@@ -958,7 +1033,12 @@ def latest_activities_daily(entries_per_page, page):
 		data['entries'] = [serializers.Log(activity).data for activity in data['entries']]
 
 		for entry in data['entries']:
-			entry['bot_screen_name'] = User.objects.get(user_id=int(entry['id_bot'])).screen_name
+			user = User.objects.filter(user_id=int(entry['id_bot']))
+			screen_name = ''
+			if user.count() >= 1:
+				screen_name = user[0].screen_name
+
+			entry['bot_screen_name'] = screen_name
 			user_obj = User.objects.filter(user_id=int(entry['target_id']))
 			entry['target_screen_name'] = user_obj[0].screen_name if len(user_obj) > 0 else ''
 
@@ -970,6 +1050,7 @@ def latest_activities_daily(entries_per_page, page):
 		return False, None, "Error obtaining latest bot's activities daily"
 
 
+@cache(cacheAPI, model_name="Log", pagination=True)
 def latest_activities(counter, entries_per_page, page):
 	"""
 	Args:
@@ -982,13 +1063,17 @@ def latest_activities(counter, entries_per_page, page):
 
 	"""
 	try:
-		activities = Log.objects.all().order_by("-timestamp")[:counter].values()
+		activities = Log.objects.all().order_by("-timestamp")[:counter]
 
-		data = paginator_factory_non_queryset(activities, entries_per_page, page)
+		data = paginator_factory(activities, entries_per_page, page)
 		data['entries'] = [serializers.Log(activity).data for activity in data['entries']]
 
 		for entry in data['entries']:
-			entry['bot_screen_name'] = User.objects.get(user_id=int(entry['id_bot'])).screen_name
+			bot_screen_name = ''
+			bot = User.objects.filter(user_id=int(entry['id_bot']))
+			if bot.count() > 0:
+				bot_screen_name = bot[0].screen_name
+			entry['bot_screen_name'] = bot_screen_name
 			user_obj = User.objects.filter(user_id=int(entry['target_id']))
 			entry['target_screen_name'] = user_obj[0].screen_name if len(user_obj) > 0 else ''
 
@@ -1000,10 +1085,13 @@ def latest_activities(counter, entries_per_page, page):
 		return False, None, "Error obtaining latest bot's activities"
 
 
-def __get_count_stats(types, accum, action=None):
+def __get_count_stats(types, accum, last_id, action):
 	query = "Log.objects"
 	if action:
 		query += f".filter(action='{action}')"
+
+	if last_id is not None:
+		query += f".filter(id__gt={last_id})"
 
 	for group_type in types:
 		query += f".annotate({group_type}=Extract{group_type.title()}('timestamp'))"
@@ -1013,14 +1101,16 @@ def __get_count_stats(types, accum, action=None):
 	         f".annotate(activity=Count('*'))" \
 	         f".order_by({','.join(order_by_list)})"
 
-	stats = {}
+	stats = {'entries': {}, 'last_id': Log.objects.aggregate(Max('id'))['id__max']}
+
 	query_res = list(eval(query))
+
 	for index in range(len(query_res)):
 		obj = query_res[index]
 		if index > 0 and accum:
 			obj['activity'] += query_res[index - 1]['activity']
 		full_date = '/'.join(str(obj.pop(group_type)) for group_type in types)
-		stats[full_date] = obj['activity']
+		stats['entries'][full_date] = obj['activity']
 
 	return stats
 
@@ -1036,7 +1126,8 @@ def __get_today_stats(action=None):
 	return eval(query)
 
 
-def gen_stats_grouped(types, accum=False):
+@cache(cacheAPI, model_name="Log")
+def gen_stats_grouped(types, accum=False, last_id=None):
 	"""
 	Args:
 		types: Group labels (day,month,year)
@@ -1045,14 +1136,15 @@ def gen_stats_grouped(types, accum=False):
 
 	"""
 	try:
-		gen_stats = __get_count_stats(types, accum)
+		gen_stats = __get_count_stats(types, accum, last_id['gen'] if last_id else None, None)
 
-		data = []
-		for date in gen_stats:
-			stats = {'general': gen_stats[date], 'date': date}
+		data = {'entries': [], 'last_id': {
+			'gen': gen_stats['last_id']
+		}}
+		for date in gen_stats['entries']:
+			stats = {'general': gen_stats['entries'][date], 'date': date}
 
-			data.append(stats)
-
+			data['entries'].append(stats)
 		return True, data, f"Success obtaining stats grouped"
 
 	except Exception as e:
@@ -1061,21 +1153,26 @@ def gen_stats_grouped(types, accum=False):
 		return False, None, f"Error obtaining stats grouped"
 
 
-def user_tweets_stats_grouped(types, accum=False):
+@cache(cacheAPI, model_name="Log")
+def user_tweets_stats_grouped(types, accum=False, last_id=None):
 	try:
-		user_stats = __get_count_stats(types, accum, action='INSERT USER')
+		user_stats = __get_count_stats(types, accum, last_id['user'] if last_id else None, action='INSERT USER')
 
-		tweet_stats = __get_count_stats(types, accum, action='INSERT TWEET')
+		tweet_stats = __get_count_stats(types, accum, last_id['tweet'] if last_id else None, action='INSERT TWEET')
 
-		data = []
-		for date in user_stats:
-			stats = {'date': date, 'users': user_stats[date], 'tweets': 0}
-			if len(data) > 0 and accum:
-				stats['tweets'] = data[-1]['tweets']
+		data = {'entries': [], 'last_id': {
+			'user': user_stats['last_id'],
+			'tweet': tweet_stats['last_id']
+		}}
 
-			if date in tweet_stats:
-				stats['tweets'] = tweet_stats[date]
-			data.append(stats)
+		for date in user_stats['entries']:
+			stats = {'date': date, 'users': user_stats['entries'][date], 'tweets': 0}
+			if len(data['entries']) > 0 and accum:
+				stats['tweets'] = data['entries'][-1]['tweets']
+
+			if date in tweet_stats['entries']:
+				stats['tweets'] = tweet_stats['entries'][date]
+			data['entries'].append(stats)
 
 		return True, data, f"Success obtaining stats grouped"
 
@@ -1085,38 +1182,49 @@ def user_tweets_stats_grouped(types, accum=False):
 		return False, None, f"Error obtaining stats grouped"
 
 
-def relations_stats_grouped(types, accum=False):
+@cache(cacheAPI, model_name="Log")
+def relations_stats_grouped(types, accum=False, last_id=None):
 	try:
-		follow_stats = __get_count_stats(types, accum, action='FOLLOW')
+		follow_stats = __get_count_stats(types, accum, last_id['follow'] if last_id else None, action='FOLLOW')
 
-		like_stats = __get_count_stats(types, accum, action="TWEET LIKE")
+		like_stats = __get_count_stats(types, accum, last_id['like'] if last_id else None, action="TWEET LIKE")
 
-		reply_stats = __get_count_stats(types, accum, action="TWEET REPLY")
+		reply_stats = __get_count_stats(types, accum, last_id['reply'] if last_id else None, action="TWEET REPLY")
 
-		retweet_stats = __get_count_stats(types, accum, action="RETWEET")
+		retweet_stats = __get_count_stats(types, accum, last_id['retweet'] if last_id else None, action="RETWEET")
 
-		quote_stats = __get_count_stats(types, accum, action="TWEET QUOTE")
+		quote_stats = __get_count_stats(types, accum, last_id['quote'] if last_id else None, action="TWEET QUOTE")
 
-		data = []
-		for date in follow_stats:
-			stats = {'date': date, 'follows': follow_stats[date], 'likes': 0, 'replies': 0, 'retweets': 0, 'quote': 0}
+		data = {
+			'entries': [],
+			'last_id': {
+				'follow': follow_stats['last_id'],
+				'like': like_stats['last_id'],
+				'reply': reply_stats['last_id'],
+				'retweet': retweet_stats['last_id'],
+				'quote': quote_stats['last_id']
+			}
+		}
+		for date in follow_stats['entries']:
+			stats = {'date': date, 'follows': follow_stats['entries'][date], 'likes': 0, 'replies': 0, 'retweets': 0,
+			         'quote': 0}
 
-			if len(data) > 0 and accum:
-				stats['likes'] = data[-1]['likes']
-				stats['replies'] = data[-1]['replies']
-				stats['retweets'] = data[-1]['retweets']
-				stats['quote'] = data[-1]['quote']
+			if len(data['entries']) > 0 and accum:
+				stats['likes'] = data['entries'][-1]['likes']
+				stats['replies'] = data['entries'][-1]['replies']
+				stats['retweets'] = data['entries'][-1]['retweets']
+				stats['quote'] = data['entries'][-1]['quote']
 
-			if date in like_stats:
-				stats['likes'] = like_stats[date]
-			if date in reply_stats:
-				stats['replies'] = reply_stats[date]
-			if date in retweet_stats:
-				stats['retweets'] = retweet_stats[date]
-			if date in quote_stats:
-				stats['quote'] = quote_stats[date]
+			if date in like_stats['entries']:
+				stats['likes'] = like_stats['entries'][date]
+			if date in reply_stats['entries']:
+				stats['replies'] = reply_stats['entries'][date]
+			if date in retweet_stats['entries']:
+				stats['retweets'] = retweet_stats['entries'][date]
+			if date in quote_stats['entries']:
+				stats['quote'] = quote_stats['entries'][date]
 
-			data.append(stats)
+			data['entries'].append(stats)
 
 		return True, data, f"Success obtaining stats grouped"
 
@@ -1181,6 +1289,7 @@ def relations_today():
 		return False, None, f"Error obtaining stats grouped"
 
 
+@cache(cacheAPI, model_name="TweetStats", pagination=True)
 def latest_tweets_daily(entries_per_page, page):
 	"""
 	Args:
@@ -1196,8 +1305,24 @@ def latest_tweets_daily(entries_per_page, page):
 		                                   & Q(timestamp__lte=datetime.now())).order_by("-timestamp")
 
 		data = paginator_factory(tweets, entries_per_page, page)
-		tweet_list = [serializers.TweetStats(tweet).data["tweet_id"] for tweet in data['entries']]
-		data['entries'] = [serializers.Tweet(Tweet.objects.get(tweet_id=tweet)).data for tweet in tweet_list]
+		tweet_list = [serializers.TweetStats(tweet).data for tweet in data['entries']]
+		serialized_entries = []
+
+		for tweet in tweet_list:
+			entry = Tweet.objects.filter(tweet_id=tweet["tweet_id"])
+			if entry.count() == 0:
+				kwargs = {
+					"tweet_id": str(tweet['tweet_id']),
+					"user": {
+						"id": tweet['user_id'],
+						"id_str": str(tweet['user_id'])
+					}
+				}
+				entry = [Tweet(**kwargs)]
+			serialized_entries.append(serializers.Tweet(entry[0]).data)
+
+		data['entries'] = serialized_entries
+
 		return True, data, "Success obtaining latest bot's tweets daily"
 
 	except Exception as e:
