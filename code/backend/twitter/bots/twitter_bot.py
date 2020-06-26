@@ -543,7 +543,7 @@ class TwitterBot(RabbitMessaging):
 				wait(WAIT_TIME_RANDOM_STOP)
 				self.work_init_time = time.time()
 
-			if time.time() - self.setup_init_time > WAIT_TIME_BETWEEN_WORK:
+			if time.time() - self.setup_init_time > WAIT_TIME_NEW_SETUP:
 				logger.info(f"Setting up bot")
 				self.__setup()
 				self.setup_init_time = time.time()
