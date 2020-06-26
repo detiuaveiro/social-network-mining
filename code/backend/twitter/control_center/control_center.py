@@ -633,7 +633,7 @@ class Control_Center:
 
 		for data in data_list:
 			data_id_in_redis = self.redis_client.get(data['data']['id_str'])
-			if data_id_in_redis and data_id_in_redis == mongo_utils.NOT_BLANK:
+			if data_id_in_redis and data_id_in_redis.decode("utf-8") == mongo_utils.NOT_BLANK:
 				log.info("User id found in Redis")
 				continue
 
@@ -721,6 +721,7 @@ class Control_Center:
 					log.info(f"User {user['id']} is new to the party")
 					is_blank = "is_blank" in user and user['is_blank']
 					self.redis_client.set(user["id_str"], mongo_utils.BLANK if is_blank else mongo_utils.NOT_BLANK)
+					self.redis_client.expire(user["id_str"], OBJECT_TTL)
 					if is_blank:
 						user.pop("is_blank")
 
@@ -751,8 +752,9 @@ class Control_Center:
 		user = data['data']
 		user_id_str = user['id_str']
 
-		user_exists = self.neo4j_client.check_user_exists(user_id_str) \
-					  or self.neo4j_client.check_bot_exists(user_id_str)
+		user_exists = self.redis_client.get(user_id_str) \
+					  or self.neo4j_client.check_user_exists(user_id_str) \
+					  or self.neo4j_client.check_bot_exists(user_id_str) \
 
 		if not user_exists or 'name' not in user or not user['name']:
 			blank_user = mongo_utils.BLANK_USER.copy()
@@ -782,7 +784,9 @@ class Control_Center:
 			single=True
 		)
 
-		if tweet_exists:
+		data_id_in_redis = self.redis_client.get(data['data']['id_str'])
+
+		if tweet_exists or data_id_in_redis:
 			return
 
 		log.debug(f"Inserting blank tweet with id {data['id']}")
@@ -819,7 +823,9 @@ class Control_Center:
 		log.info(f"Received bulk of tweets {data_list}")
 		for data in data_list:
 			data_id_in_redis = self.redis_client.get(data['data']['id_str'])
-			if data_id_in_redis and data_id_in_redis == mongo_utils.NOT_BLANK:
+			if data_id_in_redis:
+				log.info(f"Tweet id found in REDIS: {data_id_in_redis}")
+			if data_id_in_redis and data_id_in_redis.decode("utf-8") == mongo_utils.NOT_BLANK:
 				log.info("Tweet id found in Redis")
 				continue
 
@@ -847,6 +853,7 @@ class Control_Center:
 			else:
 				is_blank = "is_blank" in data["data"] and data["data"]['is_blank']
 				self.redis_client.set(data["data"]["id_str"], mongo_utils.BLANK if is_blank else mongo_utils.NOT_BLANK)
+				self.redis_client.expire(data["data"]["id_str"], OBJECT_TTL)
 				if is_blank:
 					data["data"].pop("is_blank")
 

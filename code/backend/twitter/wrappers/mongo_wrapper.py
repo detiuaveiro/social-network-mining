@@ -2,6 +2,7 @@
 # coding: UTF-8
 
 from pymongo import MongoClient
+from pymongo.errors import BulkWriteError
 import logging
 import json
 import credentials as credentials
@@ -226,6 +227,8 @@ class MongoAPI:
         if len(self.list_of_tweets) != 0:
             try:
                 self.tweets.insert_many(self.list_of_tweets, ordered=False)
+            except BulkWriteError as bwe:
+                log.exception(f"BULK ERRORS OCCURRED: <{bwe.details}>")
             except Exception as error:
                 log.exception(f"ERROR <{error}> INSERTING TWEETS, INSERTING ONE BY ONE")
             self.list_of_tweets = []
@@ -237,6 +240,8 @@ class MongoAPI:
         if len(self.list_of_users) != 0:
             try:
                 self.users.insert_many(self.list_of_users, ordered=False)
+            except BulkWriteError as bwe:
+                log.exception(f"BULK ERRORS OCCURRED: <{bwe.details}>")
             except Exception as error:
                 log.exception(f"ERROR <{error}> INSERTING USERS, INSERTING ONE BY ONE")
             self.list_of_users = []
