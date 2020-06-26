@@ -25,7 +25,7 @@ def load():
 		for group_type in ['day', 'month', 'year']:
 			path = f"{BASE_URL}/{url}/{group_type}"
 			response = requests.get(path)
-			if response.status_code:
+			if response.status_code == 200:
 				log.info(f"{path} -> Success")
 			else:
 				log.error(f"{path} -> Error")
