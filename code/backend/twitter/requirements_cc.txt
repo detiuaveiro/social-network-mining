@@ -35,3 +35,6 @@ wasabi==0.6.0
 zmq==0.0.0
 redis==3.5.2
 Django==2.2.11
+django-cors-headers==3.2.1
+django-rest-swagger==2.2.0
+djangorestframework==3.11.0
