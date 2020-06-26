@@ -210,6 +210,14 @@ class Policies extends Component {
 
           if (policy.active) {
             tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Active</Badge>)
+            tempInfo.push(null)
+          }else{
+            tempInfo.push(<Badge pill color="info" style={{ fontSize: "11px" }}>In Training</Badge>)
+            tempInfo.push(null)
+          }
+          /*
+          if (policy.active) {
+            tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Active</Badge>)
             tempInfo.push(
               <Button block outline color="warning"
                 onClick={() =>
@@ -231,6 +239,7 @@ class Policies extends Component {
               </Button>
             )
           }
+          */
 
           tempInfo.push(<Button block outline color="danger"
             onClick={() =>
@@ -731,7 +740,16 @@ class Policies extends Component {
           }
 
           tempInfo.push(bots)
+          if (policy.active) {
+            tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Active</Badge>)
+            tempInfo.push(null)
+          }else{
+            tempInfo.push(<Badge pill color="info" style={{ fontSize: "11px" }}>In Training</Badge>)
+            tempInfo.push(null)
+          }
+          /*
 
+          /* REMOVE COMMENT IF POLICIES END UP BEING PAUSABLE
           if (policy.active) {
             tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Active</Badge>)
             tempInfo.push(
@@ -755,6 +773,7 @@ class Policies extends Component {
               </Button>
             )
           }
+          */
 
           tempInfo.push(<Button block outline color="danger"
             onClick={() =>

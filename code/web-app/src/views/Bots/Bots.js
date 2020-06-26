@@ -88,6 +88,7 @@ class Bots extends Component {
           tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Active</Badge>);
 
           //TODO: change for if active
+          /*
           if (true) {
             tempInfo.push(
               <Button block outline color="warning"
@@ -109,6 +110,7 @@ class Bots extends Component {
               </Button>
             )
           }
+          
 
           tempInfo.push(
             <Button block outline color="danger"
@@ -119,6 +121,7 @@ class Bots extends Component {
               <i class="far fa-trash-alt"></i>
             </Button>
           )
+          */
 
           tempInfo.push(
             <Button block outline color="primary"
@@ -546,7 +549,7 @@ class Bots extends Component {
               }}>
               <Table
                 tableHeaderColor="primary"
-                tableHead={["Username", "Name", "Followers", "Following", "Status", "", "", ""]}
+                tableHead={["Username", "Name", "Followers", "Following", "Status", ""]}
                 tableData={this.state.bots}
               />
 

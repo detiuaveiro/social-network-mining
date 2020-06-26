@@ -817,7 +817,7 @@ class BotProfile extends Component {
 
         //TODO: ADD FAILURE OPTION
         if (true) {
-            toast.success('🐦 New tweet successfully posted!', {
+            toast.info('🐦 Sorry this feature has not yet been made available. Please stay tuned for updates!', {
                 position: "top-center",
                 autoClose: 2500,
                 hideProgressBar: false,
