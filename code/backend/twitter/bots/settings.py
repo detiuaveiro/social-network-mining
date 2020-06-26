@@ -13,7 +13,7 @@ FOLLOW_USER_ERROR_CODE = 161
 # Tweepy settings
 # -----------------------------------------------------------
 
-MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE = 5
+MAX_NUMBER_TWEETS_RETRIEVE_TIMELINE = 3
 
 
 # -----------------------------------------------------------
@@ -31,6 +31,6 @@ BULK_MESSAGES_SIZE_LIMIT_SEND = 8
 
 WAIT_TIME_BETWEEN_WORK = 60*60*3            # three hours
 WAIT_TIME_RANDOM_STOP = 60*60*0.5           # half an hour
-WAIT_TIME_NO_MESSAGES = 60*5                # 5 minute
+WAIT_TIME_NO_MESSAGES = 60*5                # 5 minutes
 BOT_TTL = 60*60*24							# a day
 WAIT_TIME_NEW_SETUP = 60*60*24              # a day
