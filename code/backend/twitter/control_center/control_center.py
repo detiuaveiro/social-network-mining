@@ -33,7 +33,7 @@ handler.setFormatter(logging.Formatter(
 log.addHandler(handler)
 
 PROBABILITY_SEARCH_KEYWORD = 0.000001
-OBJECT_TTL = 60 # Object id will be in redis for 60s
+OBJECT_TTL = 120 # Object id will be in redis for 60s
 
 
 class Control_Center:
