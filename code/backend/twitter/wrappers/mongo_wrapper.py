@@ -246,7 +246,7 @@ class MongoAPI:
             try:
                 self.users.insert_many(self.list_of_users, ordered=False)
             except BulkWriteError as bwe:
-                log.exception(f"BULK ERRORS OCCURRED: <{bwe.details}>")
+                log.exception(f"BULK ERRORS OCCURRED: <{bwe.details['writeErrors'][0]['errmsg']}>")
             except Exception as error:
                 log.exception(f"ERROR <{error}> INSERTING USERS, INSERTING ONE BY ONE")
             self.list_of_users = []
