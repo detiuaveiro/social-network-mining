@@ -33,7 +33,7 @@ handler.setFormatter(logging.Formatter(
 log.addHandler(handler)
 
 PROBABILITY_SEARCH_KEYWORD = 0.000001
-OBJECT_TTL = 600 #Object id will be in redis for 600s
+OBJECT_TTL = 300 #Object id will be in redis for 600s
 
 
 class Control_Center:
@@ -838,7 +838,7 @@ class Control_Center:
 				single=True
 			)
 
-			if data_id_in_redis and tweet_exists:
+			if data_id_in_redis or tweet_exists:
 				log.info(f"Updating tweet {data['data']['id']}")
 				self.mongo_client.update_tweets(
 					match={"id_str": data["data"]['id_str']},
