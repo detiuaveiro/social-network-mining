@@ -131,7 +131,7 @@ class Report:
 											 fields=params[node_type], single=True)
 			if mongo_info:
 				return mongo_info
-			return {param: None for param in params[node_type]}
+			return dict.fromkeys(params[node_type], None)
 		return None
 
 	@staticmethod
@@ -155,11 +155,11 @@ class Report:
 	@staticmethod
 	def query_builder(query, node):
 		node_label = node["labels"][0]
-		if node_label == TWEET_LABEL:
+		if node_label == TWEET_LABEL and node["properties"]["id"] not in query["Tweet"]:
 			query["Tweet"].append(node["properties"]["id"])
-		elif node_label == USER_LABEL:
+		elif node_label == USER_LABEL and node["properties"]["id"] not in query["User"]:
 			query["User"].append(node["properties"]["id"])
-		elif node_label == BOT_LABEL:
+		elif node_label == BOT_LABEL and node["properties"]["id"] not in query["Bot"]:
 			query["Bot"].append(node["properties"]["id"])
 
 	@staticmethod
@@ -196,9 +196,7 @@ class Report:
 
 		if "intermediates" in match:
 			intermediates = match["intermediates"]
-			print(intermediates)
 			for interm in range(len(intermediates["types"])):
-				print(intermediates["types"])
 				query += f"{Report.node_builder(intermediates['types'][interm], intermediates['nodes'][interm], protected)}" \
 						 f"{Report.relation_builder(intermediates['relations'][interm], intermediates['directions'][interm])}"
 
@@ -226,7 +224,7 @@ class Report:
 
 		logger.info(f"It took <{time() - start}>s to get the network")
 
-		query_for_mongo = {key: [] for key in params}
+		query_for_mongo = dict.fromkeys(params, [])
 
 		keep_track_places = {}
 
@@ -241,7 +239,7 @@ class Report:
 				node_start = relations[0]["start"]
 				Report.query_builder(query_for_mongo, node_start)
 				Report.add_to_keep_track(keep_track_places, node_start["properties"]["id"], (row_index, "start"))
-				relation["start"] = {param: None for param in params[node_start["labels"][0]]}
+				relation["start"] = dict.fromkeys(params[node_start["labels"][0]], None)
 				relation["start"]["id_str"] = node_start["properties"]["id"]
 				relation["start"]["label"] = node_start["labels"][0]
 
@@ -251,7 +249,7 @@ class Report:
 				Report.query_builder(query_for_mongo, rel["end"])
 				Report.add_to_keep_track(keep_track_places, rel["end"]["properties"]["id"],
 									(row_index, "interm" + str(index + 1)))
-				relation["interm" + str(index+1)] = {param: None for param in params[rel["end"]["labels"][0]]}
+				relation["interm" + str(index+1)] = dict.fromkeys(params[rel["end"]["labels"][0]], None)
 				relation["interm" + str(index + 1)]["id_str"] = rel["end"]["properties"]["id"]
 				relation["interm" + str(index + 1)]["label"] = rel["end"]["labels"][0]
 
@@ -261,7 +259,7 @@ class Report:
 			node_end = row['r']['nodes'][-1]
 			Report.query_builder(query_for_mongo, node_end)
 			Report.add_to_keep_track(keep_track_places, node_end["properties"]["id"], (row_index, "end"))
-			relation["end"] = {param: None for param in params[node_end["labels"][0]]}
+			relation["end"] = dict.fromkeys(params[node_end["labels"][0]], None)
 			relation["end"]["id_str"] = node_end["properties"]["id"]
 			relation["end"]["label"] = node_end["labels"][0]
 
@@ -303,10 +301,6 @@ if __name__ == '__main__':
 		'User': ['name', 'screen_name', 'followers_count', "id_str"],
 		'Bot': ['name', 'screen_name', 'friends_count', "id_str"]
 	}
-
-	#for export_type in Report.ExportType:
-	#	print(export_type)
-	#	rep.create_report(query, params, export=export_type)
 
 	# Test intermediates
 	query2 = {
