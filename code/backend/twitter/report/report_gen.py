@@ -155,11 +155,11 @@ class Report:
 	@staticmethod
 	def query_builder(query, node):
 		node_label = node["labels"][0]
-		if node_label == TWEET_LABEL:
+		if node_label == TWEET_LABEL and node["properties"]["id"] not in query["Tweet"]:
 			query["Tweet"].append(node["properties"]["id"])
-		elif node_label == USER_LABEL:
+		elif node_label == USER_LABEL and node["properties"]["id"] not in query["User"]:
 			query["User"].append(node["properties"]["id"])
-		elif node_label == BOT_LABEL:
+		elif node_label == BOT_LABEL and node["properties"]["id"] not in query["Bot"]:
 			query["Bot"].append(node["properties"]["id"])
 
 	@staticmethod
@@ -196,9 +196,7 @@ class Report:
 
 		if "intermediates" in match:
 			intermediates = match["intermediates"]
-			print(intermediates)
 			for interm in range(len(intermediates["types"])):
-				print(intermediates["types"])
 				query += f"{Report.node_builder(intermediates['types'][interm], intermediates['nodes'][interm], protected)}" \
 						 f"{Report.relation_builder(intermediates['relations'][interm], intermediates['directions'][interm])}"
 
