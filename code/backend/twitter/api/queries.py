@@ -378,21 +378,27 @@ def twitter_search_users_strict(keyword, user_type):
 	"""
 	try:
 		query_params = Q()
+		bot_query_params = Q()
+		for bot in neo4j.search_bots():
+			if bot["username"].lower().startswith(keyword.lower()):
+				bot_query_params |= Q(user_id=bot["id"])
+				query_params |= Q(user_id=bot["id"])
+
+
 		if user_type == "Bot":
-			for bot in neo4j.search_bots():
-				if bot["username"].lower().startswith(keyword.lower()):
-					query_params |= Q(user_id=bot["id"])
+			bot_query_params = Q()
 			if len(query_params) == 0:
 				return True, [], f"Success searching users by {keyword}"
 		else:
 			query_params = Q(screen_name__istartswith=keyword)
-		users = User.objects.filter(query_params)
+
+		users = User.objects.filter(query_params).exclude(bot_query_params)
 
 		user_serializer = [serializers.User(user).data for user in users]
 
 		data = [{
 			"id": user["user_id"], "screen_name": user["screen_name"], "name": user["name"]
-		} for user in user_serializer if neo4j.node_type({"id": user["user_id"]}) == user_type]
+		} for user in user_serializer]
 
 		return True, data, f"Success searching users by {keyword}"
 
