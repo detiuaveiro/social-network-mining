@@ -405,8 +405,8 @@ class PostgresAPI:
 
 			cursor.execute(insertion_query)
 			self.conn.commit()
-			signal.send(sender=PostgresAPI, table_name="Log")
 			cursor.close()
+			signal.send(sender=PostgresAPI, table_name="Log")
 			log.debug(f"Inserted log <{insertion_query}> on database")
 		except psycopg2.Error as error:
 			self.conn.rollback()
