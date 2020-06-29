@@ -999,7 +999,7 @@ def entities_counter():
         return False, None, f"Error obtaining entities counter"
 
 
-@cache(cacheAPI, "Tweet", pagination=True)
+@cache(cacheAPI, model_name="Tweet", pagination=True)
 def latest_tweets(counter, entries_per_page, page):
     """
 
