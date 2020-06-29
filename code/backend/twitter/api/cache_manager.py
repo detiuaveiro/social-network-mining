@@ -18,3 +18,6 @@ class RedisAPI:
 
     def delete_key(self, key):
         return self.client.delete(key)
+
+    def delete_all_keys(self):
+        return self.client.flushall()
