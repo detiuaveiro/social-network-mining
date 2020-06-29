@@ -368,11 +368,12 @@ class Network extends Component {
         list.push({ type: "PROFILE", info: this.state.userInfo })
         var userObj = { "user": user, "type": data.type }
 
+        
         this.setState({
           redirectUser: userObj,
           redirectionList: list
         })
-
+      
       }
     }).catch(error => {
       console.log("error: " + error);
@@ -732,14 +733,16 @@ class Network extends Component {
     const events = {
       doubleClick: function (event) {
         var { nodes, edges } = event;
-        console.log(nodes[0])
         try {
 
           var element = this.state.graph.nodes.find((element) => {
             return element.id == nodes[0];
           })
 
-          this.handleOpenProfile(element.real_id, false)
+          if(element.type != "Tweet"){
+            this.handleOpenProfile(element.real_id, false)
+          }
+
         } catch (e) {
 
         }
