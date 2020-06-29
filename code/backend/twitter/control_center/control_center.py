@@ -738,16 +738,16 @@ class Control_Center:
 						"action": log_actions.INSERT_USER,
 						"target_id": user['id_str']
 					})
-					
-				self.postgres_client.insert_user({
-					"user_id": int(user['id_str']),
-					"followers": user["followers_count"],
-					"following": user["friends_count"],
-					"protected": user["protected"]
-				})
 
 				if 'following' in user and user['following']:
 					self.__find_followers(bot_id_str, user['id_str'])
+					
+			self.postgres_client.insert_user({
+				"user_id": int(user['id_str']),
+				"followers": user["followers_count"],
+				"following": user["friends_count"],
+				"protected": user["protected"]
+			})
 
 	def __save_user_or_blank_user(self, data):
 		user = data['data']
