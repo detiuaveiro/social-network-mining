@@ -341,8 +341,16 @@ class Network extends Component {
     })
   }
 
-  async handleOpenProfile(user) {
-    console.log(user)
+  async handleOpenProfile(user, findelement) {
+    if (findelement) {
+      var element = this.state.graph.nodes.find((element) => {
+        return element.id == user.value;
+      })
+
+      user = element.real_id
+    }
+
+    this.setState({loading: true})
     await fetch(baseURL + "twitter/users/" + user + "/type/", {
       method: "GET",
       headers: {
@@ -360,20 +368,16 @@ class Network extends Component {
         list.push({ type: "PROFILE", info: this.state.userInfo })
         var userObj = { "user": user, "type": data.type }
 
-        console.log(list)
-        console.log(userObj)
-
         this.setState({
           redirectUser: userObj,
           redirectionList: list
         })
 
-        console.log(this.state.redirectionList)
-        console.log(this.state.redirectUser)
-
       }
     }).catch(error => {
       console.log("error: " + error);
+      this.setState({loading: false})
+
       toast.error('Sorry, we couldn\'t redirect you to that user/bot\'s profile page. It\'s likely that they\'re still not in our databases, please try again later', {
         position: "top-center",
         autoClose: 7500,
@@ -413,7 +417,7 @@ class Network extends Component {
       });
     }
 
-    if(document.getElementById("loadedGraph") != null && document.getElementById("loadedGraph") != undefined){
+    if (document.getElementById("loadedGraph") != null && document.getElementById("loadedGraph") != undefined) {
       document.getElementById("loadedGraph").style.visibility = "visible"
       document.getElementById("loadingGraph").style.display = "none"
     }
@@ -505,7 +509,7 @@ class Network extends Component {
 
   hideBots = async () => {
     var hideBots = this.state.hideBots
-    
+
     await this.setState({ hideBots: !this.state.hideBots })
     if (this.state.hideBots) {
       var tempArray = []
@@ -728,16 +732,14 @@ class Network extends Component {
     const events = {
       doubleClick: function (event) {
         var { nodes, edges } = event;
-
+        console.log(nodes[0])
         try {
-          this.state.graphRef.selectNodes([nodes[0]])
-
 
           var element = this.state.graph.nodes.find((element) => {
             return element.id == nodes[0];
           })
 
-          this.handleOpenProfile(element.real_id)
+          this.handleOpenProfile(element.real_id, false)
         } catch (e) {
 
         }
@@ -897,6 +899,14 @@ class Network extends Component {
                           <Button block outline color="danger"
                             onClick={this.removeFocus}
                           ><i class="fas fa-times"></i></Button>
+                        </Col>
+
+                      </Row>
+                      <Row style={{ marginTop: "15px", marginBottom: "0px", paddingBottom: "0px" }}>
+                        <Col md="12" sm="12" xm="12">
+                          <Button block outline color="info" disabled={this.state.foundNode == null || this.state.foundNode == undefined || this.state.foundNode.label.split(" ")[0] == "(Tweet)" ? true : false}
+                            onClick={() => this.handleOpenProfile(this.state.foundNode, true)}
+                          ><i class="far fa-user"></i> Go to Profile</Button>
                         </Col>
 
                       </Row>
