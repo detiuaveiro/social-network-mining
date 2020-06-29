@@ -13,7 +13,7 @@ import messages_types as messages_types
 from rabbit_messaging import RabbitMessaging
 from bots.settings import *
 from bots.utils import *
-from credentials import LOG_EXCHANGE, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, TASKS_QUEUE_PREFIX, REDIS_FULL_URL
+from credentials import LOG_EXCHANGE, DATA_EXCHANGE, QUERY_EXCHANGE, TASKS_EXCHANGE, TASKS_QUEUE_PREFIX
 
 logger = logging.getLogger("bot-agents")
 logger.setLevel(logging.DEBUG)
@@ -36,6 +36,7 @@ class TwitterBot(RabbitMessaging):
 		self.messaging_settings = messaging_settings
 
 		self.work_init_time = time.time()
+		self.setup_init_time = time.time()
 
 		self._redis_cache = redis.Redis(host=REDIS_HOST)
 
@@ -542,6 +543,11 @@ class TwitterBot(RabbitMessaging):
 				wait(WAIT_TIME_RANDOM_STOP)
 				self.work_init_time = time.time()
 
+			if time.time() - self.setup_init_time > WAIT_TIME_NEW_SETUP:
+				logger.info(f"Setting up bot")
+				self.__setup()
+				self.setup_init_time = time.time()
+
 			try:
 				logger.info(f"Getting next task from {TASKS_QUEUE_PREFIX}")
 				messages = self.__receive_message()
@@ -585,5 +591,5 @@ class TwitterBot(RabbitMessaging):
 					self.__send_query(self._twitter_api.me()._json, messages_types.BotToServer.QUERY_KEYWORDS,
 						                  send_now=True)
 					wait(WAIT_TIME_NO_MESSAGES)
-			except Exception as error:
+			except Exception as error: 
 				logger.exception(f"Error {error} on bot's loop: ")

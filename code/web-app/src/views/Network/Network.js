@@ -413,8 +413,10 @@ class Network extends Component {
       });
     }
 
-    document.getElementById("loadedGraph").style.visibility = "visible"
-    document.getElementById("loadingGraph").style.display = "none"
+    if(document.getElementById("loadedGraph") != null && document.getElementById("loadedGraph") != undefined){
+      document.getElementById("loadedGraph").style.visibility = "visible"
+      document.getElementById("loadingGraph").style.display = "none"
+    }
   }
 
 

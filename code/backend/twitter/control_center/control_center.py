@@ -144,15 +144,23 @@ class Control_Center:
 		elif message_type == FollowServiceToServer.FOLLOW_USER:
 			self.__follow_user(message)
 		elif message_type == FollowServiceToServer.CHANGE_EMAIL_STATUS:
-			self.__change_email_status()
+			self.__change_email_status(message)
 
-	def __change_email_status(self):
+	def __change_email_status(self, message):
 		log.debug("Changing email status")
 		updated_notifications = self.postgres_client.update_notifications_status()
 		if updated_notifications['success']:
 			log.debug("Email status changed with success")
 		else:
 			log.error(f"Email status changed not committed due to the error -> {updated_notifications['error']}")
+
+		new_policies = message['data']['new_policies']
+		for policy_name in new_policies:
+			entries = self.postgres_client.search_policies({'name': policy_name})
+			if entries["success"]:
+				policy_id = entries["data"][0]['policy_id']
+				self.postgres_client.update_policy(policy_id, {'active': True})
+				log.debug(f"Changing policy status to active (ID -> {policy_id})")
 
 	def __all_policies(self):
 		log.debug("Obtaining all policies available")
@@ -634,7 +642,7 @@ class Control_Center:
 
 		for data in data_list:
 			data_id_in_redis = self.redis_client.get(data['data']['id_str'])
-			if data_id_in_redis and data_id_in_redis == mongo_utils.NOT_BLANK:
+			if data_id_in_redis and data_id_in_redis.decode("utf-8") == mongo_utils.NOT_BLANK:
 				log.info("User id found in Redis")
 				continue
 
@@ -722,6 +730,7 @@ class Control_Center:
 					log.info(f"User {user['id']} is new to the party")
 					is_blank = "is_blank" in user and user['is_blank']
 					self.redis_client.set(user["id_str"], mongo_utils.BLANK if is_blank else mongo_utils.NOT_BLANK)
+					self.redis_client.expire(user["id_str"], OBJECT_TTL)
 					if is_blank:
 						user.pop("is_blank")
 
@@ -737,7 +746,7 @@ class Control_Center:
 						"action": log_actions.INSERT_USER,
 						"target_id": user['id_str']
 					})
-					
+
 				self.postgres_client.insert_user({
 					"user_id": int(user['id_str']),
 					"followers": user["followers_count"],
@@ -752,8 +761,9 @@ class Control_Center:
 		user = data['data']
 		user_id_str = user['id_str']
 
-		user_exists = self.neo4j_client.check_user_exists(user_id_str) \
-					  or self.neo4j_client.check_bot_exists(user_id_str)
+		user_exists = self.redis_client.get(user_id_str) \
+					  or self.neo4j_client.check_user_exists(user_id_str) \
+					  or self.neo4j_client.check_bot_exists(user_id_str) \
 
 		if not user_exists or 'name' not in user or not user['name']:
 			blank_user = mongo_utils.BLANK_USER.copy()
@@ -783,7 +793,9 @@ class Control_Center:
 			single=True
 		)
 
-		if tweet_exists:
+		data_id_in_redis = self.redis_client.get(data['data']['id_str'])
+
+		if tweet_exists or data_id_in_redis:
 			return
 
 		log.debug(f"Inserting blank tweet with id {data['id']}")
@@ -820,7 +832,9 @@ class Control_Center:
 		log.info(f"Received bulk of tweets {data_list}")
 		for data in data_list:
 			data_id_in_redis = self.redis_client.get(data['data']['id_str'])
-			if data_id_in_redis and data_id_in_redis == mongo_utils.NOT_BLANK:
+			if data_id_in_redis:
+				log.info(f"Tweet id found in REDIS: {data_id_in_redis}")
+			if data_id_in_redis and data_id_in_redis.decode("utf-8") == mongo_utils.NOT_BLANK:
 				log.info("Tweet id found in Redis")
 				continue
 
@@ -848,6 +862,7 @@ class Control_Center:
 			else:
 				is_blank = "is_blank" in data["data"] and data["data"]['is_blank']
 				self.redis_client.set(data["data"]["id_str"], mongo_utils.BLANK if is_blank else mongo_utils.NOT_BLANK)
+				self.redis_client.expire(data["data"]["id_str"], OBJECT_TTL)
 				if is_blank:
 					data["data"].pop("is_blank")
 

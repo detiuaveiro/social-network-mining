@@ -63,7 +63,7 @@ class PostgresAPI:
 				"INSERT INTO tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",
 				(int(data["tweet_id"]), int(data["user_id"]), data["likes"], data["retweets"]))
 			self.conn.commit()
-			signal.send(sender=PostgresAPI, table_name="tweets")
+			signal.send(sender=PostgresAPI, table_name="TweetStats")
 			cursor.close()
 		except psycopg2.Error as error:
 			self.conn.rollback()
@@ -354,6 +354,12 @@ class PostgresAPI:
 						query += " AND "
 					query += str(params['bot_id']) + '= ANY(policies.bots)'
 
+				if "name" in params.keys():
+					if control == 1:
+						query += " AND "
+					query += f"policies.name='{params['name']}'"
+
+
 			query += f"{'limit ' + str(limit) if limit is not None else ''} ;"
 
 			cursor.execute(query)
@@ -400,7 +406,7 @@ class PostgresAPI:
 			cursor.execute(insertion_query)
 			self.conn.commit()
 			cursor.close()
-			signal.send(sender=PostgresAPI, table_name="logs")
+			signal.send(sender=PostgresAPI, table_name="Log")
 			log.debug(f"Inserted log <{insertion_query}> on database")
 		except psycopg2.Error as error:
 			self.conn.rollback()
@@ -443,7 +449,6 @@ class PostgresAPI:
 				 data["bots"]))
 
 			self.conn.commit()
-			signal.send(sender=PostgresAPI, table_name="policies")
 			cursor.close()
 		except psycopg2.Error as error:
 			self.conn.rollback()
@@ -471,7 +476,6 @@ class PostgresAPI:
 			cursor.execute(query)
 
 			self.conn.commit()
-			signal.send(sender=PostgresAPI, table_name="policies")
 			cursor.close()
 
 			return {"success": True}
@@ -540,7 +544,6 @@ class PostgresAPI:
 			cursor.execute(query)
 
 			self.conn.commit()
-			signal.send(sender=PostgresAPI, table_name="policies")
 			cursor.close()
 
 			return {"success": True}
