@@ -204,8 +204,8 @@ class Dashboard extends Component {
         tempInfo['replies'] = data['replies']
         tempInfo['retweets'] = data['retweet']
         tempInfo['quotes'] = data['quotes']
-
-
+        console.log("OLAAA")
+        console.log(tempInfo)
         this.setState({
           todayStats: {
             general: this.state.todayStats.general,
@@ -1302,9 +1302,9 @@ class Dashboard extends Component {
                           <Legend verticalAlign="bottom" height={36} />
                           <Tooltip cursor={false} />
 
-                          <Bar name="Follows" dataKey="users" fill="#f8cb00" />
-                          <Bar name="Likes" dataKey="tweets" fill="#c13584" />
-                          <Bar name="Replies" dataKey="users" fill="#833ab4" />
+                          <Bar name="Follows" dataKey="follows" fill="#f8cb00" />
+                          <Bar name="Likes" dataKey="likes" fill="#c13584" />
+                          <Bar name="Replies" dataKey="replies" fill="#833ab4" />
                           <Bar name="Retweets" dataKey="retweets" fill="#fd1d1d" />
                           <Bar name="Quotes" dataKey="quotes" fill="#17a2b8" />
 
