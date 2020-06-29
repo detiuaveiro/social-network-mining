@@ -28,7 +28,7 @@ def load():
         "graphs/latest_tweets/daily/5/1",
         "graphs/latest_activities/daily/6/1",
         "graphs/latest_tweets/100/5/1/",
-        "graphs/latest_activities/100/6/1/"
+        "graphs/latest_activities/100/6/1/",
         "entities/counter"
     ]
 
