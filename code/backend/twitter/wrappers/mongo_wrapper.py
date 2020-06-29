@@ -234,7 +234,7 @@ class MongoAPI:
                 self.tweets.insert_many(self.list_of_tweets, ordered=False)
                 signal.send(sender=MongoAPI, table_name='Tweet')
             except BulkWriteError as bwe:
-                log.exception(f"BULK ERRORS OCCURRED: <{bwe.details}>")
+                log.exception(f"BULK ERRORS OCCURRED: <{bwe.details['writeErrors'][0]['errmsg']}>")
             except Exception as error:
                 log.exception(f"ERROR <{error}> INSERTING TWEETS, INSERTING ONE BY ONE")
             self.list_of_tweets = []
