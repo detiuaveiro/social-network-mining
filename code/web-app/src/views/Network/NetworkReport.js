@@ -406,14 +406,14 @@ class NetworkReport extends Component {
 
         var newTypes = this.state.intermediateTypeOptions
         newTypes.push(newElement)
-        this.setState({ intermediate: { type: selectedOption, nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation }, intermediateTypeOptions: newTypes.sort((a, b) => a.label > b.label) });
+        this.setState({ intermediate: { type: selectedOption, nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation, direction: this.state.intermediate.direction }, intermediateTypeOptions: newTypes.sort((a, b) => a.label > b.label) });
 
       } else {
-        this.setState({ intermediate: { type: selectedOption, nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation } });
+        this.setState({ intermediate: { type: selectedOption, nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation, direction: this.state.intermediate.direction } });
       }
 
     } else {
-      this.setState({ intermediate: { type: [], nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation }, intermediateTypeOptions: [{ value: "a_0", label: "All Relations" }, { value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }] });
+      this.setState({ intermediate: { type: [], nodes: this.state.intermediate.nodes, relation: this.state.intermediate.relation, direction: this.state.intermediate.direction}, intermediateTypeOptions: [{ value: "a_0", label: "All Relations" }, { value: "Bot_1", label: "Bot" }, { value: "User_1", label: "User" }, { value: "Tweet_1", label: "Tweet" }] });
     }
   }
 
@@ -467,9 +467,9 @@ class NetworkReport extends Component {
 
   changeIntermediateNodes = (selectedOption) => {
     if (selectedOption != null) {
-      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: selectedOption, relation: this.state.intermediate.relation } });
+      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: selectedOption, relation: this.state.intermediate.relation, direction: this.state.intermediate.direction } });
     } else {
-      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: [], relation: this.state.intermediate.relation } });
+      this.setState({ intermediate: { type: this.state.intermediate.type, nodes: [], relation: this.state.intermediate.relation, direction: this.state.intermediate.direction} });
     }
   }
 

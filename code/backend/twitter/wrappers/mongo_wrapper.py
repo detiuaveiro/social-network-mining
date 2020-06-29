@@ -15,7 +15,7 @@ handler.setFormatter(
 )
 log.addHandler(handler)
 
-signal = django.dispatch.Signal()
+signal = django.dispatch.Signal(providing_args=["table_name"])
 
 
 class MongoAPI:
@@ -122,7 +122,7 @@ class MongoAPI:
                 self.users.update_many(match, {"$set": new_data})
             else:
                 self.users.update_one(match, {"$set": new_data})
-            signal.send(sender=MongoAPI)
+
             log.debug("UPDATE SUCCESSFUL")
         except Exception as error:
             log.exception(f"ERROR <{error}> UPDATING DOCUMENT with match <{match}> and data <{new_data}>: ")
@@ -139,7 +139,7 @@ class MongoAPI:
                 self.tweets.update_many(match, {"$set": new_data})
             else:
                 self.tweets.update_one(match, {"$set": new_data})
-            signal.send(sender=MongoAPI)
+
             log.debug("UPDATE SUCCESSFUL")
         except Exception as error:
             log.exception(f"ERROR <{error}> UPDATING DOCUMENT with match <{match}> <{new_data}>: ")
@@ -156,7 +156,7 @@ class MongoAPI:
                 self.messages.update_many(match, {"$set": new_data})
             else:
                 self.messages.update_one(match, {"$set": new_data})
-            signal.send(sender=MongoAPI)
+
             log.debug("UPDATE SUCCESSFUL")
         except Exception as error:
             log.exception(f"ERROR <{error}> UPDATING DOCUMENT with match <{match}> and data <{new_data}>: ")
@@ -232,6 +232,7 @@ class MongoAPI:
         if len(self.list_of_tweets) != 0:
             try:
                 self.tweets.insert_many(self.list_of_tweets, ordered=False)
+                signal.send(sender=MongoAPI, table_name='Tweet')
             except BulkWriteError as bwe:
                 log.exception(f"BULK ERRORS OCCURRED: <{bwe.details['writeErrors'][0]['errmsg']}>")
             except Exception as error:
@@ -245,6 +246,7 @@ class MongoAPI:
         if len(self.list_of_users) != 0:
             try:
                 self.users.insert_many(self.list_of_users, ordered=False)
+                signal.send(sender=MongoAPI, table_name='User')
             except BulkWriteError as bwe:
                 log.exception(f"BULK ERRORS OCCURRED: <{bwe.details['writeErrors'][0]['errmsg']}>")
             except Exception as error:
@@ -258,6 +260,7 @@ class MongoAPI:
         if len(self.list_of_messages) != 0:
             try:
                 self.messages.insert_many(self.list_of_messages)
+                signal.send(sender=MongoAPI, table_name='Message')
                 self.list_of_messages = []
                 self.index_of_messages = {}
             except Exception as error:

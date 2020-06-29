@@ -4,6 +4,8 @@ Mining in Social Networks
 
 Hoje em dia as redes sociais possuem um papel muito relevante da difusão da informação. Os seus utilizadores estão constantemente a fazer publicações sobre os mais variados assuntos desde trivialidades e acontecimentos do dia a dia, a assuntos de maior relevância como política e ciência. A circulação desta informação tem vindo a aumentar exponencialmente, assim como a complexa rede envolvida na propagação desta informação e como tal várias áreas de estudo estão a dedicar-se a resolução de problemas relacionados com este tema. Mais recentemente a temática das "fake news", noticias falsas como o nome indica, tornou-se um tópico mediático, fazendo a sua resolução um problema de grande interesse.
 
+https://detiuaveiro.github.io/social-network-mining/
+
 ## Web App
 
 Web app developed using the template: https://coreui.io/react/
@@ -12,19 +14,6 @@ To run, first install dependencies:
 ```
 $ cd web-app
 $ npm install
-$ npm install @material-ui/core
-$ npm install react-device-detect --save
-$ npm install jquery
-$ npm i react-loading
-$ npm i react-toastify
-$ npm i react-graph-vis
-$ npm install recharts
-$ npm i react-select
-$ npm install react-paginate --save
-$ npm i @material-ui/lab
-$ npm i react-lottie react-fade-in
-$ npm i react-tooltip
-$ npm install react-minimal-pie-chart
 ```
 
 Then use the command to start the web app on port 3000:
@@ -189,6 +178,7 @@ chmod +x import_databases.sh
  > db.users.createIndex({screen_name: 1}, { unique:true })
  > db.tweets.createIndex({id: 1}, { unique:true })
  > db.tweets.createIndex({id_str: 1}, { unique:true })
+ > db.tweets.createIndex({protected: 1}, { unique:false })
  ```
 
 

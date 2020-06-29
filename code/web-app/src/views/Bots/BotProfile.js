@@ -545,9 +545,9 @@ class BotProfile extends Component {
             }
         }).catch(error => {
             console.log("error: " + error);
-            this.setState({
+            /*this.setState({
                 error: error
-            })
+            })*/
         });
     }
 

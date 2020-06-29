@@ -81,8 +81,8 @@ class Bots extends Component {
           var tempInfo = []
           tempInfo.push("@" + bot.screen_name);
           tempInfo.push("" + bot.name);
-          tempInfo.push("" + bot.friends_count);
           tempInfo.push("" + bot.followers_count);
+          tempInfo.push("" + bot.friends_count);
 
           // Add wether its active or not
           tempInfo.push(<Badge pill color="success" style={{ fontSize: "11px" }}>Active</Badge>);

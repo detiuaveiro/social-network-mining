@@ -74,7 +74,7 @@ class Policy(serializers.Serializer):
 	filter = serializers.ChoiceField(choices=enum_policy.api_filter(), default="Keywords")
 	name = serializers.CharField()
 	tags = serializers.ListField(child=serializers.CharField(), allow_empty=False)
-	bots = serializers.ListField(child=serializers.CharField(), allow_empty=False)
+	bots = serializers.ListField(child=serializers.CharField())
 	active = serializers.BooleanField(required=False)
 
 
