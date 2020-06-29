@@ -144,15 +144,23 @@ class Control_Center:
 		elif message_type == FollowServiceToServer.FOLLOW_USER:
 			self.__follow_user(message)
 		elif message_type == FollowServiceToServer.CHANGE_EMAIL_STATUS:
-			self.__change_email_status()
+			self.__change_email_status(message)
 
-	def __change_email_status(self):
+	def __change_email_status(self, message):
 		log.debug("Changing email status")
 		updated_notifications = self.postgres_client.update_notifications_status()
 		if updated_notifications['success']:
 			log.debug("Email status changed with success")
 		else:
 			log.error(f"Email status changed not committed due to the error -> {updated_notifications['error']}")
+
+		new_policies = message['data']['new_policies']
+		for policy_name in new_policies:
+			entries = self.postgres_client.search_policies({'name': policy_name})
+			if entries["success"]:
+				policy_id = entries["data"][0]['policy_id']
+				self.postgres_client.update_policy(policy_id, {'active': True})
+				log.debug(f"Changing policy status to active (ID -> {policy_id})")
 
 	def __all_policies(self):
 		log.debug("Obtaining all policies available")
@@ -738,7 +746,7 @@ class Control_Center:
 						"action": log_actions.INSERT_USER,
 						"target_id": user['id_str']
 					})
-					
+
 				self.postgres_client.insert_user({
 					"user_id": int(user['id_str']),
 					"followers": user["followers_count"],

@@ -178,6 +178,7 @@ chmod +x import_databases.sh
  > db.users.createIndex({screen_name: 1}, { unique:true })
  > db.tweets.createIndex({id: 1}, { unique:true })
  > db.tweets.createIndex({id_str: 1}, { unique:true })
+ > db.tweets.createIndex({protected: 1}, { unique:false })
  ```
 
 
