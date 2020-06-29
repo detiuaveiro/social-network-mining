@@ -63,7 +63,7 @@ class PostgresAPI:
 				"INSERT INTO tweets (timestamp, tweet_id, user_id, likes, retweets) values (DEFAULT,%s,%s,%s,%s);",
 				(int(data["tweet_id"]), int(data["user_id"]), data["likes"], data["retweets"]))
 			self.conn.commit()
-			signal.send(sender=PostgresAPI, table_name="tweets")
+			signal.send(sender=PostgresAPI, table_name="TweetStats")
 			cursor.close()
 		except psycopg2.Error as error:
 			self.conn.rollback()
@@ -399,7 +399,7 @@ class PostgresAPI:
 
 			cursor.execute(insertion_query)
 			self.conn.commit()
-			signal.send(sender=PostgresAPI, table_name="logs")
+			signal.send(sender=PostgresAPI, table_name="Log")
 			cursor.close()
 			log.debug(f"Inserted log <{insertion_query}> on database")
 		except psycopg2.Error as error:
@@ -443,7 +443,6 @@ class PostgresAPI:
 				 data["bots"]))
 
 			self.conn.commit()
-			signal.send(sender=PostgresAPI, table_name="policies")
 			cursor.close()
 		except psycopg2.Error as error:
 			self.conn.rollback()
@@ -471,7 +470,6 @@ class PostgresAPI:
 			cursor.execute(query)
 
 			self.conn.commit()
-			signal.send(sender=PostgresAPI, table_name="policies")
 			cursor.close()
 
 			return {"success": True}
@@ -540,7 +538,6 @@ class PostgresAPI:
 			cursor.execute(query)
 
 			self.conn.commit()
-			signal.send(sender=PostgresAPI, table_name="policies")
 			cursor.close()
 
 			return {"success": True}
