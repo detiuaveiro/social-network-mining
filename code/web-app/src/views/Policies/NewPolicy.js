@@ -154,7 +154,7 @@ class NewPolicy extends Component {
 
     // Confirm //////////////////////////////////////////////////////////
     async confirmNew() {
-        if (this.state.tags == null || this.state.tags.length <= 0 || document.getElementById("name") == null || document.getElementById("name").value == null || document.getElementById("name").value == "" || this.state.filter == null || this.state.filter == "" || this.state.bots == null || this.state.bots.length == 0) {
+        if (this.state.tags == null || this.state.tags.length <= 0 || document.getElementById("name") == null || document.getElementById("name").value == null || document.getElementById("name").value == "" || this.state.filter == null || this.state.filter == "") {
             document.getElementById("errorNew").style.visibility = ""
         } else {
             document.getElementById("errorNew").style.visibility = "hidden"
@@ -403,7 +403,7 @@ class NewPolicy extends Component {
 
                                             <Row style={{ marginTop: "30px" }}>
                                                 <Col sm="12" md="12" xs="12">
-                                                    <span id="errorNew" style={{ visibility: "hidden", color: "#f86c6b" }}>You need to, at least, pick a name, choose the filter type, define at least one tag and assign a bot before proceeding!</span>
+                                                    <span id="errorNew" style={{ visibility: "hidden", color: "#f86c6b" }}>You need to, at least, pick a name, choose the filter type and define at least one tag!</span>
                                                 </Col>
                                             </Row>
 

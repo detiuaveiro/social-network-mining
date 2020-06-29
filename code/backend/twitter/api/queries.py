@@ -121,8 +121,10 @@ def twitter_users(entries_per_page, page, protected):
     if entries_per_page and page are both None then all users will be returned
     """
     try:
-
-        all_users = User.objects.filter(protected=protected)
+        if not protected:
+            all_users = User.objects.all()
+        else:
+            all_users = User.objects.filter(protected=protected)
 
         data = paginator_factory(all_users, entries_per_page, page)
         data['entries'] = [serializers.User(user).data for user in data['entries']]
@@ -726,16 +728,18 @@ def add_policy(data):
         if not policy_serializer.is_valid():
             return False, policy_serializer.errors, "Invalid data"
 
+        """
         for bot_id in policy_serializer.data['bots']:
             if not neo4j.check_bot_exists(str(bot_id)):
                 raise AddPolicyError("Invalid Bot's ID")
+        """
 
-            if Policy.objects.filter(name=policy_serializer.data['name']).exists():
-                raise AddPolicyError("A policy with same name already exists")
+        if Policy.objects.filter(name=policy_serializer.data['name']).exists():
+            raise AddPolicyError("A policy with same name already exists")
 
-            if Policy.objects.filter(Q(tags__overlap=policy_serializer.data['tags'])).exists():
-                raise AddPolicyError(
-                    "Some of the policy arguments are already defined in another policy. Tags cant overlap!")
+        if Policy.objects.filter(Q(tags__overlap=policy_serializer.data['tags'])).exists():
+            raise AddPolicyError(
+                "Some of the policy arguments are already defined in another policy. Tags cant overlap!")
 
         data = policy_serializer.data
         data['tags'] = list(set(data['tags']))

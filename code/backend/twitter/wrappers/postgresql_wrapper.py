@@ -354,6 +354,12 @@ class PostgresAPI:
 						query += " AND "
 					query += str(params['bot_id']) + '= ANY(policies.bots)'
 
+				if "name" in params.keys():
+					if control == 1:
+						query += " AND "
+					query += f"policies.name='{params['name']}'"
+
+
 			query += f"{'limit ' + str(limit) if limit is not None else ''} ;"
 
 			cursor.execute(query)
