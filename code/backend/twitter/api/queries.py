@@ -10,7 +10,7 @@ from api.queries_utils import paginator_factory, paginator_factory_non_queryset,
 from api.views.utils import NETWORK_QUERY
 from report.report_gen import Report
 from api.cache_manager import RedisAPI
-from api.cache_decorator import cache
+from api.cache_decorator import cache, pack_extension
 import pickle
 
 logger = logging.getLogger('queries')
@@ -268,8 +268,9 @@ def twitter_user_tweets(user_id, entries_per_page, page):
 
     """
     try:
+        tweets_id = cache(cacheAPI, model_name="neo4j", pagination=True)(pack_extension(neo4j.get_tweets_written))(
+            {'id': user_id})[1]
 
-        tweets_id = neo4j.get_tweets_written({'id': user_id})
         user_tweets = Tweet.objects.filter(tweet_id__in=tweets_id).order_by('-created_at')
 
         data = paginator_factory(user_tweets, entries_per_page, page)
