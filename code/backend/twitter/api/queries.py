@@ -28,7 +28,7 @@ def update_per_table(cache_manager, model_name):
     for encoded_key in keys:
         key = keys[encoded_key]
         data = cache_manager.get(encoded_key)
-
+        
         if data is None:
             continue
 
@@ -41,7 +41,8 @@ def update_per_table(cache_manager, model_name):
             if status:
                 new_data = {
                     'data': n_data,
-                    'message': message
+                    'message': message,
+                    'pagination': True
                 }
 
                 cache_manager.set(encoded_key, new_data)
