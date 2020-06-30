@@ -28,10 +28,14 @@ def update_per_table(cache_manager, model_name):
     for encoded_key in keys:
         key = keys[encoded_key]
         data = cache_manager.get(encoded_key)
+
+        if data is None:
+            continue
+
         func = eval(f"{key['function_name']}")
         cache_manager.delete_key(encoded_key)
 
-        if 'pagination' not in data or data['pagination']:
+        if data['pagination']:
             status, n_data, message = func(*key['args'], **key['kwargs'])
 
             if status:
