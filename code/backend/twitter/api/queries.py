@@ -271,7 +271,14 @@ def twitter_user_tweets(user_id, entries_per_page, page):
         tweets_id = cache(cacheAPI, model_name="neo4j", pagination=True)(pack_extension(neo4j.get_tweets_written))(
             {'id': user_id})[1]
 
-        user_tweets = Tweet.objects.filter(tweet_id__in=tweets_id).order_by('-created_at')
+        from datetime import datetime
+
+        date_format = "%a %b %d %H:%M:%S +%f %Y"
+
+        user_tweets = Tweet.objects.filter(tweet_id__in=tweets_id).order_by('-tweet_id_number')
+        # for i in range(user_tweets.count()):
+        #     str_date = user_tweets[i].created_at
+        #     user_tweets[i].created_at = datetime.strptime(str_date, date_format)
 
         data = paginator_factory(user_tweets, entries_per_page, page)
         data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]

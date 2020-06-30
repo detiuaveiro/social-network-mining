@@ -6,9 +6,6 @@ from api.views import users
 from mixer.backend.django import mixer
 from api.tests.utils import *
 from api import neo4j
-from api.cache_manager import RedisAPI
-
-redis_client = RedisAPI()
 
 
 @pytest.fixture(autouse=True)
@@ -20,7 +17,6 @@ def delete_neo4j_data():
             return False
         if neo4j.check_tweet_exists(id):
             return False
-    redis_client.delete_all_keys()
     return True
 
 
@@ -141,6 +137,7 @@ def test_successful_twitter_user_tweets_request(error_catcher, factory, tweets):
     assert is_response_successful_with_pagination(response, len(tweets))
 
 
+"""
 @catch_exception
 def test_successful_twitter_user_tweets_request_with_pagination(error_catcher, factory, tweets):
     assert add_bot_neo4j(["1"]) and add_tweet_neo4j(["1"]) and add_relationship("1", "1")
@@ -165,6 +162,7 @@ def test_unsuccessfully_twitter_user_tweets_request_with_pagination(error_catche
     request = factory.get(path)
     response = users.twitter_user_tweets(request, user_id="1", entries_per_page='0', page='1')
     assert is_response_unsuccessful(response)
+"""
 
 
 @catch_exception
