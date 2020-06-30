@@ -19,11 +19,14 @@ cacheAPI = RedisAPI()
 
 
 def update_per_table(cache_manager, model_name):
-    keys = filter(lambda k: model_name == k['model_name'],
-                  map(lambda k: pickle.loads(k), cache_manager.client.scan_iter()))
+    keys = {}
+    for redis_key in cache_manager.client.scan_iter():
+        converted_value = pickle.loads(redis_key)
+        if converted_value['model_name'] == model_name:
+            keys[redis_key] = converted_value
 
-    for key in keys:
-        encoded_key = pickle.dumps(key)
+    for encoded_key in keys:
+        key = keys[encoded_key]
         data = cache_manager.get(encoded_key)
         func = eval(f"{key['function_name']}")
         cache_manager.delete_key(encoded_key)
