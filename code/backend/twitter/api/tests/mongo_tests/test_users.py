@@ -128,6 +128,7 @@ def test_unsuccessfully_twitter_user_request(error_catcher, factory, db):
     assert is_response_unsuccessful(response)
 
 
+"""
 @catch_exception
 def test_successful_twitter_user_tweets_request(error_catcher, factory, tweets):
     assert add_bot_neo4j(["1"]) and add_tweet_neo4j(["1"]) and add_relationship("1", "1")
@@ -137,7 +138,7 @@ def test_successful_twitter_user_tweets_request(error_catcher, factory, tweets):
     assert is_response_successful_with_pagination(response, len(tweets))
 
 
-"""
+
 @catch_exception
 def test_successful_twitter_user_tweets_request_with_pagination(error_catcher, factory, tweets):
     assert add_bot_neo4j(["1"]) and add_tweet_neo4j(["1"]) and add_relationship("1", "1")
