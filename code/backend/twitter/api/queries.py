@@ -31,7 +31,7 @@ def update_per_table(cache_manager, model_name):
         func = eval(f"{key['function_name']}")
         cache_manager.delete_key(encoded_key)
 
-        if data['pagination']:
+        if 'pagination' not in data or data['pagination']:
             status, n_data, message = func(*key['args'], **key['kwargs'])
 
             if status:
