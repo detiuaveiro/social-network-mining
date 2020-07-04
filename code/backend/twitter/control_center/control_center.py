@@ -33,7 +33,7 @@ handler.setFormatter(logging.Formatter(
 log.addHandler(handler)
 
 PROBABILITY_SEARCH_KEYWORD = 0.000001
-OBJECT_TTL = 300 #Object id will be in redis for 60s
+OBJECT_TTL = 300 #Object id will be in redis for 600s
 
 
 class Control_Center:
@@ -747,15 +747,15 @@ class Control_Center:
 						"target_id": user['id_str']
 					})
 
-				self.postgres_client.insert_user({
-					"user_id": int(user['id_str']),
-					"followers": user["followers_count"],
-					"following": user["friends_count"],
-					"protected": user["protected"]
-				})
-
 				if 'following' in user and user['following']:
 					self.__find_followers(bot_id_str, user['id_str'])
+					
+			self.postgres_client.insert_user({
+				"user_id": int(user['id_str']),
+				"followers": user["followers_count"],
+				"following": user["friends_count"],
+				"protected": user["protected"]
+			})
 
 	def __save_user_or_blank_user(self, data):
 		user = data['data']
@@ -846,7 +846,7 @@ class Control_Center:
 				single=True
 			)
 
-			if data_id_in_redis and tweet_exists:
+			if data_id_in_redis or tweet_exists:
 				log.info(f"Updating tweet {data['data']['id']}")
 				self.mongo_client.update_tweets(
 					match={"id_str": data["data"]['id_str']},

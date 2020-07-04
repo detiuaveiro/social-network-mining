@@ -404,9 +404,6 @@ class PostgresAPI:
 				insertion_query += f"(id_bot, action) values {(bot_id, data['action'])}; "
 
 			cursor.execute(insertion_query)
-			self.conn.commit()
-			cursor.close()
-			signal.send(sender=PostgresAPI, table_name="Log")
 			log.debug(f"Inserted log <{insertion_query}> on database")
 		except psycopg2.Error as error:
 			self.conn.rollback()
@@ -418,6 +415,14 @@ class PostgresAPI:
 
 			log.exception(f"ERROR <{error}> INSERTING NEW LOG <{data}>: ")
 			return {"success": False, "error": error}
+
+		self.conn.commit()
+		cursor.close()
+
+		try:
+			signal.send(sender=PostgresAPI, table_name="Log")
+		except Exception as error:
+			log.exception(f"ERROR <{error}> when signaling rest to update cache")
 
 		return {"success": True}
 

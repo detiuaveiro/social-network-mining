@@ -56,6 +56,7 @@ class ExtendedEntities(djongo_models.Model):
 
 class Tweet(djongo_models.Model):
 	id = djongo_models.BigIntegerField(primary_key=True, db_column="_id")
+	tweet_id_number = djongo_models.BigIntegerField(db_column="id")
 	tweet_id = djongo_models.TextField(db_column="id_str")
 	user = djongo_models.DictField()
 	is_quote_status = djongo_models.BooleanField()

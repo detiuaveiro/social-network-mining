@@ -14,7 +14,13 @@ class RedisAPI:
         return self.client.exists(key)
 
     def get(self, key):
-        return pickle.loads(self.client.get(key))
+        v = self.client.get(key)
+        if v:
+            return pickle.loads(v)
+        return None
 
     def delete_key(self, key):
         return self.client.delete(key)
+
+    def delete_all_keys(self):
+        return self.client.flushall()

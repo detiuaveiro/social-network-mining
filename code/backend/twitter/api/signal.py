@@ -19,20 +19,20 @@ log.addHandler(handler)
 
 @receiver(postgres_signal, sender=PostgresAPI)
 def postgres_update(sender, **kwargs):
-    from api.queries import update_per_table, cacheAPI
+    # from api.queries import update_per_table, cacheAPI
     log.info("Updating cache -> Postgres")
-    update_per_table(cacheAPI, kwargs['table_name'])
+    # update_per_table(cacheAPI, kwargs['table_name'])
 
 
 @receiver(neo4j_signal, sender=Neo4jAPI)
 def neo4j_update(sender, **kwargs):
-    from api.queries import update_per_table, cacheAPI
+    # from api.queries import update_per_table, cacheAPI
     log.info("Updating cache -> Neo4j")
-    update_per_table(cacheAPI, kwargs['table_name'])
+    # update_per_table(cacheAPI, kwargs['table_name'])
 
 
 @receiver(mongo_signal, sender=MongoAPI)
 def mongo_update(sender, **kwargs):
-    from api.queries import update_per_table, cacheAPI
+    # from api.queries import update_per_table, cacheAPI
     log.info("Updating cache -> Mongo")
-    update_per_table(cacheAPI, kwargs['table_name'])
+    # update_per_table(cacheAPI, kwargs['table_name'])

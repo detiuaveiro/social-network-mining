@@ -36,3 +36,16 @@ def cache(cache_manager, model_name, pagination):
         return wrapper
 
     return decorator_cache
+
+
+def pack_extension(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        data, status = None, True
+        try:
+            data = func(*args, **kwargs)
+        except Exception:
+            status = False
+        return status, data, ''
+
+    return wrapper

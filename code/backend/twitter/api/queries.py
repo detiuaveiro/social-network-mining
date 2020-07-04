@@ -10,7 +10,7 @@ from api.queries_utils import paginator_factory, paginator_factory_non_queryset,
 from api.views.utils import NETWORK_QUERY
 from report.report_gen import Report
 from api.cache_manager import RedisAPI
-from api.cache_decorator import cache
+from api.cache_decorator import cache, pack_extension
 import pickle
 
 logger = logging.getLogger('queries')
@@ -19,12 +19,19 @@ cacheAPI = RedisAPI()
 
 
 def update_per_table(cache_manager, model_name):
-    keys = filter(lambda k: model_name == k['model_name'],
-                  map(lambda k: pickle.loads(k), cache_manager.client.scan_iter()))
+    keys = {}
+    for redis_key in cache_manager.client.scan_iter():
+        converted_value = pickle.loads(redis_key)
+        if converted_value['model_name'] == model_name:
+            keys[redis_key] = converted_value
 
-    for key in keys:
-        encoded_key = pickle.dumps(key)
+    for encoded_key in keys:
+        key = keys[encoded_key]
         data = cache_manager.get(encoded_key)
+        
+        if data is None:
+            continue
+
         func = eval(f"{key['function_name']}")
         cache_manager.delete_key(encoded_key)
 
@@ -34,7 +41,8 @@ def update_per_table(cache_manager, model_name):
             if status:
                 new_data = {
                     'data': n_data,
-                    'message': message
+                    'message': message,
+                    'pagination': True
                 }
 
                 cache_manager.set(encoded_key, new_data)
@@ -268,9 +276,10 @@ def twitter_user_tweets(user_id, entries_per_page, page):
 
     """
     try:
+        tweets_id = cache(cacheAPI, model_name="neo4j", pagination=True)(pack_extension(neo4j.get_tweets_written))(
+            {'id': user_id})[1]
 
-        tweets_id = neo4j.get_tweets_written({'id': user_id})
-        user_tweets = Tweet.objects.filter(tweet_id__in=tweets_id).order_by('-created_at')
+        user_tweets = Tweet.objects.filter(tweet_id__in=tweets_id).order_by('-tweet_id_number')
 
         data = paginator_factory(user_tweets, entries_per_page, page)
         data['entries'] = [serializers.Tweet(tweet).data for tweet in data['entries']]
